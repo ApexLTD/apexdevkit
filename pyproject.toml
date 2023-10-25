@@ -12,6 +12,7 @@ httpx = "0.25.*"
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
 pytest-cov = "*"
+pytest-recording = "*"
 coverage = "*"
 
 [tool.poetry.group.lint.dependencies]
