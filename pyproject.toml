@@ -1,0 +1,56 @@
+[tool.poetry]
+name = "pydevtools"
+version = "0.1.0"
+description = "Apex Development Tools for python."
+authors = ["Apex Dev <dev@apex.ge>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+httpx = "0.25.*"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "*"
+pytest-cov = "*"
+coverage = "*"
+
+[tool.poetry.group.lint.dependencies]
+black = "*"
+mypy = "*"
+ruff = "*"
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+strict = true
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+select = ["E", "F", "I"]
+ignore = []
+fixable = ["A", "B", "C", "D", "E", "F", "I"]
+unfixable = []
+
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".ruff_cache",
+    "venv",
+]
+
+[tool.ruff.mccabe]
+max-complexity = 10
+
+[tool.coverage.run]
+branch = true
+source = [
+    "pydevtools",
+    "tests",
+]
+
+[tool.coverage.report]
+skip_empty = true
+skip_covered = true
+show_missing = true
