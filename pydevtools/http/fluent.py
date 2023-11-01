@@ -55,6 +55,9 @@ class JsonObject(Generic[ValueT]):
     def value_of(self, key: str) -> JsonElement[ValueT]:
         return JsonElement(self.raw[key])
 
+    def drop(self, *keys: str) -> JsonObject[ValueT]:
+        return JsonObject({k: v for k, v in self.raw.items() if k not in keys})
+
 
 ConvertedT = TypeVar("ConvertedT")
 

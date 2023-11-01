@@ -15,6 +15,7 @@ pytest = "*"
 pytest-cov = "*"
 pytest-recording = "*"
 coverage = "*"
+faker = "*"
 
 [tool.poetry.group.lint.dependencies]
 black = "*"
