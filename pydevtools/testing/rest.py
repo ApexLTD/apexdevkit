@@ -33,13 +33,15 @@ class RestResource:
 class RestfulName:
     singular: str
 
-    plural: str = ""
+    @property
+    def plural(self) -> str:
+        if self.singular.endswith("y"):
+            return self.singular[:-1] + "ies"
 
-    def __post_init__(self) -> None:
-        self.plural = self.plural or (self.singular + "s")
+        return self.singular + "s"
 
     def __add__(self, other: str) -> str:
-        return str(HttpUrl(self.plural) + other)
+        return HttpUrl(self.plural) + other
 
 
 @dataclass
