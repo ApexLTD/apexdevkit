@@ -65,3 +65,33 @@ def test_patch(http: FluentHttpx) -> None:
     assert echo.value_of("url").to(str) == ECHO_SERVER + "/patch"
     assert echo.value_of("headers").to(JsonDict)["User-Agent"] == "hogwarts"
     assert echo.value_of("headers").to(JsonDict)["Content-Type"] == "application/json"
+
+
+class BadRequestError(Exception):
+    pass
+
+
+class ServerError(Exception):
+    pass
+
+
+@pytest.mark.vcr
+def test_bad_request(http: FluentHttpx) -> None:
+    with pytest.raises(BadRequestError):
+        (
+            http.get()
+            .on_endpoint("/status/400")
+            .on_bad_request(raises=BadRequestError)
+            .on_failure(raises=ServerError)
+        )
+
+
+@pytest.mark.vcr
+def test_server_error(http: FluentHttpx) -> None:
+    with pytest.raises(ServerError):
+        (
+            http.get()
+            .on_endpoint("/status/500")
+            .on_bad_request(raises=BadRequestError)
+            .on_failure(raises=ServerError)
+        )

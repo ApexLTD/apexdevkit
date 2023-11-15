@@ -51,7 +51,7 @@ class RestRequest:
 
     @abstractmethod
     @cached_property
-    def response(self) -> httpx.Response:
+    def response(self) -> httpx.Response:  # pragma: no cover
         pass
 
     def unpack(self) -> JsonObject[Any]:
