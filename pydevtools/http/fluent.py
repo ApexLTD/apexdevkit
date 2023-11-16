@@ -59,6 +59,14 @@ class JsonObject(Generic[ValueT]):
         return JsonObject({k: v for k, v in self.raw.items() if k not in keys})
 
 
+@dataclass
+class JsonList(Generic[ValueT]):
+    raw: list[dict[str, ValueT]]
+
+    def __iter__(self) -> Iterator[dict[str, ValueT]]:
+        yield from self.raw
+
+
 ConvertedT = TypeVar("ConvertedT")
 
 

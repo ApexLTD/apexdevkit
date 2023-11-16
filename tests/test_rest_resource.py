@@ -61,6 +61,10 @@ class AppleCreateRequest(BaseModel):
     color: str
 
 
+class AppleCreateManyRequest(BaseModel):
+    apples: list[AppleCreateRequest]
+
+
 @app.post(
     "/apples",
     status_code=201,
@@ -78,6 +82,25 @@ def create(request: AppleCreateRequest) -> ResourceCreated | ResourceExists:
         )
 
     return ResourceCreated(apple=apple)
+
+
+@app.post(
+    "/apples/batch",
+    status_code=201,
+    response_model=Response[AppleListEnvelope],
+)
+def create_many(requests: AppleCreateManyRequest) -> ResourceCreated | ResourceExists:
+    result = [Apple(**request.model_dump()) for request in requests.apples]
+    for apple in result:
+        try:
+            apples.create(apple)
+        except ExistsError as e:
+            return ResourceExists(
+                f"An apple with the name<{apple.name}> already exists.",
+                apple={"id": str(e.id)},
+            )
+
+    return ResourceCreated(apples=result, count=len(result))
 
 
 @app.get(
@@ -131,6 +154,10 @@ def test_should_not_read_unknown(resource: RestResource) -> None:
     )
 
 
+def test_should_not_list_anything_when_none_exist(resource: RestResource) -> None:
+    resource.read_all().ensure().success().with_code(200).and_data(apples=[], count=0)
+
+
 def test_should_create(resource: RestResource) -> None:
     apple = {"name": "Golden", "color": "Golden"}
 
@@ -173,27 +200,6 @@ def test_should_not_duplicate(resource: RestResource) -> None:
     )
 
 
-def test_should_not_list_anything_when_none_exist(resource: RestResource) -> None:
-    resource.read_all().ensure().success().with_code(200).and_data(apples=[], count=0)
-
-
-def test_should_list_all_created(resource: RestResource) -> None:
-    apple_1 = {"name": "Golden", "color": "Golden"}
-    apple_2 = {"name": "Ambrosia", "color": "Red"}
-    partners = [
-        dict(resource.create_one().from_data(apple_1).unpack()),
-        dict(resource.create_one().from_data(apple_2).unpack()),
-    ]
-
-    (
-        resource.read_all()
-        .ensure()
-        .success()
-        .with_code(200)
-        .and_data(apples=partners, count=2)
-    )
-
-
 def test_should_not_patch(resource: RestResource) -> None:
     id_ = uuid4()
     (
@@ -204,4 +210,58 @@ def test_should_not_patch(resource: RestResource) -> None:
         .fail()
         .with_code(400)
         .and_message(f"Patching <{id_}> is not allowed")
+    )
+
+
+def test_should_create_many(resource: RestResource) -> None:
+    apple_1 = {"name": "Golden", "color": "Golden"}
+    apple_2 = {"name": "Ambrosia", "color": "Red"}
+
+    (
+        resource.create_many()
+        .from_data(apple_1)
+        .and_data(apple_2)
+        .ensure()
+        .success()
+        .with_code(201)
+        .and_data(
+            apples=[
+                {"id": ANY, **apple_1},
+                {"id": ANY, **apple_2},
+            ],
+            count=2,
+        )
+    )
+
+
+def test_should_persist_many(resource: RestResource) -> None:
+    many_apples = list(
+        resource.create_many()
+        .from_data({"name": "Golden", "color": "Golden"})
+        .and_data({"name": "Ambrosia", "color": "Red"})
+        .unpack_many()
+    )
+
+    (
+        resource.read_all()
+        .ensure()
+        .success()
+        .with_code(200)
+        .and_data(apples=many_apples, count=2)
+    )
+
+
+def test_should_not_duplicate_many(resource: RestResource) -> None:
+    apple = {"name": "Golden", "color": "Golden"}
+    id_ = resource.create_one().from_data(apple).unpack().value_of("id").to(str)
+
+    (
+        resource.create_many()
+        .from_data(apple)
+        .and_data(apple)
+        .ensure()
+        .fail()
+        .with_code(409)
+        .and_message(f"An apple with the name<{apple['name']}> already exists.")
+        .and_data(apple={"id": id_})
     )

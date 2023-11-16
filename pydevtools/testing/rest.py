@@ -9,6 +9,7 @@ from uuid import UUID
 import httpx
 
 from pydevtools.http import HttpUrl, Httpx, JsonObject
+from pydevtools.http.fluent import JsonList
 
 
 @dataclass
@@ -27,6 +28,9 @@ class RestResource:
 
     def update_one(self) -> UpdateOne:
         return UpdateOne(self.name, self.http)
+
+    def create_many(self) -> CreateMany:
+        return CreateMany(self.name, self.http)
 
 
 @dataclass
@@ -56,6 +60,9 @@ class RestRequest:
 
     def unpack(self) -> JsonObject[Any]:
         return JsonObject(self.response.json()["data"][self.resource.singular])
+
+    def unpack_many(self) -> JsonList[Any]:
+        return JsonList(self.response.json()["data"][self.resource.plural])
 
     def ensure(self) -> RestResponse:
         return RestResponse(
@@ -117,6 +124,26 @@ class UpdateOne(RestRequest):
         self.data = value
 
         return self
+
+
+@dataclass
+class CreateMany(RestRequest):
+    data: list[dict[str, Any]] = field(default_factory=list)
+
+    @cached_property
+    def response(self) -> httpx.Response:
+        return self.http.post(
+            self.resource + "batch",
+            json={self.resource.plural: self.data},
+        )
+
+    def from_data(self, value: dict[str, Any]) -> Self:
+        self.data.append(value)
+
+        return self
+
+    def and_data(self, value: dict[str, Any]) -> Self:
+        return self.from_data(value)
 
 
 @dataclass
