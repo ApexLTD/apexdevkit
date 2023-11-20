@@ -31,14 +31,9 @@ class Apple:
 
     id: UUID = field(default_factory=uuid4)
 
-    def __eq__(self, other: object) -> bool:
-        assert isinstance(other, Apple), f"Cannot compare to {type(other)}"
-
-        return self.name == other.name
-
 
 app = FastAPI()
-apples = InMemoryRepository[Apple]()
+apples = InMemoryRepository[Apple]().with_unique("name")
 
 
 class AppleItem(BaseModel):
@@ -77,7 +72,7 @@ def create(request: AppleCreateRequest) -> ResourceCreated | ResourceExists:
         apples.create(apple)
     except ExistsError as e:
         return ResourceExists(
-            f"An apple with the name<{apple.name}> already exists.",
+            f"An apple with the {e} already exists.",
             apple={"id": str(e.id)},
         )
 
@@ -96,7 +91,7 @@ def create_many(requests: AppleCreateManyRequest) -> ResourceCreated | ResourceE
             apples.create(apple)
         except ExistsError as e:
             return ResourceExists(
-                f"An apple with the name<{apple.name}> already exists.",
+                f"An apple with the {e} already exists.",
                 apple={"id": str(e.id)},
             )
 

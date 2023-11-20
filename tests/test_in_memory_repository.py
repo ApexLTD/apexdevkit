@@ -14,11 +14,6 @@ class _Company:
     name: str
     code: str
 
-    def __eq__(self, other: object) -> bool:
-        assert isinstance(other, _Company), f"Cannot compare to {type(other)}"
-
-        return self.code == other.code
-
 
 def test_should_not_read_unknown() -> None:
     unknown_id = uuid4()
@@ -38,20 +33,9 @@ def test_should_persist(faker: Faker) -> None:
     assert persisted == partner
 
 
-def test_should_not_duplicate_id(faker: Faker) -> None:
+def test_should_not_duplicate(faker: Faker) -> None:
     company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[_Company]()
-    repository.create(company)
-
-    with pytest.raises(ExistsError) as cm:
-        repository.create(company)
-
-    assert cm.value.id == company.id
-
-
-def test_should_not_duplicate_unique_field(faker: Faker) -> None:
-    company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[_Company]()
+    repository = InMemoryRepository[_Company](uniques=["code"])
     repository.create(company)
 
     duplicate = _Company(id=uuid4(), name=faker.company(), code=company.code)
@@ -59,6 +43,7 @@ def test_should_not_duplicate_unique_field(faker: Faker) -> None:
         repository.create(duplicate)
 
     assert cm.value.id == company.id
+    assert str(cm.value) == f"code<{company.code}>"
 
 
 def test_should_list(faker: Faker) -> None:
