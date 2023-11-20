@@ -22,6 +22,10 @@ class InMemoryRepository(Generic[ItemT]):
 
         return self
 
+    def create_many(self, items: list[ItemT]) -> None:
+        for item in items:
+            self.create(item)
+
     def create(self, item: ItemT) -> None:
         self._ensure_does_not_exist(item)
         self.items[str(item.id)] = item

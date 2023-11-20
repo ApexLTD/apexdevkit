@@ -86,14 +86,14 @@ def create(request: AppleCreateRequest) -> ResourceCreated | ResourceExists:
 )
 def create_many(requests: AppleCreateManyRequest) -> ResourceCreated | ResourceExists:
     result = [Apple(**request.model_dump()) for request in requests.apples]
-    for apple in result:
-        try:
-            apples.create(apple)
-        except ExistsError as e:
-            return ResourceExists(
-                f"An apple with the {e} already exists.",
-                apple={"id": str(e.id)},
-            )
+
+    try:
+        apples.create_many(result)
+    except ExistsError as e:
+        return ResourceExists(
+            f"An apple with the {e} already exists.",
+            apple={"id": str(e.id)},
+        )
 
     return ResourceCreated(apples=result, count=len(result))
 
