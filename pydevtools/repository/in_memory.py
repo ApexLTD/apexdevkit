@@ -31,8 +31,6 @@ class InMemoryRepository(Generic[ItemT]):
         self.items[str(item.id)] = item
 
     def _ensure_does_not_exist(self, item: ItemT) -> None:
-        assert str(item.id) not in self.items, f"Item with id<{item.id}> already exists"
-
         for existing in self.items.values():
             error = ExistsError(existing.id)
             for name in self.uniques:
@@ -40,6 +38,8 @@ class InMemoryRepository(Generic[ItemT]):
                     error.with_duplicate(**{name: getattr(item, name)})
 
             error.fire()
+
+        assert str(item.id) not in self.items, f"Item with id<{item.id}> already exists"
 
     def read(self, item_id: Any) -> ItemT:
         try:
