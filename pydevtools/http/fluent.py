@@ -49,6 +49,9 @@ class JsonObject(Generic[ValueT]):
     def __iter__(self) -> Iterator[tuple[str, ValueT]]:
         yield from self.raw.items()
 
+    def with_a(self, **fields: ValueT) -> JsonObject[ValueT]:
+        return JsonObject({**self.raw, **fields})
+
     def select(self, *keys: str) -> JsonObject[ValueT]:
         return JsonObject({k: v for k, v in self.raw.items() if k in keys})
 
@@ -61,9 +64,9 @@ class JsonObject(Generic[ValueT]):
 
 @dataclass
 class JsonList(Generic[ValueT]):
-    raw: list[dict[str, ValueT]]
+    raw: list[JsonObject[ValueT]]
 
-    def __iter__(self) -> Iterator[dict[str, ValueT]]:
+    def __iter__(self) -> Iterator[JsonObject[ValueT]]:
         yield from self.raw
 
 

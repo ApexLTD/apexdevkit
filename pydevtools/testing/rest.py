@@ -62,27 +62,30 @@ class RestRequest:
         return JsonObject(self.response.json()["data"][self.resource.singular])
 
     def unpack_many(self) -> JsonList[Any]:
-        return JsonList(self.response.json()["data"][self.resource.plural])
+        items = self.response.json()["data"][self.resource.plural]
+
+        return JsonList([JsonObject(item) for item in items])
 
     def ensure(self) -> RestResponse:
         return RestResponse(
-            http_code=self.response.status_code,
+            resource=self.resource,
             json=JsonObject(self.response.json()),
+            http_code=self.response.status_code,
         )
 
 
 @dataclass
 class CreateOne(RestRequest):
-    data: dict[str, Any] = field(init=False)
+    data: JsonObject[Any] = field(init=False)
 
-    def from_data(self, value: dict[str, Any]) -> Self:
+    def from_data(self, value: JsonObject[Any]) -> Self:
         self.data = value
 
         return self
 
     @cached_property
     def response(self) -> httpx.Response:
-        return self.http.post(self.resource + "", json=self.data)
+        return self.http.post(self.resource + "", json=dict(self.data))
 
 
 @dataclass
@@ -109,18 +112,18 @@ class ReadAll(RestRequest):
 @dataclass
 class UpdateOne(RestRequest):
     item_id: str | UUID = field(init=False)
-    data: dict[str, Any] = field(init=False)
+    data: JsonObject[Any] = field(init=False)
 
     @cached_property
     def response(self) -> httpx.Response:
-        return self.http.patch(self.resource + str(self.item_id), json=self.data)
+        return self.http.patch(self.resource + str(self.item_id), json=dict(self.data))
 
     def with_id(self, value: str | UUID) -> Self:
         self.item_id = str(value)
 
         return self
 
-    def and_data(self, value: dict[str, Any]) -> Self:
+    def and_data(self, value: JsonObject[Any]) -> Self:
         self.data = value
 
         return self
@@ -128,26 +131,27 @@ class UpdateOne(RestRequest):
 
 @dataclass
 class CreateMany(RestRequest):
-    data: list[dict[str, Any]] = field(default_factory=list)
+    data: list[JsonObject[Any]] = field(default_factory=list)
 
     @cached_property
     def response(self) -> httpx.Response:
         return self.http.post(
             self.resource + "batch",
-            json={self.resource.plural: self.data},
+            json={self.resource.plural: [dict(data) for data in self.data]},
         )
 
-    def from_data(self, value: dict[str, Any]) -> Self:
+    def from_data(self, value: JsonObject[Any]) -> Self:
         self.data.append(value)
 
         return self
 
-    def and_data(self, value: dict[str, Any]) -> Self:
+    def and_data(self, value: JsonObject[Any]) -> Self:
         return self.from_data(value)
 
 
 @dataclass
 class RestResponse:
+    resource: RestfulName
     json: JsonObject[Any]
     http_code: int
 
@@ -176,8 +180,16 @@ class RestResponse:
 
         return self
 
-    def and_data(self, **kwargs: Any) -> Self:
-        return self.with_data(**kwargs)
+    def and_data(self, *values: JsonObject[Any]) -> Self:
+        if len(values) == 1:
+            return self.with_data(**{self.resource.singular: dict(values[0])})
+
+        return self.with_data(
+            **{
+                self.resource.plural: [dict(value) for value in values],
+                "count": len(values),
+            }
+        )
 
     def and_no_data(self) -> Self:
         return self.no_data()

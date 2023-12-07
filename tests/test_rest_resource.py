@@ -5,6 +5,7 @@ from unittest.mock import ANY
 from uuid import UUID, uuid4
 
 import pytest
+from faker import Faker
 from fastapi import FastAPI
 from pydantic import BaseModel
 from starlette.testclient import TestClient
@@ -19,7 +20,7 @@ from pydevtools.fastapi import (
     ResourceNotFound,
     Response,
 )
-from pydevtools.http import Httpx
+from pydevtools.http import Httpx, JsonObject
 from pydevtools.repository import InMemoryRepository
 from pydevtools.testing import RestfulName, RestResource
 
@@ -136,6 +137,22 @@ def resource(http: Httpx) -> RestResource:
     return RestResource(http, RestfulName("apple"))
 
 
+@dataclass
+class Fake:
+    faker: Faker = field(default_factory=Faker)
+
+    def apple(self) -> JsonObject[str]:
+        return JsonObject(
+            {
+                "name": self.faker.name(),
+                "color": self.faker.color(),
+            }
+        )
+
+
+fake = Fake()
+
+
 def test_should_not_read_unknown(resource: RestResource) -> None:
     unknown_id = uuid4()
 
@@ -150,11 +167,11 @@ def test_should_not_read_unknown(resource: RestResource) -> None:
 
 
 def test_should_not_list_anything_when_none_exist(resource: RestResource) -> None:
-    resource.read_all().ensure().success().with_code(200).and_data(apples=[], count=0)
+    resource.read_all().ensure().success().with_code(200).and_data()
 
 
 def test_should_create(resource: RestResource) -> None:
-    apple = {"name": "Golden", "color": "Golden"}
+    apple = fake.apple()
 
     (
         resource.create_one()
@@ -162,45 +179,46 @@ def test_should_create(resource: RestResource) -> None:
         .ensure()
         .success()
         .with_code(201)
-        .and_data(apple={"id": ANY, **apple})
+        .and_data(apple.with_a(id=ANY))
     )
 
 
 def test_should_persist(resource: RestResource) -> None:
-    apple = {"name": "Golden", "color": "Golden"}
-    id_ = resource.create_one().from_data(apple).unpack().value_of("id").to(str)
+    apple = resource.create_one().from_data(fake.apple()).unpack()
 
     (
         resource.read_one()
-        .with_id(id_)
+        .with_id(apple.value_of("id").to(str))
         .ensure()
         .success()
         .with_code(200)
-        .and_data(apple={"id": id_, **apple})
+        .and_data(apple)
     )
 
 
 def test_should_not_duplicate(resource: RestResource) -> None:
-    apple = {"name": "Golden", "color": "Golden"}
-    id_ = resource.create_one().from_data(apple).unpack().value_of("id").to(str)
+    apple = resource.create_one().from_data(fake.apple()).unpack()
 
     (
         resource.create_one()
-        .from_data(apple)
+        .from_data(apple.drop("id"))
         .ensure()
         .fail()
         .with_code(409)
-        .and_message(f"An apple with the name<{apple['name']}> already exists.")
-        .and_data(apple={"id": id_})
+        .and_message(
+            f"An apple with the name<{apple.value_of('name').to(str)}> already exists."
+        )
+        .and_data(apple.select("id"))
     )
 
 
 def test_should_not_patch(resource: RestResource) -> None:
     id_ = uuid4()
+
     (
         resource.update_one()
         .with_id(id_)
-        .and_data({"color": "Green"})
+        .and_data(fake.apple().drop("name"))
         .ensure()
         .fail()
         .with_code(400)
@@ -209,54 +227,42 @@ def test_should_not_patch(resource: RestResource) -> None:
 
 
 def test_should_create_many(resource: RestResource) -> None:
-    apple_1 = {"name": "Golden", "color": "Golden"}
-    apple_2 = {"name": "Ambrosia", "color": "Red"}
+    many_apples = [fake.apple(), fake.apple()]
 
     (
         resource.create_many()
-        .from_data(apple_1)
-        .and_data(apple_2)
+        .from_data(many_apples[0])
+        .and_data(many_apples[1])
         .ensure()
         .success()
         .with_code(201)
-        .and_data(
-            apples=[
-                {"id": ANY, **apple_1},
-                {"id": ANY, **apple_2},
-            ],
-            count=2,
-        )
+        .and_data(many_apples[0].with_a(id=ANY), many_apples[1].with_a(id=ANY))
     )
 
 
 def test_should_persist_many(resource: RestResource) -> None:
-    many_apples = list(
+    many_apples = (
         resource.create_many()
-        .from_data({"name": "Golden", "color": "Golden"})
-        .and_data({"name": "Ambrosia", "color": "Red"})
+        .from_data(fake.apple())
+        .and_data(fake.apple())
         .unpack_many()
     )
 
-    (
-        resource.read_all()
-        .ensure()
-        .success()
-        .with_code(200)
-        .and_data(apples=many_apples, count=2)
-    )
+    resource.read_all().ensure().success().with_code(200).and_data(*many_apples)
 
 
 def test_should_not_duplicate_many(resource: RestResource) -> None:
-    apple = {"name": "Golden", "color": "Golden"}
-    id_ = resource.create_one().from_data(apple).unpack().value_of("id").to(str)
+    apple = resource.create_one().from_data(fake.apple()).unpack()
 
     (
         resource.create_many()
-        .from_data(apple)
-        .and_data(apple)
+        .from_data(apple.drop("id"))
+        .and_data(apple.drop("id"))
         .ensure()
         .fail()
         .with_code(409)
-        .and_message(f"An apple with the name<{apple['name']}> already exists.")
-        .and_data(apple={"id": id_})
+        .and_message(
+            f"An apple with the name<{apple.value_of('name').to(str)}> already exists."
+        )
+        .and_data(apple.select("id"))
     )

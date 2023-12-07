@@ -91,3 +91,12 @@ def test_should_not_select_many_keys(faker: Faker) -> None:
     updated = JsonObject({key1: ANY, key2: ANY, key3: ANY}).select(key1)
 
     assert dict(updated) == {key1: ANY}
+
+
+def test_should_add_a_key(faker: Faker) -> None:
+    key = faker.word()
+    value = faker.word()
+
+    updated: JsonObject[str] = JsonObject({}).with_a(**{key: value})
+
+    assert dict(updated) == {key: value}
