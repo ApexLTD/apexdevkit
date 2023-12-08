@@ -100,3 +100,33 @@ def test_should_add_a_key(faker: Faker) -> None:
     updated: JsonObject[str] = JsonObject({}).with_a(**{key: value})
 
     assert dict(updated) == {key: value}
+
+
+def test_should_merge_empty_json_objects() -> None:
+    assert dict(JsonObject({}).merge(JsonObject({}))) == {}
+
+
+def test_should_merge_json_object_with_empty(faker: Faker) -> None:
+    json_object = JsonObject({faker.word(): faker.word()})
+
+    result = json_object.merge(JsonObject({}))
+
+    assert dict(result) == dict(json_object)
+
+
+def test_should_merge_json_objects_without_overlap(faker: Faker) -> None:
+    key1 = faker.word()
+    key2 = faker.word()
+
+    result = JsonObject({key1: ANY}).merge(JsonObject({key2: ANY}))
+
+    assert dict(result) == {key1: ANY, key2: ANY}
+
+
+def test_should_merge_json_objects_with_overlap(faker: Faker) -> None:
+    key = faker.word()
+    value = faker.word()
+
+    result = JsonObject({key: ANY}).merge(JsonObject({key: value}))
+
+    assert dict(result) == {key: value}

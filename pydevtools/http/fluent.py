@@ -59,7 +59,10 @@ class JsonObject(Generic[ValueT]):
         return JsonElement(self.raw[key])
 
     def drop(self, *keys: str) -> JsonObject[ValueT]:
-        return JsonObject({k: v for k, v in self.raw.items() if k not in keys})
+        return self.select(*set(self.raw.keys()).difference(keys))
+
+    def merge(self, other: JsonObject[ValueT]) -> JsonObject[ValueT]:
+        return JsonObject({**self.raw, **other.raw})
 
 
 @dataclass
