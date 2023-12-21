@@ -33,9 +33,19 @@ def test_should_persist(faker: Faker) -> None:
     assert persisted == partner
 
 
+def test_should_read_by_custom_field(faker: Faker) -> None:
+    partner = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
+    repository = InMemoryRepository[_Company]().with_searchable("code")
+
+    repository.create(partner)
+
+    persisted = repository.read(partner.code)
+    assert persisted == partner
+
+
 def test_should_not_duplicate(faker: Faker) -> None:
     company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[_Company](uniques=["code"])
+    repository = InMemoryRepository[_Company]().with_unique("code")
     repository.create(company)
 
     duplicate = _Company(id=uuid4(), name=faker.company(), code=company.code)
