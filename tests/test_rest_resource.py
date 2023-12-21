@@ -6,9 +6,9 @@ from uuid import uuid4
 
 import pytest
 from faker import Faker
-from starlette.testclient import TestClient
+from fastapi.testclient import TestClient
 
-from pydevtools.fastapi.builder import FastApiBuilder
+from pydevtools.fastapi import FastApiBuilder
 from pydevtools.http import Httpx, JsonObject
 from pydevtools.repository import InMemoryRepository
 from pydevtools.testing import RestfulName, RestResource

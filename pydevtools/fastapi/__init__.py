@@ -1,3 +1,5 @@
+from pydevtools.fastapi.builder import FastApiBuilder
+from pydevtools.fastapi.dependable import inject
 from pydevtools.fastapi.docs import NoData, Response
 from pydevtools.fastapi.response import (
     BadRequest,
@@ -10,6 +12,8 @@ from pydevtools.fastapi.response import (
 )
 
 __all__ = [
+    "FastApiBuilder",
+    "inject",
     "NoData",
     "Response",
     "SuccessResponse",

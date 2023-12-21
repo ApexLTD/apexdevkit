@@ -16,8 +16,8 @@ from pydevtools.fastapi import (
     ResourceFound,
     ResourceNotFound,
     Response,
+    inject,
 )
-from pydevtools.fastapi.dependable import inject
 from pydevtools.repository import InMemoryRepository
 
 apple_api = APIRouter()
