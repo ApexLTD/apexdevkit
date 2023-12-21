@@ -15,19 +15,19 @@ ItemT = TypeVar("ItemT", bound=_Item)
 class InMemoryRepository(Generic[ItemT]):
     items: dict[str, ItemT] = field(default_factory=dict)
 
-    uniques: list[str] = field(default_factory=list)
-    search_by: list[str] = field(default_factory=list)
+    _uniques: list[str] = field(init=False, default_factory=list)
+    _search_by: list[str] = field(init=False, default_factory=list)
 
     def __post_init__(self) -> None:
-        self.search_by = ["id", *self.search_by]
+        self._search_by = ["id", *self._search_by]
 
     def with_unique(self, attribute: str) -> Self:
-        self.uniques.append(attribute)
+        self._uniques.append(attribute)
 
         return self
 
     def with_searchable(self, attribute: str) -> Self:
-        self.search_by.append(attribute)
+        self._search_by.append(attribute)
 
         return self
 
@@ -42,7 +42,7 @@ class InMemoryRepository(Generic[ItemT]):
     def _ensure_does_not_exist(self, item: ItemT) -> None:
         for existing in self.items.values():
             error = ExistsError(existing.id)
-            for name in self.uniques:
+            for name in self._uniques:
                 if getattr(item, name) == getattr(existing, name):
                     error.with_duplicate(**{name: getattr(item, name)})
 
@@ -52,7 +52,7 @@ class InMemoryRepository(Generic[ItemT]):
 
     def read(self, item_id: Any) -> ItemT:
         for item in self.items.values():
-            for attribute in self.search_by:
+            for attribute in self._search_by:
                 if getattr(item, attribute) == item_id:
                     return item
 
