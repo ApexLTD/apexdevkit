@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Annotated
 from uuid import UUID, uuid4
 
-from fastapi import FastAPI
+from fastapi import APIRouter
 from pydantic import BaseModel
 
 from pydevtools.error import DoesNotExistError, ExistsError
@@ -17,10 +17,10 @@ from pydevtools.fastapi import (
     ResourceNotFound,
     Response,
 )
-from pydevtools.fastapi.dependables import inject
+from pydevtools.fastapi.dependable import inject
 from pydevtools.repository import InMemoryRepository
 
-app = FastAPI()
+apple_api = APIRouter()
 
 
 @dataclass
@@ -55,8 +55,8 @@ class AppleCreateManyRequest(BaseModel):
     apples: list[AppleCreateRequest]
 
 
-@app.post(
-    "/apples",
+@apple_api.post(
+    "",
     status_code=201,
     response_model=Response[AppleItemEnvelope],
 )
@@ -77,8 +77,8 @@ def create(
     return ResourceCreated(apple=apple)
 
 
-@app.post(
-    "/apples/batch",
+@apple_api.post(
+    "/batch",
     status_code=201,
     response_model=Response[AppleListEnvelope],
 )
@@ -99,8 +99,8 @@ def create_many(
     return ResourceCreated(apples=result, count=len(result))
 
 
-@app.get(
-    "/apples/{apple_id}",
+@apple_api.get(
+    "/{apple_id}",
     status_code=200,
     response_model=Response[AppleItemEnvelope],
 )
@@ -114,8 +114,8 @@ def read_one(
         return ResourceNotFound(message=f"An apple with id<{apple_id}> does not exist.")
 
 
-@app.get(
-    "/apples",
+@apple_api.get(
+    "",
     status_code=200,
     response_model=Response[AppleListEnvelope],
 )
@@ -125,6 +125,6 @@ def read_all(
     return ResourceFound(apples=list(apples), count=len(apples))
 
 
-@app.patch("/apples/{apple_id}", response_model=Response[NoData])
+@apple_api.patch("/{apple_id}", response_model=Response[NoData])
 def patch(apple_id: UUID) -> BadRequest:
     return BadRequest(message=f"Patching <{apple_id}> is not allowed")
