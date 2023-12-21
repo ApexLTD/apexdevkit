@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Callable, Generic, Iterator, Protocol, Self, Type, TypeVar
 
 
@@ -44,7 +44,7 @@ ValueT = TypeVar("ValueT")
 
 @dataclass
 class JsonObject(Generic[ValueT]):
-    raw: dict[str, ValueT]
+    raw: dict[str, ValueT] = field(default_factory=dict)
 
     def __iter__(self) -> Iterator[tuple[str, ValueT]]:
         yield from self.raw.items()
