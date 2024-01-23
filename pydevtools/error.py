@@ -6,9 +6,15 @@ from typing import Any, Callable, Self
 Criteria = Callable[[Any], str]
 
 
+class UnknownItem:
+    @property
+    def id(self) -> str:
+        return "unknown"
+
+
 @dataclass
 class ExistsError(Exception):
-    item: Any
+    item: Any = field(default_factory=UnknownItem)
 
     _duplicates: list[Criteria] = field(init=False, default_factory=list)
 
@@ -31,4 +37,4 @@ class ExistsError(Exception):
 
 @dataclass
 class DoesNotExistError(Exception):
-    id: Any
+    id: Any = "unknown"
