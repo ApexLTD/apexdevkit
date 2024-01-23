@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Generic, Iterator, Protocol, Self, TypeVar
 
-from pydevtools.error import DoesNotExistError, ExistsError
+from pydevtools.error import Criteria, DoesNotExistError, ExistsError
 
 
 class _Item(Protocol):
@@ -15,19 +15,19 @@ ItemT = TypeVar("ItemT", bound=_Item)
 class InMemoryRepository(Generic[ItemT]):
     items: dict[str, ItemT] = field(default_factory=dict)
 
-    _uniques: list[str] = field(init=False, default_factory=list)
+    _uniques: list[Criteria] = field(init=False, default_factory=list)
     _search_by: list[str] = field(init=False, default_factory=list)
 
     def __post_init__(self) -> None:
         self._search_by = ["id", *self._search_by]
 
-    def with_unique(self, attribute: str) -> Self:
-        self._uniques.append(attribute)
+    def with_searchable(self, attribute: str) -> Self:
+        self._search_by.append(attribute)
 
         return self
 
-    def with_searchable(self, attribute: str) -> Self:
-        self._search_by.append(attribute)
+    def with_unique(self, criteria: Criteria) -> Self:
+        self._uniques.append(criteria)
 
         return self
 
@@ -39,16 +39,17 @@ class InMemoryRepository(Generic[ItemT]):
         self._ensure_does_not_exist(item)
         self.items[str(item.id)] = item
 
-    def _ensure_does_not_exist(self, item: ItemT) -> None:
+    def _ensure_does_not_exist(self, new: ItemT) -> None:
         for existing in self.items.values():
-            error = ExistsError(existing.id)
-            for name in self._uniques:
-                if getattr(item, name) == getattr(existing, name):
-                    error.with_duplicate(**{name: getattr(item, name)})
+            error = ExistsError(existing)
+
+            for criteria in self._uniques:
+                if criteria(new) == criteria(existing):
+                    error.with_duplicate(criteria)
 
             error.fire()
 
-        assert str(item.id) not in self.items, f"Item with id<{item.id}> already exists"
+        assert str(new.id) not in self.items, f"Item with id<{new.id}> already exists"
 
     def read(self, item_id: Any) -> ItemT:
         for item in self.items.values():

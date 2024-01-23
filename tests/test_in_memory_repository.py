@@ -45,7 +45,9 @@ def test_should_read_by_custom_field(faker: Faker) -> None:
 
 def test_should_not_duplicate(faker: Faker) -> None:
     company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[_Company]().with_unique("code")
+    repository = InMemoryRepository[_Company]().with_unique(
+        criteria=lambda item: f"code<{item.code}>"
+    )
     repository.create(company)
 
     duplicate = _Company(id=uuid4(), name=faker.company(), code=company.code)
@@ -54,6 +56,23 @@ def test_should_not_duplicate(faker: Faker) -> None:
 
     assert cm.value.id == company.id
     assert str(cm.value) == f"code<{company.code}>"
+
+
+def test_should_not_not_duplicate_many_fields(faker: Faker) -> None:
+    company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
+    repository = (
+        InMemoryRepository[_Company]()
+        .with_unique(criteria=lambda item: f"code<{item.code}>")
+        .with_unique(criteria=lambda item: f"name<{item.name}>")
+    )
+    repository.create(company)
+
+    duplicate = _Company(id=uuid4(), name=company.name, code=company.code)
+    with pytest.raises(ExistsError) as cm:
+        repository.create(duplicate)
+
+    assert cm.value.id == company.id
+    assert str(cm.value) == f"code<{company.code}>,name<{company.name}>"
 
 
 def test_should_list(faker: Faker) -> None:

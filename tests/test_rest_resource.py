@@ -22,7 +22,11 @@ def http() -> TestClient:
         .with_title("Apple API")
         .with_version("1.0.0")
         .with_description("Sample API for unit testing various testing routines")
-        .with_dependency(apples=InMemoryRepository[Apple]().with_unique("name"))
+        .with_dependency(
+            apples=InMemoryRepository[Apple]().with_unique(
+                criteria=lambda item: f"name<{item.name}>"
+            )
+        )
         .with_route(apples=apple_api)
         .build()
     )

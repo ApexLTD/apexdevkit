@@ -1,23 +1,28 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Self
+from typing import Any, Callable, Self
+
+Criteria = Callable[[Any], str]
 
 
 @dataclass
 class ExistsError(Exception):
-    id: Any
+    item: Any
 
-    _duplicates: dict[str, Any] = field(init=False, default_factory=dict)
+    _duplicates: list[Criteria] = field(init=False, default_factory=list)
 
-    def with_duplicate(self, **fields: Any) -> Self:
-        for key, value in fields.items():
-            self._duplicates[key] = value
+    @property
+    def id(self) -> Any:
+        return self.item.id
+
+    def with_duplicate(self, criteria: Criteria) -> Self:
+        self._duplicates.append(criteria)
 
         return self
 
     def __str__(self) -> str:
-        return ",".join([f"{k}<{v}>" for k, v in self._duplicates.items()])
+        return ",".join([f"{criteria(self.item)}" for criteria in self._duplicates])
 
     def fire(self) -> None:
         if self._duplicates:
