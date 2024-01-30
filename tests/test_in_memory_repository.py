@@ -101,6 +101,14 @@ def test_should_update(faker: Faker) -> None:
     assert persisted == updated
 
 
+def test_should_not_delete_unknown() -> None:
+    unknown_id = uuid4()
+    repository = InMemoryRepository[_Company]()
+
+    with pytest.raises(DoesNotExistError):
+        repository.delete(unknown_id)
+
+
 def test_should_delete(faker: Faker) -> None:
     company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
     repository = InMemoryRepository[_Company]()

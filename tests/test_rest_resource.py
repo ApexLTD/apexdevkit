@@ -166,3 +166,44 @@ def test_should_not_duplicate_many(resource: RestResource) -> None:
         )
         .and_data(apple.select("id"))
     )
+
+
+def test_should_not_delete_unknown(resource: RestResource) -> None:
+    unknown_id = uuid4()
+
+    (
+        resource.delete_one()
+        .with_id(unknown_id)
+        .ensure()
+        .fail()
+        .with_code(404)
+        .and_message(f"An apple with id<{unknown_id}> does not exist.")
+    )
+
+
+def test_should_delete(resource: RestResource) -> None:
+    apple = resource.create_one().from_data(fake.apple()).unpack()
+
+    (
+        resource.delete_one()
+        .with_id(apple.value_of("id").to(str))
+        .ensure()
+        .success()
+        .with_code(200)
+        .and_no_data()
+    )
+
+
+def test_should_persist_delete(resource: RestResource) -> None:
+    id_ = resource.create_one().from_data(fake.apple()).unpack().value_of("id").to(str)
+
+    resource.delete_one().with_id(id_).ensure().success()
+
+    (
+        resource.read_one()
+        .with_id(id_)
+        .ensure()
+        .fail()
+        .with_code(404)
+        .and_message(f"An apple with id<{id_}> does not exist.")
+    )

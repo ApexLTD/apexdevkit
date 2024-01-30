@@ -32,6 +32,9 @@ class RestResource:
     def create_many(self) -> CreateMany:
         return CreateMany(self.name, self.http)
 
+    def delete_one(self) -> DeleteOne:
+        return DeleteOne(self.name, self.http)
+
 
 @dataclass
 class RestfulName:
@@ -147,6 +150,20 @@ class CreateMany(RestRequest):
 
     def and_data(self, value: JsonObject[Any]) -> Self:
         return self.from_data(value)
+
+
+@dataclass
+class DeleteOne(RestRequest):
+    item_id: str | UUID = field(init=False)
+
+    @cached_property
+    def response(self) -> httpx.Response:
+        return self.http.delete(self.resource + str(self.item_id))
+
+    def with_id(self, value: str | UUID) -> Self:
+        self.item_id = str(value)
+
+        return self
 
 
 @dataclass

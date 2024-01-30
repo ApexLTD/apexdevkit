@@ -64,7 +64,10 @@ class InMemoryRepository(Generic[ItemT]):
         self.create(item)
 
     def delete(self, item_id: Any) -> None:
-        del self.items[str(item_id)]
+        try:
+            del self.items[str(item_id)]
+        except KeyError:
+            raise DoesNotExistError(item_id)
 
     def __iter__(self) -> Iterator[ItemT]:
         yield from self.items.values()

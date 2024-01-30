@@ -125,6 +125,26 @@ def read_all(
     return ResourceFound(apples=list(apples), count=len(apples))
 
 
-@apple_api.patch("/{apple_id}", response_model=Response[NoData])
+@apple_api.patch(
+    "/{apple_id}",
+    status_code=200,
+    response_model=Response[NoData],
+)
 def patch(apple_id: UUID) -> BadRequest:
     return BadRequest(message=f"Patching <{apple_id}> is not allowed")
+
+
+@apple_api.delete(
+    "/{apple_id}",
+    status_code=200,
+    response_model=Response[NoData],
+)
+def delete(
+    apple_id: UUID, apples: Annotated[InMemoryRepository[Apple], inject("apples")]
+) -> ResourceNotFound | ResourceFound:
+    try:
+        apples.delete(apple_id)
+    except DoesNotExistError:
+        return ResourceNotFound(message=f"An apple with id<{apple_id}> does not exist.")
+
+    return ResourceFound()
