@@ -22,6 +22,9 @@ class FluentHttpx:
     def patch(self) -> HttpxPatch:
         return HttpxPatch(self.http)
 
+    def delete(self) -> HttpxDelete:
+        return HttpxDelete(self.http)
+
 
 @dataclass(frozen=True)
 class HttpxPost:
@@ -55,6 +58,14 @@ class HttpxPatch:
 
     def on_endpoint(self, value: str) -> HttpxResponse:
         return HttpxResponse(self.http.patch(value, json=self.json))
+
+
+@dataclass(frozen=True)
+class HttpxDelete:
+    http: Httpx
+
+    def on_endpoint(self, value: str) -> HttpxResponse:
+        return HttpxResponse(self.http.delete(value))
 
 
 @dataclass(frozen=True)
@@ -96,6 +107,9 @@ class Httpx:
 
     def patch(self, endpoint: str, json: dict[str, Any]) -> httpx.Response:
         return httpx.patch(self.url + endpoint, json=json, **self.config)
+
+    def delete(self, endpoint: str) -> httpx.Response:
+        return httpx.delete(self.url + endpoint, **self.config)
 
 
 @dataclass(frozen=True)
