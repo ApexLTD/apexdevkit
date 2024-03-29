@@ -2,6 +2,8 @@ from contextlib import nullcontext
 from dataclasses import dataclass, field
 from typing import Any, ContextManager, Self
 
+from pydevtools.repository import DatabaseCommand
+
 
 @dataclass
 class FakeConnector:
@@ -30,3 +32,8 @@ class FakeConnector:
 
     def close(self) -> None:
         pass
+
+    def assert_contains(self, command: DatabaseCommand, at_index: int = 0) -> None:
+        query, data = self.commands[at_index]
+
+        assert command == DatabaseCommand(query).with_data(data)

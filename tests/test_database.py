@@ -6,12 +6,11 @@ from pydevtools.testing import FakeConnector
 
 def test_should_execute(faker: Faker) -> None:
     connector = FakeConnector()
-    query = faker.sentence()
-    data = faker.pydict()
+    command = DatabaseCommand(faker.sentence()).with_data(faker.pydict())
 
-    Database(connector).execute(DatabaseCommand(query).with_data(data)).fetch_none()
+    Database(connector).execute(command).fetch_none()
 
-    assert connector.commands == [(query, data)]
+    connector.assert_contains(command, at_index=0)
 
 
 def test_should_fetch_one(faker: Faker) -> None:
