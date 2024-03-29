@@ -35,6 +35,9 @@ class FluentHttpResponse(Protocol):  # pragma: no cover
     def on_failure(self, raises: Type[Exception]) -> Self:
         pass
 
+    def on_conflict(self, raises: Type[Exception]) -> Self:
+        pass
+
     def json(self) -> JsonObject[Any]:
         pass
 

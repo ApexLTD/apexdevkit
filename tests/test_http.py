@@ -79,6 +79,10 @@ def test_delete(http: FluentHttpx) -> None:
     assert echo.value_of("headers").to(dict)["User-Agent"] == "hogwarts"
 
 
+class ConflictError(Exception):
+    pass
+
+
 class BadRequestError(Exception):
     pass
 
@@ -94,6 +98,17 @@ def test_bad_request(http: FluentHttpx) -> None:
             http.get()
             .on_endpoint("/status/400")
             .on_bad_request(raises=BadRequestError)
+            .on_failure(raises=ServerError)
+        )
+
+
+@pytest.mark.vcr
+def test_on_conflict(http: FluentHttpx) -> None:
+    with pytest.raises(ConflictError):
+        (
+            http.get()
+            .on_endpoint("/status/409")
+            .on_conflict(raises=ConflictError)
             .on_failure(raises=ServerError)
         )
 

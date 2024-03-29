@@ -89,6 +89,12 @@ class HttpxResponse:
     def json(self) -> JsonObject[Any]:
         return JsonObject(self.response.json())
 
+    def on_conflict(self, raises: Exception | Type[Exception]) -> Self:
+        if self.response.status_code == 409:
+            raise raises
+
+        return self
+
 
 @dataclass(frozen=True)
 class Httpx:
