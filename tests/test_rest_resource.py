@@ -70,6 +70,25 @@ def test_should_not_list_anything_when_none_exist(resource: RestResource) -> Non
     resource.read_all().ensure().success().with_code(200).and_data()
 
 
+def test_should_read_with_params(resource: RestResource) -> None:
+    apple_one = fake.apple()
+    apple_two = fake.apple().with_a(color=apple_one.value_of("color").to(str))
+
+    apples = (
+        resource.create_many().from_data(apple_one).and_data(apple_two).unpack_many()
+    )
+    color = list(apples)[0].value_of("color").to(str)
+
+    (
+        resource.read_all()
+        .with_params(color=color)
+        .ensure()
+        .success()
+        .with_code(200)
+        .and_data(*apples)
+    )
+
+
 def test_should_create(resource: RestResource) -> None:
     apple = fake.apple()
 

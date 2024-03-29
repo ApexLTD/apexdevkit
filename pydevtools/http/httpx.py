@@ -42,9 +42,15 @@ class HttpxPost:
 @dataclass(frozen=True)
 class HttpxGet:
     http: Httpx
+    params: dict[str, Any] = field(default_factory=dict)
+
+    def with_params(self, **params: Any) -> HttpxGet:
+        self.params.update(params)
+
+        return self
 
     def on_endpoint(self, value: str) -> HttpxResponse:
-        return HttpxResponse(self.http.get(value))
+        return HttpxResponse(self.http.get(value, params=self.params))
 
 
 @dataclass(frozen=True)
@@ -108,8 +114,10 @@ class Httpx:
     def post(self, endpoint: str, json: dict[str, Any]) -> httpx.Response:
         return httpx.post(self.url + endpoint, json=json, **self.config)
 
-    def get(self, endpoint: str) -> httpx.Response:
-        return httpx.get(self.url + endpoint, **self.config)
+    def get(
+        self, endpoint: str, params: dict[str, Any] | None = None
+    ) -> httpx.Response:
+        return httpx.get(self.url + endpoint, params=params, **self.config)
 
     def patch(self, endpoint: str, json: dict[str, Any]) -> httpx.Response:
         return httpx.patch(self.url + endpoint, json=json, **self.config)

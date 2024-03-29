@@ -120,9 +120,14 @@ def read_one(
     response_model=Response[AppleListEnvelope],
 )
 def read_all(
-    apples: Annotated[InMemoryRepository[Apple], inject("apples")]
+    apples: Annotated[InMemoryRepository[Apple], inject("apples")],
+    color: str | None = None,
 ) -> ResourceFound:
-    return ResourceFound(apples=list(apples), count=len(apples))
+    filtered_apples = (
+        [apple for apple in apples if apple.color == color] if color else list(apples)
+    )
+
+    return ResourceFound(apples=filtered_apples, count=len(apples))
 
 
 @apple_api.patch(

@@ -1,0 +1,40 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - httpbin.org
+      user-agent:
+      - hogwarts
+    method: GET
+    uri: http://httpbin.org/get?color=yellow
+  response:
+    content: "{\n  \"args\": {\n    \"color\": \"yellow\"\n  }, \n  \"headers\": {\n
+      \   \"Accept\": \"*/*\", \n    \"Accept-Encoding\": \"gzip, deflate\", \n    \"Host\":
+      \"httpbin.org\", \n    \"User-Agent\": \"hogwarts\", \n    \"X-Amzn-Trace-Id\":
+      \"Root=1-6606ae39-6b49a4cf38b2c256438e4f9b\"\n  }, \n  \"origin\": \"95.104.119.242\",
+      \n  \"url\": \"http://httpbin.org/get?color=yellow\"\n}\n"
+    headers:
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '331'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 29 Mar 2024 12:04:09 GMT
+      Server:
+      - gunicorn/19.9.0
+    http_version: HTTP/1.1
+    status_code: 200
+version: 1

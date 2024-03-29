@@ -46,6 +46,21 @@ def test_get(http: FluentHttpx) -> None:
 
 
 @pytest.mark.vcr
+def test_get_with_params(http: FluentHttpx) -> None:
+    echo = (
+        http.get()
+        .with_params(color="yellow")
+        .on_endpoint("/get")
+        .on_failure(raises=AssertionError)
+        .json()
+    )
+
+    assert echo.value_of("args").to(dict) == {"color": "yellow"}
+    assert echo.value_of("url").to(str) == ECHO_SERVER + "/get?color=yellow"
+    assert echo.value_of("headers").to(dict)["User-Agent"] == "hogwarts"
+
+
+@pytest.mark.vcr
 def test_patch(http: FluentHttpx) -> None:
     echo = (
         http.patch()
