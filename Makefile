@@ -10,11 +10,11 @@ update:
 	poetry update
 
 format:
-	poetry run black pydevtools tests
-	poetry run ruff --fix pydevtools tests
+	poetry run ruff format pydevtools tests
+	poetry run ruff check  pydevtools tests --fix
 
 lint:
-	poetry run black --check pydevtools tests
+	poetry run ruff format pydevtools tests --check
 	poetry run ruff check pydevtools tests
 	poetry run mypy pydevtools tests
 
