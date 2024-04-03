@@ -5,16 +5,18 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from typing import Any, Self
 from uuid import UUID
+from warnings import warn
 
 import httpx
+from fastapi.testclient import TestClient
 
-from pydevtools.http import HttpUrl, Httpx, JsonObject
+from pydevtools.http import HttpUrl, JsonObject
 from pydevtools.http.fluent import JsonList
 
 
 @dataclass
 class RestResource:
-    http: Httpx
+    http: TestClient
     name: RestfulName
 
     def create_one(self) -> CreateOne:
@@ -37,24 +39,53 @@ class RestResource:
 
 
 @dataclass
+class RestCollection(RestResource):
+    def sub_resource(self, name: str) -> RestItem:
+        return RestItem(
+            TestClient(
+                self.http.app,
+                base_url=HttpUrl(str(self.http.base_url)) + self.name.plural,
+            ),
+            RestfulName(name),
+        )
+
+
+@dataclass
+class RestItem(RestResource):
+    def sub_resource(self, name: str) -> RestItem:
+        return RestItem(
+            TestClient(
+                self.http.app,
+                base_url=HttpUrl(str(self.http.base_url)) + self.name.singular,
+            ),
+            RestfulName(name),
+        )
+
+
+@dataclass
 class RestfulName:
     singular: str
 
-    @property
-    def plural(self) -> str:
-        if self.singular.endswith("y"):
-            return self.singular[:-1] + "ies"
+    plural: str = ""
 
-        return self.singular + "s"
+    def __post_init__(self) -> None:
+        self.plural = self.plural or as_plural(self.singular)
 
     def __add__(self, other: str) -> str:
         return HttpUrl(self.plural) + other
 
 
+def as_plural(singular: str) -> str:
+    if singular.endswith("y"):
+        return singular[:-1] + "ies"
+
+    return singular + "s"
+
+
 @dataclass
 class RestRequest:
     resource: RestfulName
-    http: Httpx
+    http: TestClient
 
     @abstractmethod
     @cached_property
@@ -196,6 +227,9 @@ class RestResponse:
 
         return self
 
+    def message(self, value: str) -> Self:
+        return self.with_message(value)
+
     def and_message(self, value: str) -> Self:
         return self.with_message(value)
 
@@ -204,15 +238,42 @@ class RestResponse:
 
         return self
 
-    def and_data(self, *values: JsonObject[Any]) -> Self:
+    def and_data(self, *values: JsonObject[Any]) -> Self:  # pragma: no cover
+        warn(
+            (
+                "The 'and_data' method is deprecated. "
+                "Please use 'and_item' or 'and_collection' instead."
+            )
+        )
         if len(values) == 1:
-            return self.with_data(**{self.resource.singular: dict(values[0])})
+            return self.with_item(values[0])
 
+        return self.with_collection(list(values))
+
+    def and_item(self, value: Any) -> Self:
+        return self.with_item(value)
+
+    def with_item(self, value: Any) -> Self:
         return self.with_data(
             **{
-                self.resource.plural: [dict(value) for value in values],
-                "count": len(values),
+                self.resource.singular: dict(value)
+                if isinstance(value, JsonObject)
+                else value
             }
+        )
+
+    def and_collection(self, value: list[Any]) -> Self:
+        return self.with_collection(value)
+
+    def with_collection(self, values: list[Any]) -> Self:
+        return self.with_data(
+            **{
+                self.resource.plural: [
+                    dict(value) if isinstance(value, JsonObject) else value
+                    for value in values
+                ],
+            },
+            count=len(values),
         )
 
     def and_no_data(self) -> Self:

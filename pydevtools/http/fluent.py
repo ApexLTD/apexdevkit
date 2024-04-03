@@ -88,3 +88,6 @@ class JsonElement(Generic[ValueT]):
 
     def to(self, a_type: Callable[[ValueT], ConvertedT]) -> ConvertedT:
         return a_type(self.value)
+
+    def __str__(self) -> str:
+        return str(self.value)

@@ -9,9 +9,10 @@ from faker import Faker
 from fastapi.testclient import TestClient
 
 from pydevtools.fastapi import FastApiBuilder
-from pydevtools.http import Httpx, JsonObject
+from pydevtools.http import JsonObject
 from pydevtools.repository import InMemoryRepository
 from pydevtools.testing import RestfulName, RestResource
+from pydevtools.testing.rest import RestCollection
 from tests.sample_api import Apple, apple_api
 
 
@@ -33,8 +34,8 @@ def http() -> TestClient:
 
 
 @pytest.fixture
-def resource(http: Httpx) -> RestResource:
-    return RestResource(http, RestfulName("apple"))
+def resource(http: TestClient) -> RestResource:
+    return RestCollection(http, RestfulName("apple"))
 
 
 @dataclass
@@ -67,7 +68,7 @@ def test_should_not_read_unknown(resource: RestResource) -> None:
 
 
 def test_should_not_list_anything_when_none_exist(resource: RestResource) -> None:
-    resource.read_all().ensure().success().with_code(200).and_data()
+    resource.read_all().ensure().success().with_code(200).and_collection([])
 
 
 def test_should_read_with_params(resource: RestResource) -> None:
@@ -85,7 +86,7 @@ def test_should_read_with_params(resource: RestResource) -> None:
         .ensure()
         .success()
         .with_code(200)
-        .and_data(*apples)
+        .and_collection(list(apples))
     )
 
 
@@ -98,7 +99,7 @@ def test_should_create(resource: RestResource) -> None:
         .ensure()
         .success()
         .with_code(201)
-        .and_data(apple.with_a(id=ANY))
+        .and_item(apple.with_a(id=ANY))
     )
 
 
@@ -111,7 +112,7 @@ def test_should_persist(resource: RestResource) -> None:
         .ensure()
         .success()
         .with_code(200)
-        .and_data(apple)
+        .and_item(apple)
     )
 
 
@@ -124,10 +125,8 @@ def test_should_not_duplicate(resource: RestResource) -> None:
         .ensure()
         .fail()
         .with_code(409)
-        .and_message(
-            f"An apple with the name<{apple.value_of('name').to(str)}> already exists."
-        )
-        .and_data(apple.select("id"))
+        .message(f"An apple with the name<{apple.value_of('name')}> already exists.")
+        .and_item(apple.select("id"))
     )
 
 
@@ -155,19 +154,24 @@ def test_should_create_many(resource: RestResource) -> None:
         .ensure()
         .success()
         .with_code(201)
-        .and_data(many_apples[0].with_a(id=ANY), many_apples[1].with_a(id=ANY))
+        .and_collection(
+            [
+                many_apples[0].with_a(id=ANY),
+                many_apples[1].with_a(id=ANY),
+            ]
+        )
     )
 
 
 def test_should_persist_many(resource: RestResource) -> None:
-    many_apples = (
+    apples = (
         resource.create_many()
         .from_data(fake.apple())
         .and_data(fake.apple())
         .unpack_many()
     )
 
-    resource.read_all().ensure().success().with_code(200).and_data(*many_apples)
+    resource.read_all().ensure().success().with_code(200).and_collection(list(apples))
 
 
 def test_should_not_duplicate_many(resource: RestResource) -> None:
@@ -180,10 +184,8 @@ def test_should_not_duplicate_many(resource: RestResource) -> None:
         .ensure()
         .fail()
         .with_code(409)
-        .and_message(
-            f"An apple with the name<{apple.value_of('name').to(str)}> already exists."
-        )
-        .and_data(apple.select("id"))
+        .message(f"An apple with the name<{apple.value_of('name')}> already exists.")
+        .and_item(apple.select("id"))
     )
 
 
