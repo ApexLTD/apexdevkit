@@ -27,6 +27,9 @@ class FluentHttpGet(Protocol):  # pragma: no cover
     def on_endpoint(self, value: str) -> FluentHttpResponse:
         pass
 
+    def with_params(self, **params: Any) -> FluentHttpGet:
+        pass
+
 
 class FluentHttpResponse(Protocol):  # pragma: no cover
     def on_bad_request(self, raises: Exception | Type[Exception]) -> Self:
