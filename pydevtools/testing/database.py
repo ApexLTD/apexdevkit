@@ -18,6 +18,9 @@ class FakeConnector:
     def execute(self, command: str, data: Any) -> None:
         self.commands.append((command, data))
 
+    def executemany(self, command: str, data_list: list[Any]) -> None:
+        self.commands.extend([(command, data) for data in data_list])
+
     def fetchone(self) -> dict[str, Any]:
         return self.results.pop()  # type: ignore
 

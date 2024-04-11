@@ -56,6 +56,9 @@ class Cursor(Protocol):  # pragma: no cover
     def execute(self, *args: Any, **kwargs: Any) -> Any:
         pass
 
+    def executemany(self, *args: Any, **kwargs: Any) -> Any:
+        pass
+
     def fetchone(self, *args: Any, **kwargs: Any) -> Any:
         pass
 
