@@ -10,10 +10,30 @@ class _Item(Protocol):
 
 ItemT = TypeVar("ItemT", bound=_Item)
 
+RawT = dict[str, Any]
+
+
+class _Formatter(Protocol[ItemT]):
+    def load(self, raw: RawT) -> ItemT:
+        pass
+
+    def dump(self, item: ItemT) -> RawT:
+        pass
+
+
+@dataclass(frozen=True)
+class NoFormat(_Formatter[Any]):
+    def load(self, raw: Any) -> Any:
+        return raw
+
+    def dump(self, item: Any) -> Any:
+        return item
+
 
 @dataclass
 class InMemoryRepository(Generic[ItemT]):
-    items: dict[str, ItemT] = field(default_factory=dict)
+    items: dict[str, RawT] = field(default_factory=dict)
+    formatter: _Formatter[ItemT] = field(default_factory=NoFormat)
 
     _uniques: list[Criteria] = field(init=False, default_factory=list)
     _search_by: list[str] = field(init=False, default_factory=list)
@@ -37,10 +57,10 @@ class InMemoryRepository(Generic[ItemT]):
 
     def create(self, item: ItemT) -> None:
         self._ensure_does_not_exist(item)
-        self.items[str(item.id)] = item
+        self.items[str(item.id)] = self.formatter.dump(item)
 
     def _ensure_does_not_exist(self, new: ItemT) -> None:
-        for existing in self.items.values():
+        for existing in self:
             error = ExistsError(existing)
 
             for criteria in self._uniques:
@@ -52,7 +72,7 @@ class InMemoryRepository(Generic[ItemT]):
         assert str(new.id) not in self.items, f"Item with id<{new.id}> already exists"
 
     def read(self, item_id: Any) -> ItemT:
-        for item in self.items.values():
+        for item in self:
             for attribute in self._search_by:
                 if getattr(item, attribute) == item_id:
                     return item
@@ -70,7 +90,7 @@ class InMemoryRepository(Generic[ItemT]):
             raise DoesNotExistError(item_id)
 
     def __iter__(self) -> Iterator[ItemT]:
-        yield from self.items.values()
+        return iter(self.formatter.load(raw) for raw in self.items.values())
 
     def __len__(self) -> int:
         return len(self.items)

@@ -1,4 +1,7 @@
-from dataclasses import dataclass
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass
+from typing import Any
 from uuid import UUID, uuid4
 
 import pytest
@@ -118,3 +121,22 @@ def test_should_delete(faker: Faker) -> None:
 
     with pytest.raises(DoesNotExistError):
         repository.read(company.id)
+
+
+@dataclass(frozen=True)
+class _Formatter:
+    def load(self, raw: dict[str, Any]) -> _Company:
+        return _Company(**raw)
+
+    def dump(self, item: _Company) -> dict[str, Any]:
+        return asdict(item)
+
+
+def test_should_preserve_object() -> None:
+    _id = uuid4()
+    company = _Company(id=_id, name="company", code="code")
+    repository = InMemoryRepository[_Company](formatter=_Formatter())
+    repository.create(company)
+    company.name = "changed"
+
+    assert repository.read(company.id) == _Company(id=_id, name="company", code="code")
