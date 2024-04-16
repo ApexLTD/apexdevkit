@@ -10,30 +10,19 @@ class _Item(Protocol):
 
 ItemT = TypeVar("ItemT", bound=_Item)
 
-RawT = dict[str, Any]
-
 
 class _Formatter(Protocol[ItemT]):
-    def load(self, raw: RawT) -> ItemT:
+    def load(self, raw: dict[str, Any]) -> ItemT:
         pass
 
-    def dump(self, item: ItemT) -> RawT:
+    def dump(self, item: ItemT) -> dict[str, Any]:
         pass
-
-
-@dataclass(frozen=True)
-class NoFormat(_Formatter[Any]):
-    def load(self, raw: Any) -> Any:
-        return raw
-
-    def dump(self, item: Any) -> Any:
-        return item
 
 
 @dataclass
 class InMemoryRepository(Generic[ItemT]):
-    items: dict[str, RawT] = field(default_factory=dict)
-    formatter: _Formatter[ItemT] = field(default_factory=NoFormat)
+    formatter: _Formatter[ItemT]
+    items: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     _uniques: list[Criteria] = field(init=False, default_factory=list)
     _search_by: list[str] = field(init=False, default_factory=list)
@@ -57,7 +46,7 @@ class InMemoryRepository(Generic[ItemT]):
 
     def create(self, item: ItemT) -> None:
         self._ensure_does_not_exist(item)
-        self.items[str(item.id)] = self.formatter.dump(item)
+        self.items[str(item.id)] = dict(self.formatter.dump(item))
 
     def _ensure_does_not_exist(self, new: ItemT) -> None:
         for existing in self:
@@ -90,7 +79,7 @@ class InMemoryRepository(Generic[ItemT]):
             raise DoesNotExistError(item_id)
 
     def __iter__(self) -> Iterator[ItemT]:
-        return iter(self.formatter.load(raw) for raw in self.items.values())
+        return iter(self.formatter.load(dict(raw)) for raw in self.items.values())
 
     def __len__(self) -> int:
         return len(self.items)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
+from typing import Any
 from unittest.mock import ANY
 from uuid import uuid4
 
@@ -16,6 +17,15 @@ from pydevtools.testing.rest import RestCollection
 from tests.sample_api import Apple, apple_api
 
 
+@dataclass(frozen=True)
+class _Formatter:
+    def load(self, raw: dict[str, Any]) -> Apple:
+        return Apple(**raw)
+
+    def dump(self, item: Apple) -> dict[str, Any]:
+        return asdict(item)
+
+
 @pytest.fixture
 def http() -> TestClient:
     return TestClient(
@@ -24,7 +34,7 @@ def http() -> TestClient:
         .with_version("1.0.0")
         .with_description("Sample API for unit testing various testing routines")
         .with_dependency(
-            apples=InMemoryRepository[Apple]().with_unique(
+            apples=InMemoryRepository[Apple](formatter=_Formatter()).with_unique(
                 criteria=lambda item: f"name<{item.name}>"
             )
         )

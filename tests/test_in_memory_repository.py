@@ -18,9 +18,18 @@ class _Company:
     code: str
 
 
+@dataclass(frozen=True)
+class _Formatter:
+    def load(self, raw: dict[str, Any]) -> _Company:
+        return _Company(**raw)
+
+    def dump(self, item: _Company) -> dict[str, Any]:
+        return asdict(item)
+
+
 def test_should_not_read_unknown() -> None:
     unknown_id = uuid4()
-    repository = InMemoryRepository[_Company]()
+    repository = InMemoryRepository[_Company](formatter=_Formatter())
 
     with pytest.raises(DoesNotExistError):
         repository.read(unknown_id)
@@ -28,7 +37,7 @@ def test_should_not_read_unknown() -> None:
 
 def test_should_persist(faker: Faker) -> None:
     partner = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[_Company]()
+    repository = InMemoryRepository[_Company](formatter=_Formatter())
 
     repository.create(partner)
 
@@ -38,7 +47,9 @@ def test_should_persist(faker: Faker) -> None:
 
 def test_should_read_by_custom_field(faker: Faker) -> None:
     partner = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[_Company]().with_searchable("code")
+    repository = InMemoryRepository[_Company](formatter=_Formatter()).with_searchable(
+        "code"
+    )
 
     repository.create(partner)
 
@@ -48,7 +59,7 @@ def test_should_read_by_custom_field(faker: Faker) -> None:
 
 def test_should_not_duplicate(faker: Faker) -> None:
     company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[_Company]().with_unique(
+    repository = InMemoryRepository[_Company](formatter=_Formatter()).with_unique(
         criteria=lambda item: f"code<{item.code}>"
     )
     repository.create(company)
@@ -64,7 +75,7 @@ def test_should_not_duplicate(faker: Faker) -> None:
 def test_should_not_not_duplicate_many_fields(faker: Faker) -> None:
     company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
     repository = (
-        InMemoryRepository[_Company]()
+        InMemoryRepository[_Company](formatter=_Formatter())
         .with_unique(criteria=lambda item: f"code<{item.code}>")
         .with_unique(criteria=lambda item: f"name<{item.name}>")
     )
@@ -84,7 +95,7 @@ def test_should_list(faker: Faker) -> None:
         _Company(id=uuid4(), name=faker.company(), code=faker.ein()),
     ]
 
-    repository = InMemoryRepository[_Company]()
+    repository = InMemoryRepository[_Company](formatter=_Formatter())
     for company in companies:
         repository.create(company)
 
@@ -94,7 +105,7 @@ def test_should_list(faker: Faker) -> None:
 
 def test_should_update(faker: Faker) -> None:
     company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[_Company]()
+    repository = InMemoryRepository[_Company](formatter=_Formatter())
     repository.create(company)
 
     updated = _Company(id=company.id, name=faker.company(), code=faker.ein())
@@ -106,7 +117,7 @@ def test_should_update(faker: Faker) -> None:
 
 def test_should_not_delete_unknown() -> None:
     unknown_id = uuid4()
-    repository = InMemoryRepository[_Company]()
+    repository = InMemoryRepository[_Company](formatter=_Formatter())
 
     with pytest.raises(DoesNotExistError):
         repository.delete(unknown_id)
@@ -114,22 +125,13 @@ def test_should_not_delete_unknown() -> None:
 
 def test_should_delete(faker: Faker) -> None:
     company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[_Company]()
+    repository = InMemoryRepository[_Company](formatter=_Formatter())
     repository.create(company)
 
     repository.delete(company.id)
 
     with pytest.raises(DoesNotExistError):
         repository.read(company.id)
-
-
-@dataclass(frozen=True)
-class _Formatter:
-    def load(self, raw: dict[str, Any]) -> _Company:
-        return _Company(**raw)
-
-    def dump(self, item: _Company) -> dict[str, Any]:
-        return asdict(item)
 
 
 def test_should_preserve_object() -> None:
