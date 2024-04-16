@@ -16,6 +16,24 @@ def test_post(http: FluentHttpx) -> None:
     echo = (
         http.post()
         .with_json({"Harry": "Potter"})
+        .on_endpoint("/post")
+        .on_failure(
+            raises=AssertionError,
+        )
+        .json()
+    )
+
+    assert echo.value_of("json").to(dict) == {"Harry": "Potter"}
+    assert echo.value_of("url").to(str) == ECHO_SERVER + "/post"
+    assert echo.value_of("headers").to(dict)["User-Agent"] == "hogwarts"
+    assert echo.value_of("headers").to(dict)["Content-Type"] == "application/json"
+
+
+@pytest.mark.vcr
+def test_post_with_header(http: FluentHttpx) -> None:
+    echo = (
+        http.post()
+        .with_json({"Harry": "Potter"})
         .and_header("Key", "Value")
         .on_endpoint("/post")
         .on_failure(

@@ -120,10 +120,10 @@ class Httpx:
         return cls(HttpUrl(url), HttpxConfig())
 
     def post(
-        self, endpoint: str, json: dict[str, Any], headers: dict[str, Any]
+        self, endpoint: str, json: dict[str, Any], headers: dict[str, Any] | None = None
     ) -> httpx.Response:
         return httpx.post(
-            self.url + endpoint, json=json, **self.config.add_headers(headers)
+            self.url + endpoint, json=json, **self.config.add_headers(headers or {})
         )
 
     def get(
