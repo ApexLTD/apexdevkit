@@ -72,11 +72,17 @@ class Cursor(Protocol):  # pragma: no cover
 @dataclass
 class DatabaseCommand:
     value: str
-    payload: _RawData = field(init=False, default_factory=dict)
+    payload: _RawData | list[_RawData] = field(init=False, default_factory=dict)
 
     def with_data(self, value: _RawData | None = None, **fields: Any) -> Self:
+        assert isinstance(self.payload, dict)
         self.payload.update(value or {})
         self.payload.update(fields)
+
+        return self
+
+    def with_collection(self, value: list[_RawData]) -> Self:
+        self.payload = value
 
         return self
 
