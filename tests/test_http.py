@@ -16,6 +16,7 @@ def test_post(http: FluentHttpx) -> None:
     echo = (
         http.post()
         .with_json({"Harry": "Potter"})
+        .and_header("Key", "Value")
         .on_endpoint("/post")
         .on_failure(
             raises=AssertionError,
@@ -26,6 +27,7 @@ def test_post(http: FluentHttpx) -> None:
     assert echo.value_of("json").to(dict) == {"Harry": "Potter"}
     assert echo.value_of("url").to(str) == ECHO_SERVER + "/post"
     assert echo.value_of("headers").to(dict)["User-Agent"] == "hogwarts"
+    assert echo.value_of("headers").to(dict)["Key"] == "Value"
     assert echo.value_of("headers").to(dict)["Content-Type"] == "application/json"
 
 

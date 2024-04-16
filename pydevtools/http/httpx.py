@@ -31,12 +31,20 @@ class HttpxPost:
     http: Httpx
 
     json: JsonDict = field(default_factory=dict)
+    headers: dict[str, str] = field(default_factory=dict)
 
     def with_json(self, value: JsonDict) -> HttpxPost:
         return HttpxPost(self.http, json=value)
 
     def on_endpoint(self, value: str) -> HttpxResponse:
-        return HttpxResponse(self.http.post(value, json=self.json))
+        return HttpxResponse(
+            self.http.post(value, json=self.json, headers=self.headers)
+        )
+
+    def and_header(self, key: str, value: str) -> HttpxPost:
+        self.headers[key] = value
+
+        return self
 
 
 @dataclass(frozen=True)
@@ -111,8 +119,12 @@ class Httpx:
     def create_for(cls, url: str) -> Self:
         return cls(HttpUrl(url), HttpxConfig())
 
-    def post(self, endpoint: str, json: dict[str, Any]) -> httpx.Response:
-        return httpx.post(self.url + endpoint, json=json, **self.config)
+    def post(
+        self, endpoint: str, json: dict[str, Any], headers: dict[str, Any]
+    ) -> httpx.Response:
+        return httpx.post(
+            self.url + endpoint, json=json, **self.config.add_headers(headers)
+        )
 
     def get(
         self, endpoint: str, params: dict[str, Any] | None = None
@@ -144,6 +156,11 @@ class HttpxConfig(Mapping[str, Any]):
             "timeout": self.timeout_s,
             "headers": self.headers,
         }
+
+    def add_headers(self, headers: dict[str, Any]) -> HttpxConfig:
+        return HttpxConfig(
+            timeout_s=self.timeout_s, headers={**self.headers, **headers}
+        )
 
     def __len__(self) -> int:
         return len(self.as_dict())
