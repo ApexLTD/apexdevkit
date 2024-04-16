@@ -13,10 +13,13 @@ class FluentHttp(Protocol):  # pragma: no cover
 
 
 class FluentHttpPost(Protocol):  # pragma: no cover
-    def with_json(self, value: JsonDict) -> Self:
+    def with_json(self, value: JsonDict) -> FluentHttpPost:
         pass
 
     def on_endpoint(self, value: str) -> FluentHttpResponse:
+        pass
+
+    def and_header(self, key: str, value: str) -> FluentHttpPost:
         pass
 
 
