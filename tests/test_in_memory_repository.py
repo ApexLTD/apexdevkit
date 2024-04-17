@@ -27,6 +27,36 @@ class _Formatter:
         return asdict(item)
 
 
+@dataclass
+class _InnerClass:
+    id: UUID
+    company: _Company
+
+
+@dataclass(frozen=True)
+class _InnerFormatter:
+    def load(self, raw: dict[str, Any]) -> _InnerClass:
+        return _InnerClass(company=_Formatter().load(raw.pop("company")), **raw)
+
+    def dump(self, item: _InnerClass) -> dict[str, Any]:
+        return asdict(item)
+
+
+@dataclass
+class _OuterClass:
+    id: UUID
+    inner: _InnerClass
+
+
+@dataclass(frozen=True)
+class _OuterFormatter:
+    def load(self, raw: dict[str, Any]) -> _OuterClass:
+        return _OuterClass(inner=_InnerFormatter().load(raw.pop("inner")), **raw)
+
+    def dump(self, item: _OuterClass) -> dict[str, Any]:
+        return asdict(item)
+
+
 def test_should_not_read_unknown() -> None:
     unknown_id = uuid4()
     repository = InMemoryRepository[_Company](formatter=_Formatter())
@@ -142,3 +172,15 @@ def test_should_preserve_object() -> None:
     company.name = "changed"
 
     assert repository.read(company.id) == _Company(id=_id, name="company", code="code")
+
+
+def test_should_preserve_nested_object() -> None:
+    _id = uuid4()
+    company = _Company(id=_id, name="company", code="code")
+    inner = _InnerClass(id=_id, company=company)
+    outer = _OuterClass(id=_id, inner=inner)
+    repository = InMemoryRepository[_OuterClass](formatter=_OuterFormatter())
+    repository.create(outer)
+    company.name = "changed"
+
+    assert repository.read(_id) == repository.read(_id)

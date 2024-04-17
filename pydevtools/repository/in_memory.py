@@ -1,3 +1,4 @@
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Generic, Iterator, Protocol, Self, TypeVar
 
@@ -46,7 +47,7 @@ class InMemoryRepository(Generic[ItemT]):
 
     def create(self, item: ItemT) -> None:
         self._ensure_does_not_exist(item)
-        self.items[str(item.id)] = dict(self.formatter.dump(item))
+        self.items[str(item.id)] = deepcopy(self.formatter.dump(item))
 
     def _ensure_does_not_exist(self, new: ItemT) -> None:
         for existing in self:
@@ -79,7 +80,7 @@ class InMemoryRepository(Generic[ItemT]):
             raise DoesNotExistError(item_id)
 
     def __iter__(self) -> Iterator[ItemT]:
-        return iter(self.formatter.load(dict(raw)) for raw in self.items.values())
+        yield from [self.formatter.load(deepcopy(raw)) for raw in self.items.values()]
 
     def __len__(self) -> int:
         return len(self.items)
