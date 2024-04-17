@@ -13,9 +13,12 @@ interactions:
       user-agent:
       - hogwarts
     method: GET
-    uri: http://httpbin.org/status/500
+    uri: http://httpbin.org/get
   response:
-    content: ''
+    content: "{\n  \"args\": {}, \n  \"headers\": {\n    \"Accept\": \"*/*\", \n    \"Accept-Encoding\":
+      \"gzip, deflate\", \n    \"Host\": \"httpbin.org\", \n    \"User-Agent\": \"hogwarts\",
+      \n    \"X-Amzn-Trace-Id\": \"Root=1-661f9c40-52ad7aa42640662470bf8421\"\n  },
+      \n  \"origin\": \"95.104.119.242\", \n  \"url\": \"http://httpbin.org/get\"\n}\n"
     headers:
       Access-Control-Allow-Credentials:
       - 'true'
@@ -24,13 +27,13 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '0'
+      - '293'
       Content-Type:
-      - text/html; charset=utf-8
+      - application/json
       Date:
-      - Wed, 15 Nov 2023 15:08:03 GMT
+      - Wed, 17 Apr 2024 09:54:08 GMT
       Server:
       - gunicorn/19.9.0
     http_version: HTTP/1.1
-    status_code: 500
+    status_code: 200
 version: 1

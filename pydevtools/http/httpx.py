@@ -1,17 +1,35 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Iterator, Mapping, Self, Type
+from typing import Any, Iterator, Mapping, Protocol, Self, Type, TypeVar
 
 import httpx
 
 from .fluent import JsonDict, JsonObject
 from .url import HttpUrl
 
+ResponseT = TypeVar("ResponseT", covariant=True)
+
+
+class Http(Protocol[ResponseT]):  # pragma: no cover
+    def post(
+        self, endpoint: str, json: dict[str, Any], headers: dict[str, Any] | None = None
+    ) -> ResponseT:
+        pass
+
+    def get(self, endpoint: str, params: dict[str, Any] | None = None) -> ResponseT:
+        pass
+
+    def patch(self, endpoint: str, json: dict[str, Any]) -> ResponseT:
+        pass
+
+    def delete(self, endpoint: str) -> ResponseT:
+        pass
+
 
 @dataclass(frozen=True)
 class FluentHttpx:
-    http: Httpx
+    http: Http[httpx.Response]
 
     def post(self) -> HttpxPost:
         return HttpxPost(self.http)
@@ -28,28 +46,35 @@ class FluentHttpx:
 
 @dataclass(frozen=True)
 class HttpxPost:
-    http: Httpx
+    http: Http[httpx.Response]
 
     json: JsonDict = field(default_factory=dict)
     headers: dict[str, str] = field(default_factory=dict)
 
+    def and_json(self, value: JsonDict) -> HttpxPost:  # pragma: no cover
+        return self.with_json(value)
+
     def with_json(self, value: JsonDict) -> HttpxPost:
         return HttpxPost(self.http, json=value)
+
+    def and_header(self, key: str, value: str) -> HttpxPost:  # pragma: no cover
+        return self.with_header(key, value)
+
+    def with_header(self, key: str, value: str) -> HttpxPost:
+        self.headers[key] = value
+
+        return self
 
     def on_endpoint(self, value: str) -> HttpxResponse:
         return HttpxResponse(
             self.http.post(value, json=self.json, headers=self.headers)
         )
 
-    def and_header(self, key: str, value: str) -> HttpxPost:
-        self.headers[key] = value
-
-        return self
-
 
 @dataclass(frozen=True)
 class HttpxGet:
-    http: Httpx
+    http: Http[httpx.Response]
+
     params: dict[str, Any] = field(default_factory=dict)
 
     def with_params(self, **params: Any) -> HttpxGet:
@@ -63,7 +88,7 @@ class HttpxGet:
 
 @dataclass(frozen=True)
 class HttpxPatch:
-    http: Httpx
+    http: Http[httpx.Response]
 
     json: JsonDict = field(default_factory=dict)
 
@@ -76,7 +101,7 @@ class HttpxPatch:
 
 @dataclass(frozen=True)
 class HttpxDelete:
-    http: Httpx
+    http: Http[httpx.Response]
 
     def on_endpoint(self, value: str) -> HttpxResponse:
         return HttpxResponse(self.http.delete(value))
@@ -93,10 +118,8 @@ class HttpxResponse:
         return self
 
     def on_failure(self, raises: Type[Exception]) -> Self:
-        try:
-            self.response.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            raise raises(e.response.content)
+        if self.response.status_code < 200 or self.response.status_code > 299:
+            raise raises(self.response.content)
 
         return self
 

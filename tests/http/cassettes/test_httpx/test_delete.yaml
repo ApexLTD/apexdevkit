@@ -18,7 +18,7 @@ interactions:
     content: "{\n  \"args\": {}, \n  \"data\": \"\", \n  \"files\": {}, \n  \"form\":
       {}, \n  \"headers\": {\n    \"Accept\": \"*/*\", \n    \"Accept-Encoding\":
       \"gzip, deflate\", \n    \"Host\": \"httpbin.org\", \n    \"User-Agent\": \"hogwarts\",
-      \n    \"X-Amzn-Trace-Id\": \"Root=1-65b8ca3a-21f0bd6574f8f4ae6edf67a3\"\n  },
+      \n    \"X-Amzn-Trace-Id\": \"Root=1-661f9c43-4d69e3e37868e1cd365b9cac\"\n  },
       \n  \"json\": null, \n  \"origin\": \"95.104.119.242\", \n  \"url\": \"http://httpbin.org/delete\"\n}\n"
     headers:
       Access-Control-Allow-Credentials:
@@ -32,7 +32,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 30 Jan 2024 10:06:50 GMT
+      - Wed, 17 Apr 2024 09:54:11 GMT
       Server:
       - gunicorn/19.9.0
     http_version: HTTP/1.1

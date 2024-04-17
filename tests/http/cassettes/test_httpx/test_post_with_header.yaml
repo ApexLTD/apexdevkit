@@ -14,18 +14,20 @@ interactions:
       - application/json
       host:
       - httpbin.org
+      key:
+      - Value
       user-agent:
       - hogwarts
-    method: PATCH
-    uri: http://httpbin.org/patch
+    method: POST
+    uri: http://httpbin.org/post
   response:
     content: "{\n  \"args\": {}, \n  \"data\": \"{\\\"Harry\\\": \\\"Potter\\\"}\",
       \n  \"files\": {}, \n  \"form\": {}, \n  \"headers\": {\n    \"Accept\": \"*/*\",
       \n    \"Accept-Encoding\": \"gzip, deflate\", \n    \"Content-Length\": \"19\",
       \n    \"Content-Type\": \"application/json\", \n    \"Host\": \"httpbin.org\",
-      \n    \"User-Agent\": \"hogwarts\", \n    \"X-Amzn-Trace-Id\": \"Root=1-64db2103-78a9da5c5cfbe6d37b5d7336\"\n
-      \ }, \n  \"json\": {\n    \"Harry\": \"Potter\"\n  }, \n  \"origin\": \"95.104.119.242\",
-      \n  \"url\": \"http://httpbin.org/patch\"\n}\n"
+      \n    \"Key\": \"Value\", \n    \"User-Agent\": \"hogwarts\", \n    \"X-Amzn-Trace-Id\":
+      \"Root=1-661f9c3f-00069550624ea97d613e8e4f\"\n  }, \n  \"json\": {\n    \"Harry\":
+      \"Potter\"\n  }, \n  \"origin\": \"95.104.119.242\", \n  \"url\": \"http://httpbin.org/post\"\n}\n"
     headers:
       Access-Control-Allow-Credentials:
       - 'true'
@@ -34,11 +36,11 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '474'
+      - '494'
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Aug 2023 06:53:56 GMT
+      - Wed, 17 Apr 2024 09:54:07 GMT
       Server:
       - gunicorn/19.9.0
     http_version: HTTP/1.1

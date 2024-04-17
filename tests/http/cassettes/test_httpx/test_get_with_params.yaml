@@ -13,12 +13,13 @@ interactions:
       user-agent:
       - hogwarts
     method: GET
-    uri: http://httpbin.org/get
+    uri: http://httpbin.org/get?color=yellow
   response:
-    content: "{\n  \"args\": {}, \n  \"headers\": {\n    \"Accept\": \"*/*\", \n    \"Accept-Encoding\":
-      \"gzip, deflate\", \n    \"Host\": \"httpbin.org\", \n    \"User-Agent\": \"hogwarts\",
-      \n    \"X-Amzn-Trace-Id\": \"Root=1-64cb83f6-7a554a0b0d319d4d698c4ee7\"\n  },
-      \n  \"origin\": \"95.104.119.242\", \n  \"url\": \"http://httpbin.org/get\"\n}\n"
+    content: "{\n  \"args\": {\n    \"color\": \"yellow\"\n  }, \n  \"headers\": {\n
+      \   \"Accept\": \"*/*\", \n    \"Accept-Encoding\": \"gzip, deflate\", \n    \"Host\":
+      \"httpbin.org\", \n    \"User-Agent\": \"hogwarts\", \n    \"X-Amzn-Trace-Id\":
+      \"Root=1-661f9c40-57cda866732ef2a33a688c0f\"\n  }, \n  \"origin\": \"95.104.119.242\",
+      \n  \"url\": \"http://httpbin.org/get?color=yellow\"\n}\n"
     headers:
       Access-Control-Allow-Credentials:
       - 'true'
@@ -27,11 +28,11 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '293'
+      - '331'
       Content-Type:
       - application/json
       Date:
-      - Thu, 03 Aug 2023 10:39:52 GMT
+      - Wed, 17 Apr 2024 09:54:08 GMT
       Server:
       - gunicorn/19.9.0
     http_version: HTTP/1.1
