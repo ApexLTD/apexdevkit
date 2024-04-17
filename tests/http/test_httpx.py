@@ -1,14 +1,16 @@
+import httpx
 import pytest
 from pytest import fixture
 
-from pydevtools.http import HttpUrl, Httpx, HttpxConfig
+from pydevtools.http import Httpx
+from pydevtools.http.httpx import Http
 
-ECHO_SERVER = HttpUrl("http://httpbin.org")
+ECHO_SERVER = "http://httpbin.org"
 
 
 @fixture
-def http() -> Httpx:
-    return Httpx(ECHO_SERVER, HttpxConfig().with_user_agent("hogwarts"))
+def http() -> Http[httpx.Response]:
+    return Httpx.create_for(ECHO_SERVER).with_header("user-agent", "hogwarts")
 
 
 @pytest.mark.vcr
@@ -20,19 +22,6 @@ def test_post(http: Httpx) -> None:
     assert echo["json"] == {"Harry": "Potter"}
     assert echo["url"] == ECHO_SERVER + "/post"
     assert echo["headers"]["User-Agent"] == "hogwarts"
-    assert echo["headers"]["Content-Type"] == "application/json"
-
-
-@pytest.mark.vcr
-def test_post_with_header(http: Httpx) -> None:
-    response = http.post("/post", json={"Harry": "Potter"}, headers={"Key": "Value"})
-
-    echo = response.json()
-
-    assert echo["json"] == {"Harry": "Potter"}
-    assert echo["url"] == ECHO_SERVER + "/post"
-    assert echo["headers"]["User-Agent"] == "hogwarts"
-    assert echo["headers"]["Key"] == "Value"
     assert echo["headers"]["Content-Type"] == "application/json"
 
 

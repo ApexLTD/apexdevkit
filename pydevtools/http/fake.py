@@ -10,16 +10,19 @@ class FakeHttp:
     response: Any = field(default_factory=MagicMock)
 
     request: InterceptedRequest = field(init=False)
+    headers: dict[str, str] = field(default_factory=dict)
+
+    def with_header(self, key: str, value: str) -> Self:
+        self.headers[key] = value
+
+        return self
 
     def post(
         self, endpoint: str, json: dict[str, Any], headers: dict[str, Any] | None = None
     ) -> Any:
-        self.request = InterceptedRequest(
-            method="post",
-            endpoint=endpoint,
-            json=json,
-            headers=headers,
-        )
+        assert not headers
+
+        self.request = InterceptedRequest(method="post", endpoint=endpoint, json=json)
 
         return self.response
 
@@ -53,7 +56,6 @@ class InterceptedRequest:
     endpoint: str
 
     json: Any = field(default_factory=object)
-    headers: Any = field(default_factory=object)
     params: Any = field(default_factory=object)
 
     def assert_post(self) -> Self:
@@ -78,11 +80,6 @@ class InterceptedRequest:
 
     def with_json(self, value: Any) -> Self:
         assert self.json == value
-
-        return self
-
-    def with_headers(self, value: Any) -> Self:
-        assert self.headers == value
 
         return self
 

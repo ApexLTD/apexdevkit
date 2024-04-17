@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Iterator, Mapping, Protocol, Self, Type, TypeVar
+from warnings import warn
 
 import httpx
 
@@ -12,6 +13,9 @@ ResponseT = TypeVar("ResponseT", covariant=True)
 
 
 class Http(Protocol[ResponseT]):  # pragma: no cover
+    def with_header(self, key: str, value: str) -> Http[ResponseT]:
+        pass
+
     def post(
         self, endpoint: str, json: dict[str, Any], headers: dict[str, Any] | None = None
     ) -> ResponseT:
@@ -31,6 +35,12 @@ class Http(Protocol[ResponseT]):  # pragma: no cover
 class FluentHttpx:
     http: Http[httpx.Response]
 
+    def and_header(self, key: str, value: str) -> FluentHttpx:
+        return self.with_header(key, value)
+
+    def with_header(self, key: str, value: str) -> FluentHttpx:
+        return FluentHttpx(self.http.with_header(key, value))
+
     def post(self) -> HttpxPost:
         return HttpxPost(self.http)
 
@@ -49,7 +59,6 @@ class HttpxPost:
     http: Http[httpx.Response]
 
     json: JsonDict = field(default_factory=dict)
-    headers: dict[str, str] = field(default_factory=dict)
 
     def and_json(self, value: JsonDict) -> HttpxPost:  # pragma: no cover
         return self.with_json(value)
@@ -60,15 +69,15 @@ class HttpxPost:
     def and_header(self, key: str, value: str) -> HttpxPost:  # pragma: no cover
         return self.with_header(key, value)
 
-    def with_header(self, key: str, value: str) -> HttpxPost:
-        self.headers[key] = value
-
-        return self
+    def with_header(self, key: str, value: str) -> HttpxPost:  # pragma: no cover
+        warn(
+            "Method 'HttpxPost.with_header' is deprecated, "
+            "use 'FluentHttp.with_header' instead"
+        )
+        return HttpxPost(self.http.with_header(key, value))
 
     def on_endpoint(self, value: str) -> HttpxResponse:
-        return HttpxResponse(
-            self.http.post(value, json=self.json, headers=self.headers)
-        )
+        return HttpxResponse(self.http.post(value, json=self.json))
 
 
 @dataclass(frozen=True)
@@ -142,9 +151,15 @@ class Httpx:
     def create_for(cls, url: str) -> Self:
         return cls(HttpUrl(url), HttpxConfig())
 
+    def with_header(self, key: str, value: str) -> Http[httpx.Response]:
+        return Httpx(self.url, self.config.with_header(key, value))
+
     def post(
         self, endpoint: str, json: dict[str, Any], headers: dict[str, Any] | None = None
     ) -> httpx.Response:
+        if headers:
+            warn("Parameter 'headers' is deprecated, use '.with_header' before .post()")
+
         return httpx.post(
             self.url + endpoint, json=json, **self.config.add_headers(headers or {})
         )
@@ -166,12 +181,21 @@ class HttpxConfig(Mapping[str, Any]):
     timeout_s: int = 5
     headers: dict[str, str] = field(default_factory=dict)
 
-    def with_header(self, key: str, value: str) -> Self:
+    def with_header(self, key: str, value: str) -> HttpxConfig:
         self.headers[key] = value
 
-        return self
+        return self.add_headers({key: value})
 
-    def with_user_agent(self, value: str) -> Self:
+    def with_user_agent(self, value: str) -> HttpxConfig:  # pragma: no cover
+        warn(
+            (
+                """
+                The 'with_user_agent(value)' method is deprecated.
+                Please use 'with_header("user-agent", value)' instead.
+                """
+            )
+        )
+
         return self.with_header(key="user-agent", value=value)
 
     def as_dict(self) -> dict[str, Any]:

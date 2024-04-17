@@ -3,6 +3,14 @@ from pydevtools.http.fake import FakeHttp
 from pydevtools.http.httpx import HttpxResponse
 
 
+def test_should_attach_headers() -> None:
+    http = FakeHttp()
+
+    FluentHttpx(http).with_header("Harry", "Potter").and_header("Ronald", "Weasley")
+
+    assert http.headers == {"Harry": "Potter", "Ronald": "Weasley"}
+
+
 def test_should_form_post_response() -> None:
     http = FakeHttp()
 
@@ -16,7 +24,7 @@ def test_should_post_with_defaults() -> None:
 
     FluentHttpx(http).post().on_endpoint("/post")
 
-    http.request.assert_post().with_json({}).with_headers({}).on_endpoint("/post")
+    http.request.assert_post().with_json({}).on_endpoint("/post")
 
 
 def test_should_post_with_json() -> None:
@@ -25,14 +33,6 @@ def test_should_post_with_json() -> None:
     FluentHttpx(http).post().with_json({"Harry": "Potter"}).on_endpoint("/post")
 
     http.request.assert_post().with_json({"Harry": "Potter"}).on_endpoint("/post")
-
-
-def test_should_post_with_headers() -> None:
-    http = FakeHttp()
-
-    FluentHttpx(http).post().with_header("Harry", "Potter").on_endpoint("/post")
-
-    http.request.assert_post().with_headers({"Harry": "Potter"}).on_endpoint("/post")
 
 
 def test_should_form_get_response() -> None:
