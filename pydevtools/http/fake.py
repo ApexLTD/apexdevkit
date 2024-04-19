@@ -2,14 +2,22 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Self
-from unittest.mock import MagicMock
 
-from pydevtools.http.httpx import HttpResponse, HttpxResponse
+from pydevtools.http.httpx import HttpxResponse
+
+
+@dataclass
+class FakeResponse:
+    content: Any = field(default_factory=dict)
+    status_code: int = 200
+
+    def json(self) -> Any:
+        return self.content
 
 
 @dataclass
 class FakeHttp:
-    response: HttpResponse = field(default_factory=MagicMock)
+    response: FakeResponse = field(default_factory=FakeResponse)
 
     request: InterceptedRequest = field(init=False)
     headers: dict[str, str] = field(default_factory=dict)

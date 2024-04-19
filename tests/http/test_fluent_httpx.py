@@ -1,3 +1,4 @@
+from pydevtools.http import JsonObject
 from pydevtools.http.fake import FakeHttp
 from pydevtools.http.httpx import FluentHttp, HttpxResponse
 
@@ -13,9 +14,9 @@ def test_should_attach_headers() -> None:
 def test_should_form_post_response() -> None:
     http = FakeHttp()
 
-    response = FluentHttp(http).post().on_endpoint("/post")
+    response = FluentHttp[HttpxResponse](http).post().on_endpoint("/post")
 
-    assert response == HttpxResponse(http.response)
+    assert response.json() == JsonObject({})
 
 
 def test_should_post_with_defaults() -> None:
@@ -37,9 +38,9 @@ def test_should_post_with_json() -> None:
 def test_should_form_get_response() -> None:
     http = FakeHttp()
 
-    response = FluentHttp(http).get().on_endpoint("/get")
+    response = FluentHttp[HttpxResponse](http).get().on_endpoint("/get")
 
-    assert response == HttpxResponse(http.response)
+    assert response.json() == JsonObject({})
 
 
 def test_should_get_with_defaults() -> None:
@@ -61,9 +62,9 @@ def test_should_get_with_params() -> None:
 def test_should_form_patch_response() -> None:
     http = FakeHttp()
 
-    response = FluentHttp(http).patch().on_endpoint("/patch")
+    response = FluentHttp[HttpxResponse](http).patch().on_endpoint("/patch")
 
-    assert response == HttpxResponse(http.response)
+    assert response.json() == JsonObject({})
 
 
 def test_should_patch_with_defaults() -> None:
@@ -85,9 +86,9 @@ def test_should_patch_with_json() -> None:
 def test_should_form_delete_response() -> None:
     http = FakeHttp()
 
-    response = FluentHttp(http).delete().on_endpoint("/delete")
+    response = FluentHttp[HttpxResponse](http).delete().on_endpoint("/delete")
 
-    assert response == HttpxResponse(http.response)
+    assert response.json() == JsonObject({})
 
 
 def test_should_delete_with_defaults() -> None:

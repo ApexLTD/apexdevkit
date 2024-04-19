@@ -134,7 +134,7 @@ class HttpResponse(Protocol):
     status_code: int
 
     @property
-    def content(self) -> bytes:
+    def content(self) -> Any:
         pass
 
     def json(self) -> dict[str, Any]:
