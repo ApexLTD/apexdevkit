@@ -1,15 +1,14 @@
-import httpx
 import pytest
 from pytest import fixture
 
 from pydevtools.http import Httpx
-from pydevtools.http.httpx import Http
+from pydevtools.http.httpx import Http, HttpxResponse
 
 ECHO_SERVER = "http://httpbin.org"
 
 
 @fixture
-def http() -> Http[httpx.Response]:
+def http() -> Http[HttpxResponse]:
     return Httpx.create_for(ECHO_SERVER).with_header("user-agent", "hogwarts")
 
 
@@ -19,10 +18,10 @@ def test_post(http: Httpx) -> None:
 
     echo = response.json()
 
-    assert echo["json"] == {"Harry": "Potter"}
-    assert echo["url"] == ECHO_SERVER + "/post"
-    assert echo["headers"]["User-Agent"] == "hogwarts"
-    assert echo["headers"]["Content-Type"] == "application/json"
+    assert echo.value_of("json").to(dict) == {"Harry": "Potter"}
+    assert echo.value_of("url").to(str) == ECHO_SERVER + "/post"
+    assert echo.value_of("headers").to(dict)["User-Agent"] == "hogwarts"
+    assert echo.value_of("headers").to(dict)["Content-Type"] == "application/json"
 
 
 @pytest.mark.vcr
@@ -31,9 +30,9 @@ def test_get(http: Httpx) -> None:
 
     echo = response.json()
 
-    assert echo["args"] == {}
-    assert echo["url"] == ECHO_SERVER + "/get"
-    assert echo["headers"]["User-Agent"] == "hogwarts"
+    assert echo.value_of("args").to(dict) == {}
+    assert echo.value_of("url").to(str) == ECHO_SERVER + "/get"
+    assert echo.value_of("headers").to(dict)["User-Agent"] == "hogwarts"
 
 
 @pytest.mark.vcr
@@ -42,9 +41,9 @@ def test_get_with_params(http: Httpx) -> None:
 
     echo = response.json()
 
-    assert echo["args"] == {"color": "yellow"}
-    assert echo["url"] == ECHO_SERVER + "/get?color=yellow"
-    assert echo["headers"]["User-Agent"] == "hogwarts"
+    assert echo.value_of("args").to(dict) == {"color": "yellow"}
+    assert echo.value_of("url").to(str) == ECHO_SERVER + "/get?color=yellow"
+    assert echo.value_of("headers").to(dict)["User-Agent"] == "hogwarts"
 
 
 @pytest.mark.vcr
@@ -53,10 +52,10 @@ def test_patch(http: Httpx) -> None:
 
     echo = response.json()
 
-    assert echo["json"] == {"Harry": "Potter"}
-    assert echo["url"] == ECHO_SERVER + "/patch"
-    assert echo["headers"]["User-Agent"] == "hogwarts"
-    assert echo["headers"]["Content-Type"] == "application/json"
+    assert echo.value_of("json").to(dict) == {"Harry": "Potter"}
+    assert echo.value_of("url").to(str) == ECHO_SERVER + "/patch"
+    assert echo.value_of("headers").to(dict)["User-Agent"] == "hogwarts"
+    assert echo.value_of("headers").to(dict)["Content-Type"] == "application/json"
 
 
 @pytest.mark.vcr
@@ -65,6 +64,6 @@ def test_delete(http: Httpx) -> None:
 
     echo = response.json()
 
-    assert echo["args"] == {}
-    assert echo["url"] == ECHO_SERVER + "/delete"
-    assert echo["headers"]["User-Agent"] == "hogwarts"
+    assert echo.value_of("args").to(dict) == {}
+    assert echo.value_of("url").to(str) == ECHO_SERVER + "/delete"
+    assert echo.value_of("headers").to(dict)["User-Agent"] == "hogwarts"
