@@ -106,7 +106,7 @@ class HttpxDelete(Generic[ResponseT]):
 
 @dataclass(frozen=True)
 class HttpxResponse:
-    response: httpx.Response
+    response: HttpResponse
 
     def on_bad_request(self, raises: Exception | Type[Exception]) -> Self:
         if self.response.status_code == 400:
@@ -128,6 +128,17 @@ class HttpxResponse:
             raise raises
 
         return self
+
+
+class HttpResponse(Protocol):
+    status_code: int
+
+    @property
+    def content(self) -> bytes:
+        pass
+
+    def json(self) -> dict[str, Any]:
+        pass
 
 
 @dataclass(frozen=True)

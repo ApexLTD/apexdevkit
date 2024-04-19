@@ -1,5 +1,5 @@
 from pydevtools.http.fake import FakeHttp
-from pydevtools.http.httpx import FluentHttp
+from pydevtools.http.httpx import FluentHttp, HttpxResponse
 
 
 def test_should_attach_headers() -> None:
@@ -15,7 +15,7 @@ def test_should_form_post_response() -> None:
 
     response = FluentHttp(http).post().on_endpoint("/post")
 
-    assert response == http.response
+    assert response == HttpxResponse(http.response)
 
 
 def test_should_post_with_defaults() -> None:
@@ -39,7 +39,7 @@ def test_should_form_get_response() -> None:
 
     response = FluentHttp(http).get().on_endpoint("/get")
 
-    assert response == http.response
+    assert response == HttpxResponse(http.response)
 
 
 def test_should_get_with_defaults() -> None:
@@ -63,7 +63,7 @@ def test_should_form_patch_response() -> None:
 
     response = FluentHttp(http).patch().on_endpoint("/patch")
 
-    assert response == http.response
+    assert response == HttpxResponse(http.response)
 
 
 def test_should_patch_with_defaults() -> None:
@@ -87,7 +87,7 @@ def test_should_form_delete_response() -> None:
 
     response = FluentHttp(http).delete().on_endpoint("/delete")
 
-    assert response == http.response
+    assert response == HttpxResponse(http.response)
 
 
 def test_should_delete_with_defaults() -> None:

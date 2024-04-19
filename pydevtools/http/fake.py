@@ -4,10 +4,12 @@ from dataclasses import dataclass, field
 from typing import Any, Self
 from unittest.mock import MagicMock
 
+from pydevtools.http.httpx import HttpResponse, HttpxResponse
+
 
 @dataclass
 class FakeHttp:
-    response: Any = field(default_factory=MagicMock)
+    response: HttpResponse = field(default_factory=MagicMock)
 
     request: InterceptedRequest = field(init=False)
     headers: dict[str, str] = field(default_factory=dict)
@@ -17,37 +19,33 @@ class FakeHttp:
 
         return self
 
-    def post(
-        self, endpoint: str, json: dict[str, Any], headers: dict[str, Any] | None = None
-    ) -> Any:
-        assert not headers
-
+    def post(self, endpoint: str, json: dict[str, Any]) -> HttpxResponse:
         self.request = InterceptedRequest(method="post", endpoint=endpoint, json=json)
 
-        return self.response
+        return HttpxResponse(self.response)
 
-    def get(self, endpoint: str, params: dict[str, Any] | None = None) -> Any:
+    def get(self, endpoint: str, params: dict[str, Any] | None = None) -> HttpxResponse:
         self.request = InterceptedRequest(
             method="get",
             endpoint=endpoint,
             params=params,
         )
 
-        return self.response
+        return HttpxResponse(self.response)
 
-    def patch(self, endpoint: str, json: dict[str, Any]) -> Any:
+    def patch(self, endpoint: str, json: dict[str, Any]) -> HttpxResponse:
         self.request = InterceptedRequest(
             method="patch",
             endpoint=endpoint,
             json=json,
         )
 
-        return self.response
+        return HttpxResponse(self.response)
 
-    def delete(self, endpoint: str) -> Any:
+    def delete(self, endpoint: str) -> HttpxResponse:
         self.request = InterceptedRequest(method="delete", endpoint=endpoint)
 
-        return self.response
+        return HttpxResponse(self.response)
 
 
 @dataclass
