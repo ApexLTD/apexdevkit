@@ -1,25 +1,34 @@
+from .fake import FakeHttp
 from .fluent import (
     FluentHttp,
+    FluentHttpDelete,
     FluentHttpGet,
+    FluentHttpPatch,
     FluentHttpPost,
     FluentHttpResponse,
-    JsonElement,
-    JsonObject,
+    Http,
 )
 from .httpx import Httpx, HttpxConfig
+from .json import JsonElement, JsonObject
 from .url import HttpUrl
 
 __all__ = [
+    # fake
+    "FakeHttp",
     # fluent
     "FluentHttp",
     "FluentHttpPost",
     "FluentHttpGet",
+    "FluentHttpPatch",
+    "FluentHttpDelete",
     "FluentHttpResponse",
-    "JsonObject",
-    "JsonElement",
+    "Http",
     # httpx
     "Httpx",
     "HttpxConfig",
+    # json
+    "JsonElement",
+    "JsonObject",
     # url
     "HttpUrl",
 ]

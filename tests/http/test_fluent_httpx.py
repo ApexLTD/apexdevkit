@@ -1,6 +1,4 @@
-from pydevtools.http import JsonObject
-from pydevtools.http.fake import FakeHttp
-from pydevtools.http.httpx import FluentHttp, HttpxResponse
+from pydevtools.http import FakeHttp, FluentHttp, JsonObject
 
 
 def test_should_attach_headers() -> None:
@@ -14,9 +12,9 @@ def test_should_attach_headers() -> None:
 def test_should_form_post_response() -> None:
     http = FakeHttp()
 
-    response = FluentHttp[HttpxResponse](http).post().on_endpoint("/post")
+    response = FluentHttp(http).post().on_endpoint("/post")
 
-    assert response.json() == JsonObject({})
+    assert response.json() == JsonObject()
 
 
 def test_should_post_with_defaults() -> None:
@@ -24,23 +22,24 @@ def test_should_post_with_defaults() -> None:
 
     FluentHttp(http).post().on_endpoint("/post")
 
-    http.request.assert_post().with_json({}).on_endpoint("/post")
+    http.request.assert_post().with_json(JsonObject()).on_endpoint("/post")
 
 
 def test_should_post_with_json() -> None:
     http = FakeHttp()
+    value = JsonObject[str]().with_a(Harry="Potter")
 
-    FluentHttp(http).post().with_json({"Harry": "Potter"}).on_endpoint("/post")
+    FluentHttp(http).post().with_json(value).on_endpoint("/post")
 
-    http.request.assert_post().with_json({"Harry": "Potter"}).on_endpoint("/post")
+    http.request.assert_post().with_json(value).on_endpoint("/post")
 
 
 def test_should_form_get_response() -> None:
     http = FakeHttp()
 
-    response = FluentHttp[HttpxResponse](http).get().on_endpoint("/get")
+    response = FluentHttp(http).get().on_endpoint("/get")
 
-    assert response.json() == JsonObject({})
+    assert response.json() == JsonObject()
 
 
 def test_should_get_with_defaults() -> None:
@@ -62,9 +61,9 @@ def test_should_get_with_params() -> None:
 def test_should_form_patch_response() -> None:
     http = FakeHttp()
 
-    response = FluentHttp[HttpxResponse](http).patch().on_endpoint("/patch")
+    response = FluentHttp(http).patch().on_endpoint("/patch")
 
-    assert response.json() == JsonObject({})
+    assert response.json() == JsonObject()
 
 
 def test_should_patch_with_defaults() -> None:
@@ -72,21 +71,22 @@ def test_should_patch_with_defaults() -> None:
 
     FluentHttp(http).patch().on_endpoint("/patch")
 
-    http.request.assert_patch().with_json({}).on_endpoint("/patch")
+    http.request.assert_patch().with_json(JsonObject()).on_endpoint("/patch")
 
 
 def test_should_patch_with_json() -> None:
     http = FakeHttp()
+    value = JsonObject[str]().with_a(Harry="Potter")
 
-    FluentHttp(http).patch().with_json({"Harry": "Potter"}).on_endpoint("/patch")
+    FluentHttp(http).patch().with_json(value).on_endpoint("/patch")
 
-    http.request.assert_patch().with_json({"Harry": "Potter"}).on_endpoint("/patch")
+    http.request.assert_patch().with_json(value).on_endpoint("/patch")
 
 
 def test_should_form_delete_response() -> None:
     http = FakeHttp()
 
-    response = FluentHttp[HttpxResponse](http).delete().on_endpoint("/delete")
+    response = FluentHttp(http).delete().on_endpoint("/delete")
 
     assert response.json() == JsonObject({})
 

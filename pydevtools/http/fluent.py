@@ -1,96 +1,135 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Generic, Iterator, Protocol, Self, Type, TypeVar
+from typing import Any, Protocol, Type
+
+from pydevtools.http.json import JsonObject
 
 
-class FluentHttp(Protocol):  # pragma: no cover
-    def post(self) -> FluentHttpPost:
+class Http(Protocol):  # pragma: no cover
+    def with_header(self, key: str, value: str) -> Http:
         pass
+
+    def post(self, endpoint: str, json: JsonObject[Any]) -> HttpResponse:
+        pass
+
+    def get(self, endpoint: str, params: dict[str, Any] | None = None) -> HttpResponse:
+        pass
+
+    def patch(self, endpoint: str, json: JsonObject[Any]) -> HttpResponse:
+        pass
+
+    def delete(self, endpoint: str) -> HttpResponse:
+        pass
+
+
+@dataclass(frozen=True)
+class FluentHttp:
+    http: Http
+
+    def and_header(self, key: str, value: str) -> FluentHttp:
+        return self.with_header(key, value)
+
+    def with_header(self, key: str, value: str) -> FluentHttp:
+        return FluentHttp(self.http.with_header(key, value))
+
+    def post(self) -> FluentHttpPost:
+        return FluentHttpPost(self.http)
 
     def get(self) -> FluentHttpGet:
-        pass
+        return FluentHttpGet(self.http)
+
+    def patch(self) -> FluentHttpPatch:
+        return FluentHttpPatch(self.http)
+
+    def delete(self) -> FluentHttpDelete:
+        return FluentHttpDelete(self.http)
 
 
-class FluentHttpPost(Protocol):  # pragma: no cover
-    def with_json(self, value: JsonDict) -> FluentHttpPost:
-        pass
+@dataclass(frozen=True)
+class FluentHttpPost:
+    http: Http
+
+    json: JsonObject[Any] = field(default_factory=JsonObject)
+
+    def and_json(self, value: JsonObject[Any]) -> FluentHttpPost:
+        return self.with_json(value)
+
+    def with_json(self, value: JsonObject[Any]) -> FluentHttpPost:
+        return FluentHttpPost(self.http, json=value)
 
     def on_endpoint(self, value: str) -> FluentHttpResponse:
-        pass
-
-    def and_header(self, key: str, value: str) -> FluentHttpPost:
-        pass
+        return FluentHttpResponse(self.http.post(value, json=self.json))
 
 
-JsonDict = dict[str, Any]
+@dataclass(frozen=True)
+class FluentHttpGet:
+    http: Http
 
-
-class FluentHttpGet(Protocol):  # pragma: no cover
-    def on_endpoint(self, value: str) -> FluentHttpResponse:
-        pass
+    params: dict[str, Any] = field(default_factory=dict)
 
     def with_params(self, **params: Any) -> FluentHttpGet:
+        self.params.update(params)
+
+        return self
+
+    def on_endpoint(self, value: str) -> FluentHttpResponse:
+        return FluentHttpResponse(self.http.get(value, params=self.params))
+
+
+@dataclass(frozen=True)
+class FluentHttpPatch:
+    http: Http
+
+    json: JsonObject[Any] = field(default_factory=JsonObject)
+
+    def with_json(self, value: JsonObject[Any]) -> FluentHttpPatch:
+        return FluentHttpPatch(self.http, json=value)
+
+    def on_endpoint(self, value: str) -> FluentHttpResponse:
+        return FluentHttpResponse(self.http.patch(value, json=self.json))
+
+
+@dataclass(frozen=True)
+class FluentHttpDelete:
+    http: Http
+
+    def on_endpoint(self, value: str) -> FluentHttpResponse:
+        return FluentHttpResponse(self.http.delete(value))
+
+
+@dataclass(frozen=True)
+class FluentHttpResponse:
+    response: HttpResponse
+
+    def on_bad_request(self, raises: Exception | Type[Exception]) -> FluentHttpResponse:
+        if self.response.code() == 400:
+            raise raises
+
+        return self
+
+    def on_conflict(self, raises: Exception | Type[Exception]) -> FluentHttpResponse:
+        if self.response.code() == 409:
+            raise raises
+
+        return self
+
+    def on_failure(self, raises: Type[Exception]) -> FluentHttpResponse:
+        if self.response.code() < 200 or self.response.code() > 299:
+            raise raises(self.response.raw())
+
+        return self
+
+    def json(self) -> JsonObject[Any]:
+        return self.response.json()
+
+
+class HttpResponse(Protocol):
+    def code(self) -> int:
         pass
 
-
-class FluentHttpResponse(Protocol):  # pragma: no cover
-    def on_bad_request(self, raises: Exception | Type[Exception]) -> Self:
-        pass
-
-    def on_failure(self, raises: Type[Exception]) -> Self:
-        pass
-
-    def on_conflict(self, raises: Type[Exception]) -> Self:
+    def raw(self) -> Any:
         pass
 
     def json(self) -> JsonObject[Any]:
         pass
-
-
-ValueT = TypeVar("ValueT")
-
-
-@dataclass
-class JsonObject(Generic[ValueT]):
-    raw: dict[str, ValueT] = field(default_factory=dict)
-
-    def __iter__(self) -> Iterator[tuple[str, ValueT]]:
-        yield from self.raw.items()
-
-    def with_a(self, **fields: ValueT) -> JsonObject[ValueT]:
-        return JsonObject({**self.raw, **fields})
-
-    def select(self, *keys: str) -> JsonObject[ValueT]:
-        return JsonObject({k: v for k, v in self.raw.items() if k in keys})
-
-    def value_of(self, key: str) -> JsonElement[ValueT]:
-        return JsonElement(self.raw[key])
-
-    def drop(self, *keys: str) -> JsonObject[ValueT]:
-        return self.select(*set(self.raw.keys()).difference(keys))
-
-    def merge(self, other: JsonObject[ValueT]) -> JsonObject[ValueT]:
-        return JsonObject({**self.raw, **other.raw})
-
-
-@dataclass
-class JsonList(Generic[ValueT]):
-    raw: list[JsonObject[ValueT]]
-
-    def __iter__(self) -> Iterator[JsonObject[ValueT]]:
-        yield from self.raw
-
-
-ConvertedT = TypeVar("ConvertedT")
-
-
-@dataclass
-class JsonElement(Generic[ValueT]):
-    value: ValueT
-
-    def to(self, a_type: Callable[[ValueT], ConvertedT]) -> ConvertedT:
-        return a_type(self.value)
-
-    def __str__(self) -> str:
-        return str(self.value)

@@ -1,20 +1,19 @@
 import pytest
 from pytest import fixture
 
-from pydevtools.http import Httpx
-from pydevtools.http.httpx import Http, HttpxResponse
+from pydevtools.http import Http, Httpx, JsonObject
 
 ECHO_SERVER = "http://httpbin.org"
 
 
 @fixture
-def http() -> Http[HttpxResponse]:
+def http() -> Http:
     return Httpx.create_for(ECHO_SERVER).with_header("user-agent", "hogwarts")
 
 
 @pytest.mark.vcr
 def test_post(http: Httpx) -> None:
-    response = http.post("/post", json={"Harry": "Potter"})
+    response = http.post("/post", json=JsonObject[str]().with_a(Harry="Potter"))
 
     echo = response.json()
 
@@ -48,7 +47,7 @@ def test_get_with_params(http: Httpx) -> None:
 
 @pytest.mark.vcr
 def test_patch(http: Httpx) -> None:
-    response = http.patch("/patch", json={"Harry": "Potter"})
+    response = http.patch("/patch", json=JsonObject[str]().with_a(Harry="Potter"))
 
     echo = response.json()
 

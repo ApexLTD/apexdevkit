@@ -11,7 +11,7 @@ import httpx
 from fastapi.testclient import TestClient
 
 from pydevtools.http import HttpUrl, JsonObject
-from pydevtools.http.fluent import JsonList
+from pydevtools.http.json import JsonList
 
 
 @dataclass

@@ -3,7 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Self
 
-from pydevtools.http.httpx import HttpxResponse
+from pydevtools.http.fluent import HttpResponse
+from pydevtools.http.json import JsonObject
 
 
 @dataclass
@@ -11,8 +12,26 @@ class FakeResponse:
     content: Any = field(default_factory=dict)
     status_code: int = 200
 
-    def json(self) -> Any:
+    def raw(self) -> Any:
         return self.content
+
+    def code(self) -> int:
+        return self.status_code
+
+    def json(self) -> Any:
+        return JsonObject(self.content)
+
+    @classmethod
+    def bad_request(cls) -> FakeResponse:
+        return FakeResponse(status_code=400)
+
+    @classmethod
+    def conflict(cls) -> FakeResponse:
+        return FakeResponse(status_code=409)
+
+    @classmethod
+    def fail(cls) -> FakeResponse:
+        return FakeResponse(status_code=500)
 
 
 @dataclass
@@ -27,33 +46,33 @@ class FakeHttp:
 
         return self
 
-    def post(self, endpoint: str, json: dict[str, Any]) -> HttpxResponse:
+    def post(self, endpoint: str, json: JsonObject[Any]) -> HttpResponse:
         self.request = InterceptedRequest(method="post", endpoint=endpoint, json=json)
 
-        return HttpxResponse(self.response)
+        return self.response
 
-    def get(self, endpoint: str, params: dict[str, Any] | None = None) -> HttpxResponse:
+    def get(self, endpoint: str, params: dict[str, Any] | None = None) -> HttpResponse:
         self.request = InterceptedRequest(
             method="get",
             endpoint=endpoint,
             params=params,
         )
 
-        return HttpxResponse(self.response)
+        return self.response
 
-    def patch(self, endpoint: str, json: dict[str, Any]) -> HttpxResponse:
+    def patch(self, endpoint: str, json: JsonObject[Any]) -> HttpResponse:
         self.request = InterceptedRequest(
             method="patch",
             endpoint=endpoint,
             json=json,
         )
 
-        return HttpxResponse(self.response)
+        return self.response
 
-    def delete(self, endpoint: str) -> HttpxResponse:
+    def delete(self, endpoint: str) -> HttpResponse:
         self.request = InterceptedRequest(method="delete", endpoint=endpoint)
 
-        return HttpxResponse(self.response)
+        return self.response
 
 
 @dataclass
@@ -84,7 +103,7 @@ class InterceptedRequest:
 
         return self
 
-    def with_json(self, value: Any) -> Self:
+    def with_json(self, value: JsonObject[Any]) -> Self:
         assert self.json == value
 
         return self
