@@ -53,7 +53,7 @@ def test_should_get_with_defaults() -> None:
 def test_should_get_with_params() -> None:
     http = FakeHttp()
 
-    FluentHttp(http).get().with_params(color="yellow").on_endpoint("/get")
+    FluentHttp(http).with_param("color", "yellow").get().on_endpoint("/get")
 
     http.request.assert_get().with_params({"color": "yellow"}).on_endpoint("/get")
 

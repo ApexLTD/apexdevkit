@@ -40,9 +40,15 @@ class FakeHttp:
 
     request: InterceptedRequest = field(init=False)
     headers: dict[str, str] = field(default_factory=dict)
+    params: dict[str, str] = field(default_factory=dict)
 
     def with_header(self, key: str, value: str) -> Self:
         self.headers[key] = value
+
+        return self
+
+    def with_param(self, key: str, value: str) -> Self:
+        self.params[key] = value
 
         return self
 
@@ -51,11 +57,14 @@ class FakeHttp:
 
         return self.response
 
-    def get(self, endpoint: str, params: dict[str, Any] | None = None) -> HttpResponse:
+    def get(
+        self,
+        endpoint: str,
+    ) -> HttpResponse:
         self.request = InterceptedRequest(
             method="get",
             endpoint=endpoint,
-            params=params,
+            params=self.params,
         )
 
         return self.response

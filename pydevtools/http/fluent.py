@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Protocol, Type
 
+from pydevtools.annotation import deprecated
 from pydevtools.http.json import JsonObject
 
 
@@ -10,10 +11,13 @@ class Http(Protocol):  # pragma: no cover
     def with_header(self, key: str, value: str) -> Http:
         pass
 
+    def with_param(self, key: str, value: str) -> Http:
+        pass
+
     def post(self, endpoint: str, json: JsonObject[Any]) -> HttpResponse:
         pass
 
-    def get(self, endpoint: str, params: dict[str, Any] | None = None) -> HttpResponse:
+    def get(self, endpoint: str) -> HttpResponse:
         pass
 
     def patch(self, endpoint: str, json: JsonObject[Any]) -> HttpResponse:
@@ -32,6 +36,9 @@ class FluentHttp:
 
     def with_header(self, key: str, value: str) -> FluentHttp:
         return FluentHttp(self.http.with_header(key, value))
+
+    def with_param(self, key: str, value: str) -> FluentHttp:
+        return FluentHttp(self.http.with_param(key, value))
 
     def post(self) -> FluentHttpPost:
         return FluentHttpPost(self.http)
@@ -68,13 +75,14 @@ class FluentHttpGet:
 
     params: dict[str, Any] = field(default_factory=dict)
 
+    @deprecated("Get.with_params is deprecated. Use FluentHttp.with_params instead.")
     def with_params(self, **params: Any) -> FluentHttpGet:
         self.params.update(params)
 
         return self
 
     def on_endpoint(self, value: str) -> FluentHttpResponse:
-        return FluentHttpResponse(self.http.get(value, params=self.params))
+        return FluentHttpResponse(self.http.get(value))
 
 
 @dataclass(frozen=True)

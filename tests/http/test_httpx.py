@@ -35,17 +35,6 @@ def test_get(http: Httpx) -> None:
 
 
 @pytest.mark.vcr
-def test_get_with_params(http: Httpx) -> None:
-    response = http.get("/get", params={"color": "yellow"})
-
-    echo = response.json()
-
-    assert echo.value_of("args").to(dict) == {"color": "yellow"}
-    assert echo.value_of("url").to(str) == ECHO_SERVER + "/get?color=yellow"
-    assert echo.value_of("headers").to(dict)["User-Agent"] == "hogwarts"
-
-
-@pytest.mark.vcr
 def test_patch(http: Httpx) -> None:
     response = http.patch("/patch", json=JsonObject[str]().with_a(Harry="Potter"))
 

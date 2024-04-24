@@ -22,21 +22,23 @@ class Httpx:
     def with_header(self, key: str, value: str) -> Httpx:
         return Httpx(self.url, self.config.with_header(key, value))
 
+    def with_param(self, key: str, value: str) -> Httpx:
+        return Httpx(self.url, self.config.with_param(key, value))
+
     def post(self, endpoint: str, json: JsonObject[Any]) -> HttpResponse:
         return HttpxResponseAdapter(
             httpx.post(
                 self.url + endpoint,
+                headers=self.config["headers"],
                 json=dict(json),
-                **self.config,
             )
         )
 
-    def get(self, endpoint: str, params: dict[str, Any] | None = None) -> HttpResponse:
+    def get(self, endpoint: str) -> HttpResponse:
         return HttpxResponseAdapter(
             httpx.get(
                 self.url + endpoint,
-                params=params,
-                **self.config,
+                params=self.config["params"],
             )
         )
 
@@ -76,6 +78,7 @@ class HttpxResponseAdapter:
 class HttpxConfig(Mapping[str, Any]):
     timeout_s: int = 30
     headers: JsonObject[str] = field(default_factory=JsonObject[str])
+    params: JsonObject[str] = field(default_factory=JsonObject[str])
 
     def and_header(self, key: str, value: str) -> HttpxConfig:
         return self.with_header(key, value)
@@ -84,12 +87,21 @@ class HttpxConfig(Mapping[str, Any]):
         return HttpxConfig(
             timeout_s=self.timeout_s,
             headers=self.headers.with_a(**{key: value}),
+            params=self.params,
+        )
+
+    def with_param(self, key: str, value: str) -> HttpxConfig:
+        return HttpxConfig(
+            timeout_s=self.timeout_s,
+            headers=self.headers,
+            params=self.params.with_a(**{key: value}),
         )
 
     def as_dict(self) -> dict[str, Any]:
         return {
             "timeout": self.timeout_s,
             "headers": dict(self.headers),
+            "params": dict(self.params),
         }
 
     def __len__(self) -> int:
