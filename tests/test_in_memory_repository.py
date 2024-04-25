@@ -66,25 +66,39 @@ def test_should_not_read_unknown() -> None:
 
 
 def test_should_persist(faker: Faker) -> None:
-    partner = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
+    company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
     repository = InMemoryRepository[_Company](formatter=_Formatter())
 
-    repository.create(partner)
+    repository.create(company)
 
-    persisted = repository.read(partner.id)
-    assert persisted == partner
+    persisted = repository.read(company.id)
+    assert persisted == company
+
+
+def test_should_persist_seeded(faker: Faker) -> None:
+    company_1 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
+    company_2 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
+
+    repository = InMemoryRepository[_Company](formatter=_Formatter()).with_seeded(
+        company_1, company_2
+    )
+
+    persisted_1 = repository.read(company_1.id)
+    assert persisted_1 == company_1
+    persisted_2 = repository.read(company_2.id)
+    assert persisted_2 == company_2
 
 
 def test_should_read_by_custom_field(faker: Faker) -> None:
-    partner = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
+    company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
     repository = InMemoryRepository[_Company](formatter=_Formatter()).with_searchable(
         "code"
     )
 
-    repository.create(partner)
+    repository.create(company)
 
-    persisted = repository.read(partner.code)
-    assert persisted == partner
+    persisted = repository.read(company.code)
+    assert persisted == company
 
 
 def test_should_not_duplicate(faker: Faker) -> None:
