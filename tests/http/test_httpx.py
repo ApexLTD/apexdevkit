@@ -1,7 +1,7 @@
 import pytest
 from pytest import fixture
 
-from pydevtools.http import Http, Httpx, JsonObject
+from pydevtools.http import Http, Httpx, JsonDict
 
 ECHO_SERVER = "http://httpbin.org"
 
@@ -13,7 +13,7 @@ def http() -> Http:
 
 @pytest.mark.vcr
 def test_post(http: Httpx) -> None:
-    response = http.post("/post", json=JsonObject[str]().with_a(Harry="Potter"))
+    response = http.post("/post", json=JsonDict().with_a(Harry="Potter"))
 
     echo = response.json()
 
@@ -36,7 +36,7 @@ def test_get(http: Httpx) -> None:
 
 @pytest.mark.vcr
 def test_patch(http: Httpx) -> None:
-    response = http.patch("/patch", json=JsonObject[str]().with_a(Harry="Potter"))
+    response = http.patch("/patch", json=JsonDict().with_a(Harry="Potter"))
 
     echo = response.json()
 

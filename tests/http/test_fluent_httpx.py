@@ -1,4 +1,4 @@
-from pydevtools.http import FakeHttp, FluentHttp, JsonObject
+from pydevtools.http import FakeHttp, FluentHttp, JsonDict
 
 
 def test_should_attach_headers() -> None:
@@ -14,7 +14,7 @@ def test_should_form_post_response() -> None:
 
     response = FluentHttp(http).post().on_endpoint("/post")
 
-    assert response.json() == JsonObject()
+    assert response.json() == JsonDict()
 
 
 def test_should_post_with_defaults() -> None:
@@ -22,12 +22,12 @@ def test_should_post_with_defaults() -> None:
 
     FluentHttp(http).post().on_endpoint("/post")
 
-    http.request.assert_post().with_json(JsonObject()).on_endpoint("/post")
+    http.request.assert_post().with_json(JsonDict()).on_endpoint("/post")
 
 
 def test_should_post_with_json() -> None:
     http = FakeHttp()
-    value = JsonObject[str]().with_a(Harry="Potter")
+    value = JsonDict().with_a(Harry="Potter")
 
     FluentHttp(http).post().with_json(value).on_endpoint("/post")
 
@@ -39,7 +39,7 @@ def test_should_form_get_response() -> None:
 
     response = FluentHttp(http).get().on_endpoint("/get")
 
-    assert response.json() == JsonObject()
+    assert response.json() == JsonDict()
 
 
 def test_should_get_with_defaults() -> None:
@@ -63,7 +63,7 @@ def test_should_form_patch_response() -> None:
 
     response = FluentHttp(http).patch().on_endpoint("/patch")
 
-    assert response.json() == JsonObject()
+    assert response.json() == JsonDict()
 
 
 def test_should_patch_with_defaults() -> None:
@@ -71,12 +71,12 @@ def test_should_patch_with_defaults() -> None:
 
     FluentHttp(http).patch().on_endpoint("/patch")
 
-    http.request.assert_patch().with_json(JsonObject()).on_endpoint("/patch")
+    http.request.assert_patch().with_json(JsonDict()).on_endpoint("/patch")
 
 
 def test_should_patch_with_json() -> None:
     http = FakeHttp()
-    value = JsonObject[str]().with_a(Harry="Potter")
+    value = JsonDict().with_a(Harry="Potter")
 
     FluentHttp(http).patch().with_json(value).on_endpoint("/patch")
 
@@ -88,7 +88,7 @@ def test_should_form_delete_response() -> None:
 
     response = FluentHttp(http).delete().on_endpoint("/delete")
 
-    assert response.json() == JsonObject({})
+    assert response.json() == JsonDict({})
 
 
 def test_should_delete_with_defaults() -> None:

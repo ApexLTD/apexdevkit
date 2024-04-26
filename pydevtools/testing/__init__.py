@@ -1,8 +1,9 @@
 from pydevtools.testing.database import FakeConnector
-from pydevtools.testing.rest import RestfulName, RestResource
+from pydevtools.testing.rest import RestCollection, RestfulName, RestResource
 
 __all__ = [
     "FakeConnector",
+    "RestCollection",
     "RestfulName",
     "RestResource",
 ]

@@ -3,8 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Protocol, Type
 
-from pydevtools.annotation import deprecated
-from pydevtools.http.json import JsonObject
+from pydevtools.http.json import JsonDict
 
 
 class Http(Protocol):  # pragma: no cover
@@ -14,13 +13,13 @@ class Http(Protocol):  # pragma: no cover
     def with_param(self, key: str, value: str) -> Http:
         pass
 
-    def post(self, endpoint: str, json: JsonObject[Any]) -> HttpResponse:
+    def post(self, endpoint: str, json: JsonDict) -> HttpResponse:
         pass
 
     def get(self, endpoint: str) -> HttpResponse:
         pass
 
-    def patch(self, endpoint: str, json: JsonObject[Any]) -> HttpResponse:
+    def patch(self, endpoint: str, json: JsonDict) -> HttpResponse:
         pass
 
     def delete(self, endpoint: str) -> HttpResponse:
@@ -36,6 +35,9 @@ class FluentHttp:
 
     def with_header(self, key: str, value: str) -> FluentHttp:
         return FluentHttp(self.http.with_header(key, value))
+
+    def and_param(self, key: str, value: str) -> FluentHttp:
+        return self.with_param(key, value)
 
     def with_param(self, key: str, value: str) -> FluentHttp:
         return FluentHttp(self.http.with_param(key, value))
@@ -57,12 +59,12 @@ class FluentHttp:
 class FluentHttpPost:
     http: Http
 
-    json: JsonObject[Any] = field(default_factory=JsonObject)
+    json: JsonDict = field(default_factory=JsonDict)
 
-    def and_json(self, value: JsonObject[Any]) -> FluentHttpPost:
+    def and_json(self, value: JsonDict) -> FluentHttpPost:
         return self.with_json(value)
 
-    def with_json(self, value: JsonObject[Any]) -> FluentHttpPost:
+    def with_json(self, value: JsonDict) -> FluentHttpPost:
         return FluentHttpPost(self.http, json=value)
 
     def on_endpoint(self, value: str) -> FluentHttpResponse:
@@ -75,12 +77,6 @@ class FluentHttpGet:
 
     params: dict[str, Any] = field(default_factory=dict)
 
-    @deprecated("Get.with_params is deprecated. Use FluentHttp.with_params instead.")
-    def with_params(self, **params: Any) -> FluentHttpGet:
-        self.params.update(params)
-
-        return self
-
     def on_endpoint(self, value: str) -> FluentHttpResponse:
         return FluentHttpResponse(self.http.get(value))
 
@@ -89,9 +85,9 @@ class FluentHttpGet:
 class FluentHttpPatch:
     http: Http
 
-    json: JsonObject[Any] = field(default_factory=JsonObject)
+    json: JsonDict = field(default_factory=JsonDict)
 
-    def with_json(self, value: JsonObject[Any]) -> FluentHttpPatch:
+    def with_json(self, value: JsonDict) -> FluentHttpPatch:
         return FluentHttpPatch(self.http, json=value)
 
     def on_endpoint(self, value: str) -> FluentHttpResponse:
@@ -128,7 +124,7 @@ class FluentHttpResponse:
 
         return self
 
-    def json(self) -> JsonObject[Any]:
+    def json(self) -> JsonDict:
         return self.response.json()
 
 
@@ -139,5 +135,5 @@ class HttpResponse(Protocol):
     def raw(self) -> Any:
         pass
 
-    def json(self) -> JsonObject[Any]:
+    def json(self) -> JsonDict:
         pass

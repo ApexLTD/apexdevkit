@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any, Self
 
 from pydevtools.http.fluent import HttpResponse
-from pydevtools.http.json import JsonObject
+from pydevtools.http.json import JsonDict
 
 
 @dataclass
@@ -19,7 +19,7 @@ class FakeResponse:
         return self.status_code
 
     def json(self) -> Any:
-        return JsonObject(self.content)
+        return JsonDict(self.content)
 
     @classmethod
     def bad_request(cls) -> FakeResponse:
@@ -52,15 +52,12 @@ class FakeHttp:
 
         return self
 
-    def post(self, endpoint: str, json: JsonObject[Any]) -> HttpResponse:
+    def post(self, endpoint: str, json: JsonDict) -> HttpResponse:
         self.request = InterceptedRequest(method="post", endpoint=endpoint, json=json)
 
         return self.response
 
-    def get(
-        self,
-        endpoint: str,
-    ) -> HttpResponse:
+    def get(self, endpoint: str) -> HttpResponse:
         self.request = InterceptedRequest(
             method="get",
             endpoint=endpoint,
@@ -69,7 +66,7 @@ class FakeHttp:
 
         return self.response
 
-    def patch(self, endpoint: str, json: JsonObject[Any]) -> HttpResponse:
+    def patch(self, endpoint: str, json: JsonDict) -> HttpResponse:
         self.request = InterceptedRequest(
             method="patch",
             endpoint=endpoint,
@@ -112,7 +109,7 @@ class InterceptedRequest:
 
         return self
 
-    def with_json(self, value: JsonObject[Any]) -> Self:
+    def with_json(self, value: JsonDict) -> Self:
         assert self.json == value
 
         return self

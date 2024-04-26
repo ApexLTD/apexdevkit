@@ -10,10 +10,9 @@ from faker import Faker
 from fastapi.testclient import TestClient
 
 from pydevtools.fastapi import FastApiBuilder
-from pydevtools.http import JsonObject
+from pydevtools.http import JsonDict
 from pydevtools.repository import InMemoryRepository
-from pydevtools.testing import RestfulName, RestResource
-from pydevtools.testing.rest import RestCollection
+from pydevtools.testing import RestCollection, RestfulName, RestResource
 from tests.sample_api import Apple, apple_api
 
 
@@ -52,13 +51,8 @@ def resource(http: TestClient) -> RestResource:
 class Fake:
     faker: Faker = field(default_factory=Faker)
 
-    def apple(self) -> JsonObject[str]:
-        return JsonObject(
-            {
-                "name": self.faker.name(),
-                "color": self.faker.color(),
-            }
-        )
+    def apple(self) -> JsonDict:
+        return JsonDict().with_a(name=self.faker.name()).and_a(color=self.faker.color())
 
 
 fake = Fake()

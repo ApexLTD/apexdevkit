@@ -10,7 +10,7 @@ from warnings import warn
 import httpx
 from fastapi.testclient import TestClient
 
-from pydevtools.http import HttpUrl, JsonObject
+from pydevtools.http import HttpUrl, JsonDict
 from pydevtools.http.json import JsonList
 
 
@@ -92,27 +92,27 @@ class RestRequest:
     def response(self) -> httpx.Response:  # pragma: no cover
         pass
 
-    def unpack(self) -> JsonObject[Any]:
-        return JsonObject(self.response.json()["data"][self.resource.singular])
+    def unpack(self) -> JsonDict:
+        return JsonDict(self.response.json()["data"][self.resource.singular])
 
     def unpack_many(self) -> JsonList[Any]:
         items = self.response.json()["data"][self.resource.plural]
 
-        return JsonList([JsonObject(item) for item in items])
+        return JsonList([JsonDict(item) for item in items])
 
     def ensure(self) -> RestResponse:
         return RestResponse(
             resource=self.resource,
-            json=JsonObject(self.response.json()),
+            json=JsonDict(self.response.json()),
             http_code=self.response.status_code,
         )
 
 
 @dataclass
 class CreateOne(RestRequest):
-    data: JsonObject[Any] = field(init=False)
+    data: JsonDict = field(init=False)
 
-    def from_data(self, value: JsonObject[Any]) -> Self:
+    def from_data(self, value: JsonDict) -> Self:
         self.data = value
 
         return self
@@ -153,7 +153,7 @@ class ReadAll(RestRequest):
 @dataclass
 class UpdateOne(RestRequest):
     item_id: str | UUID = field(init=False)
-    data: JsonObject[Any] = field(init=False)
+    data: JsonDict = field(init=False)
 
     @cached_property
     def response(self) -> httpx.Response:
@@ -164,7 +164,7 @@ class UpdateOne(RestRequest):
 
         return self
 
-    def and_data(self, value: JsonObject[Any]) -> Self:
+    def and_data(self, value: JsonDict) -> Self:
         self.data = value
 
         return self
@@ -172,7 +172,7 @@ class UpdateOne(RestRequest):
 
 @dataclass
 class CreateMany(RestRequest):
-    data: list[JsonObject[Any]] = field(default_factory=list)
+    data: list[JsonDict] = field(default_factory=list)
 
     @cached_property
     def response(self) -> httpx.Response:
@@ -181,12 +181,12 @@ class CreateMany(RestRequest):
             json={self.resource.plural: [dict(data) for data in self.data]},
         )
 
-    def from_data(self, value: JsonObject[Any]) -> Self:
+    def from_data(self, value: JsonDict) -> Self:
         self.data.append(value)
 
         return self
 
-    def and_data(self, value: JsonObject[Any]) -> Self:
+    def and_data(self, value: JsonDict) -> Self:
         return self.from_data(value)
 
 
@@ -207,7 +207,7 @@ class DeleteOne(RestRequest):
 @dataclass
 class RestResponse:
     resource: RestfulName
-    json: JsonObject[Any]
+    json: JsonDict
     http_code: int
 
     def fail(self) -> Self:
@@ -238,7 +238,7 @@ class RestResponse:
 
         return self
 
-    def and_data(self, *values: JsonObject[Any]) -> Self:  # pragma: no cover
+    def and_data(self, *values: JsonDict) -> Self:  # pragma: no cover
         warn(
             (
                 "The 'and_data' method is deprecated. "
@@ -257,7 +257,7 @@ class RestResponse:
         return self.with_data(
             **{
                 self.resource.singular: dict(value)
-                if isinstance(value, JsonObject)
+                if isinstance(value, JsonDict)
                 else value
             }
         )
@@ -269,7 +269,7 @@ class RestResponse:
         return self.with_data(
             **{
                 self.resource.plural: [
-                    dict(value) if isinstance(value, JsonObject) else value
+                    dict(value) if isinstance(value, JsonDict) else value
                     for value in values
                 ],
             },
