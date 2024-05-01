@@ -9,7 +9,7 @@ from .fluent import (
     Http,
 )
 from .httpx import Httpx, HttpxConfig
-from .json import JsonDict, JsonElement, JsonObject
+from .json import JsonDict
 from .url import HttpUrl
 
 __all__ = [
@@ -27,9 +27,7 @@ __all__ = [
     "Httpx",
     "HttpxConfig",
     # json
-    "JsonElement",
     "JsonDict",
-    "JsonObject",
     # url
     "HttpUrl",
 ]

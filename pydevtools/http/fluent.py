@@ -61,9 +61,6 @@ class FluentHttpPost:
 
     json: JsonDict = field(default_factory=JsonDict)
 
-    def and_json(self, value: JsonDict) -> FluentHttpPost:
-        return self.with_json(value)
-
     def with_json(self, value: JsonDict) -> FluentHttpPost:
         return FluentHttpPost(self.http, json=value)
 
@@ -128,7 +125,7 @@ class FluentHttpResponse:
         return self.response.json()
 
 
-class HttpResponse(Protocol):
+class HttpResponse(Protocol):  # pragma: no cover
     def code(self) -> int:
         pass
 

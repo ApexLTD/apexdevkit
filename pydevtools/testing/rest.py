@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Any, Self
+from typing import Any, Iterable, Self
 from uuid import UUID
 from warnings import warn
 
@@ -11,7 +11,6 @@ import httpx
 from fastapi.testclient import TestClient
 
 from pydevtools.http import HttpUrl, JsonDict
-from pydevtools.http.json import JsonList
 
 
 @dataclass
@@ -95,10 +94,10 @@ class RestRequest:
     def unpack(self) -> JsonDict:
         return JsonDict(self.response.json()["data"][self.resource.singular])
 
-    def unpack_many(self) -> JsonList[Any]:
+    def unpack_many(self) -> Iterable[JsonDict]:
         items = self.response.json()["data"][self.resource.plural]
 
-        return JsonList([JsonDict(item) for item in items])
+        return [JsonDict(item) for item in items]
 
     def ensure(self) -> RestResponse:
         return RestResponse(

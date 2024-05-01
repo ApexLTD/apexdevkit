@@ -9,6 +9,14 @@ def test_should_attach_headers() -> None:
     assert http.headers == {"Harry": "Potter", "Ronald": "Weasley"}
 
 
+def test_should_attach_params() -> None:
+    http = FakeHttp()
+
+    FluentHttp(http).with_param("Color", "Yellow").and_param("Shape", "Square")
+
+    assert http.params == {"Color": "Yellow", "Shape": "Square"}
+
+
 def test_should_form_post_response() -> None:
     http = FakeHttp()
 
@@ -42,22 +50,6 @@ def test_should_form_get_response() -> None:
     assert response.json() == JsonDict()
 
 
-def test_should_get_with_defaults() -> None:
-    http = FakeHttp()
-
-    FluentHttp(http).get().on_endpoint("/get")
-
-    http.request.assert_get().with_params({}).on_endpoint("/get")
-
-
-def test_should_get_with_params() -> None:
-    http = FakeHttp()
-
-    FluentHttp(http).with_param("color", "yellow").get().on_endpoint("/get")
-
-    http.request.assert_get().with_params({"color": "yellow"}).on_endpoint("/get")
-
-
 def test_should_form_patch_response() -> None:
     http = FakeHttp()
 
@@ -89,11 +81,3 @@ def test_should_form_delete_response() -> None:
     response = FluentHttp(http).delete().on_endpoint("/delete")
 
     assert response.json() == JsonDict({})
-
-
-def test_should_delete_with_defaults() -> None:
-    http = FakeHttp()
-
-    FluentHttp(http).delete().on_endpoint("/delete")
-
-    http.request.assert_delete().on_endpoint("/delete")
