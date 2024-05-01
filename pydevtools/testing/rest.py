@@ -30,6 +30,9 @@ class RestResource:
     def update_one(self) -> UpdateOne:
         return UpdateOne(self.name, self.http)
 
+    def update_many(self) -> UpdateMany:
+        return UpdateMany(self.name, self.http)
+
     def create_many(self) -> CreateMany:
         return CreateMany(self.name, self.http)
 
@@ -177,6 +180,26 @@ class CreateMany(RestRequest):
     def response(self) -> httpx.Response:
         return self.http.post(
             self.resource + "batch",
+            json={self.resource.plural: [dict(data) for data in self.data]},
+        )
+
+    def from_data(self, value: JsonDict) -> Self:
+        self.data.append(value)
+
+        return self
+
+    def and_data(self, value: JsonDict) -> Self:
+        return self.from_data(value)
+
+
+@dataclass
+class UpdateMany(RestRequest):
+    data: list[JsonDict] = field(default_factory=list)
+
+    @cached_property
+    def response(self) -> httpx.Response:
+        return self.http.patch(
+            self.resource + "",
             json={self.resource.plural: [dict(data) for data in self.data]},
         )
 

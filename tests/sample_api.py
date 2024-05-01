@@ -16,6 +16,7 @@ from pydevtools.fastapi import (
     ResourceFound,
     ResourceNotFound,
     Response,
+    SuccessResponse,
     inject,
 )
 from pydevtools.repository import InMemoryRepository
@@ -36,6 +37,9 @@ class AppleItem(BaseModel):
     name: str
     color: str
 
+    def apple(self) -> Apple:
+        return Apple(id=self.id, name=self.name, color=self.color)
+
 
 class AppleItemEnvelope(BaseModel):
     apple: AppleItem
@@ -53,6 +57,10 @@ class AppleCreateRequest(BaseModel):
 
 class AppleCreateManyRequest(BaseModel):
     apples: list[AppleCreateRequest]
+
+
+class AppleUpdateListEnvelope(BaseModel):
+    apples: list[AppleItem]
 
 
 @apple_api.post(
@@ -137,6 +145,15 @@ def read_all(
 )
 def patch(apple_id: UUID) -> BadRequest:
     return BadRequest(message=f"Patching <{apple_id}> is not allowed")
+
+
+@apple_api.patch("", status_code=200, response_model=Response[NoData])
+def patch_many(
+    updated: AppleUpdateListEnvelope,
+    apples: Annotated[InMemoryRepository[Apple], inject("apples")],
+) -> SuccessResponse:
+    apples.update_many([apple.apple() for apple in updated.apples])
+    return SuccessResponse(status_code=200)
 
 
 @apple_api.delete(
