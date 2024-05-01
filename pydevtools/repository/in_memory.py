@@ -78,6 +78,10 @@ class InMemoryRepository(Generic[ItemT]):
         self.delete(item.id)
         self.create(item)
 
+    def update_many(self, items: list[ItemT]) -> None:
+        for item in items:
+            self.update(item)
+
     def delete(self, item_id: Any) -> None:
         try:
             del self.items[str(item_id)]

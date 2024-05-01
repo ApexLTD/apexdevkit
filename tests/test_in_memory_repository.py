@@ -159,6 +159,22 @@ def test_should_update(faker: Faker) -> None:
     assert persisted == updated
 
 
+def test_should_update_many(faker: Faker) -> None:
+    company_1 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
+    company_2 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
+    repository = InMemoryRepository[_Company](formatter=_Formatter())
+    repository.create_many([company_1, company_2])
+
+    updated_1 = _Company(id=company_1.id, name=faker.company(), code=faker.ein())
+    updated_2 = _Company(id=company_2.id, name=faker.company(), code=faker.ein())
+    repository.update_many([updated_1, updated_2])
+
+    persisted_1 = repository.read(company_1.id)
+    persisted_2 = repository.read(company_2.id)
+    assert persisted_1 == updated_1
+    assert persisted_2 == updated_2
+
+
 def test_should_not_delete_unknown() -> None:
     unknown_id = uuid4()
     repository = InMemoryRepository[_Company](formatter=_Formatter())
