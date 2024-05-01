@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from enum import Enum, auto
 from typing import Any, Protocol, Type
 
 from pydevtools.http.json import JsonDict
@@ -13,16 +14,28 @@ class Http(Protocol):  # pragma: no cover
     def with_param(self, key: str, value: str) -> Http:
         pass
 
-    def post(self, endpoint: str, json: JsonDict) -> HttpResponse:
+    def with_json(self, value: JsonDict) -> Http:
         pass
 
-    def get(self, endpoint: str) -> HttpResponse:
+    def request(self, method: HttpMethod, endpoint: str) -> HttpResponse:
         pass
 
-    def patch(self, endpoint: str, json: JsonDict) -> HttpResponse:
+
+class HttpMethod(Enum):
+    post = auto()
+    get = auto()
+    patch = auto()
+    delete = auto()
+
+
+class HttpResponse(Protocol):  # pragma: no cover
+    def code(self) -> int:
         pass
 
-    def delete(self, endpoint: str) -> HttpResponse:
+    def raw(self) -> Any:
+        pass
+
+    def json(self) -> JsonDict:
         pass
 
 
@@ -42,61 +55,32 @@ class FluentHttp:
     def with_param(self, key: str, value: str) -> FluentHttp:
         return FluentHttp(self.http.with_param(key, value))
 
-    def post(self) -> FluentHttpPost:
-        return FluentHttpPost(self.http)
+    def and_json(self, value: JsonDict) -> FluentHttp:
+        return self.with_json(value)
 
-    def get(self) -> FluentHttpGet:
-        return FluentHttpGet(self.http)
+    def with_json(self, value: JsonDict) -> FluentHttp:
+        return FluentHttp(self.http.with_json(value))
 
-    def patch(self) -> FluentHttpPatch:
-        return FluentHttpPatch(self.http)
+    def post(self) -> FluentHttpRequest:
+        return FluentHttpRequest(HttpMethod.post, self.http)
 
-    def delete(self) -> FluentHttpDelete:
-        return FluentHttpDelete(self.http)
+    def get(self) -> FluentHttpRequest:
+        return FluentHttpRequest(HttpMethod.get, self.http)
 
+    def patch(self) -> FluentHttpRequest:
+        return FluentHttpRequest(HttpMethod.patch, self.http)
 
-@dataclass(frozen=True)
-class FluentHttpPost:
-    http: Http
-
-    json: JsonDict = field(default_factory=JsonDict)
-
-    def with_json(self, value: JsonDict) -> FluentHttpPost:
-        return FluentHttpPost(self.http, json=value)
-
-    def on_endpoint(self, value: str) -> FluentHttpResponse:
-        return FluentHttpResponse(self.http.post(value, json=self.json))
+    def delete(self) -> FluentHttpRequest:
+        return FluentHttpRequest(HttpMethod.delete, self.http)
 
 
 @dataclass(frozen=True)
-class FluentHttpGet:
-    http: Http
-
-    params: dict[str, Any] = field(default_factory=dict)
-
-    def on_endpoint(self, value: str) -> FluentHttpResponse:
-        return FluentHttpResponse(self.http.get(value))
-
-
-@dataclass(frozen=True)
-class FluentHttpPatch:
-    http: Http
-
-    json: JsonDict = field(default_factory=JsonDict)
-
-    def with_json(self, value: JsonDict) -> FluentHttpPatch:
-        return FluentHttpPatch(self.http, json=value)
-
-    def on_endpoint(self, value: str) -> FluentHttpResponse:
-        return FluentHttpResponse(self.http.patch(value, json=self.json))
-
-
-@dataclass(frozen=True)
-class FluentHttpDelete:
+class FluentHttpRequest:
+    method: HttpMethod
     http: Http
 
     def on_endpoint(self, value: str) -> FluentHttpResponse:
-        return FluentHttpResponse(self.http.delete(value))
+        return FluentHttpResponse(self.http.request(self.method, value))
 
 
 @dataclass(frozen=True)
@@ -123,14 +107,3 @@ class FluentHttpResponse:
 
     def json(self) -> JsonDict:
         return self.response.json()
-
-
-class HttpResponse(Protocol):  # pragma: no cover
-    def code(self) -> int:
-        pass
-
-    def raw(self) -> Any:
-        pass
-
-    def json(self) -> JsonDict:
-        pass

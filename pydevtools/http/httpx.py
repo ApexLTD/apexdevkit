@@ -5,7 +5,7 @@ from typing import Any, Iterator, Mapping, Self
 
 import httpx
 
-from pydevtools.http.fluent import HttpResponse
+from pydevtools.http.fluent import HttpMethod, HttpResponse
 from pydevtools.http.json import JsonDict
 from pydevtools.http.url import HttpUrl
 
@@ -25,43 +25,17 @@ class Httpx:
     def with_param(self, key: str, value: str) -> Httpx:
         return Httpx(self.url, self.config.with_param(key, value))
 
-    def post(self, endpoint: str, json: JsonDict) -> HttpResponse:
-        return HttpxResponseAdapter(
-            httpx.post(
-                self.url + endpoint,
-                headers=self.config["headers"],
-                json=dict(json),
-            )
-        )
+    def with_json(self, value: JsonDict) -> Httpx:
+        return Httpx(self.url, self.config.with_json(value))
 
-    def get(self, endpoint: str) -> HttpResponse:
-        return HttpxResponseAdapter(
-            httpx.get(
-                self.url + endpoint,
-                params=self.config["params"],
-            )
-        )
-
-    def patch(self, endpoint: str, json: JsonDict) -> HttpResponse:
-        return HttpxResponseAdapter(
-            httpx.patch(
-                self.url + endpoint,
-                json=dict(json),
-                **self.config,
-            )
-        )
-
-    def delete(self, endpoint: str) -> HttpResponse:
-        return HttpxResponseAdapter(
-            httpx.delete(
-                self.url + endpoint,
-                **self.config,
-            )
+    def request(self, method: HttpMethod, endpoint: str) -> HttpResponse:
+        return _HttpxResponse(
+            httpx.request(method.name, self.url + endpoint, **self.config)
         )
 
 
 @dataclass
-class HttpxResponseAdapter:
+class _HttpxResponse:
     inner: httpx.Response
 
     def code(self) -> int:
@@ -79,15 +53,14 @@ class HttpxConfig(Mapping[str, Any]):
     timeout_s: int = 30
     headers: JsonDict = field(default_factory=JsonDict)
     params: JsonDict = field(default_factory=JsonDict)
-
-    def and_header(self, key: str, value: str) -> HttpxConfig:
-        return self.with_header(key, value)
+    json: JsonDict = field(default_factory=JsonDict)
 
     def with_header(self, key: str, value: str) -> HttpxConfig:
         return HttpxConfig(
             timeout_s=self.timeout_s,
             headers=self.headers.merge(JsonDict({key: value})),
             params=self.params,
+            json=self.json,
         )
 
     def with_param(self, key: str, value: str) -> HttpxConfig:
@@ -95,6 +68,15 @@ class HttpxConfig(Mapping[str, Any]):
             timeout_s=self.timeout_s,
             headers=self.headers,
             params=self.params.merge(JsonDict({key: value})),
+            json=self.json,
+        )
+
+    def with_json(self, value: JsonDict) -> HttpxConfig:
+        return HttpxConfig(
+            timeout_s=self.timeout_s,
+            headers=self.headers,
+            params=self.params,
+            json=value,
         )
 
     def as_dict(self) -> dict[str, Any]:
@@ -102,6 +84,7 @@ class HttpxConfig(Mapping[str, Any]):
             "timeout": self.timeout_s,
             "headers": dict(self.headers),
             "params": dict(self.params),
+            "json": dict(self.json),
         }
 
     def __len__(self) -> int:
