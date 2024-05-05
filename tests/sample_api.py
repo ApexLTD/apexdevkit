@@ -24,7 +24,7 @@ from pydevtools.repository import InMemoryRepository
 apple_api = APIRouter()
 
 
-@dataclass
+@dataclass(frozen=True)
 class Apple:
     color: str
     name: str

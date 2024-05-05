@@ -6,7 +6,9 @@ from pydevtools.error import Criteria, DoesNotExistError, ExistsError
 
 
 class _Item(Protocol):
-    id: Any
+    @property
+    def id(self) -> Any:
+        pass
 
 
 ItemT = TypeVar("ItemT", bound=_Item)
