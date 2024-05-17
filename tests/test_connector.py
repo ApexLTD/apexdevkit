@@ -1,7 +1,3 @@
-import os
-
-import pytest
-
 from pydevtools.repository import Connector, DatabaseCommand
 from pydevtools.repository.connector import SqliteFileConnector, SqliteInMemoryConnector
 
@@ -19,12 +15,7 @@ def execute_command(connector: Connector) -> None:
 
 
 def test_should_connect_to_file() -> None:
-    try:
-        execute_command(SqliteFileConnector(DSN))
-    except Exception:
-        pytest.fail()
-    finally:
-        os.remove(DSN)
+    execute_command(SqliteFileConnector(DSN))
 
 
 def test_should_connect_to_memory() -> None:

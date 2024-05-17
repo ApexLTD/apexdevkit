@@ -99,6 +99,12 @@ class FluentHttpResponse:
 
         return self
 
+    def on_not_found(self, raises: Exception | Type[Exception]) -> FluentHttpResponse:
+        if self.response.code() == 404:
+            raise raises
+
+        return self
+
     def on_failure(self, raises: Type[Exception]) -> FluentHttpResponse:
         if self.response.code() < 200 or self.response.code() > 299:
             raise raises(self.response.raw())

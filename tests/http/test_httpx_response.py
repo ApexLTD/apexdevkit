@@ -25,6 +25,11 @@ def test_should_raise_on_server_error() -> None:
         FluentHttpResponse(FakeResponse.fail()).on_failure(raises=FakeHttpError)
 
 
+def test_should_raise_on_not_found() -> None:
+    with pytest.raises(FakeHttpError):
+        FluentHttpResponse(FakeResponse.not_found()).on_not_found(raises=FakeHttpError)
+
+
 def test_should_respond_with_json() -> None:
     json = (
         FluentHttpResponse(FakeResponse())

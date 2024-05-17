@@ -33,6 +33,10 @@ class FakeResponse:
     def fail(cls) -> FakeResponse:
         return FakeResponse(status_code=500)
 
+    @classmethod
+    def not_found(cls) -> FakeResponse:
+        return FakeResponse(status_code=404)
+
 
 @dataclass
 class FakeHttp:
