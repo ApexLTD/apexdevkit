@@ -21,8 +21,10 @@ def test_should_raise_on_conflict() -> None:
 
 
 def test_should_raise_on_server_error() -> None:
-    with pytest.raises(FakeHttpError):
+    with pytest.raises(FakeHttpError) as cm:
         FluentHttpResponse(FakeResponse.fail()).on_failure(raises=FakeHttpError)
+
+    assert str(cm.value) == "({}, 500)"
 
 
 def test_should_raise_on_not_found() -> None:

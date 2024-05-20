@@ -107,7 +107,7 @@ class FluentHttpResponse:
 
     def on_failure(self, raises: Type[Exception]) -> FluentHttpResponse:
         if self.response.code() < 200 or self.response.code() > 299:
-            raise raises(self.response.raw())
+            raise raises(self.response.raw(), self.response.code())
 
         return self
 
