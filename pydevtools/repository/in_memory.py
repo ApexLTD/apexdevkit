@@ -1,6 +1,6 @@
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, Generic, Iterator, Protocol, Self, TypeVar
+from typing import Any, Generic, Iterable, Iterator, Protocol, Self, TypeVar
 
 from pydevtools.error import Criteria, DoesNotExistError, ExistsError
 
@@ -89,6 +89,15 @@ class InMemoryRepository(Generic[ItemT]):
             del self.items[str(item_id)]
         except KeyError:
             raise DoesNotExistError(item_id)
+
+    def search(self, **kwargs: Any) -> Iterable[ItemT]:
+        items = []
+
+        for item in self.items.values():
+            if kwargs.items() <= item.items():
+                items.append(self.formatter.load(item))
+
+        return items
 
     def __iter__(self) -> Iterator[ItemT]:
         yield from [self.formatter.load(deepcopy(raw)) for raw in self.items.values()]

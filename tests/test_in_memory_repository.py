@@ -214,3 +214,57 @@ def test_should_preserve_nested_object() -> None:
     company.name = "changed"
 
     assert repository.read(_id) == repository.read(_id)
+
+
+def test_should_search(faker: Faker) -> None:
+    company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
+    repository = InMemoryRepository[_Company](formatter=_Formatter())
+
+    repository.create(company)
+
+    assert list(repository.search(name=company.name)) == [company]
+
+
+def test_should_search_unique(faker: Faker) -> None:
+    company_1 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
+    company_2 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
+    repository = InMemoryRepository[_Company](formatter=_Formatter())
+
+    repository.create(company_1)
+    repository.create(company_2)
+
+    assert list(repository.search(name=company_2.name)) == [company_2]
+
+
+def test_should_search_many(faker: Faker) -> None:
+    company_1 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
+    company_2 = _Company(id=uuid4(), name=company_1.name, code=faker.ein())
+    company_3 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
+
+    repository = InMemoryRepository[_Company](formatter=_Formatter())
+
+    repository.create(company_1)
+    repository.create(company_2)
+    repository.create(company_3)
+
+    searched = repository.search(name=company_1.name)
+
+    assert len(list(searched)) == 2
+    assert all(company in [company_1, company_2] for company in searched)
+
+
+def test_should_search_with_multiple_kwargs(faker: Faker) -> None:
+    company_1 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
+    company_2 = _Company(id=uuid4(), name=company_1.name, code=faker.ein())
+    company_3 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
+
+    repository = InMemoryRepository[_Company](formatter=_Formatter())
+
+    repository.create(company_1)
+    repository.create(company_2)
+    repository.create(company_3)
+
+    searched = repository.search(name=company_1.name, code=company_1.code)
+
+    assert len(list(searched)) == 1
+    assert list(searched) == [company_1]
