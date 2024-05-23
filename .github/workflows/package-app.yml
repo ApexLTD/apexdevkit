@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 jobs:
-  bump:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
