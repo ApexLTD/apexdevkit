@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Self
 
-from pydevtools.http.fluent import HttpMethod, HttpResponse
-from pydevtools.http.json import JsonDict
+from apexdevkit.http.fluent import HttpMethod, HttpResponse
+from apexdevkit.http.json import JsonDict
 
 
 @dataclass

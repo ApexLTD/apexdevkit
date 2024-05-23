@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import ContextManager
 
-from pydevtools.repository import Connection
+from apexdevkit.repository import Connection
 
 
 @dataclass

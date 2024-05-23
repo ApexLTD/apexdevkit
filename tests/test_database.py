@@ -1,7 +1,7 @@
 from faker import Faker
 
-from pydevtools.repository import Database, DatabaseCommand
-from pydevtools.testing import FakeConnector
+from apexdevkit.repository import Database, DatabaseCommand
+from apexdevkit.testing import FakeConnector
 
 
 def test_should_execute(faker: Faker) -> None:

@@ -1,5 +1,5 @@
-from pydevtools.repository import Connector, DatabaseCommand
-from pydevtools.repository.connector import SqliteFileConnector, SqliteInMemoryConnector
+from apexdevkit.repository import Connector, DatabaseCommand
+from apexdevkit.repository.connector import SqliteFileConnector, SqliteInMemoryConnector
 
 DSN = "test.db"
 command = DatabaseCommand("""

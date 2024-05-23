@@ -10,13 +10,13 @@ update:
 	poetry update
 
 format:
-	poetry run ruff format pydevtools tests
-	poetry run ruff check  pydevtools tests --fix
+	poetry run ruff format apexdevkit tests
+	poetry run ruff check  apexdevkit tests --fix
 
 lint:
-	poetry run ruff format pydevtools tests --check
-	poetry run ruff check pydevtools tests
-	poetry run mypy pydevtools tests
+	poetry run ruff format apexdevkit tests --check
+	poetry run ruff check apexdevkit tests
+	poetry run mypy apexdevkit tests
 
 test:
 	poetry run pytest \

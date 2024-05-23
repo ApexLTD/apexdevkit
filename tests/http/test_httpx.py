@@ -1,7 +1,7 @@
 import pytest
 from pytest import fixture
 
-from pydevtools.http import Http, HttpMethod, Httpx, JsonDict
+from apexdevkit.http import Http, HttpMethod, Httpx, JsonDict
 
 ECHO_SERVER = "http://httpbin.org"
 

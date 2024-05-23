@@ -2,7 +2,7 @@ from unittest.mock import ANY
 
 from faker import Faker
 
-from pydevtools.http import JsonDict
+from apexdevkit.http import JsonDict
 
 
 def test_should_not_drop_anything(faker: Faker) -> None:

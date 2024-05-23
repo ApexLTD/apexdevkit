@@ -2,7 +2,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Generic, Iterable, Iterator, Protocol, Self, TypeVar
 
-from pydevtools.error import Criteria, DoesNotExistError, ExistsError
+from apexdevkit.error import Criteria, DoesNotExistError, ExistsError
 
 
 class _Item(Protocol):

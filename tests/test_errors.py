@@ -1,4 +1,4 @@
-from pydevtools.error import DoesNotExistError, ExistsError
+from apexdevkit.error import DoesNotExistError, ExistsError
 
 
 def test_default_exists_error() -> None:

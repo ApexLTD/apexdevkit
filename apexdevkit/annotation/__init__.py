@@ -1,3 +1,3 @@
-from pydevtools.annotation.deprecate import deprecated
+from apexdevkit.annotation.deprecate import deprecated
 
 __all__ = ["deprecated"]

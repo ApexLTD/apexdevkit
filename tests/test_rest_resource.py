@@ -9,10 +9,10 @@ import pytest
 from faker import Faker
 from fastapi.testclient import TestClient
 
-from pydevtools.fastapi import FastApiBuilder
-from pydevtools.http import JsonDict
-from pydevtools.repository import InMemoryRepository
-from pydevtools.testing import RestCollection, RestfulName, RestResource
+from apexdevkit.fastapi import FastApiBuilder
+from apexdevkit.http import JsonDict
+from apexdevkit.repository import InMemoryRepository
+from apexdevkit.testing import RestCollection, RestfulName, RestResource
 from tests.sample_api import Apple, apple_api
 
 

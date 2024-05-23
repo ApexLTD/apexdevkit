@@ -10,7 +10,7 @@ from warnings import warn
 import httpx
 from fastapi.testclient import TestClient
 
-from pydevtools.http import HttpUrl, JsonDict
+from apexdevkit.http import HttpUrl, JsonDict
 
 
 @dataclass

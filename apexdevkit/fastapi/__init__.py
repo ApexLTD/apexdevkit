@@ -1,7 +1,7 @@
-from pydevtools.fastapi.builder import FastApiBuilder
-from pydevtools.fastapi.dependable import inject
-from pydevtools.fastapi.docs import NoData, Response
-from pydevtools.fastapi.response import (
+from apexdevkit.fastapi.builder import FastApiBuilder
+from apexdevkit.fastapi.dependable import inject
+from apexdevkit.fastapi.docs import NoData, Response
+from apexdevkit.fastapi.response import (
     BadRequest,
     ErrorResponse,
     ResourceCreated,

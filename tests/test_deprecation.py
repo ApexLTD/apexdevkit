@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from pydevtools.annotation import deprecated
+from apexdevkit.annotation import deprecated
 
 
 @deprecated("Do not use this class")

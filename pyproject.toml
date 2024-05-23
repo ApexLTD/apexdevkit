@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pydevtools"
+name = "apexdevkit"
 version = "0.2.0"
 description = "Apex Development Tools for python."
 authors = ["Apex Dev <dev@apex.ge>"]
@@ -48,7 +48,7 @@ max-complexity = 10
 [tool.coverage.run]
 branch = true
 source = [
-    "pydevtools",
+    "apexdevkit",
     "tests",
 ]
 

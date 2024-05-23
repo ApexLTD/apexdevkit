@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Any, Protocol, Type
 
-from pydevtools.http.json import JsonDict
+from apexdevkit.http.json import JsonDict
 
 
 class Http(Protocol):  # pragma: no cover

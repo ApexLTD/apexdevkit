@@ -1,11 +1,11 @@
-from pydevtools.repository.database import (
+from apexdevkit.repository.database import (
     Connection,
     Connector,
     Cursor,
     Database,
     DatabaseCommand,
 )
-from pydevtools.repository.in_memory import InMemoryRepository
+from apexdevkit.repository.in_memory import InMemoryRepository
 
 __all__ = [
     "Connection",

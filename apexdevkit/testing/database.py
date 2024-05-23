@@ -2,7 +2,7 @@ from contextlib import nullcontext
 from dataclasses import dataclass, field
 from typing import Any, ContextManager, Self
 
-from pydevtools.repository import DatabaseCommand
+from apexdevkit.repository import DatabaseCommand
 
 
 @dataclass

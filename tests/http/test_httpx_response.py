@@ -1,7 +1,7 @@
 import pytest
 
-from pydevtools.http import FluentHttpResponse
-from pydevtools.http.fake import FakeResponse
+from apexdevkit.http import FluentHttpResponse
+from apexdevkit.http.fake import FakeResponse
 
 
 class FakeHttpError(Exception):

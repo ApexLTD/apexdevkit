@@ -7,8 +7,8 @@ from uuid import UUID, uuid4
 import pytest
 from faker import Faker
 
-from pydevtools.error import DoesNotExistError, ExistsError
-from pydevtools.repository import InMemoryRepository
+from apexdevkit.error import DoesNotExistError, ExistsError
+from apexdevkit.repository import InMemoryRepository
 
 
 @dataclass

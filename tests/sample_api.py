@@ -7,8 +7,8 @@ from uuid import UUID, uuid4
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from pydevtools.error import DoesNotExistError, ExistsError
-from pydevtools.fastapi import (
+from apexdevkit.error import DoesNotExistError, ExistsError
+from apexdevkit.fastapi import (
     BadRequest,
     NoData,
     ResourceCreated,
@@ -19,7 +19,7 @@ from pydevtools.fastapi import (
     SuccessResponse,
     inject,
 )
-from pydevtools.repository import InMemoryRepository
+from apexdevkit.repository import InMemoryRepository
 
 apple_api = APIRouter()
 

@@ -1,5 +1,5 @@
-from pydevtools.http import FakeHttp, FluentHttp, JsonDict
-from pydevtools.http.fluent import HttpMethod
+from apexdevkit.http import FakeHttp, FluentHttp, JsonDict
+from apexdevkit.http.fluent import HttpMethod
 
 
 def test_should_attach_headers() -> None:

@@ -5,9 +5,9 @@ from typing import Any, Iterator, Mapping, Self
 
 import httpx
 
-from pydevtools.http.fluent import HttpMethod, HttpResponse
-from pydevtools.http.json import JsonDict
-from pydevtools.http.url import HttpUrl
+from apexdevkit.http.fluent import HttpMethod, HttpResponse
+from apexdevkit.http.json import JsonDict
+from apexdevkit.http.url import HttpUrl
 
 
 @dataclass(frozen=True)
