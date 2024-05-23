@@ -33,7 +33,7 @@ jobs:
         run: poetry build
 
       - name: Publish package
-        run: poetry publish --username __token__ --password ${{ secrets.PYPI_TOKEN }}
+        run: poetry publish --username __token__ --password ${{ secrets.PYPI_KEY }}
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
