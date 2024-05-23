@@ -29,6 +29,12 @@ jobs:
       - name: Bump using poetry
         run: poetry version patch
 
+      - name: Build package
+        run: poetry build
+
+      - name: Publish package
+        run: poetry publish --username __token__ --password ${{ secrets.PYPI_TOKEN }}
+
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Bump Version
