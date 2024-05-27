@@ -13,14 +13,6 @@ from apexdevkit.testing import RestCollection, RestfulName, RestResource
 from tests.sample_api import setup
 
 
-@dataclass(frozen=True)
-class Apple:
-    color: str
-    name: str
-
-    id: str = field(default_factory=lambda: str(uuid4()))
-
-
 @pytest.fixture
 def http() -> TestClient:
     return TestClient(setup())

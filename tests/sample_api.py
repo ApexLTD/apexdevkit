@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
+from uuid import uuid4
+
 from fastapi import FastAPI
 
 from apexdevkit.fastapi import FastApiBuilder
@@ -7,7 +10,6 @@ from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.fastapi.service import InMemoryRestfulService
 from apexdevkit.repository import InMemoryRepository
 from apexdevkit.repository.in_memory import DataclassFormatter
-from tests.test_rest_resource import Apple
 
 
 def setup() -> FastAPI:
@@ -33,3 +35,11 @@ def setup() -> FastAPI:
         )
         .build()
     )
+
+
+@dataclass(frozen=True)
+class Apple:
+    color: str
+    name: str
+
+    id: str = field(default_factory=lambda: str(uuid4()))
