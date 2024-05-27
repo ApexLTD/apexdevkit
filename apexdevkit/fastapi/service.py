@@ -2,7 +2,7 @@ from abc import ABC
 from dataclasses import asdict, dataclass, replace
 from typing import Any, Iterable
 
-from apexdevkit.repository import InMemoryRepository
+from apexdevkit.repository.interface import Repository
 
 RawItem = dict[str, Any]
 RawCollection = Iterable[RawItem]
@@ -42,7 +42,7 @@ def _as_raw_item(value: Any) -> RawItem:
 @dataclass
 class InMemoryRestfulService(RestfulService):
     resource: type[Any]
-    repository: InMemoryRepository[Any]
+    repository: Repository[Any, Any]
 
     def create_one(self, item: RawItem) -> RawItem:
         result = self.resource(**item)

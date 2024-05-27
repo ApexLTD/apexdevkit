@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.fastapi.schema import RestfulSchema
-from apexdevkit.fastapi.service import RestfulService, RawCollection, RawItem
+from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
 from apexdevkit.testing import RestfulName
 
 _Response = JSONResponse | dict[str, Any]
