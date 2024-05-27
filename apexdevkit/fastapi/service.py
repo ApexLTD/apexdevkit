@@ -1,5 +1,6 @@
+from abc import ABC
 from dataclasses import asdict, dataclass, replace
-from typing import Any, Iterable, Protocol
+from typing import Any, Iterable
 
 from apexdevkit.repository import InMemoryRepository
 
@@ -7,27 +8,27 @@ _RawItem = dict[str, Any]
 _RawCollection = Iterable[_RawItem]
 
 
-class RestfulService(Protocol):
+class RestfulService(ABC):
     def create_one(self, item: _RawItem) -> _RawItem:
-        pass
+        raise NotImplementedError
 
     def create_many(self, items: _RawCollection) -> _RawCollection:
-        pass
+        raise NotImplementedError
 
     def read_one(self, item_id: str) -> _RawItem:
-        pass
+        raise NotImplementedError
 
     def read_all(self) -> _RawCollection:
-        pass
+        raise NotImplementedError
 
     def update_one(self, item_id: str, **with_fields: Any) -> _RawItem:
-        pass
+        raise NotImplementedError
 
     def update_many(self, items: _RawCollection) -> _RawCollection:
-        pass
+        raise NotImplementedError
 
     def delete_one(self, item_id: str) -> None:
-        pass
+        raise NotImplementedError
 
 
 def _as_raw_collection(value: Iterable[Any]) -> _RawCollection:
@@ -39,7 +40,7 @@ def _as_raw_item(value: Any) -> _RawItem:
 
 
 @dataclass
-class InMemoryRestfulService:
+class InMemoryRestfulService(RestfulService):
     resource: type[Any]
     repository: InMemoryRepository[Any]
 
