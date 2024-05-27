@@ -40,7 +40,7 @@ def _as_raw_item(value: Any) -> RawItem:
 
 
 @dataclass
-class InMemoryRestfulService(RestfulService):
+class RestfulRepository(RestfulService):
     resource: type[Any]
     repository: Repository[Any, Any]
 

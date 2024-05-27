@@ -7,12 +7,12 @@ from fastapi import FastAPI
 
 from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.router import RestfulRouter
-from apexdevkit.fastapi.service import InMemoryRestfulService
+from apexdevkit.fastapi.service import RestfulRepository
 from apexdevkit.repository import InMemoryRepository
 
 
 def setup() -> FastAPI:
-    apple_service = InMemoryRestfulService(
+    apple_service = RestfulRepository(
         Apple,
         InMemoryRepository[Apple]
         .for_dataclass(Apple)
