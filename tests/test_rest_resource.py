@@ -1,68 +1,21 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
-from typing import Any
+from dataclasses import dataclass, field
 from unittest.mock import ANY
 from uuid import uuid4
 
 import pytest
 from faker import Faker
-from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from apexdevkit.fastapi import FastApiBuilder
-from apexdevkit.fastapi.router import RestfulRouter
-from apexdevkit.fastapi.service import InMemoryRestfulService
 from apexdevkit.http import JsonDict
-from apexdevkit.repository import InMemoryRepository
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
-
-
-@dataclass(frozen=True)
-class Apple:
-    color: str
-    name: str
-
-    id: str = field(default_factory=lambda: str(uuid4()))
-
-
-@dataclass(frozen=True)
-class _Formatter:
-    def load(self, raw: dict[str, Any]) -> Apple:
-        return Apple(**raw)
-
-    def dump(self, item: Apple) -> dict[str, Any]:
-        return asdict(item)
+from tests.sample_api import setup
 
 
 @pytest.fixture
 def http() -> TestClient:
     return TestClient(setup())
-
-
-def setup() -> FastAPI:
-    apple_service = InMemoryRestfulService(
-        Apple,
-        InMemoryRepository[Apple](_Formatter()).with_unique(
-            criteria=lambda item: f"name<{item.name}>"
-        ),
-    )
-
-    return (
-        FastApiBuilder()
-        .with_title("Apple API")
-        .with_version("1.0.0")
-        .with_description("Sample API for unit testing various testing routines")
-        .with_route(
-            apples=(
-                RestfulRouter.from_dataclass(Apple)
-                .with_service(apple_service)
-                .default()
-                .build()
-            )
-        )
-        .build()
-    )
 
 
 @pytest.fixture

@@ -1,5 +1,5 @@
 from copy import deepcopy
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Any, Generic, Iterable, Iterator, Protocol, Self, TypeVar
 
 from apexdevkit.error import Criteria, DoesNotExistError, ExistsError
@@ -23,12 +23,27 @@ class _Formatter(Protocol[ItemT]):
 
 
 @dataclass
+class DataclassFormatter(Generic[ItemT]):
+    resource: type[ItemT]
+
+    def load(self, raw: dict[str, Any]) -> ItemT:
+        return self.resource(**raw)
+
+    def dump(self, item: ItemT) -> dict[str, Any]:
+        return asdict(item)  # type: ignore
+
+
+@dataclass
 class InMemoryRepository(Generic[ItemT]):
     formatter: _Formatter[ItemT]
     items: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     _uniques: list[Criteria] = field(init=False, default_factory=list)
     _search_by: list[str] = field(init=False, default_factory=list)
+
+    @classmethod
+    def for_dataclass(cls, value: type[ItemT]) -> "InMemoryRepository[ItemT]":
+        return cls(DataclassFormatter(value))
 
     def __post_init__(self) -> None:
         self._search_by = ["id", *self._search_by]
