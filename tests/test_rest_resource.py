@@ -7,13 +7,23 @@ from uuid import uuid4
 
 import pytest
 from faker import Faker
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from apexdevkit.fastapi import FastApiBuilder
+from apexdevkit.fastapi.router import RestfulRouter
+from apexdevkit.fastapi.service import InMemoryRestfulService
 from apexdevkit.http import JsonDict
 from apexdevkit.repository import InMemoryRepository
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
-from tests.sample_api import Apple, apple_api
+
+
+@dataclass(frozen=True)
+class Apple:
+    color: str
+    name: str
+
+    id: str = field(default_factory=lambda: str(uuid4()))
 
 
 @dataclass(frozen=True)
@@ -27,17 +37,30 @@ class _Formatter:
 
 @pytest.fixture
 def http() -> TestClient:
-    return TestClient(
+    return TestClient(setup())
+
+
+def setup() -> FastAPI:
+    apple_service = InMemoryRestfulService(
+        Apple,
+        InMemoryRepository[Apple](_Formatter()).with_unique(
+            criteria=lambda item: f"name<{item.name}>"
+        ),
+    )
+
+    return (
         FastApiBuilder()
         .with_title("Apple API")
         .with_version("1.0.0")
         .with_description("Sample API for unit testing various testing routines")
-        .with_dependency(
-            apples=InMemoryRepository[Apple](formatter=_Formatter()).with_unique(
-                criteria=lambda item: f"name<{item.name}>"
+        .with_route(
+            apples=(
+                RestfulRouter.from_dataclass(Apple)
+                .with_service(apple_service)
+                .default()
+                .build()
             )
         )
-        .with_route(apples=apple_api)
         .build()
     )
 
@@ -67,7 +90,7 @@ def test_should_not_read_unknown(resource: RestResource) -> None:
         .ensure()
         .fail()
         .with_code(404)
-        .and_message(f"An apple with id<{unknown_id}> does not exist.")
+        .and_message(f"An item<Apple> with id<{unknown_id}> does not exist.")
     )
 
 
@@ -129,22 +152,10 @@ def test_should_not_duplicate(resource: RestResource) -> None:
         .ensure()
         .fail()
         .with_code(409)
-        .message(f"An apple with the name<{apple.value_of('name')}> already exists.")
+        .message(
+            f"An item<Apple> with the name<{apple.value_of('name')}> already exists."
+        )
         .and_item(apple.select("id"))
-    )
-
-
-def test_should_not_patch(resource: RestResource) -> None:
-    id_ = uuid4()
-
-    (
-        resource.update_one()
-        .with_id(id_)
-        .and_data(fake.apple().drop("name"))
-        .ensure()
-        .fail()
-        .with_code(400)
-        .and_message(f"Patching <{id_}> is not allowed")
     )
 
 
@@ -164,6 +175,61 @@ def test_should_create_many(resource: RestResource) -> None:
                 many_apples[1].with_a(id=ANY),
             ]
         )
+    )
+
+
+def test_should_not_update_unknown(resource: RestResource) -> None:
+    unknown_id = uuid4()
+
+    (
+        resource.update_one()
+        .with_id(unknown_id)
+        .and_data(fake.apple().drop("id"))
+        .ensure()
+        .fail()
+        .with_code(404)
+        .and_message(f"An item<Apple> with id<{unknown_id}> does not exist.")
+    )
+
+
+def test_should_update_one(resource: RestResource) -> None:
+    apple = resource.create_one().from_data(fake.apple()).unpack()
+
+    (
+        resource.update_one()
+        .with_id(apple.value_of("id").to(str))
+        .and_data(apple.drop("color").with_a(color="RED"))
+        .ensure()
+        .success()
+        .with_code(200)
+        .and_no_data()
+    )
+
+
+def test_should_persist_update(resource: RestResource) -> None:
+    apple = (
+        resource.create_one()
+        .from_data(fake.apple())
+        .unpack()
+        .drop("color")
+        .with_a(color="RED")
+    )
+
+    (
+        resource.update_one()
+        .with_id(apple.value_of("id").to(str))
+        .and_data(apple)
+        .ensure()
+        .success()
+    )
+
+    (
+        resource.read_one()
+        .with_id(apple.value_of("id").to(str))
+        .ensure()
+        .success()
+        .with_code(200)
+        .and_item(apple)
     )
 
 
@@ -208,7 +274,9 @@ def test_should_not_duplicate_many(resource: RestResource) -> None:
         .ensure()
         .fail()
         .with_code(409)
-        .message(f"An apple with the name<{apple.value_of('name')}> already exists.")
+        .message(
+            f"An item<Apple> with the name<{apple.value_of('name')}> already exists."
+        )
         .and_item(apple.select("id"))
     )
 
@@ -222,7 +290,7 @@ def test_should_not_delete_unknown(resource: RestResource) -> None:
         .ensure()
         .fail()
         .with_code(404)
-        .and_message(f"An apple with id<{unknown_id}> does not exist.")
+        .and_message(f"An item<Apple> with id<{unknown_id}> does not exist.")
     )
 
 
@@ -250,5 +318,5 @@ def test_should_persist_delete(resource: RestResource) -> None:
         .ensure()
         .fail()
         .with_code(404)
-        .and_message(f"An apple with id<{id_}> does not exist.")
+        .and_message(f"An item<Apple> with id<{id_}> does not exist.")
     )
