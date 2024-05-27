@@ -9,13 +9,12 @@ from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.fastapi.service import InMemoryRestfulService
 from apexdevkit.repository import InMemoryRepository
-from apexdevkit.repository.in_memory import DataclassFormatter
 
 
 def setup() -> FastAPI:
     apple_service = InMemoryRestfulService(
         Apple,
-        InMemoryRepository[Apple](DataclassFormatter[Apple](Apple)).with_unique(
+        InMemoryRepository.for_dataclass(Apple).with_unique(
             criteria=lambda item: f"name<{item.name}>"
         ),
     )

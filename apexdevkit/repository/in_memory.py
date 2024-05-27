@@ -41,6 +41,10 @@ class InMemoryRepository(Generic[ItemT]):
     _uniques: list[Criteria] = field(init=False, default_factory=list)
     _search_by: list[str] = field(init=False, default_factory=list)
 
+    @classmethod
+    def for_dataclass(cls, value: type[ItemT]) -> "InMemoryRepository[ItemT]":
+        return cls(DataclassFormatter(value))
+
     def __post_init__(self) -> None:
         self._search_by = ["id", *self._search_by]
 
