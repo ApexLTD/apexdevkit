@@ -6,16 +6,11 @@ from uuid import uuid4
 
 import pytest
 from faker import Faker
-from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from apexdevkit.fastapi import FastApiBuilder
-from apexdevkit.fastapi.router import RestfulRouter
-from apexdevkit.fastapi.service import InMemoryRestfulService
 from apexdevkit.http import JsonDict
-from apexdevkit.repository import InMemoryRepository
-from apexdevkit.repository.in_memory import DataclassFormatter
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
+from tests.sample_api import setup
 
 
 @dataclass(frozen=True)
@@ -29,31 +24,6 @@ class Apple:
 @pytest.fixture
 def http() -> TestClient:
     return TestClient(setup())
-
-
-def setup() -> FastAPI:
-    apple_service = InMemoryRestfulService(
-        Apple,
-        InMemoryRepository[Apple](DataclassFormatter[Apple](Apple)).with_unique(
-            criteria=lambda item: f"name<{item.name}>"
-        ),
-    )
-
-    return (
-        FastApiBuilder()
-        .with_title("Apple API")
-        .with_version("1.0.0")
-        .with_description("Sample API for unit testing various testing routines")
-        .with_route(
-            apples=(
-                RestfulRouter.from_dataclass(Apple)
-                .with_service(apple_service)
-                .default()
-                .build()
-            )
-        )
-        .build()
-    )
 
 
 @pytest.fixture
