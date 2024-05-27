@@ -14,9 +14,9 @@ from apexdevkit.repository import InMemoryRepository
 def setup() -> FastAPI:
     apple_service = InMemoryRestfulService(
         Apple,
-        InMemoryRepository.for_dataclass(Apple).with_unique(
-            criteria=lambda item: f"name<{item.name}>"
-        ),
+        InMemoryRepository[Apple]
+        .for_dataclass(Apple)
+        .with_unique(criteria=lambda item: f"name<{item.name}>"),
     )
 
     return (
