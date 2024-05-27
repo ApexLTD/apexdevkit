@@ -10,25 +10,25 @@ _RawCollection = Iterable[_RawItem]
 
 class RestfulService(ABC):
     def create_one(self, item: _RawItem) -> _RawItem:
-        raise NotImplementedError
+        raise NotImplementedError(self.create_one.__name__)
 
     def create_many(self, items: _RawCollection) -> _RawCollection:
-        raise NotImplementedError
+        raise NotImplementedError(self.create_many.__name__)
 
     def read_one(self, item_id: str) -> _RawItem:
-        raise NotImplementedError
+        raise NotImplementedError(self.read_one.__name__)
 
     def read_all(self) -> _RawCollection:
-        raise NotImplementedError
+        raise NotImplementedError(self.read_all.__name__)
 
     def update_one(self, item_id: str, **with_fields: Any) -> _RawItem:
-        raise NotImplementedError
+        raise NotImplementedError(self.update_one.__name__)
 
     def update_many(self, items: _RawCollection) -> _RawCollection:
-        raise NotImplementedError
+        raise NotImplementedError(self.update_many.__name__)
 
     def delete_one(self, item_id: str) -> None:
-        raise NotImplementedError
+        raise NotImplementedError(self.delete_one.__name__)
 
 
 def _as_raw_collection(value: Iterable[Any]) -> _RawCollection:
