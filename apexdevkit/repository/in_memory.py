@@ -1,5 +1,5 @@
 from copy import deepcopy
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Any, Generic, Iterable, Iterator, Protocol, Self, TypeVar
 
 from apexdevkit.error import Criteria, DoesNotExistError, ExistsError
@@ -20,6 +20,17 @@ class _Formatter(Protocol[ItemT]):
 
     def dump(self, item: ItemT) -> dict[str, Any]:
         pass
+
+
+@dataclass
+class DataclassFormatter(Generic[ItemT]):
+    resource: type[ItemT]
+
+    def load(self, raw: dict[str, Any]) -> ItemT:
+        return self.resource(**raw)
+
+    def dump(self, item: ItemT) -> dict[str, Any]:
+        return asdict(item)  # type: ignore
 
 
 @dataclass

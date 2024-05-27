@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
-from typing import Any
+from dataclasses import dataclass, field
 from unittest.mock import ANY
 from uuid import uuid4
 
@@ -15,6 +14,7 @@ from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.fastapi.service import InMemoryRestfulService
 from apexdevkit.http import JsonDict
 from apexdevkit.repository import InMemoryRepository
+from apexdevkit.repository.in_memory import DataclassFormatter
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
 
 
@@ -26,15 +26,6 @@ class Apple:
     id: str = field(default_factory=lambda: str(uuid4()))
 
 
-@dataclass(frozen=True)
-class _Formatter:
-    def load(self, raw: dict[str, Any]) -> Apple:
-        return Apple(**raw)
-
-    def dump(self, item: Apple) -> dict[str, Any]:
-        return asdict(item)
-
-
 @pytest.fixture
 def http() -> TestClient:
     return TestClient(setup())
@@ -43,7 +34,7 @@ def http() -> TestClient:
 def setup() -> FastAPI:
     apple_service = InMemoryRestfulService(
         Apple,
-        InMemoryRepository[Apple](_Formatter()).with_unique(
+        InMemoryRepository[Apple](DataclassFormatter[Apple](Apple)).with_unique(
             criteria=lambda item: f"name<{item.name}>"
         ),
     )
