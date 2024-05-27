@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.fastapi.schema import RestfulSchema
-from apexdevkit.fastapi.service import RestfulService, _RawCollection, _RawItem
+from apexdevkit.fastapi.service import RestfulService, RawCollection, RawItem
 from apexdevkit.testing import RestfulName
 
 _Response = JSONResponse | dict[str, Any]
@@ -115,7 +115,7 @@ class RestfulRouter:
             response_model=self.schema.for_item(),
             include_in_schema=is_documented,
         )
-        def create_one(item: Annotated[_RawItem, Depends(schema)]) -> _Response:
+        def create_one(item: Annotated[RawItem, Depends(schema)]) -> _Response:
             try:
                 item = self.service.create_one(item)
             except ExistsError as e:
@@ -135,7 +135,7 @@ class RestfulRouter:
             response_model=self.schema.for_collection(),
             include_in_schema=is_documented,
         )
-        def create_many(items: Annotated[_RawCollection, Depends(schema)]) -> _Response:
+        def create_many(items: Annotated[RawCollection, Depends(schema)]) -> _Response:
             try:
                 return self.response.created_many(self.service.create_many(items))
             except ExistsError as e:
@@ -188,7 +188,7 @@ class RestfulRouter:
         )
         def update_one(
             item_id: str,
-            updates: Annotated[_RawItem, Depends(schema)],
+            updates: Annotated[RawItem, Depends(schema)],
         ) -> _Response:
             try:
                 self.service.update_one(item_id, **updates)
@@ -209,7 +209,7 @@ class RestfulRouter:
             response_model=self.schema.for_no_data(),
             include_in_schema=is_documented,
         )
-        def update_many(items: Annotated[_RawCollection, Depends(schema)]) -> _Response:
+        def update_many(items: Annotated[RawCollection, Depends(schema)]) -> _Response:
             self.service.update_many(items)
 
             return self.response.ok()
