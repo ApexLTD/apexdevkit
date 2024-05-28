@@ -34,13 +34,6 @@ class RestfulSchema:
     name: RestfulName
     fields: SchemaFields
 
-    @classmethod
-    def from_dataclass(cls, value: Any) -> "RestfulSchema":
-        return cls(
-            name=RestfulName(value.__name__.lower()),
-            fields=DataclassFields(value),
-        )
-
     def __post_init__(self) -> None:
         schema = self._schema_for("", self.fields.readable())
         create_schema = self._schema_for("Create", self.fields.writable())

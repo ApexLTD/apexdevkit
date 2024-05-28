@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError, ExistsError
-from apexdevkit.fastapi.schema import RestfulSchema
+from apexdevkit.fastapi.schema import RestfulSchema, DataclassFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
 from apexdevkit.testing import RestfulName
 
@@ -83,9 +83,12 @@ class RestfulRouter:
     router: APIRouter = field(init=False, default_factory=APIRouter)
 
     def with_dataclass(self, value: Any) -> Self:
-        return self.with_schema(RestfulSchema.from_dataclass(value)).with_response(
-            RestfulResponse.from_dataclass(value)
-        )
+        return self.with_schema(
+            RestfulSchema(
+                name=RestfulName(value.__name__.lower()),
+                fields=DataclassFields(value),
+            )
+        ).with_response(RestfulResponse.from_dataclass(value))
 
     def with_schema(self, value: RestfulSchema) -> Self:
         self.schema = value
