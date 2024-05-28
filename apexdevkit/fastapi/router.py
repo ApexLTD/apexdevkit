@@ -16,10 +16,6 @@ _Response = JSONResponse | dict[str, Any]
 class RestfulResponse:
     name: RestfulName
 
-    @classmethod
-    def from_dataclass(cls, value: type[Any]) -> "RestfulResponse":
-        return cls(name=RestfulName(value.__name__.lower()))
-
     def _response(self, code: int, data: Any, error: str = "") -> dict[str, Any]:
         content: dict[str, Any] = {"code": code, "status": "success"}
 
@@ -88,7 +84,11 @@ class RestfulRouter:
                 name=RestfulName(value.__name__.lower()),
                 fields=DataclassFields(value),
             )
-        ).with_response(RestfulResponse.from_dataclass(value))
+        ).with_response(
+            RestfulResponse(
+                name=RestfulName(value.__name__.lower()),
+            )
+        )
 
     def with_schema(self, value: RestfulSchema) -> Self:
         self.schema = value
