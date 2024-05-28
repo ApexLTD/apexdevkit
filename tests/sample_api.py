@@ -12,25 +12,23 @@ from apexdevkit.repository import InMemoryRepository
 
 
 def setup() -> FastAPI:
-    apple_service = RestfulRepository(
-        Apple,
-        InMemoryRepository[Apple]
-        .for_dataclass(Apple)
-        .with_unique(criteria=lambda item: f"name<{item.name}>"),
-    )
-
     return (
         FastApiBuilder()
         .with_title("Apple API")
         .with_version("1.0.0")
         .with_description("Sample API for unit testing various testing routines")
         .with_route(
-            apples=(
-                RestfulRouter.from_dataclass(Apple)
-                .with_service(apple_service)
-                .default()
-                .build()
+            apples=RestfulRouter(
+                service=RestfulRepository(
+                    Apple,
+                    InMemoryRepository[Apple]
+                    .for_dataclass(Apple)
+                    .with_unique(criteria=lambda item: f"name<{item.name}>"),
+                )
             )
+            .with_dataclass(Apple)
+            .default()
+            .build()
         )
         .build()
     )

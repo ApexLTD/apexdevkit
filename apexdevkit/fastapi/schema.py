@@ -1,4 +1,6 @@
-from dataclasses import dataclass, field
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from functools import cached_property
 from typing import Any, Callable, Iterable, List
 
 from pydantic import BaseModel, create_model
@@ -7,17 +9,35 @@ from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestfulName
 
 
+class SchemaFields(ABC):
+    def writable(self) -> JsonDict:
+        return self.editable()
+
+    def editable(self) -> JsonDict:
+        return self.readable().drop("id")
+
+    @abstractmethod
+    def readable(self) -> JsonDict:
+        pass
+
+
+@dataclass
+class DataclassFields(SchemaFields):
+    source: Any
+
+    def readable(self) -> JsonDict:
+        return JsonDict(self.source.__annotations__)
+
+
 @dataclass
 class RestfulSchema:
     name: RestfulName
-    fields: JsonDict
-
-    schemas: dict[str, type[BaseModel]] = field(default_factory=dict)
+    fields: SchemaFields
 
     def __post_init__(self) -> None:
-        schema = self._schema_for("", self.fields)
-        create_schema = self._schema_for("Create", self.fields.drop("id"))
-        self._schema_for("Update", self.fields.drop("id"))
+        schema = self._schema_for("", self.fields.readable())
+        create_schema = self._schema_for("Create", self.fields.writable())
+        self._schema_for("Update", self.fields.editable())
 
         self._schema_for(
             "Item",
@@ -37,12 +57,21 @@ class RestfulSchema:
             JsonDict({self.name.plural: List[schema]}),
         )
 
-    @classmethod
-    def from_dataclass(cls, value: Any) -> "RestfulSchema":
-        return cls(
-            name=RestfulName(value.__name__.lower()),
-            fields=JsonDict(value.__annotations__),
-        )
+    def _schema_for(self, action: str, fields: dict[str, Any]) -> type[BaseModel]:
+        if action not in self.schemas:
+            self.schemas[action] = create_model(
+                self.name.singular.capitalize() + action,
+                **{
+                    field_name: (field_type, ...)
+                    for field_name, field_type in fields.items()
+                },
+            )
+
+        return self.schemas[action]
+
+    @cached_property
+    def schemas(self) -> dict[str, type[BaseModel]]:
+        return {}
 
     def for_no_data(self) -> type[BaseModel]:
         class NoData(BaseModel):
@@ -102,15 +131,3 @@ class RestfulSchema:
             return [dict(item) for item in request.model_dump()[self.name.plural]]
 
         return _
-
-    def _schema_for(self, action: str, fields: dict[str, Any]) -> type[BaseModel]:
-        if action not in self.schemas:
-            self.schemas[action] = create_model(
-                self.name.singular.capitalize() + action,
-                **{
-                    field_name: (field_type, ...)
-                    for field_name, field_type in fields.items()
-                },
-            )
-
-        return self.schemas[action]

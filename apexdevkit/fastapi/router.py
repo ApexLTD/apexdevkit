@@ -1,11 +1,12 @@
 from dataclasses import dataclass, field
+from functools import cached_property
 from typing import Annotated, Any, Iterable, Self, TypeVar
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError, ExistsError
-from apexdevkit.fastapi.schema import RestfulSchema
+from apexdevkit.fastapi.schema import DataclassFields, RestfulSchema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
 from apexdevkit.testing import RestfulName
 
@@ -15,10 +16,6 @@ _Response = JSONResponse | dict[str, Any]
 @dataclass
 class RestfulResponse:
     name: RestfulName
-
-    @classmethod
-    def from_dataclass(cls, value: type[Any]) -> "RestfulResponse":
-        return cls(name=RestfulName(value.__name__.lower()))
 
     def _response(self, code: int, data: Any, error: str = "") -> dict[str, Any]:
         content: dict[str, Any] = {"code": code, "status": "success"}
@@ -76,32 +73,33 @@ T = TypeVar("T")
 
 @dataclass
 class RestfulRouter:
-    schema: RestfulSchema = field(init=False)
-    response: RestfulResponse = field(init=False)
-    service: RestfulService = field(init=False)
+    service: RestfulService
 
-    router: APIRouter = field(init=False, default_factory=APIRouter)
+    router: APIRouter = field(default_factory=APIRouter)
 
-    @classmethod
-    def from_dataclass(cls, value: Any) -> "RestfulRouter":
-        return (
-            cls()
-            .with_schema(RestfulSchema.from_dataclass(value))
-            .with_response(RestfulResponse.from_dataclass(value))
+    name: RestfulName = field(init=False)
+    fields: SchemaFields = field(init=False)
+
+    @cached_property
+    def response(self) -> RestfulResponse:
+        return RestfulResponse(name=self.name)
+
+    @cached_property
+    def schema(self) -> RestfulSchema:
+        return RestfulSchema(name=self.name, fields=self.fields)
+
+    def with_dataclass(self, value: Any) -> Self:
+        return self.with_name(RestfulName(value.__name__.lower())).with_fields(
+            DataclassFields(value)
         )
 
-    def with_schema(self, value: RestfulSchema) -> Self:
-        self.schema = value
+    def with_name(self, value: RestfulName) -> Self:
+        self.name = value
 
         return self
 
-    def with_response(self, value: RestfulResponse) -> Self:
-        self.response = value
-
-        return self
-
-    def with_service(self, value: RestfulService) -> Self:
-        self.service = value
+    def with_fields(self, value: SchemaFields) -> Self:
+        self.fields = value
 
         return self
 
