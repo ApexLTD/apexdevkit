@@ -1,4 +1,5 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from functools import cached_property
 from typing import Any, Callable, Iterable, List
 
 from pydantic import BaseModel, create_model
@@ -11,8 +12,6 @@ from apexdevkit.testing import RestfulName
 class RestfulSchema:
     name: RestfulName
     fields: JsonDict
-
-    schemas: dict[str, type[BaseModel]] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         schema = self._schema_for("", self.fields)
@@ -36,6 +35,10 @@ class RestfulSchema:
             "UpdateMany",
             JsonDict({self.name.plural: List[schema]}),
         )
+
+    @cached_property
+    def schemas(self) -> dict[str, type[BaseModel]]:
+        return {}
 
     @classmethod
     def from_dataclass(cls, value: Any) -> "RestfulSchema":
