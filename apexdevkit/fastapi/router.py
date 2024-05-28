@@ -82,12 +82,9 @@ class RestfulRouter:
 
     router: APIRouter = field(init=False, default_factory=APIRouter)
 
-    @classmethod
-    def from_dataclass(cls, value: Any) -> "RestfulRouter":
-        return (
-            cls()
-            .with_schema(RestfulSchema.from_dataclass(value))
-            .with_response(RestfulResponse.from_dataclass(value))
+    def with_dataclass(self, value: Any) -> Self:
+        return self.with_schema(RestfulSchema.from_dataclass(value)).with_response(
+            RestfulResponse.from_dataclass(value)
         )
 
     def with_schema(self, value: RestfulSchema) -> Self:

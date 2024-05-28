@@ -26,7 +26,8 @@ def setup() -> FastAPI:
         .with_description("Sample API for unit testing various testing routines")
         .with_route(
             apples=(
-                RestfulRouter.from_dataclass(Apple)
+                RestfulRouter()
+                .with_dataclass(Apple)
                 .with_service(apple_service)
                 .default()
                 .build()
