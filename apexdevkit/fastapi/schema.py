@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, Callable, Iterable, List
@@ -8,22 +9,42 @@ from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestfulName
 
 
+class SchemaFields(ABC):
+    def writable(self) -> JsonDict:
+        return self.editable()
+
+    def editable(self) -> JsonDict:
+        return self.readable().drop("id")
+
+    @abstractmethod
+    def readable(self) -> JsonDict:
+        pass
+
+
+@dataclass
+class DataclassFields(SchemaFields):
+    source: Any
+
+    def readable(self) -> JsonDict:
+        return JsonDict(self.source.__annotations__)
+
+
 @dataclass
 class RestfulSchema:
     name: RestfulName
-    fields: JsonDict
+    fields: SchemaFields
 
     @classmethod
     def from_dataclass(cls, value: Any) -> "RestfulSchema":
         return cls(
             name=RestfulName(value.__name__.lower()),
-            fields=JsonDict(value.__annotations__),
+            fields=DataclassFields(value),
         )
 
     def __post_init__(self) -> None:
-        schema = self._schema_for("", self.fields)
-        create_schema = self._schema_for("Create", self.fields.drop("id"))
-        self._schema_for("Update", self.fields.drop("id"))
+        schema = self._schema_for("", self.fields.readable())
+        create_schema = self._schema_for("Create", self.fields.writable())
+        self._schema_for("Update", self.fields.editable())
 
         self._schema_for(
             "Item",
