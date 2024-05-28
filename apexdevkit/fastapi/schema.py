@@ -11,7 +11,7 @@ from apexdevkit.testing import RestfulName
 
 class SchemaFields(ABC):
     def writable(self) -> JsonDict:
-        return self.editable()
+        return self.readable().drop("id")
 
     def editable(self) -> JsonDict:
         return self.readable().drop("id")
