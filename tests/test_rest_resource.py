@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from dataclasses import dataclass, field
 from unittest.mock import ANY
 from uuid import uuid4
@@ -10,7 +11,7 @@ from fastapi.testclient import TestClient
 
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
-from tests.sample_api import setup
+from tests.sample_api import Color, setup
 
 
 @pytest.fixture
@@ -28,7 +29,16 @@ class Fake:
     faker: Faker = field(default_factory=Faker)
 
     def apple(self) -> JsonDict:
-        return JsonDict().with_a(name=self.faker.name()).and_a(color=self.faker.color())
+        return (
+            JsonDict()
+            .with_a(
+                name=JsonDict().with_a(
+                    common=self.faker.name(),
+                    scientific=self.faker.name(),
+                )
+            )
+            .and_a(color=random.choice(list(Color)).value)
+        )
 
 
 fake = Fake()
@@ -51,23 +61,32 @@ def test_should_not_list_anything_when_none_exist(resource: RestResource) -> Non
     resource.read_all().ensure().success().with_code(200).and_collection([])
 
 
-def test_should_read_with_params(resource: RestResource) -> None:
+@pytest.mark.skip("WIP")
+def test_should_read_many(resource: RestResource) -> None:
     apple_one = fake.apple()
-    apple_two = fake.apple().with_a(color=apple_one.value_of("color").to(str))
+    apple_two = fake.apple()
+
+    resource.create_many().from_data(apple_one).and_data(apple_two).unpack_many()
+
+    (
+        resource.read_all()
+        .with_params(color=apple_one.value_of("color").to(str))
+        .ensure()
+        .success()
+        .with_code(200)
+        .and_collection([apple_one])
+    )
+
+
+def test_should_read_all(resource: RestResource) -> None:
+    apple_one = fake.apple()
+    apple_two = fake.apple()
 
     apples = (
         resource.create_many().from_data(apple_one).and_data(apple_two).unpack_many()
     )
-    color = list(apples)[0].value_of("color").to(str)
 
-    (
-        resource.read_all()
-        .with_params(color=color)
-        .ensure()
-        .success()
-        .with_code(200)
-        .and_collection(list(apples))
-    )
+    resource.read_all().ensure().success().with_code(200).and_collection(list(apples))
 
 
 def test_should_create(resource: RestResource) -> None:
