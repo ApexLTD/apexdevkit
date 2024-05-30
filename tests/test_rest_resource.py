@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from dataclasses import dataclass, field
 from unittest.mock import ANY
 from uuid import uuid4
@@ -10,7 +11,7 @@ from fastapi.testclient import TestClient
 
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
-from tests.sample_api import setup
+from tests.sample_api import setup, Color
 
 
 @pytest.fixture
@@ -28,7 +29,11 @@ class Fake:
     faker: Faker = field(default_factory=Faker)
 
     def apple(self) -> JsonDict:
-        return JsonDict().with_a(name=self.faker.name()).and_a(color=self.faker.color())
+        return (
+            JsonDict()
+            .with_a(name=self.faker.name())
+            .and_a(color=random.choice(list(Color)).value)
+        )
 
 
 fake = Fake()
