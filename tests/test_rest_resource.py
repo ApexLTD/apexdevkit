@@ -31,7 +31,12 @@ class Fake:
     def apple(self) -> JsonDict:
         return (
             JsonDict()
-            .with_a(name=self.faker.name())
+            .with_a(
+                name=JsonDict().with_a(
+                    common=self.faker.name(),
+                    scientific=self.faker.name(),
+                )
+            )
             .and_a(color=random.choice(list(Color)).value)
         )
 

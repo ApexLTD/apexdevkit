@@ -45,8 +45,14 @@ class Color(Enum):
 
 
 @dataclass(frozen=True)
+class Name:
+    common: str
+    scientific: str
+
+
+@dataclass(frozen=True)
 class Apple:
-    name: str
+    name: Name
     color: Color
 
     id: str = field(default_factory=lambda: str(uuid4()))
@@ -54,4 +60,4 @@ class Apple:
 
 class AppleFields(SchemaFields):
     def readable(self) -> JsonDict:
-        return JsonDict().with_a(id=str).and_a(name=str).and_a(color=Color)
+        return JsonDict().with_a(id=str).and_a(name=Name).and_a(color=Color)
