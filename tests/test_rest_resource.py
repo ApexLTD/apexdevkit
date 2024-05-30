@@ -11,7 +11,7 @@ from fastapi.testclient import TestClient
 
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
-from tests.sample_api import setup, Color
+from tests.sample_api import Color, setup
 
 
 @pytest.fixture
