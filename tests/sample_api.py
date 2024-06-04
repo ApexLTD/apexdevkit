@@ -32,6 +32,25 @@ def setup() -> FastAPI:
             )
             .with_name(RestfulName("apple"))
             .with_fields(AppleFields())
+            .with_sub_resource(
+                prices=(
+                    RestfulRouter(
+                        service=RestfulRepository(
+                            Price,
+                            InMemoryRepository[Price]
+                            .for_dataclass(Price)
+                            .with_unique(
+                                criteria=lambda item: f"currency<{item.currecy}>"
+                            ),
+                        )
+                    )
+                    .with_name(RestfulName("price"))
+                    .with_fields(PriceFields())
+                    .with_create_one_endpoint()
+                    .with_read_all_endpoint()
+                    .build()
+                )
+            )
             .default()
             .build()
         )
@@ -61,3 +80,26 @@ class Apple:
 class AppleFields(SchemaFields):
     def readable(self) -> JsonDict:
         return JsonDict().with_a(id=str).and_a(name=Name).and_a(color=Color)
+
+
+@dataclass(frozen=True)
+class Price:
+    value: int
+    exponent: int
+    currency: str
+
+    id: str = field(default_factory=lambda: str(uuid4()))
+
+
+class PriceFields(SchemaFields):
+    def readable(self) -> JsonDict:
+        return (
+            JsonDict()
+            .with_a(id=str)
+            .and_a(value=int)
+            .and_a(exponent=int)
+            .and_a(currency=str)
+        )
+
+    def editable(self) -> JsonDict:
+        return self.readable().select("value", "exponent")

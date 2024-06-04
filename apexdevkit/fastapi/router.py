@@ -250,6 +250,12 @@ class RestfulRouter:
 
         return self
 
+    def with_sub_resource(self, **names: APIRouter) -> Self:
+        for name, router in names.items():
+            self.router.include_router(router, prefix=f"{self.item_path}/{name}")
+
+        return self
+
     def default(self) -> Self:
         return (
             self.with_create_one_endpoint()

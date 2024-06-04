@@ -40,6 +40,14 @@ class Fake:
             .and_a(color=random.choice(list(Color)).value)
         )
 
+    def price(self) -> JsonDict:
+        return (
+            JsonDict()
+            .with_a(currency=self.faker.currency()[0])
+            .and_a(value=self.faker.random_int(min=0, max=100))
+            .and_a(exponent=self.faker.random_int(min=1, max=10))
+        )
+
 
 fake = Fake()
 
@@ -291,4 +299,56 @@ def test_should_persist_delete(resource: RestResource) -> None:
         .fail()
         .with_code(404)
         .and_message(f"An item<Apple> with id<{id_}> does not exist.")
+    )
+
+
+def test_should_not_list_sub_items_when_none_exist(resource: RestCollection) -> None:
+    id_ = resource.create_one().from_data(fake.apple()).unpack().value_of("id").to(str)
+
+    (
+        resource.sub_resource(id_)
+        .sub_resource("price")
+        .read_all()
+        .ensure()
+        .success()
+        .with_code(200)
+        .and_collection([])
+    )
+
+
+def test_should_create_sub_resource(resource: RestCollection) -> None:
+    id_ = resource.create_one().from_data(fake.apple()).unpack().value_of("id").to(str)
+    price = fake.price()
+
+    (
+        resource.sub_resource(id_)
+        .sub_resource("price")
+        .create_one()
+        .from_data(price)
+        .ensure()
+        .success()
+        .with_code(201)
+        .and_item(price.with_a(id=ANY))
+    )
+
+
+def test_should_persist_sub_resource(resource: RestCollection) -> None:
+    id_ = resource.create_one().from_data(fake.apple()).unpack().value_of("id").to(str)
+
+    price = (
+        resource.sub_resource(id_)
+        .sub_resource("price")
+        .create_one()
+        .from_data(fake.price())
+        .unpack()
+    )
+
+    (
+        resource.sub_resource(id_)
+        .sub_resource("price")
+        .read_all()
+        .ensure()
+        .success()
+        .with_code(200)
+        .and_collection([price])
     )
