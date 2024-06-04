@@ -88,6 +88,14 @@ class RestfulRouter:
     def schema(self) -> RestfulSchema:
         return RestfulSchema(name=self.name, fields=self.fields)
 
+    @property
+    def id_alias(self) -> str:
+        return self.name.singular + "_id"
+
+    @property
+    def item_path(self) -> str:
+        return "/{" + self.id_alias + "}"
+
     def with_dataclass(self, value: Any) -> Self:
         return self.with_name(RestfulName(value.__name__.lower())).with_fields(
             DataclassFields(value)
@@ -148,11 +156,10 @@ class RestfulRouter:
         return self
 
     def with_read_one_endpoint(self, is_documented: bool = True) -> Self:
-        id_alias = self.name.singular + "_id"
-        id_type = Annotated[str, Path(alias=id_alias)]
+        id_type = Annotated[str, Path(alias=self.id_alias)]
 
         @self.router.get(
-            "/{" + id_alias + "}",
+            self.item_path,
             status_code=200,
             responses={404: {}},
             response_model=self.schema.for_item(),
@@ -180,15 +187,14 @@ class RestfulRouter:
         return self
 
     def with_update_one_endpoint(self, is_documented: bool = True) -> Self:
-        id_alias = self.name.singular + "_id"
-        id_type = Annotated[str, Path(alias=id_alias)]
+        id_type = Annotated[str, Path(alias=self.id_alias)]
         updates_type = Annotated[
             RawItem,
             Depends(self.schema.for_update_one()),
         ]
 
         @self.router.patch(
-            "/{" + id_alias + "}",
+            self.item_path,
             status_code=200,
             responses={404: {}},
             response_model=self.schema.for_no_data(),
@@ -225,11 +231,10 @@ class RestfulRouter:
         return self
 
     def with_delete_one_endpoint(self, is_documented: bool = True) -> Self:
-        id_alias = self.name.singular + "_id"
-        id_type = Annotated[str, Path(alias=id_alias)]
+        id_type = Annotated[str, Path(alias=self.id_alias)]
 
         @self.router.delete(
-            "/{" + id_alias + "}",
+            self.item_path,
             status_code=200,
             responses={404: {}},
             response_model=self.schema.for_no_data(),
