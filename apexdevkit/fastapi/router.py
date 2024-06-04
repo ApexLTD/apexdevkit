@@ -104,8 +104,10 @@ class RestfulRouter:
         return self
 
     def with_create_one_endpoint(self, is_documented: bool = True) -> Self:
-        schema = self.schema.for_create_one()
-        item_type = Annotated[RawItem, Depends(schema)]
+        item_type = Annotated[
+            RawItem,
+            Depends(self.schema.for_create_one()),
+        ]
 
         @self.router.post(
             "",
@@ -125,8 +127,10 @@ class RestfulRouter:
         return self
 
     def with_create_many_endpoint(self, is_documented: bool = True) -> Self:
-        schema = self.schema.for_create_many()
-        collection_type = Annotated[RawCollection, Depends(schema)]
+        collection_type = Annotated[
+            RawCollection,
+            Depends(self.schema.for_create_many()),
+        ]
 
         @self.router.post(
             "/batch",
@@ -144,7 +148,6 @@ class RestfulRouter:
         return self
 
     def with_read_one_endpoint(self, is_documented: bool = True) -> Self:
-        schema = self.schema.for_item()
         id_alias = self.name.singular + "_id"
         id_type = Annotated[str, Path(alias=id_alias)]
 
@@ -152,7 +155,7 @@ class RestfulRouter:
             "/{" + id_alias + "}",
             status_code=200,
             responses={404: {}},
-            response_model=schema,
+            response_model=self.schema.for_item(),
             include_in_schema=is_documented,
         )
         def read_one(item_id: id_type) -> _Response:
@@ -164,13 +167,11 @@ class RestfulRouter:
         return self
 
     def with_read_all_endpoint(self, is_documented: bool = True) -> Self:
-        schema = self.schema.for_collection()
-
         @self.router.get(
             "",
             status_code=200,
             responses={},
-            response_model=schema,
+            response_model=self.schema.for_collection(),
             include_in_schema=is_documented,
         )
         def read_all() -> _Response:
@@ -179,10 +180,12 @@ class RestfulRouter:
         return self
 
     def with_update_one_endpoint(self, is_documented: bool = True) -> Self:
-        schema = self.schema.for_update_one()
         id_alias = self.name.singular + "_id"
         id_type = Annotated[str, Path(alias=id_alias)]
-        updates_type = Annotated[RawItem, Depends(schema)]
+        updates_type = Annotated[
+            RawItem,
+            Depends(self.schema.for_update_one()),
+        ]
 
         @self.router.patch(
             "/{" + id_alias + "}",
@@ -202,8 +205,10 @@ class RestfulRouter:
         return self
 
     def with_update_many_endpoint(self, is_documented: bool = True) -> Self:
-        schema = self.schema.for_update_many()
-        collection_type = Annotated[RawCollection, Depends(schema)]
+        collection_type = Annotated[
+            RawCollection,
+            Depends(self.schema.for_update_many()),
+        ]
 
         @self.router.patch(
             "",
@@ -220,7 +225,6 @@ class RestfulRouter:
         return self
 
     def with_delete_one_endpoint(self, is_documented: bool = True) -> Self:
-        schema = self.schema.for_no_data()
         id_alias = self.name.singular + "_id"
         id_type = Annotated[str, Path(alias=id_alias)]
 
@@ -228,7 +232,7 @@ class RestfulRouter:
             "/{" + id_alias + "}",
             status_code=200,
             responses={404: {}},
-            response_model=schema,
+            response_model=self.schema.for_no_data(),
             include_in_schema=is_documented,
         )
         def delete_one(item_id: id_type) -> _Response:
