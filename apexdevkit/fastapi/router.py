@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from typing import Annotated, Any, Iterable, Self, TypeVar
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError, ExistsError
@@ -143,15 +143,17 @@ class RestfulRouter:
 
     def with_read_one_endpoint(self, is_documented: bool = True) -> Self:
         schema = self.schema.for_item()
+        id_alias = self.name.singular + "_id"
+        id_type = Annotated[str, Path(alias=id_alias)]
 
         @self.router.get(
-            "/{item_id}",
+            "/{" + id_alias + "}",
             status_code=200,
             responses={404: {}},
             response_model=schema,
             include_in_schema=is_documented,
         )
-        def read_one(item_id: str) -> _Response:
+        def read_one(item_id: id_type) -> _Response:
             try:
                 return self.response.found_one(self.service.read_one(item_id))
             except DoesNotExistError as e:
@@ -176,16 +178,18 @@ class RestfulRouter:
 
     def with_update_one_endpoint(self, is_documented: bool = True) -> Self:
         schema = self.schema.for_update_one()
+        id_alias = self.name.singular + "_id"
+        id_type = Annotated[str, Path(alias=id_alias)]
 
         @self.router.patch(
-            "/{item_id}",
+            "/{" + id_alias + "}",
             status_code=200,
             responses={404: {}},
             response_model=self.schema.for_no_data(),
             include_in_schema=is_documented,
         )
         def update_one(
-            item_id: str,
+            item_id: id_type,
             updates: Annotated[RawItem, Depends(schema)],
         ) -> _Response:
             try:
@@ -216,15 +220,17 @@ class RestfulRouter:
 
     def with_delete_one_endpoint(self, is_documented: bool = True) -> Self:
         schema = self.schema.for_no_data()
+        id_alias = self.name.singular + "_id"
+        id_type = Annotated[str, Path(alias=id_alias)]
 
         @self.router.delete(
-            "/{item_id}",
+            "/{" + id_alias + "}",
             status_code=200,
             responses={404: {}},
             response_model=schema,
             include_in_schema=is_documented,
         )
-        def delete_one(item_id: str) -> _Response:
+        def delete_one(item_id: id_type) -> _Response:
             try:
                 self.service.delete_one(item_id)
             except DoesNotExistError as e:
