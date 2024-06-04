@@ -188,7 +188,7 @@ class RestfulRouter:
 
     def with_update_one_endpoint(self, is_documented: bool = True) -> Self:
         id_type = Annotated[str, Path(alias=self.id_alias)]
-        updates_type = Annotated[
+        update_type = Annotated[
             RawItem,
             Depends(self.schema.for_update_one()),
         ]
@@ -200,7 +200,7 @@ class RestfulRouter:
             response_model=self.schema.for_no_data(),
             include_in_schema=is_documented,
         )
-        def update_one(item_id: id_type, updates: updates_type) -> _Response:
+        def update_one(item_id: id_type, updates: update_type) -> _Response:
             try:
                 self.service.update_one(item_id, **updates)
             except DoesNotExistError as e:
