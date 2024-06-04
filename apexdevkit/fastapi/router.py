@@ -105,6 +105,7 @@ class RestfulRouter:
 
     def with_create_one_endpoint(self, is_documented: bool = True) -> Self:
         schema = self.schema.for_create_one()
+        item_type = Annotated[RawItem, Depends(schema)]
 
         @self.router.post(
             "",
@@ -113,7 +114,7 @@ class RestfulRouter:
             response_model=self.schema.for_item(),
             include_in_schema=is_documented,
         )
-        def create_one(item: Annotated[RawItem, Depends(schema)]) -> _Response:
+        def create_one(item: item_type) -> _Response:
             try:
                 item = self.service.create_one(item)
             except ExistsError as e:
@@ -125,6 +126,7 @@ class RestfulRouter:
 
     def with_create_many_endpoint(self, is_documented: bool = True) -> Self:
         schema = self.schema.for_create_many()
+        collection_type = Annotated[RawCollection, Depends(schema)]
 
         @self.router.post(
             "/batch",
@@ -133,7 +135,7 @@ class RestfulRouter:
             response_model=self.schema.for_collection(),
             include_in_schema=is_documented,
         )
-        def create_many(items: Annotated[RawCollection, Depends(schema)]) -> _Response:
+        def create_many(items: collection_type) -> _Response:
             try:
                 return self.response.created_many(self.service.create_many(items))
             except ExistsError as e:
@@ -180,6 +182,7 @@ class RestfulRouter:
         schema = self.schema.for_update_one()
         id_alias = self.name.singular + "_id"
         id_type = Annotated[str, Path(alias=id_alias)]
+        updates_type = Annotated[RawItem, Depends(schema)]
 
         @self.router.patch(
             "/{" + id_alias + "}",
@@ -188,10 +191,7 @@ class RestfulRouter:
             response_model=self.schema.for_no_data(),
             include_in_schema=is_documented,
         )
-        def update_one(
-            item_id: id_type,
-            updates: Annotated[RawItem, Depends(schema)],
-        ) -> _Response:
+        def update_one(item_id: id_type, updates: updates_type) -> _Response:
             try:
                 self.service.update_one(item_id, **updates)
             except DoesNotExistError as e:
@@ -203,6 +203,7 @@ class RestfulRouter:
 
     def with_update_many_endpoint(self, is_documented: bool = True) -> Self:
         schema = self.schema.for_update_many()
+        collection_type = Annotated[RawCollection, Depends(schema)]
 
         @self.router.patch(
             "",
@@ -211,7 +212,7 @@ class RestfulRouter:
             response_model=self.schema.for_no_data(),
             include_in_schema=is_documented,
         )
-        def update_many(items: Annotated[RawCollection, Depends(schema)]) -> _Response:
+        def update_many(items: collection_type) -> _Response:
             self.service.update_many(items)
 
             return self.response.ok()
