@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from typing import Annotated, Any, Iterable, Self, TypeVar
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError, ExistsError
@@ -88,6 +88,14 @@ class RestfulRouter:
     def schema(self) -> RestfulSchema:
         return RestfulSchema(name=self.name, fields=self.fields)
 
+    @property
+    def id_alias(self) -> str:
+        return self.name.singular + "_id"
+
+    @property
+    def item_path(self) -> str:
+        return "/{" + self.id_alias + "}"
+
     def with_dataclass(self, value: Any) -> Self:
         return self.with_name(RestfulName(value.__name__.lower())).with_fields(
             DataclassFields(value)
@@ -104,7 +112,10 @@ class RestfulRouter:
         return self
 
     def with_create_one_endpoint(self, is_documented: bool = True) -> Self:
-        schema = self.schema.for_create_one()
+        item_type = Annotated[
+            RawItem,
+            Depends(self.schema.for_create_one()),
+        ]
 
         @self.router.post(
             "",
@@ -113,7 +124,7 @@ class RestfulRouter:
             response_model=self.schema.for_item(),
             include_in_schema=is_documented,
         )
-        def create_one(item: Annotated[RawItem, Depends(schema)]) -> _Response:
+        def create_one(item: item_type) -> _Response:
             try:
                 item = self.service.create_one(item)
             except ExistsError as e:
@@ -124,7 +135,10 @@ class RestfulRouter:
         return self
 
     def with_create_many_endpoint(self, is_documented: bool = True) -> Self:
-        schema = self.schema.for_create_many()
+        collection_type = Annotated[
+            RawCollection,
+            Depends(self.schema.for_create_many()),
+        ]
 
         @self.router.post(
             "/batch",
@@ -133,7 +147,7 @@ class RestfulRouter:
             response_model=self.schema.for_collection(),
             include_in_schema=is_documented,
         )
-        def create_many(items: Annotated[RawCollection, Depends(schema)]) -> _Response:
+        def create_many(items: collection_type) -> _Response:
             try:
                 return self.response.created_many(self.service.create_many(items))
             except ExistsError as e:
@@ -142,16 +156,16 @@ class RestfulRouter:
         return self
 
     def with_read_one_endpoint(self, is_documented: bool = True) -> Self:
-        schema = self.schema.for_item()
+        id_type = Annotated[str, Path(alias=self.id_alias)]
 
         @self.router.get(
-            "/{item_id}",
+            self.item_path,
             status_code=200,
             responses={404: {}},
-            response_model=schema,
+            response_model=self.schema.for_item(),
             include_in_schema=is_documented,
         )
-        def read_one(item_id: str) -> _Response:
+        def read_one(item_id: id_type) -> _Response:
             try:
                 return self.response.found_one(self.service.read_one(item_id))
             except DoesNotExistError as e:
@@ -160,13 +174,11 @@ class RestfulRouter:
         return self
 
     def with_read_all_endpoint(self, is_documented: bool = True) -> Self:
-        schema = self.schema.for_collection()
-
         @self.router.get(
             "",
             status_code=200,
             responses={},
-            response_model=schema,
+            response_model=self.schema.for_collection(),
             include_in_schema=is_documented,
         )
         def read_all() -> _Response:
@@ -175,19 +187,20 @@ class RestfulRouter:
         return self
 
     def with_update_one_endpoint(self, is_documented: bool = True) -> Self:
-        schema = self.schema.for_update_one()
+        id_type = Annotated[str, Path(alias=self.id_alias)]
+        update_type = Annotated[
+            RawItem,
+            Depends(self.schema.for_update_one()),
+        ]
 
         @self.router.patch(
-            "/{item_id}",
+            self.item_path,
             status_code=200,
             responses={404: {}},
             response_model=self.schema.for_no_data(),
             include_in_schema=is_documented,
         )
-        def update_one(
-            item_id: str,
-            updates: Annotated[RawItem, Depends(schema)],
-        ) -> _Response:
+        def update_one(item_id: id_type, updates: update_type) -> _Response:
             try:
                 self.service.update_one(item_id, **updates)
             except DoesNotExistError as e:
@@ -198,7 +211,10 @@ class RestfulRouter:
         return self
 
     def with_update_many_endpoint(self, is_documented: bool = True) -> Self:
-        schema = self.schema.for_update_many()
+        collection_type = Annotated[
+            RawCollection,
+            Depends(self.schema.for_update_many()),
+        ]
 
         @self.router.patch(
             "",
@@ -207,7 +223,7 @@ class RestfulRouter:
             response_model=self.schema.for_no_data(),
             include_in_schema=is_documented,
         )
-        def update_many(items: Annotated[RawCollection, Depends(schema)]) -> _Response:
+        def update_many(items: collection_type) -> _Response:
             self.service.update_many(items)
 
             return self.response.ok()
@@ -215,16 +231,16 @@ class RestfulRouter:
         return self
 
     def with_delete_one_endpoint(self, is_documented: bool = True) -> Self:
-        schema = self.schema.for_no_data()
+        id_type = Annotated[str, Path(alias=self.id_alias)]
 
         @self.router.delete(
-            "/{item_id}",
+            self.item_path,
             status_code=200,
             responses={404: {}},
-            response_model=schema,
+            response_model=self.schema.for_no_data(),
             include_in_schema=is_documented,
         )
-        def delete_one(item_id: str) -> _Response:
+        def delete_one(item_id: id_type) -> _Response:
             try:
                 self.service.delete_one(item_id)
             except DoesNotExistError as e:
