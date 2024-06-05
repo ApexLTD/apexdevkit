@@ -1,6 +1,12 @@
 from dataclasses import dataclass, field
+from functools import cached_property
+from typing import Any, Generic, Type, TypeVar
 
 from faker import Faker
+
+from apexdevkit.http import JsonDict
+
+ItemT = TypeVar("ItemT")
 
 
 @dataclass
@@ -24,3 +30,22 @@ class Fake:
 
     def hour(self) -> int:
         return int(self.faker.random_int(min=0, max=23))
+
+
+@dataclass
+class FakeGeneric(Generic[ItemT]):
+    item_type: Type[ItemT] = field()
+    fake: Fake = field(default_factory=Fake)
+
+    @cached_property
+    def _raw(self) -> dict[str, Any]:
+        return {}
+
+    def unknown_id(self) -> str:
+        return self.fake.text(length=32)
+
+    def json(self) -> JsonDict:
+        return JsonDict(self._raw)
+
+    def entity(self, **fields: Any) -> ItemT:
+        return self.item_type(**self.json().merge(JsonDict(fields)))
