@@ -33,7 +33,7 @@ class Fake:
 
 
 @dataclass
-class FakeGeneric(Generic[ItemT]):
+class FakeResource(Generic[ItemT]):
     item_type: Type[ItemT] = field()
     fake: Fake = field(default_factory=Fake)
 
