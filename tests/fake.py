@@ -15,3 +15,12 @@ class Fake:
 
     def number(self) -> int:
         return int(self.faker.random.randint(0, 100000))
+
+    def timestamp(self) -> int:
+        return int(self.faker.unix_time())
+
+    def minute(self) -> int:
+        return int(self.faker.random_int(min=0, max=59))
+
+    def hour(self) -> int:
+        return int(self.faker.random_int(min=0, max=23))
