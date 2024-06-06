@@ -5,7 +5,7 @@ from typing import Annotated, Any, Iterable, Self, TypeVar
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
 
-from apexdevkit.error import DoesNotExistError, ExistsError
+from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
 from apexdevkit.fastapi.schema import DataclassFields, RestfulSchema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
 from apexdevkit.testing import RestfulName
@@ -53,6 +53,13 @@ class RestfulResponse:
             409,
             data={"id": str(e.id)},
             error=f"An item<{name}> with the {e} already exists.",
+        )
+
+    def forbidden(self, e: ForbiddenError) -> dict[str, Any]:
+        return self._response(
+            403,
+            data={"id": str(e.id)},
+            error="Forbidden",
         )
 
     def created_one(self, item: Any) -> dict[str, Any]:
@@ -205,6 +212,8 @@ class RestfulRouter:
                 self.service.update_one(item_id, **updates)
             except DoesNotExistError as e:
                 return JSONResponse(self.response.not_found(e), 404)
+            except ForbiddenError as e:
+                return JSONResponse(self.response.forbidden(e), 403)
 
             return self.response.ok()
 

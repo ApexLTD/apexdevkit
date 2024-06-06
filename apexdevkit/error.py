@@ -38,3 +38,12 @@ class ExistsError(Exception):
 @dataclass
 class DoesNotExistError(Exception):
     id: Any = "unknown"
+
+
+@dataclass
+class ForbiddenError(Exception):
+    item: Any = field(default_factory=UnknownItem)
+
+    @property
+    def id(self) -> Any:
+        return self.item.id
