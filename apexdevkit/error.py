@@ -42,4 +42,8 @@ class DoesNotExistError(Exception):
 
 @dataclass
 class ForbiddenError(Exception):
-    pass
+    item: Any = field(default_factory=UnknownItem)
+
+    @property
+    def id(self) -> Any:
+        return self.item.id
