@@ -212,8 +212,8 @@ class RestfulRouter:
                 self.service.update_one(item_id, **updates)
             except DoesNotExistError as e:
                 return JSONResponse(self.response.not_found(e), 404)
-            except ForbiddenError:
-                return JSONResponse(self.response.)
+            except ForbiddenError as e:
+                return JSONResponse(self.response.forbidden(e), 403)
 
             return self.response.ok()
 
