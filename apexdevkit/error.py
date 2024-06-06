@@ -38,3 +38,8 @@ class ExistsError(Exception):
 @dataclass
 class DoesNotExistError(Exception):
     id: Any = "unknown"
+
+
+@dataclass
+class ForbiddenError(Exception):
+    pass
