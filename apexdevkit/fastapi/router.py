@@ -147,6 +147,12 @@ class RestfulRouter:
 
         return self
 
+    def with_service(self, value: RestfulService) -> Self:
+        self.service = value
+        self.infra = SingleRestfulServiceInfra(value)
+
+        return self
+
     def with_create_one_endpoint(self, is_documented: bool = True) -> Self:
         item_type = Annotated[
             RawItem,

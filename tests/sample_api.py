@@ -22,16 +22,17 @@ def setup() -> FastAPI:
         .with_version("1.0.0")
         .with_description("Sample API for unit testing various testing routines")
         .with_route(
-            apples=RestfulRouter(
-                service=RestfulRepository(
+            apples=RestfulRouter()
+            .with_name(RestfulName("apple"))
+            .with_fields(AppleFields())
+            .with_service(
+                RestfulRepository(
                     Apple,
                     InMemoryRepository[Apple]
                     .for_dataclass(Apple)
                     .with_unique(criteria=lambda item: f"name<{item.name}>"),
                 )
             )
-            .with_name(RestfulName("apple"))
-            .with_fields(AppleFields())
             .with_sub_resource(
                 prices=(
                     RestfulRouter(
