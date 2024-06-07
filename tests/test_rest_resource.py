@@ -328,7 +328,7 @@ def test_should_create_sub_resource(resource: RestCollection) -> None:
         .ensure()
         .success()
         .with_code(201)
-        .and_item(price.with_a(id=ANY))
+        .and_item(price.with_a(id=ANY).and_a(apple_id=id_))
     )
 
 
