@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Annotated, Any, Iterable, Self, TypeVar
+from typing import Annotated, Any, Iterable, Self, TypeVar, Protocol
 
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
@@ -78,6 +78,19 @@ class RestfulResponse:
 T = TypeVar("T")
 
 
+class RestfulServiceInfra(Protocol):
+    def service_for(self, parent_id: str) -> RestfulService:
+        pass
+
+
+@dataclass(frozen=True)
+class SingleRestfulServiceInfra:
+    service: RestfulService
+
+    def service_for(self, parent_id: str) -> RestfulService:
+        return self.service
+
+
 @dataclass
 class RestfulRouter:
     service: RestfulService
@@ -86,8 +99,12 @@ class RestfulRouter:
 
     name: RestfulName = field(init=False)
     fields: SchemaFields = field(init=False)
+    infra: RestfulServiceInfra = field(init=False)
 
     parent: str = field(init=False, default="")
+
+    def __post_init__(self) -> None:
+        self.infra = SingleRestfulServiceInfra(self.service)
 
     @cached_property
     def response(self) -> RestfulResponse:
@@ -171,8 +188,10 @@ class RestfulRouter:
             include_in_schema=is_documented,
         )
         def create_many(parent_id: parent_id_type, items: collection_type) -> _Response:
+            service = self.infra.service_for(parent_id)
+
             try:
-                return self.response.created_many(self.service.create_many(items))
+                return self.response.created_many(service.create_many(items))
             except ExistsError as e:
                 return JSONResponse(self.response.exists(e), 409)
 
@@ -210,7 +229,9 @@ class RestfulRouter:
             include_in_schema=is_documented,
         )
         def read_all(parent_id: parent_id_type) -> _Response:
-            return self.response.found_many(list(self.service.read_all()))
+            service = self.infra.service_for(parent_id)
+
+            return self.response.found_many(list(service.read_all()))
 
         return self
 
@@ -258,7 +279,9 @@ class RestfulRouter:
             include_in_schema=is_documented,
         )
         def update_many(parent_id: parent_id_type, items: collection_type) -> _Response:
-            self.service.update_many(items)
+            service = self.infra.service_for(parent_id)
+
+            service.update_many(items)
 
             return self.response.ok()
 
