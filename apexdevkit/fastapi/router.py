@@ -160,6 +160,11 @@ class RestfulRouter:
         return self
 
     def with_create_one_endpoint(self, is_documented: bool = True) -> Self:
+        parent_id_type = Annotated[
+            str,
+            Path(alias=self.parent_id_alias, default_factory=str),
+        ]
+
         item_type = Annotated[
             RawItem,
             Depends(self.schema.for_create_one()),
@@ -172,9 +177,11 @@ class RestfulRouter:
             response_model=self.schema.for_item(),
             include_in_schema=is_documented,
         )
-        def create_one(item: item_type) -> _Response:
+        def create_one(parent_id: parent_id_type, item: item_type) -> _Response:
+            service = self.infra.service_for(parent_id)
+
             try:
-                item = self.service.create_one(item)
+                item = service.create_one(item)
             except ExistsError as e:
                 return JSONResponse(self.response.exists(e), 409)
 
