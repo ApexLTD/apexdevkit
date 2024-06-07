@@ -219,6 +219,10 @@ class RestfulRouter:
 
     def with_read_one_endpoint(self, is_documented: bool = True) -> Self:
         id_type = Annotated[str, Path(alias=self.id_alias)]
+        parent_id_type = Annotated[
+            str,
+            Path(alias=self.parent_id_alias, default_factory=str),
+        ]
 
         @self.router.get(
             self.item_path,
@@ -227,9 +231,11 @@ class RestfulRouter:
             response_model=self.schema.for_item(),
             include_in_schema=is_documented,
         )
-        def read_one(item_id: id_type) -> _Response:
+        def read_one(parent_id: parent_id_type, item_id: id_type) -> _Response:
+            service = self.infra.service_for(parent_id)
+
             try:
-                return self.response.found_one(self.service.read_one(item_id))
+                return self.response.found_one(service.read_one(item_id))
             except DoesNotExistError as e:
                 return JSONResponse(self.response.not_found(e), 404)
 
@@ -256,6 +262,10 @@ class RestfulRouter:
         return self
 
     def with_update_one_endpoint(self, is_documented: bool = True) -> Self:
+        parent_id_type = Annotated[
+            str,
+            Path(alias=self.parent_id_alias, default_factory=str),
+        ]
         id_type = Annotated[str, Path(alias=self.id_alias)]
         update_type = Annotated[
             RawItem,
@@ -269,9 +279,15 @@ class RestfulRouter:
             response_model=self.schema.for_no_data(),
             include_in_schema=is_documented,
         )
-        def update_one(item_id: id_type, updates: update_type) -> _Response:
+        def update_one(
+            parent_id: parent_id_type,
+            item_id: id_type,
+            updates: update_type,
+        ) -> _Response:
+            service = self.infra.service_for(parent_id)
+
             try:
-                self.service.update_one(item_id, **updates)
+                service.update_one(item_id, **updates)
             except DoesNotExistError as e:
                 return JSONResponse(self.response.not_found(e), 404)
             except ForbiddenError as e:
@@ -308,6 +324,10 @@ class RestfulRouter:
         return self
 
     def with_delete_one_endpoint(self, is_documented: bool = True) -> Self:
+        parent_id_type = Annotated[
+            str,
+            Path(alias=self.parent_id_alias, default_factory=str),
+        ]
         id_type = Annotated[str, Path(alias=self.id_alias)]
 
         @self.router.delete(
@@ -317,9 +337,11 @@ class RestfulRouter:
             response_model=self.schema.for_no_data(),
             include_in_schema=is_documented,
         )
-        def delete_one(item_id: id_type) -> _Response:
+        def delete_one(parent_id: parent_id_type, item_id: id_type) -> _Response:
+            service = self.infra.service_for(parent_id)
+
             try:
-                self.service.delete_one(item_id)
+                service.delete_one(item_id)
             except DoesNotExistError as e:
                 return JSONResponse(self.response.not_found(e), 404)
 
