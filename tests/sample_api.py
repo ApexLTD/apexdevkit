@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from enum import Enum
 from uuid import uuid4
 
@@ -9,7 +9,12 @@ from fastapi import FastAPI
 from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.fastapi.schema import SchemaFields
-from apexdevkit.fastapi.service import RestfulRepository, RestfulService
+from apexdevkit.fastapi.service import (
+    RawCollection,
+    RawItem,
+    RestfulRepository,
+    RestfulService,
+)
 from apexdevkit.http import JsonDict
 from apexdevkit.repository import InMemoryRepository
 from apexdevkit.testing import RestfulName
@@ -29,8 +34,8 @@ class ServiceInfra:
 
     def service_for(self, parent_id: str) -> RestfulService:
         if parent_id not in self.services:
-            self.services[parent_id] = RestfulRepository(
-                Price,
+            self.services[parent_id] = RestfulPriceService(
+                parent_id,
                 InMemoryRepository[Price]
                 .for_dataclass(Price)
                 .with_unique(criteria=lambda item: f"currency<{item.currecy}>"),
@@ -96,6 +101,7 @@ class AppleFields(SchemaFields):
 
 @dataclass(frozen=True)
 class Price:
+    apple_id: str
     value: int
     exponent: int
     currency: str
@@ -108,10 +114,30 @@ class PriceFields(SchemaFields):
         return (
             JsonDict()
             .with_a(id=str)
+            .and_a(apple_id=str)
             .and_a(value=int)
             .and_a(exponent=int)
             .and_a(currency=str)
         )
 
+    def writable(self) -> JsonDict:
+        return self.readable().drop("id", "apple_id")
+
     def editable(self) -> JsonDict:
         return self.readable().select("value", "exponent")
+
+
+@dataclass
+class RestfulPriceService(RestfulService):
+    apple_id: str
+    repository: InMemoryRepository[Price]
+
+    def read_all(self) -> RawCollection:
+        yield from [asdict(price) for price in self.repository]
+
+    def create_one(self, item: RawItem) -> RawItem:
+        price = Price(**item, apple_id=self.apple_id)
+
+        self.repository.create(price)
+
+        return asdict(price)
