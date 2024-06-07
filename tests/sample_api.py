@@ -9,43 +9,55 @@ from fastapi import FastAPI
 from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.fastapi.schema import SchemaFields
-from apexdevkit.fastapi.service import RestfulRepository
+from apexdevkit.fastapi.service import RestfulRepository, RestfulService
 from apexdevkit.http import JsonDict
 from apexdevkit.repository import InMemoryRepository
 from apexdevkit.testing import RestfulName
 
 
+@dataclass(frozen=True)
+class ServiceInfra:
+    services: dict[str, RestfulService] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        self.services[""] = RestfulRepository(
+            Apple,
+            InMemoryRepository[Apple]
+            .for_dataclass(Apple)
+            .with_unique(criteria=lambda item: f"name<{item.name}>"),
+        )
+
+    def service_for(self, parent_id: str) -> RestfulService:
+        if parent_id not in self.services:
+            self.services[parent_id] = RestfulRepository(
+                Price,
+                InMemoryRepository[Price]
+                .for_dataclass(Price)
+                .with_unique(criteria=lambda item: f"currency<{item.currecy}>"),
+            )
+
+        return self.services[parent_id]
+
+
 def setup() -> FastAPI:
+    infra = ServiceInfra()
     return (
         FastApiBuilder()
         .with_title("Apple API")
         .with_version("1.0.0")
         .with_description("Sample API for unit testing various testing routines")
         .with_route(
-            apples=RestfulRouter(
-                service=RestfulRepository(
-                    Apple,
-                    InMemoryRepository[Apple]
-                    .for_dataclass(Apple)
-                    .with_unique(criteria=lambda item: f"name<{item.name}>"),
-                )
-            )
+            apples=RestfulRouter()
             .with_name(RestfulName("apple"))
             .with_fields(AppleFields())
+            .with_infra(infra)
             .with_sub_resource(
                 prices=(
-                    RestfulRouter(
-                        service=RestfulRepository(
-                            Price,
-                            InMemoryRepository[Price]
-                            .for_dataclass(Price)
-                            .with_unique(
-                                criteria=lambda item: f"currency<{item.currecy}>"
-                            ),
-                        )
-                    )
+                    RestfulRouter()
                     .with_name(RestfulName("price"))
                     .with_fields(PriceFields())
+                    .with_parent("apple")
+                    .with_infra(infra)
                     .with_create_one_endpoint()
                     .with_read_all_endpoint()
                     .build()
