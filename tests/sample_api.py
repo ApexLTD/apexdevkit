@@ -40,6 +40,7 @@ class ServiceInfra:
 
 
 def setup() -> FastAPI:
+    infra = ServiceInfra()
     return (
         FastApiBuilder()
         .with_title("Apple API")
@@ -49,21 +50,14 @@ def setup() -> FastAPI:
             apples=RestfulRouter()
             .with_name(RestfulName("apple"))
             .with_fields(AppleFields())
-            .with_infra(ServiceInfra())
+            .with_infra(infra)
             .with_sub_resource(
                 prices=(
-                    RestfulRouter(
-                        service=RestfulRepository(
-                            Price,
-                            InMemoryRepository[Price]
-                            .for_dataclass(Price)
-                            .with_unique(
-                                criteria=lambda item: f"currency<{item.currecy}>"
-                            ),
-                        )
-                    )
+                    RestfulRouter()
                     .with_name(RestfulName("price"))
                     .with_fields(PriceFields())
+                    .with_parent("apple")
+                    .with_infra(infra)
                     .with_create_one_endpoint()
                     .with_read_all_endpoint()
                     .build()
