@@ -148,13 +148,11 @@ class RestfulRouter:
         return self
 
     def with_service(self, value: RestfulService) -> Self:
-        self.service = value
         self.infra = SingleRestfulServiceInfra(value)
 
         return self
 
     def with_infra(self, value: RestfulServiceInfra) -> Self:
-        self.service = value.service_for("")
         self.infra = value
 
         return self
