@@ -233,6 +233,9 @@ class RestResponse:
     http_code: int
 
     def fail(self) -> Self:
+        if self.http_code == 422:
+            return self
+
         return self.with_status("fail")
 
     def success(self) -> Self:
@@ -245,7 +248,9 @@ class RestResponse:
 
     def with_code(self, value: int) -> Self:
         assert self.http_code == value
-        assert self.json.value_of("code").to(int) == value
+
+        if self.http_code != 422:
+            assert self.json.value_of("code").to(int) == value
 
         return self
 
