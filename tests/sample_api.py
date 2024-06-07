@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from enum import Enum
 from uuid import uuid4
 
@@ -10,10 +10,10 @@ from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.fastapi.schema import SchemaFields
 from apexdevkit.fastapi.service import (
+    RawCollection,
+    RawItem,
     RestfulRepository,
     RestfulService,
-    RawItem,
-    RawCollection,
 )
 from apexdevkit.http import JsonDict
 from apexdevkit.repository import InMemoryRepository
