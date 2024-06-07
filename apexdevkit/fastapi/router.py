@@ -87,6 +87,8 @@ class RestfulRouter:
     name: RestfulName = field(init=False)
     fields: SchemaFields = field(init=False)
 
+    parent: str = field(init=False, default="")
+
     @cached_property
     def response(self) -> RestfulResponse:
         return RestfulResponse(name=self.name)
@@ -98,6 +100,10 @@ class RestfulRouter:
     @property
     def id_alias(self) -> str:
         return self.name.singular + "_id"
+
+    @property
+    def parent_id_alias(self) -> str:
+        return self.parent + "_id"
 
     @property
     def item_path(self) -> str:
@@ -115,6 +121,11 @@ class RestfulRouter:
 
     def with_fields(self, value: SchemaFields) -> Self:
         self.fields = value
+
+        return self
+
+    def with_parent(self, name: str) -> Self:
+        self.parent = name
 
         return self
 
@@ -142,6 +153,11 @@ class RestfulRouter:
         return self
 
     def with_create_many_endpoint(self, is_documented: bool = True) -> Self:
+        parent_id_type = Annotated[
+            str,
+            Path(alias=self.parent_id_alias, default_factory=str),
+        ]
+
         collection_type = Annotated[
             RawCollection,
             Depends(self.schema.for_create_many()),
@@ -154,7 +170,7 @@ class RestfulRouter:
             response_model=self.schema.for_collection(),
             include_in_schema=is_documented,
         )
-        def create_many(items: collection_type) -> _Response:
+        def create_many(parent_id: parent_id_type, items: collection_type) -> _Response:
             try:
                 return self.response.created_many(self.service.create_many(items))
             except ExistsError as e:
@@ -181,6 +197,11 @@ class RestfulRouter:
         return self
 
     def with_read_all_endpoint(self, is_documented: bool = True) -> Self:
+        parent_id_type = Annotated[
+            str,
+            Path(alias=self.parent_id_alias, default_factory=str),
+        ]
+
         @self.router.get(
             "",
             status_code=200,
@@ -188,7 +209,7 @@ class RestfulRouter:
             response_model=self.schema.for_collection(),
             include_in_schema=is_documented,
         )
-        def read_all() -> _Response:
+        def read_all(parent_id: parent_id_type) -> _Response:
             return self.response.found_many(list(self.service.read_all()))
 
         return self
@@ -220,6 +241,10 @@ class RestfulRouter:
         return self
 
     def with_update_many_endpoint(self, is_documented: bool = True) -> Self:
+        parent_id_type = Annotated[
+            str,
+            Path(alias=self.parent_id_alias, default_factory=str),
+        ]
         collection_type = Annotated[
             RawCollection,
             Depends(self.schema.for_update_many()),
@@ -232,7 +257,7 @@ class RestfulRouter:
             response_model=self.schema.for_no_data(),
             include_in_schema=is_documented,
         )
-        def update_many(items: collection_type) -> _Response:
+        def update_many(parent_id: parent_id_type, items: collection_type) -> _Response:
             self.service.update_many(items)
 
             return self.response.ok()
