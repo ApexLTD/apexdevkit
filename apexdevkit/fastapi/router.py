@@ -93,7 +93,7 @@ class SingleRestfulServiceInfra:
 
 @dataclass
 class RestfulRouter:
-    service: RestfulService
+    service: RestfulService | None = None
 
     router: APIRouter = field(default_factory=APIRouter)
 
@@ -104,7 +104,8 @@ class RestfulRouter:
     parent: str = field(init=False, default="")
 
     def __post_init__(self) -> None:
-        self.infra = SingleRestfulServiceInfra(self.service)
+        if self.service:
+            self.infra = SingleRestfulServiceInfra(self.service)
 
     @cached_property
     def response(self) -> RestfulResponse:
