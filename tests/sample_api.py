@@ -19,7 +19,7 @@ from apexdevkit.testing import RestfulName
 class ServiceInfra:
     services: dict[str, RestfulService] = field(default_factory=dict)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.services[""] = RestfulRepository(
             Apple,
             InMemoryRepository[Apple]
