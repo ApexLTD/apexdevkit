@@ -74,6 +74,7 @@ def setup() -> FastAPI:
                     .with_read_all_endpoint()
                     .with_update_one_endpoint()
                     .with_update_many_endpoint()
+                    .with_delete_one_endpoint()
                     .build()
                 )
             )
