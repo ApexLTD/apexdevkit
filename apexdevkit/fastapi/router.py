@@ -1,6 +1,7 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Annotated, Any, Iterable, Protocol, Self, TypeVar
+from typing import Annotated, Any, Iterable, Self, TypeVar
 
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
@@ -78,16 +79,26 @@ class RestfulResponse:
 T = TypeVar("T")
 
 
-class RestfulServiceInfra(Protocol):
+class RestfulServiceInfra(ABC):
+    def with_user(self, user: Any) -> "RestfulServiceInfra":
+        return self
+
+    def with_parent(self, identity: str) -> "RestfulServiceInfra":
+        return self
+
     def service_for(self, parent_id: str) -> RestfulService:
+        return self.with_parent(parent_id).build()
+
+    @abstractmethod
+    def build(self) -> RestfulService:
         pass
 
 
 @dataclass(frozen=True)
-class SingleRestfulServiceInfra:
+class SingleRestfulServiceInfra(RestfulServiceInfra):
     service: RestfulService
 
-    def service_for(self, parent_id: str) -> RestfulService:
+    def build(self) -> RestfulService:
         return self.service
 
 
