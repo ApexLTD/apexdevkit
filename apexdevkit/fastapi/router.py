@@ -325,15 +325,30 @@ class RestfulRouter:
         is_documented: bool = True,
         extract_user: Callable[..., Any] = no_user,
     ) -> Self:
-        parent_id_type = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
+        self.router.add_api_route(
+            "",
+            self.read_all(
+                User=Annotated[
+                    Any,
+                    Depends(extract_user),
+                ],
+                ParentId=Annotated[
+                    str,
+                    Path(alias=self.parent_id_alias, default_factory=str),
+                ],
+            ),
+            methods=["GET"],
+            status_code=200,
+            responses={},
+            response_model=self.schema.for_collection(),
+            include_in_schema=is_documented,
+            summary="Read All",
+        )
 
-        def read_all(
-            user: Annotated[Any, Depends(extract_user)],
-            parent_id: parent_id_type,
-        ) -> _Response:
+        return self
+
+    def read_all(self, User, ParentId) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(user: User, parent_id: ParentId) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
@@ -343,17 +358,7 @@ class RestfulRouter:
 
             return self.response.found_many(list(service.read_all()))
 
-        self.router.add_api_route(
-            "",
-            read_all,
-            methods=["GET"],
-            status_code=200,
-            responses={},
-            response_model=self.schema.for_collection(),
-            include_in_schema=is_documented,
-        )
-
-        return self
+        return endpoint
 
     def with_update_one_endpoint(
         self,
