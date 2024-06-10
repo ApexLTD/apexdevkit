@@ -318,8 +318,12 @@ class RestfulRouter:
             item_id: id_type,
             updates: update_type,
         ) -> _Response:
-            service = self.infra.with_parent(parent_id).build()
-
+            try:
+                service = self.infra.with_parent(parent_id).build()
+            except DoesNotExistError as e:
+                return JSONResponse(
+                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
+                )
             try:
                 service.update_one(item_id, **updates)
             except DoesNotExistError as e:
