@@ -192,7 +192,7 @@ class RestfulRouter:
             Depends(self.schema.for_create_one()),
         ]
 
-        def create_one(
+        def endpoint(
             user: Annotated[Any, Depends(extract_user)],
             parent_id: parent_id_type,
             item: item_type,
@@ -213,12 +213,13 @@ class RestfulRouter:
 
         self.router.add_api_route(
             "",
-            create_one,
+            endpoint,
             methods=["POST"],
             status_code=201,
             responses={409: {}},
             response_model=self.schema.for_item(),
             include_in_schema=is_documented,
+            summary="Create One",
         )
 
         return self
