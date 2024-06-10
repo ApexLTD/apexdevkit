@@ -211,7 +211,12 @@ class RestfulRouter:
             include_in_schema=is_documented,
         )
         def create_many(parent_id: parent_id_type, items: collection_type) -> _Response:
-            service = self.infra.service_for(parent_id)
+            try:
+                service = self.infra.service_for(parent_id)
+            except DoesNotExistError as e:
+                return JSONResponse(
+                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
+                )
 
             try:
                 return self.response.created_many(service.create_many(items))

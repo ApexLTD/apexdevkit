@@ -366,3 +366,22 @@ def test_should_should_not_create_without_parent_id(resource: RestCollection) ->
         .with_code(404)
         .and_message(f"An item<Apple> with id<{unknown_id}> does not exist.")
     )
+
+
+def test_should_should_not_create_many_without_parent_id(
+    resource: RestCollection,
+) -> None:
+    unknown_id = str(uuid4())
+    many_prices = [fake.price(), fake.price()]
+
+    (
+        resource.sub_resource(unknown_id)
+        .sub_resource("price")
+        .create_many()
+        .from_data(many_prices[0])
+        .and_data(many_prices[1])
+        .ensure()
+        .fail()
+        .with_code(404)
+        .and_message(f"An item<Apple> with id<{unknown_id}> does not exist.")
+    )
