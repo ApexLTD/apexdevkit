@@ -80,16 +80,16 @@ T = TypeVar("T")
 
 
 @dataclass
-class RestfulServiceInfra(ABC):
+class RestfulServiceBuilder(ABC):
     parent_id: str = field(init=False)
     user: Any = field(init=False)
 
-    def with_user(self, user: Any) -> "RestfulServiceInfra":
+    def with_user(self, user: Any) -> "RestfulServiceBuilder":
         self.user = user
 
         return self
 
-    def with_parent(self, identity: str) -> "RestfulServiceInfra":
+    def with_parent(self, identity: str) -> "RestfulServiceBuilder":
         self.parent_id = identity
 
         return self
@@ -100,7 +100,7 @@ class RestfulServiceInfra(ABC):
 
 
 @dataclass
-class SingleRestfulServiceInfra(RestfulServiceInfra):
+class SingleRestfulServiceInfra(RestfulServiceBuilder):
     service: RestfulService
 
     def build(self) -> RestfulService:
@@ -115,7 +115,7 @@ class RestfulRouter:
 
     name: RestfulName = field(init=False)
     fields: SchemaFields = field(init=False)
-    infra: RestfulServiceInfra = field(init=False)
+    infra: RestfulServiceBuilder = field(init=False)
 
     parent: str = field(init=False, default="")
 
@@ -168,7 +168,7 @@ class RestfulRouter:
 
         return self
 
-    def with_infra(self, value: RestfulServiceInfra) -> Self:
+    def with_infra(self, value: RestfulServiceBuilder) -> Self:
         self.infra = value
 
         return self

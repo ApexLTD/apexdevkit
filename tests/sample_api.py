@@ -7,7 +7,7 @@ from uuid import uuid4
 from fastapi import FastAPI
 
 from apexdevkit.fastapi import FastApiBuilder
-from apexdevkit.fastapi.router import RestfulRouter, RestfulServiceInfra
+from apexdevkit.fastapi.router import RestfulRouter, RestfulServiceBuilder
 from apexdevkit.fastapi.schema import SchemaFields
 from apexdevkit.fastapi.service import (
     RawCollection,
@@ -21,7 +21,7 @@ from apexdevkit.testing import RestfulName
 
 
 @dataclass
-class ServiceInfra(RestfulServiceInfra):
+class ServiceInfra(RestfulServiceBuilder):
     services: dict[str, RestfulService] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -32,7 +32,7 @@ class ServiceInfra(RestfulServiceInfra):
             .with_unique(criteria=lambda item: f"name<{item.name}>"),
         )
 
-    def with_parent(self, identity: str) -> "RestfulServiceInfra":
+    def with_parent(self, identity: str) -> "RestfulServiceBuilder":
         if identity not in self.services:
             assert self.services[""].read_one(identity)
 
