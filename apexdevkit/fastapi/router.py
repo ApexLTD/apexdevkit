@@ -193,8 +193,9 @@ class RestfulRouter:
             Depends(self.schema.for_create_one()),
         ]
 
-        @self.router.post(
+        @self.router.api_route(
             "",
+            methods=["POST"],
             status_code=201,
             responses={409: {}},
             response_model=self.schema.for_item(),
@@ -236,8 +237,9 @@ class RestfulRouter:
             Depends(self.schema.for_create_many()),
         ]
 
-        @self.router.post(
+        @self.router.api_route(
             "/batch",
+            methods=["POST"],
             status_code=201,
             responses={409: {}},
             response_model=self.schema.for_collection(),
@@ -273,8 +275,9 @@ class RestfulRouter:
             Path(alias=self.parent_id_alias, default_factory=str),
         ]
 
-        @self.router.get(
+        @self.router.api_route(
             self.item_path,
+            methods=["GET"],
             status_code=200,
             responses={404: {}},
             response_model=self.schema.for_item(),
@@ -309,8 +312,9 @@ class RestfulRouter:
             Path(alias=self.parent_id_alias, default_factory=str),
         ]
 
-        @self.router.get(
+        @self.router.api_route(
             "",
+            methods=["GET"],
             status_code=200,
             responses={},
             response_model=self.schema.for_collection(),
@@ -346,8 +350,9 @@ class RestfulRouter:
             Depends(self.schema.for_update_one()),
         ]
 
-        @self.router.patch(
+        @self.router.api_route(
             self.item_path,
+            methods=["PATCH"],
             status_code=200,
             responses={404: {}},
             response_model=self.schema.for_no_data(),
@@ -390,8 +395,9 @@ class RestfulRouter:
             Depends(self.schema.for_update_many()),
         ]
 
-        @self.router.patch(
+        @self.router.api_route(
             "",
+            methods=["PATCH"],
             status_code=200,
             responses={},
             response_model=self.schema.for_no_data(),
@@ -426,8 +432,9 @@ class RestfulRouter:
         ]
         id_type = Annotated[str, Path(alias=self.id_alias)]
 
-        @self.router.delete(
+        @self.router.api_route(
             self.item_path,
+            methods=["DELETE"],
             status_code=200,
             responses={404: {}},
             response_model=self.schema.for_no_data(),
