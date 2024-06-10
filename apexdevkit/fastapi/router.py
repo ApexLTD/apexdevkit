@@ -6,6 +6,7 @@ from typing import Annotated, Any, Iterable, Self, TypeVar
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
 
+from apexdevkit.annotation import deprecated
 from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
 from apexdevkit.fastapi.schema import DataclassFields, RestfulSchema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
@@ -86,6 +87,7 @@ class RestfulServiceInfra(ABC):
     def with_parent(self, identity: str) -> "RestfulServiceInfra":
         return self
 
+    @deprecated("Please use .with_parent(id).build()")
     def service_for(self, parent_id: str) -> RestfulService:
         return self.with_parent(parent_id).build()
 
