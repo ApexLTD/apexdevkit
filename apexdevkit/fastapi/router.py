@@ -100,7 +100,7 @@ class RestfulServiceBuilder(ABC):
 
 
 @dataclass
-class SingleRestfulServiceInfra(RestfulServiceBuilder):
+class PreBuiltRestfulService(RestfulServiceBuilder):
     service: RestfulService
 
     def build(self) -> RestfulService:
@@ -121,7 +121,7 @@ class RestfulRouter:
 
     def __post_init__(self) -> None:
         if self.service:
-            self.infra = SingleRestfulServiceInfra(self.service)
+            self.infra = PreBuiltRestfulService(self.service)
 
     @cached_property
     def response(self) -> RestfulResponse:
@@ -164,7 +164,7 @@ class RestfulRouter:
         return self
 
     def with_service(self, value: RestfulService) -> Self:
-        self.infra = SingleRestfulServiceInfra(value)
+        self.infra = PreBuiltRestfulService(value)
 
         return self
 
