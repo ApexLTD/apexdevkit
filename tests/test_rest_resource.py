@@ -394,7 +394,7 @@ def test_should_not_read_without_parent_id(resource: RestCollection) -> None:
         resource.sub_resource(unknown_id)
         .sub_resource("price")
         .read_one()
-        .with_id(unknown_id)
+        .with_id(fake.price().get("id"))
         .ensure()
         .fail()
         .with_code(404)
