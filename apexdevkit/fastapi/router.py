@@ -424,20 +424,34 @@ class RestfulRouter:
         is_documented: bool = True,
         extract_user: Callable[..., Any] = no_user,
     ) -> Self:
-        parent_id_type = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
-        collection_type = Annotated[
-            RawCollection,
-            Depends(self.schema.for_update_many()),
-        ]
+        self.router.add_api_route(
+            "",
+            self.update_many(
+                User=Annotated[
+                    Any,
+                    Depends(extract_user),
+                ],
+                ParentId=Annotated[
+                    str,
+                    Path(alias=self.parent_id_alias, default_factory=str),
+                ],
+                Collection=Annotated[
+                    RawCollection,
+                    Depends(self.schema.for_update_many()),
+                ],
+            ),
+            methods=["PATCH"],
+            status_code=200,
+            responses={},
+            response_model=self.schema.for_no_data(),
+            include_in_schema=is_documented,
+            summary="Update Many",
+        )
 
-        def update_many(
-            user: Annotated[Any, Depends(extract_user)],
-            parent_id: parent_id_type,
-            items: collection_type,
-        ) -> _Response:
+        return self
+
+    def update_many(self, User, ParentId, Collection) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(user: User, parent_id: ParentId, items: Collection) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
@@ -449,17 +463,7 @@ class RestfulRouter:
 
             return self.response.ok()
 
-        self.router.add_api_route(
-            "",
-            update_many,
-            methods=["PATCH"],
-            status_code=200,
-            responses={},
-            response_model=self.schema.for_no_data(),
-            include_in_schema=is_documented,
-        )
-
-        return self
+        return endpoint
 
     def with_delete_one_endpoint(
         self,
