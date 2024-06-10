@@ -438,7 +438,12 @@ class RestfulRouter:
             parent_id: parent_id_type,
             item_id: id_type,
         ) -> _Response:
-            service = self.infra.with_user(user).with_parent(parent_id).build()
+            try:
+                service = self.infra.with_user(user).with_parent(parent_id).build()
+            except DoesNotExistError as e:
+                return JSONResponse(
+                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
+                )
 
             try:
                 service.delete_one(item_id)
