@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Annotated, Any, Iterable, Self, TypeVar
+from typing import Annotated, Any, Callable, Iterable, Self, TypeVar
 
 from fastapi import APIRouter, Depends, Path
+from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
@@ -107,6 +108,10 @@ class PreBuiltRestfulService(RestfulServiceBuilder):
         return self.service
 
 
+def no_user(request: Request) -> None:
+    pass
+
+
 @dataclass
 class RestfulRouter:
     service: RestfulService | None = None
@@ -173,7 +178,11 @@ class RestfulRouter:
 
         return self
 
-    def with_create_one_endpoint(self, is_documented: bool = True) -> Self:
+    def with_create_one_endpoint(
+        self,
+        is_documented: bool = True,
+        extract_user: Callable[[Request], Any] = no_user,
+    ) -> Self:
         parent_id_type = Annotated[
             str,
             Path(alias=self.parent_id_alias, default_factory=str),
@@ -191,9 +200,13 @@ class RestfulRouter:
             response_model=self.schema.for_item(),
             include_in_schema=is_documented,
         )
-        def create_one(parent_id: parent_id_type, item: item_type) -> _Response:
+        def create_one(
+            user: Annotated[Any, Depends(extract_user)],
+            parent_id: parent_id_type,
+            item: item_type,
+        ) -> _Response:
             try:
-                service = self.infra.with_parent(parent_id).build()
+                service = self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
                 return JSONResponse(
                     RestfulResponse(RestfulName(self.parent)).not_found(e), 404
@@ -208,7 +221,11 @@ class RestfulRouter:
 
         return self
 
-    def with_create_many_endpoint(self, is_documented: bool = True) -> Self:
+    def with_create_many_endpoint(
+        self,
+        is_documented: bool = True,
+        extract_user: Callable[[Request], Any] = no_user,
+    ) -> Self:
         parent_id_type = Annotated[
             str,
             Path(alias=self.parent_id_alias, default_factory=str),
@@ -226,9 +243,13 @@ class RestfulRouter:
             response_model=self.schema.for_collection(),
             include_in_schema=is_documented,
         )
-        def create_many(parent_id: parent_id_type, items: collection_type) -> _Response:
+        def create_many(
+            user: Annotated[Any, Depends(extract_user)],
+            parent_id: parent_id_type,
+            items: collection_type,
+        ) -> _Response:
             try:
-                service = self.infra.with_parent(parent_id).build()
+                service = self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
                 return JSONResponse(
                     RestfulResponse(RestfulName(self.parent)).not_found(e), 404
@@ -241,7 +262,11 @@ class RestfulRouter:
 
         return self
 
-    def with_read_one_endpoint(self, is_documented: bool = True) -> Self:
+    def with_read_one_endpoint(
+        self,
+        is_documented: bool = True,
+        extract_user: Callable[[Request], Any] = no_user,
+    ) -> Self:
         id_type = Annotated[str, Path(alias=self.id_alias)]
         parent_id_type = Annotated[
             str,
@@ -255,8 +280,12 @@ class RestfulRouter:
             response_model=self.schema.for_item(),
             include_in_schema=is_documented,
         )
-        def read_one(parent_id: parent_id_type, item_id: id_type) -> _Response:
-            service = self.infra.with_parent(parent_id).build()
+        def read_one(
+            user: Annotated[Any, Depends(extract_user)],
+            parent_id: parent_id_type,
+            item_id: id_type,
+        ) -> _Response:
+            service = self.infra.with_user(user).with_parent(parent_id).build()
 
             try:
                 return self.response.found_one(service.read_one(item_id))
@@ -265,7 +294,11 @@ class RestfulRouter:
 
         return self
 
-    def with_read_all_endpoint(self, is_documented: bool = True) -> Self:
+    def with_read_all_endpoint(
+        self,
+        is_documented: bool = True,
+        extract_user: Callable[[Request], Any] = no_user,
+    ) -> Self:
         parent_id_type = Annotated[
             str,
             Path(alias=self.parent_id_alias, default_factory=str),
@@ -278,14 +311,21 @@ class RestfulRouter:
             response_model=self.schema.for_collection(),
             include_in_schema=is_documented,
         )
-        def read_all(parent_id: parent_id_type) -> _Response:
-            service = self.infra.with_parent(parent_id).build()
+        def read_all(
+            user: Annotated[Any, Depends(extract_user)],
+            parent_id: parent_id_type,
+        ) -> _Response:
+            service = self.infra.with_user(user).with_parent(parent_id).build()
 
             return self.response.found_many(list(service.read_all()))
 
         return self
 
-    def with_update_one_endpoint(self, is_documented: bool = True) -> Self:
+    def with_update_one_endpoint(
+        self,
+        is_documented: bool = True,
+        extract_user: Callable[[Request], Any] = no_user,
+    ) -> Self:
         parent_id_type = Annotated[
             str,
             Path(alias=self.parent_id_alias, default_factory=str),
@@ -304,11 +344,12 @@ class RestfulRouter:
             include_in_schema=is_documented,
         )
         def update_one(
+            user: Annotated[Any, Depends(extract_user)],
             parent_id: parent_id_type,
             item_id: id_type,
             updates: update_type,
         ) -> _Response:
-            service = self.infra.with_parent(parent_id).build()
+            service = self.infra.with_user(user).with_parent(parent_id).build()
 
             try:
                 service.update_one(item_id, **updates)
@@ -321,7 +362,11 @@ class RestfulRouter:
 
         return self
 
-    def with_update_many_endpoint(self, is_documented: bool = True) -> Self:
+    def with_update_many_endpoint(
+        self,
+        is_documented: bool = True,
+        extract_user: Callable[[Request], Any] = no_user,
+    ) -> Self:
         parent_id_type = Annotated[
             str,
             Path(alias=self.parent_id_alias, default_factory=str),
@@ -338,8 +383,12 @@ class RestfulRouter:
             response_model=self.schema.for_no_data(),
             include_in_schema=is_documented,
         )
-        def update_many(parent_id: parent_id_type, items: collection_type) -> _Response:
-            service = self.infra.with_parent(parent_id).build()
+        def update_many(
+            user: Annotated[Any, Depends(extract_user)],
+            parent_id: parent_id_type,
+            items: collection_type,
+        ) -> _Response:
+            service = self.infra.with_user(user).with_parent(parent_id).build()
 
             service.update_many(items)
 
@@ -347,7 +396,11 @@ class RestfulRouter:
 
         return self
 
-    def with_delete_one_endpoint(self, is_documented: bool = True) -> Self:
+    def with_delete_one_endpoint(
+        self,
+        is_documented: bool = True,
+        extract_user: Callable[[Request], Any] = no_user,
+    ) -> Self:
         parent_id_type = Annotated[
             str,
             Path(alias=self.parent_id_alias, default_factory=str),
@@ -361,8 +414,12 @@ class RestfulRouter:
             response_model=self.schema.for_no_data(),
             include_in_schema=is_documented,
         )
-        def delete_one(parent_id: parent_id_type, item_id: id_type) -> _Response:
-            service = self.infra.with_parent(parent_id).build()
+        def delete_one(
+            user: Annotated[Any, Depends(extract_user)],
+            parent_id: parent_id_type,
+            item_id: id_type,
+        ) -> _Response:
+            service = self.infra.with_user(user).with_parent(parent_id).build()
 
             try:
                 service.delete_one(item_id)
