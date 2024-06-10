@@ -4,7 +4,6 @@ from functools import cached_property
 from typing import Annotated, Any, Callable, Iterable, Self, TypeVar
 
 from fastapi import APIRouter, Depends, Path
-from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
@@ -108,7 +107,7 @@ class PreBuiltRestfulService(RestfulServiceBuilder):
         return self.service
 
 
-def no_user(request: Request) -> None:
+def no_user() -> None:
     pass
 
 
@@ -181,7 +180,7 @@ class RestfulRouter:
     def with_create_one_endpoint(
         self,
         is_documented: bool = True,
-        extract_user: Callable[[Request], Any] = no_user,
+        extract_user: Callable[..., Any] = no_user,
     ) -> Self:
         parent_id_type = Annotated[
             str,
@@ -227,7 +226,7 @@ class RestfulRouter:
     def with_create_many_endpoint(
         self,
         is_documented: bool = True,
-        extract_user: Callable[[Request], Any] = no_user,
+        extract_user: Callable[..., Any] = no_user,
     ) -> Self:
         parent_id_type = Annotated[
             str,
@@ -271,7 +270,7 @@ class RestfulRouter:
     def with_read_one_endpoint(
         self,
         is_documented: bool = True,
-        extract_user: Callable[[Request], Any] = no_user,
+        extract_user: Callable[..., Any] = no_user,
     ) -> Self:
         id_type = Annotated[str, Path(alias=self.id_alias)]
         parent_id_type = Annotated[
@@ -311,7 +310,7 @@ class RestfulRouter:
     def with_read_all_endpoint(
         self,
         is_documented: bool = True,
-        extract_user: Callable[[Request], Any] = no_user,
+        extract_user: Callable[..., Any] = no_user,
     ) -> Self:
         parent_id_type = Annotated[
             str,
@@ -346,7 +345,7 @@ class RestfulRouter:
     def with_update_one_endpoint(
         self,
         is_documented: bool = True,
-        extract_user: Callable[[Request], Any] = no_user,
+        extract_user: Callable[..., Any] = no_user,
     ) -> Self:
         parent_id_type = Annotated[
             str,
@@ -394,7 +393,7 @@ class RestfulRouter:
     def with_update_many_endpoint(
         self,
         is_documented: bool = True,
-        extract_user: Callable[[Request], Any] = no_user,
+        extract_user: Callable[..., Any] = no_user,
     ) -> Self:
         parent_id_type = Annotated[
             str,
@@ -436,7 +435,7 @@ class RestfulRouter:
     def with_delete_one_endpoint(
         self,
         is_documented: bool = True,
-        extract_user: Callable[[Request], Any] = no_user,
+        extract_user: Callable[..., Any] = no_user,
     ) -> Self:
         parent_id_type = Annotated[
             str,
