@@ -231,21 +231,34 @@ class RestfulRouter:
         is_documented: bool = True,
         extract_user: Callable[..., Any] = no_user,
     ) -> Self:
-        parent_id_type = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
+        self.router.add_api_route(
+            "/batch",
+            self.create_many(
+                User=Annotated[
+                    Any,
+                    Depends(extract_user),
+                ],
+                ParentId=Annotated[
+                    str,
+                    Path(alias=self.parent_id_alias, default_factory=str),
+                ],
+                Collection=Annotated[
+                    RawCollection,
+                    Depends(self.schema.for_create_many()),
+                ],
+            ),
+            methods=["POST"],
+            status_code=201,
+            responses={409: {}},
+            response_model=self.schema.for_collection(),
+            include_in_schema=is_documented,
+            summary="Create Many",
+        )
 
-        collection_type = Annotated[
-            RawCollection,
-            Depends(self.schema.for_create_many()),
-        ]
+        return self
 
-        def endpoint(
-            user: Annotated[Any, Depends(extract_user)],
-            parent_id: parent_id_type,
-            items: collection_type,
-        ) -> _Response:
+    def create_many(self, User, ParentId, Collection) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(user: User, parent_id: ParentId, items: Collection) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
@@ -258,18 +271,7 @@ class RestfulRouter:
             except ExistsError as e:
                 return JSONResponse(self.response.exists(e), 409)
 
-        self.router.add_api_route(
-            "/batch",
-            endpoint,
-            methods=["POST"],
-            status_code=201,
-            responses={409: {}},
-            response_model=self.schema.for_collection(),
-            include_in_schema=is_documented,
-            summary="Create Many",
-        )
-
-        return self
+        return endpoint
 
     def with_read_one_endpoint(
         self,
