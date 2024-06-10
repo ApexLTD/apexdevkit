@@ -400,3 +400,17 @@ def test_should_not_read_without_parent_id(resource: RestCollection) -> None:
         .with_code(404)
         .and_message(f"An item<Apple> with id<{unknown_id}> does not exist.")
     )
+
+
+def test_should_not_read_many_without_parent_id(resource: RestCollection) -> None:
+    unknown_id = str(uuid4())
+
+    (
+        resource.sub_resource(unknown_id)
+        .sub_resource("price")
+        .read_all()
+        .ensure()
+        .fail()
+        .with_code(404)
+        .and_message(f"An item<Apple> with id<{unknown_id}> does not exist.")
+    )

@@ -284,7 +284,12 @@ class RestfulRouter:
             include_in_schema=is_documented,
         )
         def read_all(parent_id: parent_id_type) -> _Response:
-            service = self.infra.with_parent(parent_id).build()
+            try:
+                service = self.infra.with_parent(parent_id).build()
+            except DoesNotExistError as e:
+                return JSONResponse(
+                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
+                )
 
             return self.response.found_many(list(service.read_all()))
 
