@@ -193,14 +193,6 @@ class RestfulRouter:
             Depends(self.schema.for_create_one()),
         ]
 
-        @self.router.api_route(
-            "",
-            methods=["POST"],
-            status_code=201,
-            responses={409: {}},
-            response_model=self.schema.for_item(),
-            include_in_schema=is_documented,
-        )
         def create_one(
             user: Annotated[Any, Depends(extract_user)],
             parent_id: parent_id_type,
@@ -220,6 +212,16 @@ class RestfulRouter:
 
             return self.response.created_one(item)
 
+        self.router.add_api_route(
+            "",
+            create_one,
+            methods=["POST"],
+            status_code=201,
+            responses={409: {}},
+            response_model=self.schema.for_item(),
+            include_in_schema=is_documented,
+        )
+
         return self
 
     def with_create_many_endpoint(
@@ -237,14 +239,6 @@ class RestfulRouter:
             Depends(self.schema.for_create_many()),
         ]
 
-        @self.router.api_route(
-            "/batch",
-            methods=["POST"],
-            status_code=201,
-            responses={409: {}},
-            response_model=self.schema.for_collection(),
-            include_in_schema=is_documented,
-        )
         def create_many(
             user: Annotated[Any, Depends(extract_user)],
             parent_id: parent_id_type,
@@ -262,6 +256,16 @@ class RestfulRouter:
             except ExistsError as e:
                 return JSONResponse(self.response.exists(e), 409)
 
+        self.router.add_api_route(
+            "/batch",
+            create_many,
+            methods=["POST"],
+            status_code=201,
+            responses={409: {}},
+            response_model=self.schema.for_collection(),
+            include_in_schema=is_documented,
+        )
+
         return self
 
     def with_read_one_endpoint(
@@ -275,14 +279,6 @@ class RestfulRouter:
             Path(alias=self.parent_id_alias, default_factory=str),
         ]
 
-        @self.router.api_route(
-            self.item_path,
-            methods=["GET"],
-            status_code=200,
-            responses={404: {}},
-            response_model=self.schema.for_item(),
-            include_in_schema=is_documented,
-        )
         def read_one(
             user: Annotated[Any, Depends(extract_user)],
             parent_id: parent_id_type,
@@ -300,6 +296,16 @@ class RestfulRouter:
             except DoesNotExistError as e:
                 return JSONResponse(self.response.not_found(e), 404)
 
+        self.router.add_api_route(
+            self.item_path,
+            read_one,
+            methods=["GET"],
+            status_code=200,
+            responses={404: {}},
+            response_model=self.schema.for_item(),
+            include_in_schema=is_documented,
+        )
+
         return self
 
     def with_read_all_endpoint(
@@ -312,14 +318,6 @@ class RestfulRouter:
             Path(alias=self.parent_id_alias, default_factory=str),
         ]
 
-        @self.router.api_route(
-            "",
-            methods=["GET"],
-            status_code=200,
-            responses={},
-            response_model=self.schema.for_collection(),
-            include_in_schema=is_documented,
-        )
         def read_all(
             user: Annotated[Any, Depends(extract_user)],
             parent_id: parent_id_type,
@@ -332,6 +330,16 @@ class RestfulRouter:
                 )
 
             return self.response.found_many(list(service.read_all()))
+
+        self.router.add_api_route(
+            "",
+            read_all,
+            methods=["GET"],
+            status_code=200,
+            responses={},
+            response_model=self.schema.for_collection(),
+            include_in_schema=is_documented,
+        )
 
         return self
 
@@ -350,14 +358,6 @@ class RestfulRouter:
             Depends(self.schema.for_update_one()),
         ]
 
-        @self.router.api_route(
-            self.item_path,
-            methods=["PATCH"],
-            status_code=200,
-            responses={404: {}},
-            response_model=self.schema.for_no_data(),
-            include_in_schema=is_documented,
-        )
         def update_one(
             user: Annotated[Any, Depends(extract_user)],
             parent_id: parent_id_type,
@@ -379,6 +379,16 @@ class RestfulRouter:
 
             return self.response.ok()
 
+        self.router.add_api_route(
+            self.item_path,
+            update_one,
+            methods=["PATCH"],
+            status_code=200,
+            responses={404: {}},
+            response_model=self.schema.for_no_data(),
+            include_in_schema=is_documented,
+        )
+
         return self
 
     def with_update_many_endpoint(
@@ -395,14 +405,6 @@ class RestfulRouter:
             Depends(self.schema.for_update_many()),
         ]
 
-        @self.router.api_route(
-            "",
-            methods=["PATCH"],
-            status_code=200,
-            responses={},
-            response_model=self.schema.for_no_data(),
-            include_in_schema=is_documented,
-        )
         def update_many(
             user: Annotated[Any, Depends(extract_user)],
             parent_id: parent_id_type,
@@ -419,6 +421,16 @@ class RestfulRouter:
 
             return self.response.ok()
 
+        self.router.add_api_route(
+            "",
+            update_many,
+            methods=["PATCH"],
+            status_code=200,
+            responses={},
+            response_model=self.schema.for_no_data(),
+            include_in_schema=is_documented,
+        )
+
         return self
 
     def with_delete_one_endpoint(
@@ -432,14 +444,6 @@ class RestfulRouter:
         ]
         id_type = Annotated[str, Path(alias=self.id_alias)]
 
-        @self.router.api_route(
-            self.item_path,
-            methods=["DELETE"],
-            status_code=200,
-            responses={404: {}},
-            response_model=self.schema.for_no_data(),
-            include_in_schema=is_documented,
-        )
         def delete_one(
             user: Annotated[Any, Depends(extract_user)],
             parent_id: parent_id_type,
@@ -458,6 +462,16 @@ class RestfulRouter:
                 return JSONResponse(self.response.not_found(e), 404)
 
             return self.response.ok()
+
+        self.router.add_api_route(
+            self.item_path,
+            delete_one,
+            methods=["DELETE"],
+            status_code=200,
+            responses={404: {}},
+            response_model=self.schema.for_no_data(),
+            include_in_schema=is_documented,
+        )
 
         return self
 
