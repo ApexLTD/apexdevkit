@@ -7,7 +7,7 @@ from uuid import uuid4
 from fastapi import FastAPI
 
 from apexdevkit.fastapi import FastApiBuilder
-from apexdevkit.fastapi.router import RestfulRouter
+from apexdevkit.fastapi.router import RestfulRouter, RestfulServiceBuilder
 from apexdevkit.fastapi.schema import SchemaFields
 from apexdevkit.fastapi.service import (
     RawCollection,
@@ -20,8 +20,8 @@ from apexdevkit.repository import InMemoryRepository
 from apexdevkit.testing import RestfulName
 
 
-@dataclass(frozen=True)
-class ServiceInfra:
+@dataclass
+class SampleServiceBuilder(RestfulServiceBuilder):
     services: dict[str, RestfulService] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -32,25 +32,25 @@ class ServiceInfra:
             .with_unique(criteria=lambda item: f"name<{item.name}>"),
         )
 
-    def service_for(self, parent_id: str) -> RestfulService:
-        if parent_id not in self.services:
-            apple = self.service_for("").read_one(parent_id)
+    def with_parent(self, identity: str) -> "RestfulServiceBuilder":
+        if identity not in self.services:
+            assert self.services[""].read_one(identity)
 
-            service = RestfulPriceService(
-                apple["id"],
+            self.services[identity] = RestfulPriceService(
+                identity,
                 InMemoryRepository[Price]
                 .for_dataclass(Price)
                 .with_unique(criteria=lambda item: f"currency<{item.currecy}>"),
             )
 
-            self.services[apple["id"]] = service
-            return service
+        return super().with_parent(identity)
 
-        return self.services[parent_id]
+    def build(self) -> RestfulService:
+        return self.services[self.parent_id]
 
 
 def setup() -> FastAPI:
-    infra = ServiceInfra()
+    infra = SampleServiceBuilder()
     return (
         FastApiBuilder()
         .with_title("Apple API")

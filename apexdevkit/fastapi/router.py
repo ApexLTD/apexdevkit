@@ -1,6 +1,7 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Annotated, Any, Iterable, Protocol, Self, TypeVar
+from typing import Annotated, Any, Iterable, Self, TypeVar
 
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
@@ -78,16 +79,31 @@ class RestfulResponse:
 T = TypeVar("T")
 
 
-class RestfulServiceInfra(Protocol):
-    def service_for(self, parent_id: str) -> RestfulService:
+@dataclass
+class RestfulServiceBuilder(ABC):
+    parent_id: str = field(init=False)
+    user: Any = field(init=False)
+
+    def with_user(self, user: Any) -> "RestfulServiceBuilder":
+        self.user = user
+
+        return self
+
+    def with_parent(self, identity: str) -> "RestfulServiceBuilder":
+        self.parent_id = identity
+
+        return self
+
+    @abstractmethod
+    def build(self) -> RestfulService:
         pass
 
 
-@dataclass(frozen=True)
-class SingleRestfulServiceInfra:
+@dataclass
+class PreBuiltRestfulService(RestfulServiceBuilder):
     service: RestfulService
 
-    def service_for(self, parent_id: str) -> RestfulService:
+    def build(self) -> RestfulService:
         return self.service
 
 
@@ -99,13 +115,13 @@ class RestfulRouter:
 
     name: RestfulName = field(init=False)
     fields: SchemaFields = field(init=False)
-    infra: RestfulServiceInfra = field(init=False)
+    infra: RestfulServiceBuilder = field(init=False)
 
     parent: str = field(init=False, default="")
 
     def __post_init__(self) -> None:
         if self.service:
-            self.infra = SingleRestfulServiceInfra(self.service)
+            self.infra = PreBuiltRestfulService(self.service)
 
     @cached_property
     def response(self) -> RestfulResponse:
@@ -148,11 +164,11 @@ class RestfulRouter:
         return self
 
     def with_service(self, value: RestfulService) -> Self:
-        self.infra = SingleRestfulServiceInfra(value)
+        self.infra = PreBuiltRestfulService(value)
 
         return self
 
-    def with_infra(self, value: RestfulServiceInfra) -> Self:
+    def with_infra(self, value: RestfulServiceBuilder) -> Self:
         self.infra = value
 
         return self
@@ -177,7 +193,7 @@ class RestfulRouter:
         )
         def create_one(parent_id: parent_id_type, item: item_type) -> _Response:
             try:
-                service = self.infra.service_for(parent_id)
+                service = self.infra.with_parent(parent_id).build()
             except DoesNotExistError as e:
                 return JSONResponse(
                     RestfulResponse(RestfulName(self.parent)).not_found(e), 404
@@ -212,7 +228,7 @@ class RestfulRouter:
         )
         def create_many(parent_id: parent_id_type, items: collection_type) -> _Response:
             try:
-                service = self.infra.service_for(parent_id)
+                service = self.infra.with_parent(parent_id).build()
             except DoesNotExistError as e:
                 return JSONResponse(
                     RestfulResponse(RestfulName(self.parent)).not_found(e), 404
@@ -240,7 +256,7 @@ class RestfulRouter:
             include_in_schema=is_documented,
         )
         def read_one(parent_id: parent_id_type, item_id: id_type) -> _Response:
-            service = self.infra.service_for(parent_id)
+            service = self.infra.with_parent(parent_id).build()
 
             try:
                 return self.response.found_one(service.read_one(item_id))
@@ -263,7 +279,7 @@ class RestfulRouter:
             include_in_schema=is_documented,
         )
         def read_all(parent_id: parent_id_type) -> _Response:
-            service = self.infra.service_for(parent_id)
+            service = self.infra.with_parent(parent_id).build()
 
             return self.response.found_many(list(service.read_all()))
 
@@ -292,7 +308,7 @@ class RestfulRouter:
             item_id: id_type,
             updates: update_type,
         ) -> _Response:
-            service = self.infra.service_for(parent_id)
+            service = self.infra.with_parent(parent_id).build()
 
             try:
                 service.update_one(item_id, **updates)
@@ -323,7 +339,7 @@ class RestfulRouter:
             include_in_schema=is_documented,
         )
         def update_many(parent_id: parent_id_type, items: collection_type) -> _Response:
-            service = self.infra.service_for(parent_id)
+            service = self.infra.with_parent(parent_id).build()
 
             service.update_many(items)
 
@@ -346,7 +362,7 @@ class RestfulRouter:
             include_in_schema=is_documented,
         )
         def delete_one(parent_id: parent_id_type, item_id: id_type) -> _Response:
-            service = self.infra.service_for(parent_id)
+            service = self.infra.with_parent(parent_id).build()
 
             try:
                 service.delete_one(item_id)
