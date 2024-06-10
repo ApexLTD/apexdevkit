@@ -241,7 +241,7 @@ class RestfulRouter:
             Depends(self.schema.for_create_many()),
         ]
 
-        def create_many(
+        def endpoint(
             user: Annotated[Any, Depends(extract_user)],
             parent_id: parent_id_type,
             items: collection_type,
@@ -260,12 +260,13 @@ class RestfulRouter:
 
         self.router.add_api_route(
             "/batch",
-            create_many,
+            endpoint,
             methods=["POST"],
             status_code=201,
             responses={409: {}},
             response_model=self.schema.for_collection(),
             include_in_schema=is_documented,
+            summary="Create Many",
         )
 
         return self
