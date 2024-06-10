@@ -182,21 +182,34 @@ class RestfulRouter:
         is_documented: bool = True,
         extract_user: Callable[..., Any] = no_user,
     ) -> Self:
-        parent_id_type = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
+        self.router.add_api_route(
+            "",
+            self.create_one(
+                User=Annotated[
+                    Any,
+                    Depends(extract_user),
+                ],
+                ParentId=Annotated[
+                    str,
+                    Path(alias=self.parent_id_alias, default_factory=str),
+                ],
+                Item=Annotated[
+                    RawItem,
+                    Depends(self.schema.for_create_one()),
+                ],
+            ),
+            methods=["POST"],
+            status_code=201,
+            responses={409: {}},
+            response_model=self.schema.for_item(),
+            include_in_schema=is_documented,
+            summary="Create One",
+        )
 
-        item_type = Annotated[
-            RawItem,
-            Depends(self.schema.for_create_one()),
-        ]
+        return self
 
-        def endpoint(
-            user: Annotated[Any, Depends(extract_user)],
-            parent_id: parent_id_type,
-            item: item_type,
-        ) -> _Response:
+    def create_one(self, User, ParentId, Item) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(user: User, parent_id: ParentId, item: Item) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
@@ -211,18 +224,7 @@ class RestfulRouter:
 
             return self.response.created_one(item)
 
-        self.router.add_api_route(
-            "",
-            endpoint,
-            methods=["POST"],
-            status_code=201,
-            responses={409: {}},
-            response_model=self.schema.for_item(),
-            include_in_schema=is_documented,
-            summary="Create One",
-        )
-
-        return self
+        return endpoint
 
     def with_create_many_endpoint(
         self,
