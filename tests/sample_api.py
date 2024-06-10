@@ -21,7 +21,7 @@ from apexdevkit.testing import RestfulName
 
 
 @dataclass
-class ServiceInfra(RestfulServiceBuilder):
+class SampleServiceBuilder(RestfulServiceBuilder):
     services: dict[str, RestfulService] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -50,7 +50,7 @@ class ServiceInfra(RestfulServiceBuilder):
 
 
 def setup() -> FastAPI:
-    infra = ServiceInfra()
+    infra = SampleServiceBuilder()
     return (
         FastApiBuilder()
         .with_title("Apple API")
