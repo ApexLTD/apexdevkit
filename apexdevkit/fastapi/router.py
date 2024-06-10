@@ -4,7 +4,6 @@ from functools import cached_property
 from typing import Annotated, Any, Callable, Iterable, Self, TypeVar
 
 from fastapi import APIRouter, Depends, Path
-from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
@@ -108,7 +107,7 @@ class PreBuiltRestfulService(RestfulServiceBuilder):
         return self.service
 
 
-def no_user(request: Request) -> None:
+def no_user() -> None:
     pass
 
 
@@ -181,30 +180,36 @@ class RestfulRouter:
     def with_create_one_endpoint(
         self,
         is_documented: bool = True,
-        extract_user: Callable[[Request], Any] = no_user,
+        extract_user: Callable[..., Any] = no_user,
     ) -> Self:
-        parent_id_type = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
-
-        item_type = Annotated[
-            RawItem,
-            Depends(self.schema.for_create_one()),
-        ]
-
-        @self.router.post(
+        self.router.add_api_route(
             "",
+            self.create_one(
+                User=Annotated[
+                    Any,
+                    Depends(extract_user),
+                ],
+                ParentId=Annotated[
+                    str,
+                    Path(alias=self.parent_id_alias, default_factory=str),
+                ],
+                Item=Annotated[
+                    RawItem,
+                    Depends(self.schema.for_create_one()),
+                ],
+            ),
+            methods=["POST"],
             status_code=201,
             responses={409: {}},
             response_model=self.schema.for_item(),
             include_in_schema=is_documented,
+            summary="Create One",
         )
-        def create_one(
-            user: Annotated[Any, Depends(extract_user)],
-            parent_id: parent_id_type,
-            item: item_type,
-        ) -> _Response:
+
+        return self
+
+    def create_one(self, User, ParentId, Item) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(user: User, parent_id: ParentId, item: Item) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
@@ -219,35 +224,41 @@ class RestfulRouter:
 
             return self.response.created_one(item)
 
-        return self
+        return endpoint
 
     def with_create_many_endpoint(
         self,
         is_documented: bool = True,
-        extract_user: Callable[[Request], Any] = no_user,
+        extract_user: Callable[..., Any] = no_user,
     ) -> Self:
-        parent_id_type = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
-
-        collection_type = Annotated[
-            RawCollection,
-            Depends(self.schema.for_create_many()),
-        ]
-
-        @self.router.post(
+        self.router.add_api_route(
             "/batch",
+            self.create_many(
+                User=Annotated[
+                    Any,
+                    Depends(extract_user),
+                ],
+                ParentId=Annotated[
+                    str,
+                    Path(alias=self.parent_id_alias, default_factory=str),
+                ],
+                Collection=Annotated[
+                    RawCollection,
+                    Depends(self.schema.for_create_many()),
+                ],
+            ),
+            methods=["POST"],
             status_code=201,
             responses={409: {}},
             response_model=self.schema.for_collection(),
             include_in_schema=is_documented,
+            summary="Create Many",
         )
-        def create_many(
-            user: Annotated[Any, Depends(extract_user)],
-            parent_id: parent_id_type,
-            items: collection_type,
-        ) -> _Response:
+
+        return self
+
+    def create_many(self, User, ParentId, Collection) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(user: User, parent_id: ParentId, items: Collection) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
@@ -260,31 +271,41 @@ class RestfulRouter:
             except ExistsError as e:
                 return JSONResponse(self.response.exists(e), 409)
 
-        return self
+        return endpoint
 
     def with_read_one_endpoint(
         self,
         is_documented: bool = True,
-        extract_user: Callable[[Request], Any] = no_user,
+        extract_user: Callable[..., Any] = no_user,
     ) -> Self:
-        id_type = Annotated[str, Path(alias=self.id_alias)]
-        parent_id_type = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
-
-        @self.router.get(
+        self.router.add_api_route(
             self.item_path,
+            self.read_one(
+                User=Annotated[
+                    Any,
+                    Depends(extract_user),
+                ],
+                ParentId=Annotated[
+                    str,
+                    Path(alias=self.parent_id_alias, default_factory=str),
+                ],
+                ItemId=Annotated[
+                    str,
+                    Path(alias=self.id_alias),
+                ],
+            ),
+            methods=["GET"],
             status_code=200,
             responses={404: {}},
             response_model=self.schema.for_item(),
             include_in_schema=is_documented,
+            summary="Read One",
         )
-        def read_one(
-            user: Annotated[Any, Depends(extract_user)],
-            parent_id: parent_id_type,
-            item_id: id_type,
-        ) -> _Response:
+
+        return self
+
+    def read_one(self, User, ParentId, ItemId) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(user: User, parent_id: ParentId, item_id: ItemId) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
@@ -297,29 +318,37 @@ class RestfulRouter:
             except DoesNotExistError as e:
                 return JSONResponse(self.response.not_found(e), 404)
 
-        return self
+        return endpoint
 
     def with_read_all_endpoint(
         self,
         is_documented: bool = True,
-        extract_user: Callable[[Request], Any] = no_user,
+        extract_user: Callable[..., Any] = no_user,
     ) -> Self:
-        parent_id_type = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
-
-        @self.router.get(
+        self.router.add_api_route(
             "",
+            self.read_all(
+                User=Annotated[
+                    Any,
+                    Depends(extract_user),
+                ],
+                ParentId=Annotated[
+                    str,
+                    Path(alias=self.parent_id_alias, default_factory=str),
+                ],
+            ),
+            methods=["GET"],
             status_code=200,
             responses={},
             response_model=self.schema.for_collection(),
             include_in_schema=is_documented,
+            summary="Read All",
         )
-        def read_all(
-            user: Annotated[Any, Depends(extract_user)],
-            parent_id: parent_id_type,
-        ) -> _Response:
+
+        return self
+
+    def read_all(self, User, ParentId) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(user: User, parent_id: ParentId) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
@@ -329,35 +358,49 @@ class RestfulRouter:
 
             return self.response.found_many(list(service.read_all()))
 
-        return self
+        return endpoint
 
     def with_update_one_endpoint(
         self,
         is_documented: bool = True,
-        extract_user: Callable[[Request], Any] = no_user,
+        extract_user: Callable[..., Any] = no_user,
     ) -> Self:
-        parent_id_type = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
-        id_type = Annotated[str, Path(alias=self.id_alias)]
-        update_type = Annotated[
-            RawItem,
-            Depends(self.schema.for_update_one()),
-        ]
-
-        @self.router.patch(
+        self.router.add_api_route(
             self.item_path,
+            self.update_one(
+                User=Annotated[
+                    Any,
+                    Depends(extract_user),
+                ],
+                ParentId=Annotated[
+                    str,
+                    Path(alias=self.parent_id_alias, default_factory=str),
+                ],
+                ItemId=Annotated[
+                    str,
+                    Path(alias=self.id_alias),
+                ],
+                Updates=Annotated[
+                    RawItem,
+                    Depends(self.schema.for_update_one()),
+                ],
+            ),
+            methods=["PATCH"],
             status_code=200,
             responses={404: {}},
             response_model=self.schema.for_no_data(),
             include_in_schema=is_documented,
+            summary="Update One",
         )
-        def update_one(
-            user: Annotated[Any, Depends(extract_user)],
-            parent_id: parent_id_type,
-            item_id: id_type,
-            updates: update_type,
+
+        return self
+
+    def update_one(self, User, ParentId, ItemId, Updates) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(
+            user: User,
+            parent_id: ParentId,
+            item_id: ItemId,
+            updates: Updates,
         ) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
@@ -374,34 +417,41 @@ class RestfulRouter:
 
             return self.response.ok()
 
-        return self
+        return endpoint
 
     def with_update_many_endpoint(
         self,
         is_documented: bool = True,
-        extract_user: Callable[[Request], Any] = no_user,
+        extract_user: Callable[..., Any] = no_user,
     ) -> Self:
-        parent_id_type = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
-        collection_type = Annotated[
-            RawCollection,
-            Depends(self.schema.for_update_many()),
-        ]
-
-        @self.router.patch(
+        self.router.add_api_route(
             "",
+            self.update_many(
+                User=Annotated[
+                    Any,
+                    Depends(extract_user),
+                ],
+                ParentId=Annotated[
+                    str,
+                    Path(alias=self.parent_id_alias, default_factory=str),
+                ],
+                Collection=Annotated[
+                    RawCollection,
+                    Depends(self.schema.for_update_many()),
+                ],
+            ),
+            methods=["PATCH"],
             status_code=200,
             responses={},
             response_model=self.schema.for_no_data(),
             include_in_schema=is_documented,
+            summary="Update Many",
         )
-        def update_many(
-            user: Annotated[Any, Depends(extract_user)],
-            parent_id: parent_id_type,
-            items: collection_type,
-        ) -> _Response:
+
+        return self
+
+    def update_many(self, User, ParentId, Collection) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(user: User, parent_id: ParentId, items: Collection) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
@@ -413,31 +463,41 @@ class RestfulRouter:
 
             return self.response.ok()
 
-        return self
+        return endpoint
 
     def with_delete_one_endpoint(
         self,
         is_documented: bool = True,
-        extract_user: Callable[[Request], Any] = no_user,
+        extract_user: Callable[..., Any] = no_user,
     ) -> Self:
-        parent_id_type = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
-        id_type = Annotated[str, Path(alias=self.id_alias)]
-
-        @self.router.delete(
+        self.router.add_api_route(
             self.item_path,
+            self.delete_one(
+                User=Annotated[
+                    Any,
+                    Depends(extract_user),
+                ],
+                ParentId=Annotated[
+                    str,
+                    Path(alias=self.parent_id_alias, default_factory=str),
+                ],
+                ItemId=Annotated[
+                    str,
+                    Path(alias=self.id_alias),
+                ],
+            ),
+            methods=["DELETE"],
             status_code=200,
             responses={404: {}},
             response_model=self.schema.for_no_data(),
             include_in_schema=is_documented,
+            summary="Delete One",
         )
-        def delete_one(
-            user: Annotated[Any, Depends(extract_user)],
-            parent_id: parent_id_type,
-            item_id: id_type,
-        ) -> _Response:
+
+        return self
+
+    def delete_one(self, User, ParentId, ItemId) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(user: User, parent_id: ParentId, item_id: ItemId) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
@@ -452,7 +512,7 @@ class RestfulRouter:
 
             return self.response.ok()
 
-        return self
+        return endpoint
 
     def with_sub_resource(self, **names: APIRouter) -> Self:
         for name, router in names.items():
