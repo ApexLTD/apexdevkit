@@ -285,7 +285,12 @@ class RestfulRouter:
             parent_id: parent_id_type,
             item_id: id_type,
         ) -> _Response:
-            service = self.infra.with_user(user).with_parent(parent_id).build()
+            try:
+                service = self.infra.with_user(user).with_parent(parent_id).build()
+            except DoesNotExistError as e:
+                return JSONResponse(
+                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
+                )
 
             try:
                 return self.response.found_one(service.read_one(item_id))
@@ -315,7 +320,12 @@ class RestfulRouter:
             user: Annotated[Any, Depends(extract_user)],
             parent_id: parent_id_type,
         ) -> _Response:
-            service = self.infra.with_user(user).with_parent(parent_id).build()
+            try:
+                service = self.infra.with_user(user).with_parent(parent_id).build()
+            except DoesNotExistError as e:
+                return JSONResponse(
+                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
+                )
 
             return self.response.found_many(list(service.read_all()))
 
@@ -349,8 +359,12 @@ class RestfulRouter:
             item_id: id_type,
             updates: update_type,
         ) -> _Response:
-            service = self.infra.with_user(user).with_parent(parent_id).build()
-
+            try:
+                service = self.infra.with_user(user).with_parent(parent_id).build()
+            except DoesNotExistError as e:
+                return JSONResponse(
+                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
+                )
             try:
                 service.update_one(item_id, **updates)
             except DoesNotExistError as e:
@@ -388,7 +402,12 @@ class RestfulRouter:
             parent_id: parent_id_type,
             items: collection_type,
         ) -> _Response:
-            service = self.infra.with_user(user).with_parent(parent_id).build()
+            try:
+                service = self.infra.with_user(user).with_parent(parent_id).build()
+            except DoesNotExistError as e:
+                return JSONResponse(
+                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
+                )
 
             service.update_many(items)
 
@@ -419,7 +438,12 @@ class RestfulRouter:
             parent_id: parent_id_type,
             item_id: id_type,
         ) -> _Response:
-            service = self.infra.with_user(user).with_parent(parent_id).build()
+            try:
+                service = self.infra.with_user(user).with_parent(parent_id).build()
+            except DoesNotExistError as e:
+                return JSONResponse(
+                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
+                )
 
             try:
                 service.delete_one(item_id)

@@ -43,7 +43,9 @@ class Fake:
     def price(self) -> JsonDict:
         return (
             JsonDict()
-            .with_a(currency=self.faker.currency()[0])
+            .with_a(id=self.faker.uuid4())
+            .and_a(apple_id=self.faker.uuid4())
+            .and_a(currency=self.faker.currency()[0])
             .and_a(value=self.faker.random_int(min=0, max=100))
             .and_a(exponent=self.faker.random_int(min=1, max=10))
         )
@@ -380,6 +382,79 @@ def test_should_should_not_create_many_without_parent_id(
         .create_many()
         .from_data(many_prices[0])
         .and_data(many_prices[1])
+        .ensure()
+        .fail()
+        .with_code(404)
+        .and_message(f"An item<Apple> with id<{unknown_id}> does not exist.")
+    )
+
+
+def test_should_not_read_without_parent_id(resource: RestCollection) -> None:
+    unknown_id = str(uuid4())
+
+    (
+        resource.sub_resource(unknown_id)
+        .sub_resource("price")
+        .read_one()
+        .with_id(str(fake.price().get("id")))
+        .ensure()
+        .fail()
+        .with_code(404)
+        .and_message(f"An item<Apple> with id<{unknown_id}> does not exist.")
+    )
+
+
+def test_should_not_read_many_without_parent_id(resource: RestCollection) -> None:
+    unknown_id = str(uuid4())
+
+    (
+        resource.sub_resource(unknown_id)
+        .sub_resource("price")
+        .read_all()
+        .ensure()
+        .fail()
+        .with_code(404)
+        .and_message(f"An item<Apple> with id<{unknown_id}> does not exist.")
+    )
+
+
+def test_should_not_update_without_parent_id(resource: RestCollection) -> None:
+    unknown_id = str(uuid4())
+    (
+        resource.sub_resource(unknown_id)
+        .sub_resource("price")
+        .update_one()
+        .with_id(str(fake.price().get("id")))
+        .and_data(fake.price())
+        .ensure()
+        .fail()
+        .with_code(404)
+        .and_message(f"An item<Apple> with id<{unknown_id}> does not exist.")
+    )
+
+
+def test_should_not_update_many_without_parent_id(resource: RestCollection) -> None:
+    unknown_id = str(uuid4())
+    (
+        resource.sub_resource(unknown_id)
+        .sub_resource("price")
+        .update_many()
+        .from_data(fake.price())
+        .and_data(fake.price())
+        .ensure()
+        .fail()
+        .with_code(404)
+        .and_message(f"An item<Apple> with id<{unknown_id}> does not exist.")
+    )
+
+
+def test_should_not_delete_without_parent_id(resource: RestCollection) -> None:
+    unknown_id = str(uuid4())
+    (
+        resource.sub_resource(unknown_id)
+        .sub_resource("price")
+        .delete_one()
+        .with_id(str(fake.price().get("id")))
         .ensure()
         .fail()
         .with_code(404)
