@@ -70,6 +70,7 @@ def setup() -> FastAPI:
                     .with_infra(infra)
                     .with_create_one_endpoint()
                     .with_create_many_endpoint()
+                    .with_read_one_endpoint()
                     .with_read_all_endpoint()
                     .build()
                 )
