@@ -470,17 +470,34 @@ class RestfulRouter:
         is_documented: bool = True,
         extract_user: Callable[..., Any] = no_user,
     ) -> Self:
-        parent_id_type = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
-        id_type = Annotated[str, Path(alias=self.id_alias)]
+        self.router.add_api_route(
+            self.item_path,
+            self.delete_one(
+                User=Annotated[
+                    Any,
+                    Depends(extract_user),
+                ],
+                ParentId=Annotated[
+                    str,
+                    Path(alias=self.parent_id_alias, default_factory=str),
+                ],
+                ItemId=Annotated[
+                    str,
+                    Path(alias=self.id_alias),
+                ],
+            ),
+            methods=["DELETE"],
+            status_code=200,
+            responses={404: {}},
+            response_model=self.schema.for_no_data(),
+            include_in_schema=is_documented,
+            summary="Delete One",
+        )
 
-        def delete_one(
-            user: Annotated[Any, Depends(extract_user)],
-            parent_id: parent_id_type,
-            item_id: id_type,
-        ) -> _Response:
+        return self
+
+    def delete_one(self, User, ParentId, ItemId) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(user: User, parent_id: ParentId, item_id: ItemId) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
@@ -495,17 +512,7 @@ class RestfulRouter:
 
             return self.response.ok()
 
-        self.router.add_api_route(
-            self.item_path,
-            delete_one,
-            methods=["DELETE"],
-            status_code=200,
-            responses={404: {}},
-            response_model=self.schema.for_no_data(),
-            include_in_schema=is_documented,
-        )
-
-        return self
+        return endpoint
 
     def with_sub_resource(self, **names: APIRouter) -> Self:
         for name, router in names.items():
