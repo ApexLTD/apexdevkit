@@ -353,7 +353,12 @@ class RestfulRouter:
             include_in_schema=is_documented,
         )
         def update_many(parent_id: parent_id_type, items: collection_type) -> _Response:
-            service = self.infra.with_parent(parent_id).build()
+            try:
+                service = self.infra.with_parent(parent_id).build()
+            except DoesNotExistError as e:
+                return JSONResponse(
+                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
+                )
 
             service.update_many(items)
 
