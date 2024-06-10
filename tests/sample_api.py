@@ -34,12 +34,17 @@ class ServiceInfra:
 
     def service_for(self, parent_id: str) -> RestfulService:
         if parent_id not in self.services:
-            self.services[parent_id] = RestfulPriceService(
-                parent_id,
+            apple = self.service_for("").read_one(parent_id)
+
+            service = RestfulPriceService(
+                apple["id"],
                 InMemoryRepository[Price]
                 .for_dataclass(Price)
                 .with_unique(criteria=lambda item: f"currency<{item.currecy}>"),
             )
+
+            self.services[apple["id"]] = service
+            return service
 
         return self.services[parent_id]
 
@@ -64,6 +69,7 @@ def setup() -> FastAPI:
                     .with_parent("apple")
                     .with_infra(infra)
                     .with_create_one_endpoint()
+                    .with_create_many_endpoint()
                     .with_read_all_endpoint()
                     .build()
                 )

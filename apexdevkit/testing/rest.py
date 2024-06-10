@@ -261,7 +261,7 @@ class RestResponse:
         return self.with_message(value)
 
     def with_message(self, value: str) -> Self:
-        assert self.json.value_of("error").to(dict) == {"message": value}
+        assert self.json.value_of("error").to(dict) == {"message": value}, self.json
 
         return self
 
@@ -310,6 +310,6 @@ class RestResponse:
         return self.with_data()
 
     def with_data(self, **kwargs: Any) -> Self:
-        assert self.json.value_of("data").to(dict) == {**kwargs}
+        assert self.json.value_of("data").to(dict) == {**kwargs}, self.json
 
         return self
