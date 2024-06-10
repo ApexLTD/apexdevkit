@@ -425,7 +425,7 @@ def test_should_not_update_without_parent_id(resource: RestCollection) -> None:
         .sub_resource("price")
         .update_one()
         .with_id(fake.price().get("id"))
-        .and_data(fake.price().drop("id"))
+        .and_data(fake.price())
         .ensure()
         .fail()
         .with_code(404)
