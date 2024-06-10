@@ -352,3 +352,17 @@ def test_should_persist_sub_resource(resource: RestCollection) -> None:
         .with_code(200)
         .and_collection([price])
     )
+
+
+def test_should_should_not_create_without_parent_id(resource: RestCollection) -> None:
+    unknown_id = str(uuid4())
+    (
+        resource.sub_resource(unknown_id)
+        .sub_resource("price")
+        .create_one()
+        .from_data(fake.price())
+        .ensure()
+        .fail()
+        .with_code(404)
+        .and_message(f"An item<Apple> with id<{unknown_id}> does not exist.")
+    )
