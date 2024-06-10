@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Annotated, Any, Iterable, Self, TypeVar, Callable
+from typing import Annotated, Any, Callable, Iterable, Self, TypeVar
 
 from fastapi import APIRouter, Depends, Path
 from fastapi.requests import Request
