@@ -29,3 +29,6 @@ test:
 
 test-ci:
 	poetry run pytest
+
+run:
+	uvicorn tests.sample_api:setup --factory
