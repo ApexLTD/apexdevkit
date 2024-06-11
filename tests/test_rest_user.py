@@ -82,6 +82,27 @@ def setup(infra: SampleServiceBuilder, fake_user: FakeUser) -> FastAPI:
     )
 
 
+def test_should_call_extract_user_for_read_one(
+    resource: RestResource, infra: SampleServiceBuilder, fake_user: FakeUser
+) -> None:
+    (resource.read_one().with_id(fake.apple().get("id")).ensure())
+    assert fake_user.times_called == 1
+
+
+def test_should_call_with_user_for_read_one(
+    resource: RestResource, infra: SampleServiceBuilder
+) -> None:
+    (resource.read_one().with_id(fake.apple().get("id")).ensure())
+    assert infra.times_called == 1
+
+
+def test_should_persist_user_for_read_one(
+    resource: RestResource, infra: SampleServiceBuilder
+) -> None:
+    (resource.read_one().with_id(fake.apple().get("id")).ensure())
+    assert infra.user == "user"
+
+
 def test_should_call_extract_user_for_create_one(
     resource: RestResource, fake_user: FakeUser
 ) -> None:
