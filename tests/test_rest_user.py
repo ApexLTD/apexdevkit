@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any
-from uuid import uuid4
 
 import pytest
 from fastapi import FastAPI
@@ -213,7 +212,7 @@ def test_should_call_extract_user_for_update_many(
 def test_should_call_with_user_for_update_many(
     resource: RestResource, infra: SampleServiceBuilder
 ) -> None:
-    (resource.update_many().from_data(fake.apple()).and_data(fake.apple()).ensure())
+    resource.update_many().from_data(fake.apple()).and_data(fake.apple()).ensure()
     assert infra.times_called == 1
 
 
