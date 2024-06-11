@@ -458,8 +458,10 @@ class RestfulRouter:
                 return JSONResponse(
                     RestfulResponse(RestfulName(self.parent)).not_found(e), 404
                 )
-
-            service.update_many(items)
+            try:
+                service.update_many(items)
+            except DoesNotExistError as e:
+                return JSONResponse(self.response.not_found(e), 404)
 
             return self.response.ok()
 
