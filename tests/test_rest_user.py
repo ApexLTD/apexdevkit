@@ -13,6 +13,7 @@ from apexdevkit.fastapi.service import RestfulRepository, RestfulService
 from apexdevkit.repository import InMemoryRepository
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
 from tests.sample_api import Apple, AppleFields
+from tests.test_rest_resource import fake
 
 
 @pytest.fixture
@@ -79,3 +80,24 @@ def setup(infra: SampleServiceBuilder, fake_user: FakeUser) -> FastAPI:
         )
         .build()
     )
+
+
+def test_should_call_extract_user_for_create_one(
+    resource: RestResource, fake_user: FakeUser
+) -> None:
+    (resource.create_one().from_data(fake.apple()).ensure().success())
+    assert fake_user.times_called == 1
+
+
+def test_should_call_with_user_for_create_one(
+    resource: RestResource, infra: SampleServiceBuilder
+) -> None:
+    (resource.create_one().from_data(fake.apple()).ensure().success())
+    assert infra.times_called == 1
+
+
+def test_should_persist_user_for_create_one(
+    resource: RestResource, infra: SampleServiceBuilder
+) -> None:
+    (resource.create_one().from_data(fake.apple()).ensure().success())
+    assert infra.user == "user"
