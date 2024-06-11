@@ -201,3 +201,24 @@ def test_should_persist_user_for_update_one(
         .ensure()
     )
     assert infra.user == "user"
+
+
+def test_should_call_extract_user_for_update_many(
+    resource: RestResource, fake_user: FakeUser
+) -> None:
+    resource.update_many().from_data(fake.apple()).and_data(fake.apple()).ensure()
+    assert fake_user.times_called == 1
+
+
+def test_should_call_with_user_for_update_many(
+    resource: RestResource, infra: SampleServiceBuilder
+) -> None:
+    (resource.update_many().from_data(fake.apple()).and_data(fake.apple()).ensure())
+    assert infra.times_called == 1
+
+
+def test_should_persist_user_for_update_many(
+    resource: RestResource, infra: SampleServiceBuilder
+) -> None:
+    resource.update_many().from_data(fake.apple()).and_data(fake.apple()).ensure()
+    assert infra.user == "user"
