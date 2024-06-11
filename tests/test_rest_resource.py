@@ -31,7 +31,8 @@ class Fake:
     def apple(self) -> JsonDict:
         return (
             JsonDict()
-            .with_a(
+            .with_a(id=self.faker.uuid4())
+            .and_a(
                 name=JsonDict().with_a(
                     common=self.faker.name(),
                     scientific=self.faker.name(),
@@ -176,7 +177,6 @@ def test_should_not_update_unknown(resource: RestResource) -> None:
 
 def test_should_update_one(resource: RestResource) -> None:
     apple = resource.create_one().from_data(fake.apple()).unpack()
-
     (
         resource.update_one()
         .with_id(apple.value_of("id").to(str))
@@ -220,7 +220,6 @@ def test_should_update_many(resource: RestResource) -> None:
     apple_2 = resource.create_one().from_data(fake.apple()).unpack()
     apple_1 = apple_1.drop("color").with_a(color="RED")
     apple_2 = apple_2.drop("color").with_a(color="RED")
-
     (
         resource.update_many()
         .from_data(apple_1)
@@ -232,6 +231,20 @@ def test_should_update_many(resource: RestResource) -> None:
 
     resource.read_all().ensure().success().with_code(200).and_collection(
         [apple_1, apple_2]
+    )
+
+
+def test_should_not_update_many(resource: RestResource) -> None:
+    apple_1, apple_2 = fake.apple(), fake.apple()
+
+    (
+        resource.update_many()
+        .from_data(apple_1)
+        .and_data(apple_2)
+        .ensure()
+        .fail()
+        .with_code(404)
+        .and_message(f"An item<Apple> with id<{apple_1.get('id')}> does not exist.")
     )
 
 
