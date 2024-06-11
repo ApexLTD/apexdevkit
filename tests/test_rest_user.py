@@ -101,3 +101,42 @@ def test_should_persist_user_for_create_one(
 ) -> None:
     (resource.create_one().from_data(fake.apple()).ensure().success())
     assert infra.user == "user"
+
+
+def test_should_call_extract_user_for_create_many(
+    resource: RestResource, fake_user: FakeUser
+) -> None:
+    (
+        resource.create_many()
+        .from_data(fake.apple())
+        .and_data(fake.apple())
+        .ensure()
+        .success()
+    )
+    assert fake_user.times_called == 1
+
+
+def test_should_call_with_user_for_create_many(
+    resource: RestResource, infra: SampleServiceBuilder
+) -> None:
+    (
+        resource.create_many()
+        .from_data(fake.apple())
+        .and_data(fake.apple())
+        .ensure()
+        .success()
+    )
+    assert infra.times_called == 1
+
+
+def test_should_persist_user_for_create_many(
+    resource: RestResource, infra: SampleServiceBuilder
+) -> None:
+    (
+        resource.create_many()
+        .from_data(fake.apple())
+        .and_data(fake.apple())
+        .ensure()
+        .success()
+    )
+    assert infra.user == "user"
