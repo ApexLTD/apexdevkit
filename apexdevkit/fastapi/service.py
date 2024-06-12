@@ -45,18 +45,12 @@ class RestfulRepository(RestfulService):
     repository: Repository[Any, Any]
 
     def create_one(self, item: RawItem) -> RawItem:
-        result = self.resource(**item)
-
-        self.repository.create(result)
-
-        return _as_raw_item(result)
+        return _as_raw_item(self.repository.create(self.resource(**item)))
 
     def create_many(self, items: RawCollection) -> RawCollection:
-        result = [self.resource(**fields) for fields in items]
-
-        self.repository.create_many(result)
-
-        return _as_raw_collection(result)
+        return _as_raw_collection(
+            self.repository.create_many([self.resource(**fields) for fields in items])
+        )
 
     def read_one(self, item_id: str) -> RawItem:
         result = self.repository.read(item_id)
