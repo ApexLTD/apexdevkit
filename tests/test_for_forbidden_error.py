@@ -9,7 +9,7 @@ from starlette.testclient import TestClient
 from apexdevkit.error import ForbiddenError
 from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.router import RestfulRouter, RestfulServiceBuilder
-from apexdevkit.fastapi.service import RawItem, RestfulService
+from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
 from tests.sample_api import (
@@ -63,6 +63,9 @@ class ForbiddenInfra(RestfulServiceBuilder, RestfulService):
     def create_one(self, item: RawItem) -> RawItem:
         raise ForbiddenError()
 
+    def create_many(self, items: RawCollection) -> RawCollection:
+        raise ForbiddenError()
+
 
 def setup() -> FastAPI:
     infra = ForbiddenInfra()
@@ -78,6 +81,7 @@ def setup() -> FastAPI:
             .with_fields(AppleFields())
             .with_infra(infra)
             .with_create_one_endpoint()
+            .with_create_many_endpoint()
             .build()
         )
         .build()
@@ -93,6 +97,21 @@ def test_should_raise_forbidden_error_on_create_one(resource: RestResource) -> N
     (
         resource.create_one()
         .from_data(apple)
+        .ensure()
+        .fail()
+        .with_code(403)
+        .and_message("Forbidden")
+    )
+
+
+def test_should_raise_forbidden_error_on_create_many(resource: RestResource) -> None:
+    apple_1 = fake.apple()
+    apple_2 = fake.apple()
+
+    (
+        resource.create_many()
+        .from_data(apple_1)
+        .and_data(apple_2)
         .ensure()
         .fail()
         .with_code(403)

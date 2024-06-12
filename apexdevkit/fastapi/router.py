@@ -272,6 +272,8 @@ class RestfulRouter:
                 return self.response.created_many(service.create_many(items))
             except ExistsError as e:
                 return JSONResponse(self.response.exists(e), 409)
+            except ForbiddenError as e:
+                return JSONResponse(self.response.forbidden(e), 403)
 
         return endpoint
 
