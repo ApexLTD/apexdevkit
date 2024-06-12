@@ -4,8 +4,6 @@ from abc import abstractmethod
 from dataclasses import dataclass, field
 from functools import cached_property
 from typing import Any, Iterable, Self
-from uuid import UUID
-from warnings import warn
 
 import httpx
 from fastapi.testclient import TestClient
@@ -126,13 +124,13 @@ class CreateOne(RestRequest):
 
 @dataclass
 class ReadOne(RestRequest):
-    item_id: str | UUID = field(init=False)
+    item_id: str = field(init=False)
 
     @cached_property
     def response(self) -> httpx.Response:
         return self.http.get(self.resource + str(self.item_id))
 
-    def with_id(self, value: str | UUID) -> Self:
+    def with_id(self, value: Any) -> Self:
         self.item_id = str(value)
 
         return self
@@ -154,14 +152,14 @@ class ReadAll(RestRequest):
 
 @dataclass
 class UpdateOne(RestRequest):
-    item_id: str | UUID = field(init=False)
+    item_id: str = field(init=False)
     data: JsonDict = field(init=False)
 
     @cached_property
     def response(self) -> httpx.Response:
         return self.http.patch(self.resource + str(self.item_id), json=dict(self.data))
 
-    def with_id(self, value: str | UUID) -> Self:
+    def with_id(self, value: Any) -> Self:
         self.item_id = str(value)
 
         return self
@@ -214,13 +212,13 @@ class UpdateMany(RestRequest):
 
 @dataclass
 class DeleteOne(RestRequest):
-    item_id: str | UUID = field(init=False)
+    item_id: str = field(init=False)
 
     @cached_property
     def response(self) -> httpx.Response:
         return self.http.delete(self.resource + str(self.item_id))
 
-    def with_id(self, value: str | UUID) -> Self:
+    def with_id(self, value: Any) -> Self:
         self.item_id = str(value)
 
         return self
@@ -264,18 +262,6 @@ class RestResponse:
         assert self.json.value_of("error").to(dict) == {"message": value}, self.json
 
         return self
-
-    def and_data(self, *values: JsonDict) -> Self:  # pragma: no cover
-        warn(
-            (
-                "The 'and_data' method is deprecated. "
-                "Please use 'and_item' or 'and_collection' instead."
-            )
-        )
-        if len(values) == 1:
-            return self.with_item(values[0])
-
-        return self.with_collection(list(values))
 
     def and_item(self, value: Any) -> Self:
         return self.with_item(value)
