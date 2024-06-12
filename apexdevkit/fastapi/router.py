@@ -221,6 +221,8 @@ class RestfulRouter:
                 item = service.create_one(item)
             except ExistsError as e:
                 return JSONResponse(self.response.exists(e), 409)
+            except ForbiddenError as e:
+                return JSONResponse(self.response.forbidden(e), 403)
 
             return self.response.created_one(item)
 
