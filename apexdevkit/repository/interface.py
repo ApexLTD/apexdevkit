@@ -5,10 +5,10 @@ IdT = TypeVar("IdT", contravariant=True)
 
 
 class Repository(Protocol[IdT, ItemT]):
-    def create(self, item: ItemT) -> None:
+    def create(self, item: ItemT) -> ItemT:
         pass
 
-    def create_many(self, items: list[ItemT]) -> None:
+    def create_many(self, items: list[ItemT]) -> list[ItemT]:
         pass
 
     def read(self, item_id: IdT) -> ItemT:
