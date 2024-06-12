@@ -361,8 +361,10 @@ class RestfulRouter:
                 return JSONResponse(
                     RestfulResponse(RestfulName(self.parent)).not_found(e), 404
                 )
-
-            return self.response.found_many(list(service.read_all()))
+            try:
+                return self.response.found_many(list(service.read_all()))
+            except ForbiddenError as e:
+                return JSONResponse(self.response.forbidden(e), 403)
 
         return endpoint
 

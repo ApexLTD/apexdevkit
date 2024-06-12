@@ -69,6 +69,9 @@ class ForbiddenInfra(RestfulServiceBuilder, RestfulService):
     def read_one(self, item_id: str) -> RawItem:
         raise ForbiddenError()
 
+    def read_all(self) -> RawCollection:
+        raise ForbiddenError()
+
 
 def setup() -> FastAPI:
     infra = ForbiddenInfra()
@@ -86,6 +89,7 @@ def setup() -> FastAPI:
             .with_create_one_endpoint()
             .with_create_many_endpoint()
             .with_read_one_endpoint()
+            .with_read_all_endpoint()
             .build()
         )
         .build()
@@ -135,3 +139,7 @@ def test_should_raise_forbidden_error_on_read_one(resource: RestResource) -> Non
         .with_code(403)
         .and_message("Forbidden")
     )
+
+
+def test_should_raise_forbidden_error_on_read_all(resource: RestResource) -> None:
+    (resource.read_all().ensure().fail().with_code(403).and_message("Forbidden"))
