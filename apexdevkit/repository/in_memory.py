@@ -63,13 +63,17 @@ class InMemoryRepository(Generic[ItemT]):
             self.create(item)
         return self
 
-    def create_many(self, items: list[ItemT]) -> None:
+    def create_many(self, items: list[ItemT]) -> list[ItemT]:
         for item in items:
             self.create(item)
 
-    def create(self, item: ItemT) -> None:
+        return items
+
+    def create(self, item: ItemT) -> ItemT:
         self._ensure_does_not_exist(item)
         self.items[str(item.id)] = deepcopy(self.formatter.dump(item))
+
+        return item
 
     def _ensure_does_not_exist(self, new: ItemT) -> None:
         for existing in self:
