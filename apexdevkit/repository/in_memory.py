@@ -1,8 +1,9 @@
 from copy import deepcopy
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from typing import Any, Generic, Iterable, Iterator, Protocol, Self, TypeVar
 
 from apexdevkit.error import Criteria, DoesNotExistError, ExistsError
+from apexdevkit.formatter import DataclassFormatter, Formatter
 
 
 class _Item(Protocol):
@@ -14,28 +15,9 @@ class _Item(Protocol):
 ItemT = TypeVar("ItemT", bound=_Item)
 
 
-class _Formatter(Protocol[ItemT]):
-    def load(self, raw: dict[str, Any]) -> ItemT:
-        pass
-
-    def dump(self, item: ItemT) -> dict[str, Any]:
-        pass
-
-
-@dataclass
-class DataclassFormatter(Generic[ItemT]):
-    resource: type[ItemT]
-
-    def load(self, raw: dict[str, Any]) -> ItemT:
-        return self.resource(**raw)
-
-    def dump(self, item: ItemT) -> dict[str, Any]:
-        return asdict(item)  # type: ignore
-
-
 @dataclass
 class InMemoryRepository(Generic[ItemT]):
-    formatter: _Formatter[ItemT]
+    formatter: Formatter[ItemT]
     items: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     _uniques: list[Criteria] = field(init=False, default_factory=list)
