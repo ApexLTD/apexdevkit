@@ -72,6 +72,9 @@ class ForbiddenInfra(RestfulServiceBuilder, RestfulService):
     def read_all(self) -> RawCollection:
         raise ForbiddenError()
 
+    def update_one(self, item_id: str, **fields: RawItem) -> RawItem:
+        raise ForbiddenError()
+
 
 def setup() -> FastAPI:
     infra = ForbiddenInfra()
@@ -90,6 +93,7 @@ def setup() -> FastAPI:
             .with_create_many_endpoint()
             .with_read_one_endpoint()
             .with_read_all_endpoint()
+            .with_update_one_endpoint()
             .build()
         )
         .build()
@@ -143,3 +147,17 @@ def test_should_raise_forbidden_error_on_read_one(resource: RestResource) -> Non
 
 def test_should_raise_forbidden_error_on_read_all(resource: RestResource) -> None:
     (resource.read_all().ensure().fail().with_code(403).and_message("Forbidden"))
+
+
+def test_should_raise_forbidden_error_on_update_one(resource: RestResource) -> None:
+    apple = fake.apple()
+    id_ = apple.value_of("id").to(str)
+    (
+        resource.update_one()
+        .with_id(id_)
+        .and_data(apple.drop("color").with_a(color="RED"))
+        .ensure()
+        .fail()
+        .with_code(403)
+        .and_message("Forbidden")
+    )
