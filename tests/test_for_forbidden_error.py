@@ -66,6 +66,9 @@ class ForbiddenInfra(RestfulServiceBuilder, RestfulService):
     def create_many(self, items: RawCollection) -> RawCollection:
         raise ForbiddenError()
 
+    def read_one(self, item_id: str) -> RawItem:
+        raise ForbiddenError()
+
 
 def setup() -> FastAPI:
     infra = ForbiddenInfra()
@@ -82,6 +85,7 @@ def setup() -> FastAPI:
             .with_infra(infra)
             .with_create_one_endpoint()
             .with_create_many_endpoint()
+            .with_read_one_endpoint()
             .build()
         )
         .build()
@@ -112,6 +116,20 @@ def test_should_raise_forbidden_error_on_create_many(resource: RestResource) -> 
         resource.create_many()
         .from_data(apple_1)
         .and_data(apple_2)
+        .ensure()
+        .fail()
+        .with_code(403)
+        .and_message("Forbidden")
+    )
+
+
+def test_should_raise_forbidden_error_on_read_one(resource: RestResource) -> None:
+    apple = fake.apple()
+    id_ = apple.value_of("id").to(str)
+
+    (
+        resource.read_one()
+        .with_id(id_)
         .ensure()
         .fail()
         .with_code(403)

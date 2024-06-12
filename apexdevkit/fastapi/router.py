@@ -321,6 +321,8 @@ class RestfulRouter:
                 return self.response.found_one(service.read_one(item_id))
             except DoesNotExistError as e:
                 return JSONResponse(self.response.not_found(e), 404)
+            except ForbiddenError as e:
+                return JSONResponse(self.response.forbidden(e), 403)
 
         return endpoint
 
