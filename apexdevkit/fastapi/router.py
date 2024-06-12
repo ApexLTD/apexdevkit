@@ -521,6 +521,8 @@ class RestfulRouter:
                 service.delete_one(item_id)
             except DoesNotExistError as e:
                 return JSONResponse(self.response.not_found(e), 404)
+            except ForbiddenError as e:
+                return JSONResponse(self.response.forbidden(e), 403)
 
             return self.response.ok()
 

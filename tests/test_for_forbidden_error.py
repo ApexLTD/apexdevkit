@@ -78,6 +78,9 @@ class ForbiddenInfra(RestfulServiceBuilder, RestfulService):
     def update_many(self, items: RawCollection) -> RawCollection:
         raise ForbiddenError()
 
+    def delete_one(self, item_id: str) -> None:
+        raise ForbiddenError()
+
 
 def setup() -> FastAPI:
     infra = ForbiddenInfra()
@@ -98,6 +101,7 @@ def setup() -> FastAPI:
             .with_read_all_endpoint()
             .with_update_one_endpoint()
             .with_update_many_endpoint()
+            .with_delete_one_endpoint()
             .build()
         )
         .build()
@@ -175,6 +179,20 @@ def test_should_raise_forbidden_error_on_update_many(resource: RestResource) -> 
         resource.update_many()
         .from_data(apple_1)
         .and_data(apple_2)
+        .ensure()
+        .fail()
+        .with_code(403)
+        .and_message("Forbidden")
+    )
+
+
+def test_should_raise_forbidden_error_on_delete_one(resource: RestResource) -> None:
+    apple = fake.apple()
+    id_ = apple.value_of("id").to(str)
+
+    (
+        resource.delete_one()
+        .with_id(id_)
         .ensure()
         .fail()
         .with_code(403)
