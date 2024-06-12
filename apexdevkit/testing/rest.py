@@ -4,7 +4,6 @@ from abc import abstractmethod
 from dataclasses import dataclass, field
 from functools import cached_property
 from typing import Any, Iterable, Self
-from uuid import UUID
 from warnings import warn
 
 import httpx
@@ -126,13 +125,13 @@ class CreateOne(RestRequest):
 
 @dataclass
 class ReadOne(RestRequest):
-    item_id: str | UUID = field(init=False)
+    item_id: str = field(init=False)
 
     @cached_property
     def response(self) -> httpx.Response:
         return self.http.get(self.resource + str(self.item_id))
 
-    def with_id(self, value: str | UUID) -> Self:
+    def with_id(self, value: Any) -> Self:
         self.item_id = str(value)
 
         return self
@@ -154,14 +153,14 @@ class ReadAll(RestRequest):
 
 @dataclass
 class UpdateOne(RestRequest):
-    item_id: str | UUID = field(init=False)
+    item_id: str = field(init=False)
     data: JsonDict = field(init=False)
 
     @cached_property
     def response(self) -> httpx.Response:
         return self.http.patch(self.resource + str(self.item_id), json=dict(self.data))
 
-    def with_id(self, value: str | UUID) -> Self:
+    def with_id(self, value: Any) -> Self:
         self.item_id = str(value)
 
         return self
@@ -214,13 +213,13 @@ class UpdateMany(RestRequest):
 
 @dataclass
 class DeleteOne(RestRequest):
-    item_id: str | UUID = field(init=False)
+    item_id: str = field(init=False)
 
     @cached_property
     def response(self) -> httpx.Response:
         return self.http.delete(self.resource + str(self.item_id))
 
-    def with_id(self, value: str | UUID) -> Self:
+    def with_id(self, value: Any) -> Self:
         self.item_id = str(value)
 
         return self
