@@ -60,7 +60,7 @@ class RestfulResponse:
         return self._response(
             403,
             data={"id": str(e.id)},
-            error="Forbidden",
+            error=e.message,
         )
 
     def created_one(self, item: Any) -> dict[str, Any]:

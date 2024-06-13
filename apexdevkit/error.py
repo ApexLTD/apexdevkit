@@ -43,6 +43,7 @@ class DoesNotExistError(Exception):
 @dataclass
 class ForbiddenError(Exception):
     item: Any = field(default_factory=UnknownItem)
+    message: str = "Forbidden"
 
     @property
     def id(self) -> Any:
