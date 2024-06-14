@@ -9,7 +9,10 @@ from starlette.testclient import TestClient
 
 from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.router import RestfulRouter, RestfulServiceBuilder
-from apexdevkit.fastapi.service import RestfulRepository, RestfulService
+from apexdevkit.fastapi.service import (
+    RestfulRepositoryBuilder,
+    RestfulService,
+)
 from apexdevkit.repository import InMemoryRepository
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
 from tests.sample_api import Apple, AppleFields
@@ -52,10 +55,17 @@ class SampleServiceBuilder(RestfulServiceBuilder):
     def with_user(self, user: Any) -> "RestfulServiceBuilder":
         self.times_called += 1
         self.user = user
-        return super().with_user(user)
+        super().with_user(user)
+
+        return self
 
     def build(self) -> RestfulService:
-        return RestfulRepository(Apple, InMemoryRepository[Apple].for_dataclass(Apple))
+        return (
+            RestfulRepositoryBuilder[Apple]()
+            .with_resource(Apple)
+            .with_repository(InMemoryRepository[Apple].for_dataclass(Apple))
+            .build()
+        )
 
 
 def setup(infra: SampleServiceBuilder, fake_user: FakeUser) -> FastAPI:
