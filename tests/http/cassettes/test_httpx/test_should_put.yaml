@@ -1,0 +1,48 @@
+interactions:
+- request:
+    body: '{"Harry": "Potter"}'
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '19'
+      content-type:
+      - application/json
+      host:
+      - httpbin.org
+      user-agent:
+      - hogwarts
+    method: PUT
+    uri: http://httpbin.org/put
+  response:
+    body:
+      string: "{\n  \"args\": {}, \n  \"data\": \"{\\\"Harry\\\": \\\"Potter\\\"}\",
+        \n  \"files\": {}, \n  \"form\": {}, \n  \"headers\": {\n    \"Accept\": \"*/*\",
+        \n    \"Accept-Encoding\": \"gzip, deflate\", \n    \"Content-Length\": \"19\",
+        \n    \"Content-Type\": \"application/json\", \n    \"Host\": \"httpbin.org\",
+        \n    \"User-Agent\": \"hogwarts\", \n    \"X-Amzn-Trace-Id\": \"Root=1-666c0972-35f599a33a8b776240f87918\"\n
+        \ }, \n  \"json\": {\n    \"Harry\": \"Potter\"\n  }, \n  \"origin\": \"95.104.119.242\",
+        \n  \"url\": \"http://httpbin.org/put\"\n}\n"
+    headers:
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '472'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 14 Jun 2024 09:12:18 GMT
+      Server:
+      - gunicorn/19.9.0
+    status:
+      code: 200
+      message: OK
+version: 1

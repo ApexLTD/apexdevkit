@@ -107,3 +107,28 @@ def test_should_form_delete_response() -> None:
     response = FluentHttp(http).delete().on_endpoint(HttpMethod.delete.name)
 
     assert response.json() == JsonDict({})
+
+
+def test_should_form_put_response() -> None:
+    http = FakeHttp()
+
+    response = FluentHttp(http).put().on_endpoint(HttpMethod.put.name)
+
+    assert response.json() == JsonDict()
+
+
+def test_should_put_with_defaults() -> None:
+    http = FakeHttp()
+
+    FluentHttp(http).put().on_endpoint(HttpMethod.put.name)
+
+    assert http.json == JsonDict()
+
+
+def test_should_put_with_json() -> None:
+    http = FakeHttp()
+    value = JsonDict().with_a(Harry="Potter")
+
+    FluentHttp(http).with_json(value).put().on_endpoint(HttpMethod.put.name)
+
+    assert http.json == value
