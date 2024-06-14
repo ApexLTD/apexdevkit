@@ -96,11 +96,12 @@ class _RestfulNestedRepository(RestfulService, Generic[ItemT]):
         return [self.formatter.dump(item) for item in self.repository]
 
     def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
-        result = replace(self.repository.read(item_id), **with_fields)  # type: ignore
+        data = self.formatter.dump(self.repository.read(item_id))
+        data.update(**with_fields)
 
-        self.repository.update(result)
+        self.repository.update(self.formatter.load(data))
 
-        return self.formatter.dump(result)
+        return data
 
     def update_many(self, items: RawCollection) -> RawCollection:
         result = [self.formatter.load(fields) for fields in items]
