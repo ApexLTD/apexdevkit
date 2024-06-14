@@ -70,11 +70,11 @@ class RestfulRepositoryBuilder(Generic[ItemT]):
 
         assert self.formatter, "Must provide either resource or formatter"
 
-        return RestfulNestedRepository(self.formatter, self.repository)
+        return _RestfulNestedRepository(self.formatter, self.repository)
 
 
 @dataclass
-class RestfulNestedRepository(RestfulService, Generic[ItemT]):
+class _RestfulNestedRepository(RestfulService, Generic[ItemT]):
     formatter: Formatter[ItemT]
     repository: Repository[Any, ItemT]
 
