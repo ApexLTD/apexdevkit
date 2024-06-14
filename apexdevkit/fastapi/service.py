@@ -77,13 +77,13 @@ class RestfulNestedRepository(RestfulService, Generic[ItemT]):
     repository: Repository[Any, ItemT]
 
     def create_one(self, item: RawItem) -> RawItem:
-        return self.formatter.dump(self.repository.create(self.formatter.load(**item)))
+        return self.formatter.dump(self.repository.create(self.formatter.load(item)))
 
     def create_many(self, items: RawCollection) -> RawCollection:
         return [
             self.formatter.dump(item)
             for item in self.repository.create_many(
-                [self.formatter.load(**fields) for fields in items]
+                [self.formatter.load(fields) for fields in items]
             )
         ]
 
@@ -101,7 +101,7 @@ class RestfulNestedRepository(RestfulService, Generic[ItemT]):
         return self.formatter.dump(result)
 
     def update_many(self, items: RawCollection) -> RawCollection:
-        result = [self.formatter.load(**fields) for fields in items]
+        result = [self.formatter.load(fields) for fields in items]
 
         self.repository.update_many(result)
 
