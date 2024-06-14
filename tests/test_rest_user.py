@@ -13,9 +13,10 @@ from apexdevkit.fastapi.service import (
     RestfulNestedRepository,
     RestfulService,
 )
+from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import InMemoryRepository
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
-from tests.sample_api import Apple, AppleFields, Name
+from tests.sample_api import Apple, AppleFields
 from tests.test_rest_resource import fake
 
 
@@ -48,22 +49,6 @@ class FakeUser:
         return "user"
 
 
-@dataclass(frozen=True)
-class SampleAppleFormatter:
-    def load(self, raw: dict[str, Any]) -> Apple:
-        try:
-            return Apple(name=Name(**raw["name"]), color=raw["color"], id=raw["id"])
-        except KeyError:
-            return Apple(name=Name(**raw["name"]), color=raw["color"])
-
-    def dump(self, apple: Apple) -> dict[str, Any]:
-        return {
-            "color": apple.color.value,
-            "id": apple.id,
-            "name": {"common": apple.name.common, "scientific": apple.name.scientific},
-        }
-
-
 @dataclass
 class SampleServiceBuilder(RestfulServiceBuilder):
     times_called: int = 0
@@ -77,8 +62,7 @@ class SampleServiceBuilder(RestfulServiceBuilder):
 
     def build(self) -> RestfulService:
         return RestfulNestedRepository(
-            SampleAppleFormatter(),
-            InMemoryRepository[Apple](formatter=SampleAppleFormatter()),
+            DataclassFormatter(Apple), InMemoryRepository[Apple].for_dataclass(Apple)
         )
 
 
