@@ -10,10 +10,9 @@ from starlette.testclient import TestClient
 from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.router import RestfulRouter, RestfulServiceBuilder
 from apexdevkit.fastapi.service import (
-    RestfulNestedRepository,
+    RestfulRepositoryBuilder,
     RestfulService,
 )
-from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import InMemoryRepository
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
 from tests.sample_api import Apple, AppleFields
@@ -61,8 +60,11 @@ class SampleServiceBuilder(RestfulServiceBuilder):
         return self
 
     def build(self) -> RestfulService:
-        return RestfulNestedRepository(
-            DataclassFormatter(Apple), InMemoryRepository[Apple].for_dataclass(Apple)
+        return (
+            RestfulRepositoryBuilder[Apple]()
+            .with_resource(Apple)
+            .with_repository(InMemoryRepository[Apple].for_dataclass(Apple))
+            .build()
         )
 
 

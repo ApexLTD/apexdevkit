@@ -12,10 +12,9 @@ from apexdevkit.fastapi.schema import SchemaFields
 from apexdevkit.fastapi.service import (
     RawCollection,
     RawItem,
-    RestfulNestedRepository,
+    RestfulRepositoryBuilder,
     RestfulService,
 )
-from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.http import JsonDict
 from apexdevkit.repository import InMemoryRepository
 from apexdevkit.testing import RestfulName
@@ -26,11 +25,15 @@ class SampleServiceBuilder(RestfulServiceBuilder):
     services: dict[str, RestfulService] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        self.services[""] = RestfulNestedRepository(
-            DataclassFormatter(Apple),
-            InMemoryRepository[Apple]
-            .for_dataclass(Apple)
-            .with_unique(criteria=lambda item: f"name<{item.name}>"),
+        self.services[""] = (
+            RestfulRepositoryBuilder[Apple]()
+            .with_resource(Apple)
+            .with_repository(
+                InMemoryRepository[Apple]
+                .for_dataclass(Apple)
+                .with_unique(criteria=lambda item: f"name<{item.name}>")
+            )
+            .build()
         )
 
     def with_parent(self, identity: str) -> "RestfulServiceBuilder":
