@@ -26,6 +26,7 @@ class HttpMethod(Enum):
     get = auto()
     patch = auto()
     delete = auto()
+    put = auto()
 
 
 class HttpResponse(Protocol):  # pragma: no cover
@@ -72,6 +73,9 @@ class FluentHttp:
 
     def delete(self) -> FluentHttpRequest:
         return FluentHttpRequest(HttpMethod.delete, self.http)
+
+    def put(self) -> FluentHttpRequest:
+        return FluentHttpRequest(HttpMethod.put, self.http)
 
 
 @dataclass(frozen=True)

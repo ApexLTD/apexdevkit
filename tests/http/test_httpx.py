@@ -64,3 +64,16 @@ def test_should_delete(http: Httpx) -> None:
 
     assert echo.value_of("url").to(str) == ECHO_SERVER + "/delete"
     assert echo.value_of("headers").to(dict)["User-Agent"] == "hogwarts"
+
+
+@pytest.mark.vcr
+def test_should_put(http: Httpx) -> None:
+    json = JsonDict().with_a(Harry="Potter")
+    response = http.with_json(json).request(HttpMethod.put, "/put")
+
+    echo = response.json().select("headers", "json", "url")
+
+    assert echo.value_of("url").to(str) == ECHO_SERVER + "/put"
+    assert echo.value_of("headers").to(dict)["User-Agent"] == "hogwarts"
+    assert echo.value_of("headers").to(dict)["Content-Type"] == "application/json"
+    assert echo.value_of("json").to(dict) == json
