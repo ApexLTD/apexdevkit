@@ -189,18 +189,13 @@ def test_should_update_one(resource: RestResource) -> None:
 
 
 def test_should_persist_update(resource: RestResource) -> None:
-    apple = (
-        resource.create_one()
-        .from_data(fake.apple())
-        .unpack()
-        .drop("color")
-        .with_a(color="RED")
-    )
+    apple = resource.create_one().from_data(fake.apple()).unpack()
+    updates = fake.apple().drop("id").drop("color")
 
     (
         resource.update_one()
         .with_id(apple.value_of("id").to(str))
-        .and_data(apple)
+        .and_data(updates)
         .ensure()
         .success()
     )
@@ -211,19 +206,17 @@ def test_should_persist_update(resource: RestResource) -> None:
         .ensure()
         .success()
         .with_code(200)
-        .and_item(apple)
+        .and_item(apple.drop("name").merge(updates))
     )
 
 
 def test_should_update_many(resource: RestResource) -> None:
     apple_1 = resource.create_one().from_data(fake.apple()).unpack()
     apple_2 = resource.create_one().from_data(fake.apple()).unpack()
-    apple_1 = apple_1.drop("color").with_a(color="RED")
-    apple_2 = apple_2.drop("color").with_a(color="RED")
     (
         resource.update_many()
-        .from_data(apple_1)
-        .and_data(apple_2)
+        .from_data(apple_1.drop("color"))
+        .and_data(apple_2.drop("color"))
         .ensure()
         .success()
         .with_code(200)
