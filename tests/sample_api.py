@@ -112,6 +112,9 @@ class AppleFields(SchemaFields):
     def readable(self) -> JsonDict:
         return JsonDict().with_a(id=str).and_a(name=Name).and_a(color=Color)
 
+    def editable(self) -> JsonDict:
+        return JsonDict().with_a(name=Name)
+
 
 @dataclass(frozen=True)
 class Price:

@@ -9,7 +9,12 @@ from starlette.testclient import TestClient
 from apexdevkit.error import ForbiddenError
 from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.router import RestfulRouter, RestfulServiceBuilder
-from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
+from apexdevkit.fastapi.service import (
+    RawCollection,
+    RawCollectionWithId,
+    RawItem,
+    RestfulService,
+)
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
 from tests.sample_api import (
@@ -75,7 +80,7 @@ class ForbiddenInfra(RestfulServiceBuilder, RestfulService):
     def update_one(self, item_id: str, **fields: RawItem) -> RawItem:
         raise ForbiddenError()
 
-    def update_many(self, items: RawCollection) -> RawCollection:
+    def update_many(self, items: RawCollectionWithId) -> RawCollection:
         raise ForbiddenError()
 
     def delete_one(self, item_id: str) -> None:
