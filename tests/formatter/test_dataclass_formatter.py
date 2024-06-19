@@ -118,3 +118,36 @@ def test_should_retain_dumped_integrity() -> None:
         "sample": {"name": {"name": "b", "ordering": 1}, "field": 2},
         "other_sample": {"name": {"name": "c", "ordering": 1}, "field": 3},
     }
+
+
+def test_should_retain_loaded_integrity() -> None:
+    formatter = (
+        DataclassFormatter(NestedDataclass)
+        .with_nested(
+            sample=DataclassFormatter(SampleDataclass).with_nested(
+                name=DataclassFormatter(Name)
+            )
+        )
+        .and_nested(
+            other_sample=DataclassFormatter(SampleDataclass).with_nested(
+                name=DataclassFormatter(Name)
+            )
+        )
+    )
+
+    loaded = formatter.load(
+        {
+            "name": "a",
+            "field": 1,
+            "sample": {"name": {"name": "b", "ordering": 1}, "field": 2},
+            "other_sample": {"name": {"name": "c", "ordering": 1}, "field": 3},
+        }
+    )
+    formatter.dump(loaded)
+
+    assert loaded == NestedDataclass(
+        name="a",
+        field=1,
+        sample=SampleDataclass(name=Name("b", 1), field=2),
+        other_sample=SampleDataclass(name=Name("c", 1), field=3),
+    )
