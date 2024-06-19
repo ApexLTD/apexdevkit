@@ -1,12 +1,19 @@
 from abc import ABC
-from dataclasses import asdict, dataclass, field, replace
-from typing import Any, Generic, Iterable, Self, TypeVar
+from dataclasses import dataclass, field
+from typing import Any, Generic, Iterable, Self, TypedDict, TypeVar
 
 from apexdevkit.formatter import DataclassFormatter, Formatter
 from apexdevkit.repository.interface import Repository
 
 RawItem = dict[str, Any]
 RawCollection = Iterable[RawItem]
+
+
+class RawItemWithId(TypedDict, total=False):
+    id: str
+
+
+RawCollectionWithId = Iterable[RawItemWithId]
 
 
 class RestfulService(ABC):
@@ -25,19 +32,11 @@ class RestfulService(ABC):
     def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
         raise NotImplementedError(self.update_one.__name__)
 
-    def update_many(self, items: RawCollection) -> RawCollection:
+    def update_many(self, items: RawCollectionWithId) -> RawCollection:
         raise NotImplementedError(self.update_many.__name__)
 
     def delete_one(self, item_id: str) -> None:
         raise NotImplementedError(self.delete_one.__name__)
-
-
-def _as_raw_collection(value: Iterable[Any]) -> RawCollection:
-    return [_as_raw_item(item) for item in value]
-
-
-def _as_raw_item(value: Any) -> RawItem:
-    return asdict(value)
 
 
 ItemT = TypeVar("ItemT")
@@ -103,53 +102,17 @@ class _RestfulNestedRepository(RestfulService, Generic[ItemT]):
 
         return data
 
-    def update_many(self, items: RawCollection) -> RawCollection:
-        result = [self.formatter.load(fields) for fields in items]
+    def update_many(self, items: RawCollectionWithId) -> RawCollection:
+        updates = []
+        for fields in items:
+            data = self.formatter.dump(self.repository.read(fields["id"]))
+            data.update(**fields)
 
-        self.repository.update_many(result)
+            updates.append(self.formatter.load(data))
 
-        return [self.formatter.dump(item) for item in result]
+        self.repository.update_many(updates)
 
-    def delete_one(self, item_id: str) -> None:
-        self.repository.delete(item_id)
-
-
-@dataclass
-class RestfulRepository(RestfulService):
-    resource: type[Any]
-    repository: Repository[Any, Any]
-
-    def create_one(self, item: RawItem) -> RawItem:
-        return _as_raw_item(self.repository.create(self.resource(**item)))
-
-    def create_many(self, items: RawCollection) -> RawCollection:
-        return _as_raw_collection(
-            self.repository.create_many([self.resource(**fields) for fields in items])
-        )
-
-    def read_one(self, item_id: str) -> RawItem:
-        result = self.repository.read(item_id)
-
-        return _as_raw_item(result)
-
-    def read_all(self) -> RawCollection:
-        result = self.repository
-
-        return _as_raw_collection(result)
-
-    def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
-        result = replace(self.repository.read(item_id), **with_fields)
-
-        self.repository.update(result)
-
-        return _as_raw_item(result)
-
-    def update_many(self, items: RawCollection) -> RawCollection:
-        result = [self.resource(**fields) for fields in items]
-
-        self.repository.update_many(result)
-
-        return _as_raw_collection(result)
+        return [self.formatter.dump(item) for item in updates]
 
     def delete_one(self, item_id: str) -> None:
         self.repository.delete(item_id)
