@@ -10,6 +10,9 @@ from apexdevkit.testing import RestfulName
 
 
 class SchemaFields(ABC):
+    def id(self) -> JsonDict:
+        return self.readable().select("id")
+
     def writable(self) -> JsonDict:
         return self.readable().drop("id")
 
@@ -38,6 +41,9 @@ class RestfulSchema:
         schema = self._schema_for("", self.fields.readable())
         create_schema = self._schema_for("Create", self.fields.writable())
         self._schema_for("Update", self.fields.editable())
+        update_many_item = self._schema_for(
+            "UpdateManyItem", self.fields.editable().merge(self.fields.id())
+        )
 
         self._schema_for(
             "Item",
@@ -54,7 +60,7 @@ class RestfulSchema:
         )
         self._schema_for(
             "UpdateMany",
-            JsonDict({self.name.plural: List[schema]}),
+            JsonDict({self.name.plural: List[update_many_item]}),
         )
 
     def _schema_for(self, action: str, fields: dict[str, Any]) -> type[BaseModel]:
