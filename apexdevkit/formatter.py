@@ -1,3 +1,4 @@
+from copy import deepcopy
 from dataclasses import asdict, dataclass, field
 from typing import Any, Generic, Protocol, Self, TypeVar
 
@@ -26,6 +27,8 @@ class DataclassFormatter(Generic[ItemT]):
         return self
 
     def load(self, raw: dict[str, Any]) -> ItemT:
+        raw = deepcopy(raw)
+
         for key, formatter in self.sub_formatters.items():
             raw[key] = formatter.load(raw.pop(key))
 
