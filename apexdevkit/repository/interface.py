@@ -4,7 +4,7 @@ ItemT = TypeVar("ItemT")
 IdT = TypeVar("IdT", contravariant=True)
 
 
-class Repository(Protocol[IdT, ItemT]):
+class Repository(Protocol[IdT, ItemT]):  # pragma: no cover
     def create(self, item: ItemT) -> ItemT:
         pass
 

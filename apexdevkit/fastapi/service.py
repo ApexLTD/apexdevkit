@@ -17,7 +17,7 @@ class _RawItemWithId(Dict[str, Any]):
 RawCollectionWithId = Iterable[_RawItemWithId]
 
 
-class RestfulService(ABC):
+class RestfulService(ABC):  # pragma: no cover
     def create_one(self, item: RawItem) -> RawItem:
         raise NotImplementedError(self.create_one.__name__)
 
@@ -66,7 +66,7 @@ class RestfulRepositoryBuilder(Generic[ItemT]):
 
     def build(self) -> RestfulService:
         if not self.formatter and self.resource:
-            self.formatter = DataclassFormatter(self.resource)
+            self.with_formatter(DataclassFormatter(self.resource))
 
         assert self.formatter, "Must provide either resource or formatter"
 

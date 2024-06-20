@@ -6,6 +6,7 @@ from typing import Annotated, Any, Callable, Iterable, Self, TypeVar
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
 
+from apexdevkit.annotation import deprecated
 from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
 from apexdevkit.fastapi.schema import DataclassFields, RestfulSchema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
@@ -95,12 +96,13 @@ class RestfulServiceBuilder(ABC):
         return self
 
     @abstractmethod
-    def build(self) -> RestfulService:
+    def build(self) -> RestfulService:  # pragma: no cover
         pass
 
 
+@deprecated("Use infra instead")
 @dataclass
-class PreBuiltRestfulService(RestfulServiceBuilder):
+class PreBuiltRestfulService(RestfulServiceBuilder):  # pragma: no cover
     service: RestfulService
 
     def build(self) -> RestfulService:
@@ -123,7 +125,7 @@ class RestfulRouter:
 
     parent: str = field(init=False, default="")
 
-    def __post_init__(self) -> None:
+    def __post_init__(self) -> None:  # pragma: no cover
         if self.service:
             self.infra = PreBuiltRestfulService(self.service)
 
@@ -147,7 +149,8 @@ class RestfulRouter:
     def item_path(self) -> str:
         return "/{" + self.id_alias + "}"
 
-    def with_dataclass(self, value: Any) -> Self:
+    @deprecated("Use with_name and with_fields instead")
+    def with_dataclass(self, value: Any) -> Self:  # pragma: no cover
         return self.with_name(RestfulName(value.__name__.lower())).with_fields(
             DataclassFields(value)
         )
@@ -167,7 +170,8 @@ class RestfulRouter:
 
         return self
 
-    def with_service(self, value: RestfulService) -> Self:
+    @deprecated("Use with_infra instead")
+    def with_service(self, value: RestfulService) -> Self:  # pragma: no cover
         self.infra = PreBuiltRestfulService(value)
 
         return self
