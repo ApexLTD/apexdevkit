@@ -17,7 +17,7 @@ class _RawItemWithId(Dict[str, Any]):
 RawCollectionWithId = Iterable[_RawItemWithId]
 
 
-class RestfulService(ABC):
+class RestfulService(ABC):  # pragma: no cover
     def create_one(self, item: RawItem) -> RawItem:
         raise NotImplementedError(self.create_one.__name__)
 
