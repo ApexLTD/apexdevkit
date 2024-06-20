@@ -20,7 +20,7 @@ class SchemaFields(ABC):
         return self.readable().drop("id")
 
     @abstractmethod
-    def readable(self) -> JsonDict:
+    def readable(self) -> JsonDict:  # pragma: no cover
         pass
 
 
