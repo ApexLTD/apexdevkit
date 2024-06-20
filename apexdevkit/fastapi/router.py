@@ -95,7 +95,7 @@ class RestfulServiceBuilder(ABC):
         return self
 
     @abstractmethod
-    def build(self) -> RestfulService:
+    def build(self) -> RestfulService:  # pragma: no cover
         pass
 
 
