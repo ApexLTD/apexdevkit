@@ -5,6 +5,7 @@ from typing import Any, Callable, Iterable, List
 
 from pydantic import BaseModel, create_model
 
+from apexdevkit.annotation import deprecated
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestfulName
 
@@ -24,6 +25,7 @@ class SchemaFields(ABC):
         pass
 
 
+@deprecated("Use custom schema fields instead")
 @dataclass
 class DataclassFields(SchemaFields):  # pragma: no cover
     source: Any
