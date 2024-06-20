@@ -3,6 +3,8 @@ from typing import Any, Self
 
 from fastapi import APIRouter, FastAPI
 
+from apexdevkit.annotation import deprecated
+
 
 @dataclass
 class FastApiBuilder:
@@ -26,7 +28,8 @@ class FastApiBuilder:
 
         return self
 
-    def with_dependency(self, **values: Any) -> Self:
+    @deprecated("Pass dependencies to router via with_infra method instead")
+    def with_dependency(self, **values: Any) -> Self:  # pragma: no cover
         for key, value in values.items():
             setattr(self.app.state, key, value)
 
