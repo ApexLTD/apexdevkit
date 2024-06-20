@@ -6,7 +6,7 @@ from apexdevkit.error import Criteria, DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter, Formatter
 
 
-class _Item(Protocol):
+class _Item(Protocol):  # pragma: no cover
     @property
     def id(self) -> Any:
         pass
