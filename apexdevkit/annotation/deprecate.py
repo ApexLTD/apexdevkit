@@ -26,7 +26,9 @@ def deprecated(warning: str) -> Callable[[F], F]:
         elif inspect.isclass(obj):
             return cast(F, _deprecate_class(obj, warning))
         else:
-            raise TypeError(f"Unsupported type for deprecation: {type(obj)}")
+            raise TypeError(
+                f"Unsupported type for deprecation: {type(obj)}"
+            )  # pragma: no cover
 
     return decorator
 
