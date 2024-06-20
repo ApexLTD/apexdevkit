@@ -72,23 +72,6 @@ def test_should_not_list_anything_when_none_exist(resource: RestResource) -> Non
     resource.read_all().ensure().success().with_code(200).and_collection([])
 
 
-@pytest.mark.skip("WIP")
-def test_should_read_many(resource: RestResource) -> None:
-    apple_one = fake.apple()
-    apple_two = fake.apple()
-
-    resource.create_many().from_data(apple_one).and_data(apple_two).unpack_many()
-
-    (
-        resource.read_all()
-        .with_params(color=apple_one.value_of("color").to(str))
-        .ensure()
-        .success()
-        .with_code(200)
-        .and_collection([apple_one])
-    )
-
-
 def test_should_read_all(resource: RestResource) -> None:
     apple_one = fake.apple()
     apple_two = fake.apple()
