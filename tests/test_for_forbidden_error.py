@@ -50,16 +50,6 @@ class Fake:
             .and_a(color=random.choice(list(Color)).value)
         )
 
-    def price(self) -> JsonDict:
-        return (
-            JsonDict()
-            .with_a(id=self.faker.uuid4())
-            .and_a(apple_id=self.faker.uuid4())
-            .and_a(currency=self.faker.currency()[0])
-            .and_a(value=self.faker.random_int(min=0, max=100))
-            .and_a(exponent=self.faker.random_int(min=1, max=10))
-        )
-
 
 class ForbiddenInfra(RestfulServiceBuilder, RestfulService):
     def build(self) -> RestfulService:
