@@ -66,7 +66,7 @@ class RestfulRepositoryBuilder(Generic[ItemT]):
 
     def build(self) -> RestfulService:
         if not self.formatter and self.resource:
-            self.formatter = DataclassFormatter(self.resource)
+            self.with_formatter(DataclassFormatter(self.resource))
 
         assert self.formatter, "Must provide either resource or formatter"
 
