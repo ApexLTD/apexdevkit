@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "apexdevkit"
-version = "1.5.13"
+version = "1.5.14"
 description = "Apex Development Tools for python."
 authors = ["Apex Dev <dev@apex.ge>"]
 readme = "README.md"
