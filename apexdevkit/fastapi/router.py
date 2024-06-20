@@ -101,7 +101,7 @@ class RestfulServiceBuilder(ABC):
 
 
 @dataclass
-class PreBuiltRestfulService(RestfulServiceBuilder):
+class PreBuiltRestfulService(RestfulServiceBuilder):  # pragma: no cover
     service: RestfulService
 
     def build(self) -> RestfulService:
