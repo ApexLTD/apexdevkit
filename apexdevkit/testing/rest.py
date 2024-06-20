@@ -79,6 +79,18 @@ def as_plural(singular: str) -> str:
     if singular.endswith("y"):
         return singular[:-1] + "ies"
 
+    if singular.endswith("ch") or singular.endswith("sh") or singular.endswith("ss"):
+        return singular[:-2] + "es"
+
+    if singular.endswith("s") or singular.endswith("z") or singular.endswith("x"):
+        return singular[:-1] + "es"
+
+    if singular.endswith("fe"):
+        return singular[:-2] + "ves"
+
+    if singular.endswith("f"):
+        return singular[:-1] + "ves"
+
     return singular + "s"
 
 
