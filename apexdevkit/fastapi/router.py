@@ -124,7 +124,7 @@ class RestfulRouter:
 
     parent: str = field(init=False, default="")
 
-    def __post_init__(self) -> None:
+    def __post_init__(self) -> None:  # pragma: no cover
         if self.service:
             self.infra = PreBuiltRestfulService(self.service)
 
