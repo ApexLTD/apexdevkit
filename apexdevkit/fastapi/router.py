@@ -6,6 +6,7 @@ from typing import Annotated, Any, Callable, Iterable, Self, TypeVar
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
 
+from apexdevkit.annotation import deprecated
 from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
 from apexdevkit.fastapi.schema import DataclassFields, RestfulSchema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
@@ -147,7 +148,8 @@ class RestfulRouter:
     def item_path(self) -> str:
         return "/{" + self.id_alias + "}"
 
-    def with_dataclass(self, value: Any) -> Self:
+    @deprecated("Use with_name and with_fields instead")
+    def with_dataclass(self, value: Any) -> Self:  # pragma: no cover
         return self.with_name(RestfulName(value.__name__.lower())).with_fields(
             DataclassFields(value)
         )
