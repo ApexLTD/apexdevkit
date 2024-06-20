@@ -25,7 +25,7 @@ class SchemaFields(ABC):
 
 
 @dataclass
-class DataclassFields(SchemaFields):
+class DataclassFields(SchemaFields):  # pragma: no cover
     source: Any
 
     def readable(self) -> JsonDict:
