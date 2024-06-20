@@ -169,7 +169,8 @@ class RestfulRouter:
 
         return self
 
-    def with_service(self, value: RestfulService) -> Self:
+    @deprecated("Use with_infra instead")
+    def with_service(self, value: RestfulService) -> Self:  # pragma: no cover
         self.infra = PreBuiltRestfulService(value)
 
         return self
