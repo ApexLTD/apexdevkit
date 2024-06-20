@@ -1,6 +1,6 @@
 from abc import ABC
 from dataclasses import dataclass, field
-from typing import Any, Generic, Iterable, Self, TypedDict, TypeVar
+from typing import Any, Dict, Generic, Iterable, Self, TypeVar
 
 from apexdevkit.formatter import DataclassFormatter, Formatter
 from apexdevkit.repository.interface import Repository
@@ -9,11 +9,12 @@ RawItem = dict[str, Any]
 RawCollection = Iterable[RawItem]
 
 
-class RawItemWithId(TypedDict, total=False):
-    id: str
+class _RawItemWithId(Dict[str, Any]):
+    def __post_init__(self) -> None:
+        assert "id" in self
 
 
-RawCollectionWithId = Iterable[RawItemWithId]
+RawCollectionWithId = Iterable[_RawItemWithId]
 
 
 class RestfulService(ABC):
