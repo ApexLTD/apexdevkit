@@ -19,6 +19,9 @@ class RestResource:
     def create_one(self) -> CreateOne:
         return CreateOne(self.name, self.http)
 
+    def create_many(self) -> CreateMany:
+        return CreateMany(self.name, self.http)
+
     def read_one(self) -> ReadOne:
         return ReadOne(self.name, self.http)
 
@@ -36,9 +39,6 @@ class RestResource:
 
     def replace_many(self) -> ReplaceMany:
         return ReplaceMany(self.name, self.http)
-
-    def create_many(self) -> CreateMany:
-        return CreateMany(self.name, self.http)
 
     def delete_one(self) -> DeleteOne:
         return DeleteOne(self.name, self.http)
