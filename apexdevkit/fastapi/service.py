@@ -36,6 +36,12 @@ class RestfulService(ABC):  # pragma: no cover
     def update_many(self, items: RawCollectionWithId) -> RawCollection:
         raise NotImplementedError(self.update_many.__name__)
 
+    def replace_one(self, item: RawItem) -> RawItem:
+        raise NotImplementedError(self.replace_one.__name__)
+
+    def replace_many(self, items: RawCollection) -> RawCollection:
+        raise NotImplementedError(self.replace_many.__name__)
+
     def delete_one(self, item_id: str) -> None:
         raise NotImplementedError(self.delete_one.__name__)
 
