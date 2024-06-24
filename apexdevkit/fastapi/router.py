@@ -6,9 +6,8 @@ from typing import Annotated, Any, Callable, Iterable, Self, TypeVar
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
 
-from apexdevkit.annotation import deprecated
 from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
-from apexdevkit.fastapi.schema import DataclassFields, RestfulSchema, SchemaFields
+from apexdevkit.fastapi.schema import RestfulSchema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
 from apexdevkit.testing import RestfulName
 
@@ -148,12 +147,6 @@ class RestfulRouter:
     def item_path(self) -> str:
         return "/{" + self.id_alias + "}"
 
-    @deprecated("Use with_name and with_fields instead")
-    def with_dataclass(self, value: Any) -> Self:  # pragma: no cover
-        return self.with_name(RestfulName(value.__name__.lower())).with_fields(
-            DataclassFields(value)
-        )
-
     def with_name(self, value: RestfulName) -> Self:
         self.name = value
 
@@ -166,12 +159,6 @@ class RestfulRouter:
 
     def with_parent(self, name: str) -> Self:
         self.parent = name
-
-        return self
-
-    @deprecated("Use with_infra instead")
-    def with_service(self, value: RestfulService) -> Self:  # pragma: no cover
-        self.infra = PreBuiltRestfulService(value)
 
         return self
 
