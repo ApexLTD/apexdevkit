@@ -15,6 +15,7 @@ from apexdevkit.fastapi.service import (
     RestfulRepositoryBuilder,
     RestfulService,
 )
+from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.http import JsonDict
 from apexdevkit.repository import InMemoryRepository
 from apexdevkit.testing import RestfulName
@@ -27,7 +28,7 @@ class SampleServiceBuilder(RestfulServiceBuilder):
     def __post_init__(self) -> None:
         self.services[""] = (
             RestfulRepositoryBuilder[Apple]()
-            .with_resource(Apple)
+            .with_formatter(DataclassFormatter(Apple))
             .with_repository(
                 InMemoryRepository[Apple]
                 .for_dataclass(Apple)

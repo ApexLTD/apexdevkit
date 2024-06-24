@@ -2,6 +2,7 @@ from abc import ABC
 from dataclasses import dataclass, field
 from typing import Any, Dict, Generic, Iterable, Self, TypeVar
 
+from apexdevkit.annotation import deprecated
 from apexdevkit.formatter import DataclassFormatter, Formatter
 from apexdevkit.repository.interface import Repository
 
@@ -49,6 +50,7 @@ class RestfulRepositoryBuilder(Generic[ItemT]):
     formatter: Formatter[ItemT] | None = field(init=False, default=None)
     repository: Repository[Any, ItemT] = field(init=False)
 
+    @deprecated("Pass formatter instead")
     def with_resource(self, resource: type[ItemT]) -> Self:
         self.resource = resource
 
