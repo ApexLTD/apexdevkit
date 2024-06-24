@@ -269,6 +269,24 @@ def test_should_persist_replace(resource: RestResource) -> None:
     ).with_item(replaced_apple)
 
 
+def test_should_replace_many(resource: RestResource) -> None:
+    apple_1 = resource.create_one().from_data(fake.apple()).unpack()
+    apple_2 = resource.create_one().from_data(fake.apple()).unpack()
+
+    (
+        resource.replace_many()
+        .from_data(apple_1)
+        .and_data(apple_2)
+        .ensure()
+        .success()
+        .with_code(200)
+    )
+
+    resource.read_all().ensure().success().with_code(200).and_collection(
+        [apple_1, apple_2]
+    )
+
+
 def test_should_persist_many(resource: RestResource) -> None:
     apples = (
         resource.create_many()

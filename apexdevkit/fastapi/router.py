@@ -523,7 +523,7 @@ class RestfulRouter:
         extract_user: Callable[..., Any] = no_user,
     ) -> Self:
         self.router.add_api_route(
-            "batch",
+            "/batch",
             self.replace_many(
                 User=Annotated[
                     Any,

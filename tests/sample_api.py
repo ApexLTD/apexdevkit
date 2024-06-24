@@ -85,6 +85,7 @@ def setup() -> FastAPI:
             )
             .default()
             .with_replace_one_endpoint()
+            .with_replace_many_endpoint()
             .build()
         )
         .build()
