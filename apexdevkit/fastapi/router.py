@@ -100,7 +100,6 @@ class RestfulServiceBuilder(ABC):
         pass
 
 
-@deprecated("Use infra instead")
 @dataclass
 class PreBuiltRestfulService(RestfulServiceBuilder):  # pragma: no cover
     service: RestfulService
