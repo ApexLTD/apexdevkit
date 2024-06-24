@@ -467,6 +467,56 @@ class RestfulRouter:
 
         return endpoint
 
+    def with_replace_one_endpoint(
+        self,
+        is_documented: bool = True,
+        extract_user: Callable[..., Any] = no_user,
+    ) -> Self:
+        self.router.add_api_route(
+            "",
+            self.replace_one(
+                User=Annotated[
+                    Any,
+                    Depends(extract_user),
+                ],
+                ParentId=Annotated[
+                    str,
+                    Path(alias=self.parent_id_alias, default_factory=str),
+                ],
+                Item=Annotated[
+                    RawItem,
+                    Depends(self.schema.for_replace_one()),
+                ],
+            ),
+            methods=["PUT"],
+            status_code=200,
+            responses={404: {}},
+            response_model=self.schema.for_no_data(),
+            include_in_schema=is_documented,
+            summary="Replace One",
+        )
+
+        return self
+
+    def replace_one(self, User, ParentId, Item) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(user: User, parent_id: ParentId, item: Item) -> _Response:
+            try:
+                service = self.infra.with_user(user).with_parent(parent_id).build()
+            except DoesNotExistError as e:
+                return JSONResponse(
+                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
+                )
+            try:
+                service.replace_one(item)
+            except DoesNotExistError as e:
+                return JSONResponse(self.response.not_found(e), 404)
+            except ForbiddenError as e:
+                return JSONResponse(self.response.forbidden(e), 403)
+
+            return self.response.ok()
+
+        return endpoint
+
     def with_delete_one_endpoint(
         self,
         is_documented: bool = True,
