@@ -205,8 +205,27 @@ def test_should_update_many(resource: RestResource) -> None:
         .with_code(200)
     )
 
+
+def test_should_persist_update_many(resource: RestResource) -> None:
+    apple_1 = resource.create_one().from_data(fake.apple()).unpack()
+    apple_2 = resource.create_one().from_data(fake.apple()).unpack()
+
+    updates_1 = fake.apple().drop("color").drop("id").with_a(id=apple_1["id"])
+    updates_2 = fake.apple().drop("color").drop("id").with_a(id=apple_2["id"])
+    (
+        resource.update_many()
+        .from_data(updates_1)
+        .and_data(updates_2)
+        .ensure()
+        .success()
+        .with_code(200)
+    )
+
     resource.read_all().ensure().success().with_code(200).and_collection(
-        [apple_1, apple_2]
+        [
+            updates_1.with_a(color=apple_1["color"]),
+            updates_2.with_a(color=apple_2["color"]),
+        ]
     )
 
 
@@ -215,6 +234,104 @@ def test_should_not_update_many(resource: RestResource) -> None:
 
     (
         resource.update_many()
+        .from_data(apple_1)
+        .and_data(apple_2)
+        .ensure()
+        .fail()
+        .with_code(404)
+        .and_message(f"An item<Apple> with id<{apple_1.get('id')}> does not exist.")
+    )
+
+
+def test_should_not_replace_unknown(resource: RestResource) -> None:
+    unknown_apple = fake.apple()
+    unknown_id = unknown_apple["id"]
+
+    (
+        resource.replace_one()
+        .from_data(unknown_apple)
+        .ensure()
+        .fail()
+        .with_code(404)
+        .and_message(f"An item<Apple> with id<{unknown_id}> does not exist.")
+    )
+
+
+def test_should_replace_one(resource: RestResource) -> None:
+    apple = resource.create_one().from_data(fake.apple()).unpack()
+
+    (
+        resource.replace_one()
+        .from_data(apple)
+        .ensure()
+        .success()
+        .with_code(200)
+        .and_no_data()
+    )
+
+
+def test_should_persist_replace(resource: RestResource) -> None:
+    apple = resource.create_one().from_data(fake.apple()).unpack()
+    replaced_apple = fake.apple().drop("id").with_a(id=apple["id"])
+
+    (
+        resource.replace_one()
+        .from_data(replaced_apple)
+        .ensure()
+        .success()
+        .with_code(200)
+        .and_no_data()
+    )
+
+    resource.read_one().with_id(apple["id"]).ensure().success().with_code(
+        200
+    ).with_item(replaced_apple)
+
+
+def test_should_replace_many(resource: RestResource) -> None:
+    apple_1 = resource.create_one().from_data(fake.apple()).unpack()
+    apple_2 = resource.create_one().from_data(fake.apple()).unpack()
+
+    (
+        resource.replace_many()
+        .from_data(apple_1)
+        .and_data(apple_2)
+        .ensure()
+        .success()
+        .with_code(200)
+    )
+
+
+def test_should_persist_replace_many(resource: RestResource) -> None:
+    apple_1 = resource.create_one().from_data(fake.apple()).unpack()
+    apple_2 = resource.create_one().from_data(fake.apple()).unpack()
+
+    updated_1 = fake.apple().drop("id").with_a(id=apple_1["id"])
+    updated_2 = fake.apple().drop("id").with_a(id=apple_2["id"])
+
+    (
+        resource.replace_many()
+        .from_data(updated_1)
+        .and_data(updated_2)
+        .ensure()
+        .success()
+        .with_code(200)
+    )
+
+    (
+        resource.read_all()
+        .ensure()
+        .success()
+        .with_code(200)
+        .and_collection([updated_1, updated_2])
+    )
+
+
+def test_should_not_replace_many(resource: RestResource) -> None:
+    apple_1, apple_2 = fake.apple(), fake.apple()
+
+    (
+        resource.replace_many()
         .from_data(apple_1)
         .and_data(apple_2)
         .ensure()

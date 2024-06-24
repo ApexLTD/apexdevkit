@@ -6,9 +6,8 @@ from typing import Annotated, Any, Callable, Iterable, Self, TypeVar
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
 
-from apexdevkit.annotation import deprecated
 from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
-from apexdevkit.fastapi.schema import DataclassFields, RestfulSchema, SchemaFields
+from apexdevkit.fastapi.schema import RestfulSchema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
 from apexdevkit.testing import RestfulName
 
@@ -148,12 +147,6 @@ class RestfulRouter:
     def item_path(self) -> str:
         return "/{" + self.id_alias + "}"
 
-    @deprecated("Use with_name and with_fields instead")
-    def with_dataclass(self, value: Any) -> Self:  # pragma: no cover
-        return self.with_name(RestfulName(value.__name__.lower())).with_fields(
-            DataclassFields(value)
-        )
-
     def with_name(self, value: RestfulName) -> Self:
         self.name = value
 
@@ -166,12 +159,6 @@ class RestfulRouter:
 
     def with_parent(self, name: str) -> Self:
         self.parent = name
-
-        return self
-
-    @deprecated("Use with_infra instead")
-    def with_service(self, value: RestfulService) -> Self:  # pragma: no cover
-        self.infra = PreBuiltRestfulService(value)
 
         return self
 
@@ -471,6 +458,106 @@ class RestfulRouter:
                 )
             try:
                 service.update_many(items)
+            except DoesNotExistError as e:
+                return JSONResponse(self.response.not_found(e), 404)
+            except ForbiddenError as e:
+                return JSONResponse(self.response.forbidden(e), 403)
+
+            return self.response.ok()
+
+        return endpoint
+
+    def with_replace_one_endpoint(
+        self,
+        is_documented: bool = True,
+        extract_user: Callable[..., Any] = no_user,
+    ) -> Self:
+        self.router.add_api_route(
+            "",
+            self.replace_one(
+                User=Annotated[
+                    Any,
+                    Depends(extract_user),
+                ],
+                ParentId=Annotated[
+                    str,
+                    Path(alias=self.parent_id_alias, default_factory=str),
+                ],
+                Item=Annotated[
+                    RawItem,
+                    Depends(self.schema.for_replace_one()),
+                ],
+            ),
+            methods=["PUT"],
+            status_code=200,
+            responses={404: {}},
+            response_model=self.schema.for_no_data(),
+            include_in_schema=is_documented,
+            summary="Replace One",
+        )
+
+        return self
+
+    def replace_one(self, User, ParentId, Item) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(user: User, parent_id: ParentId, item: Item) -> _Response:
+            try:
+                service = self.infra.with_user(user).with_parent(parent_id).build()
+            except DoesNotExistError as e:
+                return JSONResponse(
+                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
+                )
+            try:
+                service.replace_one(item)
+            except DoesNotExistError as e:
+                return JSONResponse(self.response.not_found(e), 404)
+            except ForbiddenError as e:
+                return JSONResponse(self.response.forbidden(e), 403)
+
+            return self.response.ok()
+
+        return endpoint
+
+    def with_replace_many_endpoint(
+        self,
+        is_documented: bool = True,
+        extract_user: Callable[..., Any] = no_user,
+    ) -> Self:
+        self.router.add_api_route(
+            "/batch",
+            self.replace_many(
+                User=Annotated[
+                    Any,
+                    Depends(extract_user),
+                ],
+                ParentId=Annotated[
+                    str,
+                    Path(alias=self.parent_id_alias, default_factory=str),
+                ],
+                Collection=Annotated[
+                    RawCollection,
+                    Depends(self.schema.for_replace_many()),
+                ],
+            ),
+            methods=["PUT"],
+            status_code=200,
+            responses={},
+            response_model=self.schema.for_no_data(),
+            include_in_schema=is_documented,
+            summary="Replace Many",
+        )
+
+        return self
+
+    def replace_many(self, User, ParentId, Collection) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(user: User, parent_id: ParentId, items: Collection) -> _Response:
+            try:
+                service = self.infra.with_user(user).with_parent(parent_id).build()
+            except DoesNotExistError as e:
+                return JSONResponse(
+                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
+                )
+            try:
+                service.replace_many(items)
             except DoesNotExistError as e:
                 return JSONResponse(self.response.not_found(e), 404)
             except ForbiddenError as e:

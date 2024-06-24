@@ -5,7 +5,6 @@ from typing import Any, Callable, Iterable, List
 
 from pydantic import BaseModel, create_model
 
-from apexdevkit.annotation import deprecated
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestfulName
 
@@ -25,15 +24,6 @@ class SchemaFields(ABC):
         pass
 
 
-@deprecated("Use custom schema fields instead")
-@dataclass
-class DataclassFields(SchemaFields):  # pragma: no cover
-    source: Any
-
-    def readable(self) -> JsonDict:
-        return JsonDict(self.source.__annotations__)
-
-
 @dataclass
 class RestfulSchema:
     name: RestfulName
@@ -43,6 +33,7 @@ class RestfulSchema:
         schema = self._schema_for("", self.fields.readable())
         create_schema = self._schema_for("Create", self.fields.writable())
         self._schema_for("Update", self.fields.editable())
+        replace_schema = self._schema_for("Replace", self.fields.readable())
         update_many_item = self._schema_for(
             "UpdateManyItem", self.fields.editable().merge(self.fields.id())
         )
@@ -63,6 +54,9 @@ class RestfulSchema:
         self._schema_for(
             "UpdateMany",
             JsonDict({self.name.plural: List[update_many_item]}),
+        )
+        self._schema_for(
+            "ReplaceMany", JsonDict({self.name.plural: List[replace_schema]})
         )
 
     def _schema_for(self, action: str, fields: dict[str, Any]) -> type[BaseModel]:
@@ -134,6 +128,22 @@ class RestfulSchema:
 
     def for_update_many(self) -> Callable[[BaseModel], Iterable[dict[str, Any]]]:
         schema = self.schemas["UpdateMany"]
+
+        def _(request: schema) -> Iterable[dict[str, Any]]:
+            return [dict(item) for item in request.model_dump()[self.name.plural]]
+
+        return _
+
+    def for_replace_one(self) -> Callable[[BaseModel], dict[str, Any]]:
+        schema = self.schemas["Replace"]
+
+        def _(request: schema) -> dict[str, Any]:
+            return request.model_dump()
+
+        return _
+
+    def for_replace_many(self) -> Callable[[BaseModel], Iterable[dict[str, Any]]]:
+        schema = self.schemas["ReplaceMany"]
 
         def _(request: schema) -> Iterable[dict[str, Any]]:
             return [dict(item) for item in request.model_dump()[self.name.plural]]

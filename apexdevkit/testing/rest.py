@@ -19,6 +19,9 @@ class RestResource:
     def create_one(self) -> CreateOne:
         return CreateOne(self.name, self.http)
 
+    def create_many(self) -> CreateMany:
+        return CreateMany(self.name, self.http)
+
     def read_one(self) -> ReadOne:
         return ReadOne(self.name, self.http)
 
@@ -31,8 +34,11 @@ class RestResource:
     def update_many(self) -> UpdateMany:
         return UpdateMany(self.name, self.http)
 
-    def create_many(self) -> CreateMany:
-        return CreateMany(self.name, self.http)
+    def replace_one(self) -> ReplaceOne:
+        return ReplaceOne(self.name, self.http)
+
+    def replace_many(self) -> ReplaceMany:
+        return ReplaceMany(self.name, self.http)
 
     def delete_one(self) -> DeleteOne:
         return DeleteOne(self.name, self.http)
@@ -183,6 +189,20 @@ class UpdateOne(RestRequest):
 
 
 @dataclass
+class ReplaceOne(RestRequest):
+    data: JsonDict = field(init=False)
+
+    @cached_property
+    def response(self) -> httpx.Response:
+        return self.http.put(self.resource + "", json=dict(self.data))
+
+    def from_data(self, value: JsonDict) -> Self:
+        self.data = value
+
+        return self
+
+
+@dataclass
 class CreateMany(RestRequest):
     data: list[JsonDict] = field(default_factory=list)
 
@@ -210,6 +230,26 @@ class UpdateMany(RestRequest):
     def response(self) -> httpx.Response:
         return self.http.patch(
             self.resource + "",
+            json={self.resource.plural: [dict(data) for data in self.data]},
+        )
+
+    def from_data(self, value: JsonDict) -> Self:
+        self.data.append(value)
+
+        return self
+
+    def and_data(self, value: JsonDict) -> Self:
+        return self.from_data(value)
+
+
+@dataclass
+class ReplaceMany(RestRequest):
+    data: list[JsonDict] = field(default_factory=list)
+
+    @cached_property
+    def response(self) -> httpx.Response:
+        return self.http.put(
+            self.resource + "batch",
             json={self.resource.plural: [dict(data) for data in self.data]},
         )
 

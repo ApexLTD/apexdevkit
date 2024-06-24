@@ -2,8 +2,7 @@ from abc import ABC
 from dataclasses import dataclass, field
 from typing import Any, Dict, Generic, Iterable, Self, TypeVar
 
-from apexdevkit.annotation import deprecated
-from apexdevkit.formatter import DataclassFormatter, Formatter
+from apexdevkit.formatter import Formatter
 from apexdevkit.repository.interface import Repository
 
 RawItem = dict[str, Any]
@@ -37,6 +36,12 @@ class RestfulService(ABC):  # pragma: no cover
     def update_many(self, items: RawCollectionWithId) -> RawCollection:
         raise NotImplementedError(self.update_many.__name__)
 
+    def replace_one(self, item: RawItem) -> RawItem:
+        raise NotImplementedError(self.replace_one.__name__)
+
+    def replace_many(self, items: RawCollection) -> RawCollection:
+        raise NotImplementedError(self.replace_many.__name__)
+
     def delete_one(self, item_id: str) -> None:
         raise NotImplementedError(self.delete_one.__name__)
 
@@ -46,15 +51,8 @@ ItemT = TypeVar("ItemT")
 
 @dataclass
 class RestfulRepositoryBuilder(Generic[ItemT]):
-    resource: type[ItemT] | None = field(init=False, default=None)
-    formatter: Formatter[ItemT] | None = field(init=False, default=None)
+    formatter: Formatter[ItemT] = field(init=False)
     repository: Repository[Any, ItemT] = field(init=False)
-
-    @deprecated("Pass formatter instead")
-    def with_resource(self, resource: type[ItemT]) -> Self:
-        self.resource = resource
-
-        return self
 
     def with_formatter(self, formatter: Formatter[ItemT]) -> Self:
         self.formatter = formatter
@@ -67,11 +65,6 @@ class RestfulRepositoryBuilder(Generic[ItemT]):
         return self
 
     def build(self) -> RestfulService:
-        if not self.formatter and self.resource:
-            self.with_formatter(DataclassFormatter(self.resource))
-
-        assert self.formatter, "Must provide either resource or formatter"
-
         return _RestfulNestedRepository(self.formatter, self.repository)
 
 
@@ -116,6 +109,16 @@ class _RestfulNestedRepository(RestfulService, Generic[ItemT]):
         self.repository.update_many(updates)
 
         return [self.formatter.dump(item) for item in updates]
+
+    def replace_one(self, item: RawItem) -> RawItem:
+        self.repository.update(self.formatter.load(item))
+
+        return item
+
+    def replace_many(self, items: RawCollection) -> RawCollection:
+        self.repository.update_many([self.formatter.load(item) for item in items])
+
+        return items
 
     def delete_one(self, item_id: str) -> None:
         self.repository.delete(item_id)
