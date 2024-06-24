@@ -13,6 +13,7 @@ from apexdevkit.fastapi.service import (
     RestfulRepositoryBuilder,
     RestfulService,
 )
+from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import InMemoryRepository
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
 from tests.sample_api import Apple, AppleFields
@@ -62,7 +63,7 @@ class SampleServiceBuilder(RestfulServiceBuilder):
     def build(self) -> RestfulService:
         return (
             RestfulRepositoryBuilder[Apple]()
-            .with_resource(Apple)
+            .with_formatter(DataclassFormatter(Apple))
             .with_repository(InMemoryRepository[Apple].for_dataclass(Apple))
             .build()
         )
