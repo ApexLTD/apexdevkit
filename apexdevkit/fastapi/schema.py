@@ -33,7 +33,7 @@ class RestfulSchema:
         schema = self._schema_for("", self.fields.readable())
         create_schema = self._schema_for("Create", self.fields.writable())
         self._schema_for("Update", self.fields.editable())
-        self._schema_for("Replace", self.fields.readable())
+        replace_schema = self._schema_for("Replace", self.fields.readable())
         update_many_item = self._schema_for(
             "UpdateManyItem", self.fields.editable().merge(self.fields.id())
         )
@@ -54,6 +54,9 @@ class RestfulSchema:
         self._schema_for(
             "UpdateMany",
             JsonDict({self.name.plural: List[update_many_item]}),
+        )
+        self._schema_for(
+            "ReplaceMany", JsonDict({self.name.plural: List[replace_schema]})
         )
 
     def _schema_for(self, action: str, fields: dict[str, Any]) -> type[BaseModel]:
@@ -136,5 +139,13 @@ class RestfulSchema:
 
         def _(request: schema) -> dict[str, Any]:
             return request.model_dump()
+
+        return _
+
+    def for_replace_many(self) -> Callable[[BaseModel], Iterable[dict[str, Any]]]:
+        schema = self.schemas["ReplaceMany"]
+
+        def _(request: schema) -> Iterable[dict[str, Any]]:
+            return [dict(item) for item in request.model_dump()[self.name.plural]]
 
         return _
