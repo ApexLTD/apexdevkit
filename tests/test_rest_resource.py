@@ -318,8 +318,12 @@ def test_should_persist_replace_many(resource: RestResource) -> None:
         .with_code(200)
     )
 
-    resource.read_all().ensure().success().with_code(200).and_collection(
-        [updated_1, updated_2]
+    (
+        resource.read_all()
+        .ensure()
+        .success()
+        .with_code(200)
+        .and_collection([updated_1, updated_2])
     )
 
 
