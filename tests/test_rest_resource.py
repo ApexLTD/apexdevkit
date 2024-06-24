@@ -224,6 +224,19 @@ def test_should_not_update_many(resource: RestResource) -> None:
     )
 
 
+def test_should_replace_one(resource: RestResource) -> None:
+    apple = resource.create_one().from_data(fake.apple()).unpack()
+
+    (
+        resource.replace_one()
+        .from_data(apple)
+        .ensure()
+        .success()
+        .with_code(200)
+        .and_no_data()
+    )
+
+
 def test_should_persist_many(resource: RestResource) -> None:
     apples = (
         resource.create_many()
