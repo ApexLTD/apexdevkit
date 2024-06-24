@@ -33,6 +33,7 @@ class RestfulSchema:
         schema = self._schema_for("", self.fields.readable())
         create_schema = self._schema_for("Create", self.fields.writable())
         self._schema_for("Update", self.fields.editable())
+        self._schema_for("Replace", self.fields.readable())
         update_many_item = self._schema_for(
             "UpdateManyItem", self.fields.editable().merge(self.fields.id())
         )
@@ -131,7 +132,7 @@ class RestfulSchema:
         return _
 
     def for_replace_one(self) -> Callable[[BaseModel], dict[str, Any]]:
-        schema = self.schemas["Item"]
+        schema = self.schemas["Replace"]
 
         def _(request: schema) -> dict[str, Any]:
             return request.model_dump()
