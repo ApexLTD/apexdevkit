@@ -287,6 +287,20 @@ def test_should_replace_many(resource: RestResource) -> None:
     )
 
 
+def test_should_not_replace_many(resource: RestResource) -> None:
+    apple_1, apple_2 = fake.apple(), fake.apple()
+
+    (
+        resource.replace_many()
+        .from_data(apple_1)
+        .and_data(apple_2)
+        .ensure()
+        .fail()
+        .with_code(404)
+        .and_message(f"An item<Apple> with id<{apple_1.get('id')}> does not exist.")
+    )
+
+
 def test_should_persist_many(resource: RestResource) -> None:
     apples = (
         resource.create_many()
