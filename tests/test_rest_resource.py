@@ -301,8 +301,25 @@ def test_should_replace_many(resource: RestResource) -> None:
         .with_code(200)
     )
 
+
+def test_should_persist_replace_many(resource: RestResource) -> None:
+    apple_1 = resource.create_one().from_data(fake.apple()).unpack()
+    apple_2 = resource.create_one().from_data(fake.apple()).unpack()
+
+    updated_1 = fake.apple().drop("id").with_a(id=apple_1["id"])
+    updated_2 = fake.apple().drop("id").with_a(id=apple_2["id"])
+
+    (
+        resource.replace_many()
+        .from_data(updated_1)
+        .and_data(updated_2)
+        .ensure()
+        .success()
+        .with_code(200)
+    )
+
     resource.read_all().ensure().success().with_code(200).and_collection(
-        [apple_1, apple_2]
+        [updated_1, updated_2]
     )
 
 
