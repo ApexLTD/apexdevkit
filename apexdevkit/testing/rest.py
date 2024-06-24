@@ -31,6 +31,9 @@ class RestResource:
     def update_many(self) -> UpdateMany:
         return UpdateMany(self.name, self.http)
 
+    def replace_one(self) -> ReplaceOne:
+        return ReplaceOne(self.name, self.http)
+
     def create_many(self) -> CreateMany:
         return CreateMany(self.name, self.http)
 
@@ -177,6 +180,20 @@ class UpdateOne(RestRequest):
         return self
 
     def and_data(self, value: JsonDict) -> Self:
+        self.data = value
+
+        return self
+
+
+@dataclass
+class ReplaceOne(RestRequest):
+    data: JsonDict = field(init=False)
+
+    @cached_property
+    def response(self) -> httpx.Response:
+        return self.http.put(self.resource + "", json=dict(self.data))
+
+    def from_data(self, value: JsonDict) -> Self:
         self.data = value
 
         return self
