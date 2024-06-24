@@ -224,6 +224,20 @@ def test_should_not_update_many(resource: RestResource) -> None:
     )
 
 
+def test_should_not_replace_unknown(resource: RestResource) -> None:
+    unknown_apple = fake.apple()
+    unknown_id = unknown_apple["id"]
+
+    (
+        resource.replace_one()
+        .from_data(unknown_apple)
+        .ensure()
+        .fail()
+        .with_code(404)
+        .and_message(f"An item<Apple> with id<{unknown_id}> does not exist.")
+    )
+
+
 def test_should_replace_one(resource: RestResource) -> None:
     apple = resource.create_one().from_data(fake.apple()).unpack()
 
