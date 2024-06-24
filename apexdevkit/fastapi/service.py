@@ -104,5 +104,15 @@ class _RestfulNestedRepository(RestfulService, Generic[ItemT]):
 
         return [self.formatter.dump(item) for item in updates]
 
+    def replace_one(self, item: RawItem) -> RawItem:
+        self.repository.update(self.formatter.load(item))
+
+        return item
+
+    def replace_many(self, items: RawCollection) -> RawCollection:
+        self.repository.update_many([self.formatter.load(item) for item in items])
+
+        return items
+
     def delete_one(self, item_id: str) -> None:
         self.repository.delete(item_id)
