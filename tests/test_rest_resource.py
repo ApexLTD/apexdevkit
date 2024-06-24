@@ -205,8 +205,27 @@ def test_should_update_many(resource: RestResource) -> None:
         .with_code(200)
     )
 
+
+def test_should_persist_update_many(resource: RestResource) -> None:
+    apple_1 = resource.create_one().from_data(fake.apple()).unpack()
+    apple_2 = resource.create_one().from_data(fake.apple()).unpack()
+
+    updates_1 = fake.apple().drop("color").drop("id").with_a(id=apple_1["id"])
+    updates_2 = fake.apple().drop("color").drop("id").with_a(id=apple_2["id"])
+    (
+        resource.update_many()
+        .from_data(updates_1)
+        .and_data(updates_2)
+        .ensure()
+        .success()
+        .with_code(200)
+    )
+
     resource.read_all().ensure().success().with_code(200).and_collection(
-        [apple_1, apple_2]
+        [
+            updates_1.with_a(color=apple_1["color"]),
+            updates_2.with_a(color=apple_2["color"]),
+        ]
     )
 
 
