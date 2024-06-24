@@ -129,3 +129,11 @@ class RestfulSchema:
             return [dict(item) for item in request.model_dump()[self.name.plural]]
 
         return _
+
+    def for_replace_one(self) -> Callable[[BaseModel], dict[str, Any]]:
+        schema = self.schemas["Item"]
+
+        def _(request: schema) -> dict[str, Any]:
+            return request.model_dump()
+
+        return _
