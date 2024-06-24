@@ -2,8 +2,7 @@ from abc import ABC
 from dataclasses import dataclass, field
 from typing import Any, Dict, Generic, Iterable, Self, TypeVar
 
-from apexdevkit.annotation import deprecated
-from apexdevkit.formatter import DataclassFormatter, Formatter
+from apexdevkit.formatter import Formatter
 from apexdevkit.repository.interface import Repository
 
 RawItem = dict[str, Any]
@@ -46,15 +45,8 @@ ItemT = TypeVar("ItemT")
 
 @dataclass
 class RestfulRepositoryBuilder(Generic[ItemT]):
-    resource: type[ItemT] | None = field(init=False, default=None)
-    formatter: Formatter[ItemT] | None = field(init=False, default=None)
+    formatter: Formatter[ItemT] = field(init=False)
     repository: Repository[Any, ItemT] = field(init=False)
-
-    @deprecated("Pass formatter instead")
-    def with_resource(self, resource: type[ItemT]) -> Self:
-        self.resource = resource
-
-        return self
 
     def with_formatter(self, formatter: Formatter[ItemT]) -> Self:
         self.formatter = formatter
@@ -67,11 +59,6 @@ class RestfulRepositoryBuilder(Generic[ItemT]):
         return self
 
     def build(self) -> RestfulService:
-        if not self.formatter and self.resource:
-            self.with_formatter(DataclassFormatter(self.resource))
-
-        assert self.formatter, "Must provide either resource or formatter"
-
         return _RestfulNestedRepository(self.formatter, self.repository)
 
 
