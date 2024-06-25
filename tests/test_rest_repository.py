@@ -223,3 +223,12 @@ def test_should_delete_one(
 
     repository.delete(animal.entity().id)
     assert len(repository) == 0
+
+
+def test_should_not_delete_unknown(
+    repository: InMemoryRepository[Animal], service: RestfulService
+) -> None:
+    animal = FakeAnimal()
+
+    with pytest.raises(DoesNotExistError):
+        service.delete_one(animal.entity().id)
