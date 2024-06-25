@@ -77,3 +77,14 @@ def test_should_create_many(
         animal_2.json(),
     ]
     assert list(repository) == [animal_1.entity(), animal_2.entity()]
+
+
+def test_should_not_create_many(
+    repository: InMemoryRepository[Animal], service: RestfulService
+) -> None:
+    animal_1 = FakeAnimal()
+    animal_2 = FakeAnimal()
+    repository.create(animal_1.entity())
+
+    with pytest.raises(AssertionError):
+        service.create_many([animal_1.json(), animal_2.json()])
