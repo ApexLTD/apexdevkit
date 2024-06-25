@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass, field
+from functools import cached_property
+from typing import Any, Type
 from unittest.mock import ANY
 from uuid import uuid4
 
@@ -9,9 +11,9 @@ import pytest
 from faker import Faker
 from fastapi.testclient import TestClient
 
-from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
-from tests.sample_api import Color, setup
+from apexdevkit.testing.fake import FakeResource
+from tests.sample_api import Apple, Color, Name, Price, setup
 
 
 @pytest.fixture
@@ -25,34 +27,38 @@ def resource(http: TestClient) -> RestResource:
 
 
 @dataclass
-class Fake:
+class FakeApple(FakeResource[Apple]):
+    id: str | None = None
+    name: Name | None = None
+    item_type: Type[Apple] = field(default=Apple)
+
+    @cached_property
+    def _raw(self) -> dict[str, Any]:
+        return {
+            "id": self.id or self.fake.uuid(),
+            "name": self._name(),
+            "color": random.choice(list(Color)).value,
+        }
+
+    def _name(self) -> dict[str, Any]:
+        name = self.name or Name(self.fake.text(length=10), self.fake.text(length=10))
+        return {"scientific": name.scientific, "common": name.common}
+
+
+@dataclass
+class FakePrice(FakeResource[Price]):
     faker: Faker = field(default_factory=Faker)
+    item_type: Type[Price] = field(default=Price)
 
-    def apple(self) -> JsonDict:
-        return (
-            JsonDict()
-            .with_a(id=self.faker.uuid4())
-            .and_a(
-                name=JsonDict().with_a(
-                    common=self.faker.name(),
-                    scientific=self.faker.name(),
-                )
-            )
-            .and_a(color=random.choice(list(Color)).value)
-        )
-
-    def price(self) -> JsonDict:
-        return (
-            JsonDict()
-            .with_a(id=self.faker.uuid4())
-            .and_a(apple_id=self.faker.uuid4())
-            .and_a(currency=self.faker.currency()[0])
-            .and_a(value=self.faker.random_int(min=0, max=100))
-            .and_a(exponent=self.faker.random_int(min=1, max=10))
-        )
-
-
-fake = Fake()
+    @cached_property
+    def _raw(self) -> dict[str, Any]:
+        return {
+            "id": self.fake.uuid(),
+            "apple_id": self.fake.uuid(),
+            "currency": self.faker.currency()[0],
+            "value": self.faker.random_int(min=0, max=100),
+            "exponent": self.faker.random_int(min=1, max=10),
+        }
 
 
 def test_should_not_read_unknown(resource: RestResource) -> None:
@@ -73,8 +79,8 @@ def test_should_not_list_anything_when_none_exist(resource: RestResource) -> Non
 
 
 def test_should_read_all(resource: RestResource) -> None:
-    apple_one = fake.apple()
-    apple_two = fake.apple()
+    apple_one = FakeApple().json()
+    apple_two = FakeApple().json()
 
     apples = (
         resource.create_many().from_data(apple_one).and_data(apple_two).unpack_many()
@@ -84,7 +90,7 @@ def test_should_read_all(resource: RestResource) -> None:
 
 
 def test_should_create(resource: RestResource) -> None:
-    apple = fake.apple()
+    apple = FakeApple().json()
 
     (
         resource.create_one()
@@ -97,7 +103,7 @@ def test_should_create(resource: RestResource) -> None:
 
 
 def test_should_persist(resource: RestResource) -> None:
-    apple = resource.create_one().from_data(fake.apple()).unpack()
+    apple = resource.create_one().from_data(FakeApple().json()).unpack()
 
     (
         resource.read_one()
@@ -110,7 +116,7 @@ def test_should_persist(resource: RestResource) -> None:
 
 
 def test_should_not_duplicate(resource: RestResource) -> None:
-    apple = resource.create_one().from_data(fake.apple()).unpack()
+    apple = resource.create_one().from_data(FakeApple().json()).unpack()
 
     (
         resource.create_one()
@@ -126,7 +132,7 @@ def test_should_not_duplicate(resource: RestResource) -> None:
 
 
 def test_should_create_many(resource: RestResource) -> None:
-    many_apples = [fake.apple(), fake.apple()]
+    many_apples = [FakeApple().json(), FakeApple().json()]
 
     (
         resource.create_many()
@@ -150,7 +156,7 @@ def test_should_not_update_unknown(resource: RestResource) -> None:
     (
         resource.update_one()
         .with_id(unknown_id)
-        .and_data(fake.apple().drop("id"))
+        .and_data(FakeApple().json().drop("id"))
         .ensure()
         .fail()
         .with_code(404)
@@ -159,7 +165,7 @@ def test_should_not_update_unknown(resource: RestResource) -> None:
 
 
 def test_should_update_one(resource: RestResource) -> None:
-    apple = resource.create_one().from_data(fake.apple()).unpack()
+    apple = resource.create_one().from_data(FakeApple().json()).unpack()
     (
         resource.update_one()
         .with_id(apple.value_of("id").to(str))
@@ -172,8 +178,8 @@ def test_should_update_one(resource: RestResource) -> None:
 
 
 def test_should_persist_update(resource: RestResource) -> None:
-    apple = resource.create_one().from_data(fake.apple()).unpack()
-    updates = fake.apple().drop("id").drop("color")
+    apple = resource.create_one().from_data(FakeApple().json()).unpack()
+    updates = FakeApple().json().drop("id").drop("color")
 
     (
         resource.update_one()
@@ -194,8 +200,8 @@ def test_should_persist_update(resource: RestResource) -> None:
 
 
 def test_should_update_many(resource: RestResource) -> None:
-    apple_1 = resource.create_one().from_data(fake.apple()).unpack()
-    apple_2 = resource.create_one().from_data(fake.apple()).unpack()
+    apple_1 = resource.create_one().from_data(FakeApple().json()).unpack()
+    apple_2 = resource.create_one().from_data(FakeApple().json()).unpack()
     (
         resource.update_many()
         .from_data(apple_1.drop("color"))
@@ -207,11 +213,11 @@ def test_should_update_many(resource: RestResource) -> None:
 
 
 def test_should_persist_update_many(resource: RestResource) -> None:
-    apple_1 = resource.create_one().from_data(fake.apple()).unpack()
-    apple_2 = resource.create_one().from_data(fake.apple()).unpack()
+    apple_1 = resource.create_one().from_data(FakeApple().json()).unpack()
+    apple_2 = resource.create_one().from_data(FakeApple().json()).unpack()
 
-    updates_1 = fake.apple().drop("color").drop("id").with_a(id=apple_1["id"])
-    updates_2 = fake.apple().drop("color").drop("id").with_a(id=apple_2["id"])
+    updates_1 = FakeApple().json().drop("color").drop("id").with_a(id=apple_1["id"])
+    updates_2 = FakeApple().json().drop("color").drop("id").with_a(id=apple_2["id"])
     (
         resource.update_many()
         .from_data(updates_1)
@@ -230,7 +236,7 @@ def test_should_persist_update_many(resource: RestResource) -> None:
 
 
 def test_should_not_update_many(resource: RestResource) -> None:
-    apple_1, apple_2 = fake.apple(), fake.apple()
+    apple_1, apple_2 = FakeApple().json(), FakeApple().json()
 
     (
         resource.update_many()
@@ -244,7 +250,7 @@ def test_should_not_update_many(resource: RestResource) -> None:
 
 
 def test_should_not_replace_unknown(resource: RestResource) -> None:
-    unknown_apple = fake.apple()
+    unknown_apple = FakeApple().json()
     unknown_id = unknown_apple["id"]
 
     (
@@ -258,7 +264,7 @@ def test_should_not_replace_unknown(resource: RestResource) -> None:
 
 
 def test_should_replace_one(resource: RestResource) -> None:
-    apple = resource.create_one().from_data(fake.apple()).unpack()
+    apple = resource.create_one().from_data(FakeApple().json()).unpack()
 
     (
         resource.replace_one()
@@ -271,8 +277,8 @@ def test_should_replace_one(resource: RestResource) -> None:
 
 
 def test_should_persist_replace(resource: RestResource) -> None:
-    apple = resource.create_one().from_data(fake.apple()).unpack()
-    replaced_apple = fake.apple().drop("id").with_a(id=apple["id"])
+    apple = resource.create_one().from_data(FakeApple().json()).unpack()
+    replaced_apple = FakeApple().json().drop("id").with_a(id=apple["id"])
 
     (
         resource.replace_one()
@@ -289,8 +295,8 @@ def test_should_persist_replace(resource: RestResource) -> None:
 
 
 def test_should_replace_many(resource: RestResource) -> None:
-    apple_1 = resource.create_one().from_data(fake.apple()).unpack()
-    apple_2 = resource.create_one().from_data(fake.apple()).unpack()
+    apple_1 = resource.create_one().from_data(FakeApple().json()).unpack()
+    apple_2 = resource.create_one().from_data(FakeApple().json()).unpack()
 
     (
         resource.replace_many()
@@ -303,11 +309,11 @@ def test_should_replace_many(resource: RestResource) -> None:
 
 
 def test_should_persist_replace_many(resource: RestResource) -> None:
-    apple_1 = resource.create_one().from_data(fake.apple()).unpack()
-    apple_2 = resource.create_one().from_data(fake.apple()).unpack()
+    apple_1 = resource.create_one().from_data(FakeApple().json()).unpack()
+    apple_2 = resource.create_one().from_data(FakeApple().json()).unpack()
 
-    updated_1 = fake.apple().drop("id").with_a(id=apple_1["id"])
-    updated_2 = fake.apple().drop("id").with_a(id=apple_2["id"])
+    updated_1 = FakeApple().json().drop("id").with_a(id=apple_1["id"])
+    updated_2 = FakeApple().json().drop("id").with_a(id=apple_2["id"])
 
     (
         resource.replace_many()
@@ -328,7 +334,7 @@ def test_should_persist_replace_many(resource: RestResource) -> None:
 
 
 def test_should_not_replace_many(resource: RestResource) -> None:
-    apple_1, apple_2 = fake.apple(), fake.apple()
+    apple_1, apple_2 = FakeApple().json(), FakeApple().json()
 
     (
         resource.replace_many()
@@ -344,8 +350,8 @@ def test_should_not_replace_many(resource: RestResource) -> None:
 def test_should_persist_many(resource: RestResource) -> None:
     apples = (
         resource.create_many()
-        .from_data(fake.apple())
-        .and_data(fake.apple())
+        .from_data(FakeApple().json())
+        .and_data(FakeApple().json())
         .unpack_many()
     )
 
@@ -353,7 +359,7 @@ def test_should_persist_many(resource: RestResource) -> None:
 
 
 def test_should_not_duplicate_many(resource: RestResource) -> None:
-    apple = resource.create_one().from_data(fake.apple()).unpack()
+    apple = resource.create_one().from_data(FakeApple().json()).unpack()
 
     (
         resource.create_many()
@@ -383,7 +389,7 @@ def test_should_not_delete_unknown(resource: RestResource) -> None:
 
 
 def test_should_delete(resource: RestResource) -> None:
-    apple = resource.create_one().from_data(fake.apple()).unpack()
+    apple = resource.create_one().from_data(FakeApple().json()).unpack()
 
     (
         resource.delete_one()
@@ -396,7 +402,13 @@ def test_should_delete(resource: RestResource) -> None:
 
 
 def test_should_persist_delete(resource: RestResource) -> None:
-    id_ = resource.create_one().from_data(fake.apple()).unpack().value_of("id").to(str)
+    id_ = (
+        resource.create_one()
+        .from_data(FakeApple().json())
+        .unpack()
+        .value_of("id")
+        .to(str)
+    )
 
     resource.delete_one().with_id(id_).ensure().success()
 
@@ -411,7 +423,13 @@ def test_should_persist_delete(resource: RestResource) -> None:
 
 
 def test_should_not_list_sub_items_when_none_exist(resource: RestCollection) -> None:
-    id_ = resource.create_one().from_data(fake.apple()).unpack().value_of("id").to(str)
+    id_ = (
+        resource.create_one()
+        .from_data(FakeApple().json())
+        .unpack()
+        .value_of("id")
+        .to(str)
+    )
 
     (
         resource.sub_resource(id_)
@@ -425,8 +443,14 @@ def test_should_not_list_sub_items_when_none_exist(resource: RestCollection) -> 
 
 
 def test_should_create_sub_resource(resource: RestCollection) -> None:
-    id_ = resource.create_one().from_data(fake.apple()).unpack().value_of("id").to(str)
-    price = fake.price()
+    id_ = (
+        resource.create_one()
+        .from_data(FakeApple().json())
+        .unpack()
+        .value_of("id")
+        .to(str)
+    )
+    price = FakePrice().json()
 
     (
         resource.sub_resource(id_)
@@ -441,13 +465,19 @@ def test_should_create_sub_resource(resource: RestCollection) -> None:
 
 
 def test_should_persist_sub_resource(resource: RestCollection) -> None:
-    id_ = resource.create_one().from_data(fake.apple()).unpack().value_of("id").to(str)
+    id_ = (
+        resource.create_one()
+        .from_data(FakeApple().json())
+        .unpack()
+        .value_of("id")
+        .to(str)
+    )
 
     price = (
         resource.sub_resource(id_)
         .sub_resource("price")
         .create_one()
-        .from_data(fake.price())
+        .from_data(FakePrice().json())
         .unpack()
     )
 
@@ -468,7 +498,7 @@ def test_should_should_not_create_without_parent_id(resource: RestCollection) ->
         resource.sub_resource(unknown_id)
         .sub_resource("price")
         .create_one()
-        .from_data(fake.price())
+        .from_data(FakePrice().json())
         .ensure()
         .fail()
         .with_code(404)
@@ -480,7 +510,7 @@ def test_should_should_not_create_many_without_parent_id(
     resource: RestCollection,
 ) -> None:
     unknown_id = str(uuid4())
-    many_prices = [fake.price(), fake.price()]
+    many_prices = [FakePrice().json(), FakePrice().json()]
 
     (
         resource.sub_resource(unknown_id)
@@ -502,7 +532,7 @@ def test_should_not_read_without_parent_id(resource: RestCollection) -> None:
         resource.sub_resource(unknown_id)
         .sub_resource("price")
         .read_one()
-        .with_id(str(fake.price().get("id")))
+        .with_id(str(FakePrice().json().get("id")))
         .ensure()
         .fail()
         .with_code(404)
@@ -530,8 +560,8 @@ def test_should_not_update_without_parent_id(resource: RestCollection) -> None:
         resource.sub_resource(unknown_id)
         .sub_resource("price")
         .update_one()
-        .with_id(str(fake.price().get("id")))
-        .and_data(fake.price())
+        .with_id(str(FakePrice().json().get("id")))
+        .and_data(FakePrice().json())
         .ensure()
         .fail()
         .with_code(404)
@@ -545,8 +575,8 @@ def test_should_not_update_many_without_parent_id(resource: RestCollection) -> N
         resource.sub_resource(unknown_id)
         .sub_resource("price")
         .update_many()
-        .from_data(fake.price())
-        .and_data(fake.price())
+        .from_data(FakePrice().json())
+        .and_data(FakePrice().json())
         .ensure()
         .fail()
         .with_code(404)
@@ -560,7 +590,7 @@ def test_should_not_delete_without_parent_id(resource: RestCollection) -> None:
         resource.sub_resource(unknown_id)
         .sub_resource("price")
         .delete_one()
-        .with_id(str(fake.price().get("id")))
+        .with_id(str(FakePrice().json().get("id")))
         .ensure()
         .fail()
         .with_code(404)

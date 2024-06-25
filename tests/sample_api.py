@@ -95,6 +95,10 @@ def setup() -> FastAPI:
 class Color(Enum):
     red = "RED"
     gold = "GOLD"
+    green = "GREEN"
+    yellow = "YELLOW"
+    magenta = "MAGENTA"
+    burgundy = "BURGUNDY"
 
 
 @dataclass(frozen=True)
