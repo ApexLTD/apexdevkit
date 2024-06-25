@@ -213,3 +213,13 @@ def test_should_not_replace_unknown_many(
 
     with pytest.raises(DoesNotExistError):
         service.replace_many([replaced_1.json(), replaced_2.json()])
+
+
+def test_should_delete_one(
+    repository: InMemoryRepository[Animal], service: RestfulService
+) -> None:
+    animal = FakeAnimal()
+    repository.create(animal.entity())
+
+    repository.delete(animal.entity().id)
+    assert len(repository) == 0
