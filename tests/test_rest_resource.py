@@ -12,7 +12,8 @@ from fastapi.testclient import TestClient
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
 from apexdevkit.testing.fake import FakeResource
-from tests.sample_api import Apple, Color, Name, setup
+from tests.resource.setup import setup
+from tests.sample_api import Apple, Color, FakeServiceBuilder, Name
 
 
 @pytest.fixture
@@ -21,8 +22,13 @@ def apple() -> JsonDict:
 
 
 @pytest.fixture
-def resource(apple: JsonDict) -> RestResource:
-    return RestCollection(TestClient(setup(apple)), RestfulName("apple"))
+def infra(apple: JsonDict) -> FakeServiceBuilder:
+    return FakeServiceBuilder().always_return(apple)
+
+
+@pytest.fixture
+def resource(infra: FakeServiceBuilder) -> RestResource:
+    return RestCollection(TestClient(setup(infra)), RestfulName("apple"))
 
 
 @dataclass
