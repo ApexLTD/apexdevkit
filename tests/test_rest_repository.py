@@ -22,13 +22,15 @@ class Animal:
 
 @dataclass
 class FakeAnimal(FakeResource[Animal]):
+    id: str | None = None
+    name: str | None = None
     item_type: Type[Animal] = field(default=Animal)
 
     @cached_property
     def _raw(self) -> dict[str, Any]:
         return {
-            "id": self.fake.uuid(),
-            "name": self.fake.text(length=10),
+            "id": self.id or self.fake.uuid(),
+            "name": self.name or self.fake.text(length=10),
             "age": self.fake.number(),
         }
 
@@ -115,3 +117,17 @@ def test_should_read_all(
     repository.create_many([animal_1.entity(), animal_2.entity()])
 
     assert service.read_all() == [animal_1.json(), animal_2.json()]
+
+
+def test_should_update_one(
+    repository: InMemoryRepository[Animal], service: RestfulService
+) -> None:
+    initial = FakeAnimal().entity()
+    updated = FakeAnimal(id=initial.id, name=initial.name)
+    repository.create(initial)
+
+    assert (
+        service.update_one(updated.entity().id, age=updated.entity().age)
+        == updated.json()
+    )
+    assert repository.read(updated.entity().id) == updated.entity()
