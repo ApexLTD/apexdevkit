@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from enum import Enum
+from typing import Any
 from uuid import uuid4
 
 from fastapi import FastAPI
@@ -11,6 +12,7 @@ from apexdevkit.fastapi.router import RestfulRouter, RestfulServiceBuilder
 from apexdevkit.fastapi.schema import SchemaFields
 from apexdevkit.fastapi.service import (
     RawCollection,
+    RawCollectionWithId,
     RawItem,
     RestfulRepositoryBuilder,
     RestfulService,
@@ -19,6 +21,36 @@ from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.http import JsonDict
 from apexdevkit.repository import InMemoryRepository
 from apexdevkit.testing import RestfulName
+
+
+@dataclass
+class SampleService(RestfulService):
+    def create_one(self, item: RawItem) -> RawItem:
+        return item
+
+    def create_many(self, items: RawCollection) -> RawCollection:
+        return items
+
+    def read_one(self, item_id: str) -> RawItem:
+        return {"item_id": item_id}
+
+    def read_all(self) -> RawCollection:
+        return []
+
+    def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
+        return {"item_id": item_id, **with_fields}
+
+    def update_many(self, items: RawCollectionWithId) -> RawCollection:
+        return items
+
+    def replace_one(self, item: RawItem) -> RawItem:
+        return item
+
+    def replace_many(self, items: RawCollection) -> RawCollection:
+        return items
+
+    def delete_one(self, item_id: str) -> None:
+        return
 
 
 @dataclass
