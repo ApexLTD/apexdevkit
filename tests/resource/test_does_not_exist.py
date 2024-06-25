@@ -22,13 +22,13 @@ def infra(apple: JsonDict) -> FakeServiceBuilder:
 
 
 @pytest.fixture
-def not_exists_error_resource(infra: FakeServiceBuilder) -> RestResource:
+def resource(infra: FakeServiceBuilder) -> RestResource:
     return RestCollection(TestClient(setup(infra)), RestfulName("apple"))
 
 
-def test_should_not_read_unknown(not_exists_error_resource: RestResource) -> None:
+def test_should_not_read_unknown(resource: RestResource) -> None:
     (
-        not_exists_error_resource.read_one()
+        resource.read_one()
         .with_id(uuid4())
         .ensure()
         .fail()
@@ -37,11 +37,9 @@ def test_should_not_read_unknown(not_exists_error_resource: RestResource) -> Non
     )
 
 
-def test_should_not_update_unknown(
-    apple: JsonDict, not_exists_error_resource: RestResource
-) -> None:
+def test_should_not_update_unknown(apple: JsonDict, resource: RestResource) -> None:
     (
-        not_exists_error_resource.update_one()
+        resource.update_one()
         .with_id(apple["id"])
         .and_data(apple)
         .ensure()
@@ -52,10 +50,10 @@ def test_should_not_update_unknown(
 
 
 def test_should_not_update_many_unknown(
-    apple: JsonDict, not_exists_error_resource: RestResource
+    apple: JsonDict, resource: RestResource
 ) -> None:
     (
-        not_exists_error_resource.update_many()
+        resource.update_many()
         .from_data(apple)
         .ensure()
         .fail()
@@ -64,11 +62,9 @@ def test_should_not_update_many_unknown(
     )
 
 
-def test_should_not_replace_unknown(
-    apple: JsonDict, not_exists_error_resource: RestResource
-) -> None:
+def test_should_not_replace_unknown(apple: JsonDict, resource: RestResource) -> None:
     (
-        not_exists_error_resource.replace_one()
+        resource.replace_one()
         .from_data(apple)
         .ensure()
         .fail()
@@ -78,10 +74,10 @@ def test_should_not_replace_unknown(
 
 
 def test_should_not_replace_many_unknown(
-    apple: JsonDict, not_exists_error_resource: RestResource
+    apple: JsonDict, resource: RestResource
 ) -> None:
     (
-        not_exists_error_resource.replace_many()
+        resource.replace_many()
         .from_data(apple)
         .ensure()
         .fail()
@@ -90,11 +86,9 @@ def test_should_not_replace_many_unknown(
     )
 
 
-def test_should_not_delete_unknown(
-    apple: JsonDict, not_exists_error_resource: RestResource
-) -> None:
+def test_should_not_delete_unknown(apple: JsonDict, resource: RestResource) -> None:
     (
-        not_exists_error_resource.delete_one()
+        resource.delete_one()
         .with_id(apple["id"])
         .ensure()
         .fail()

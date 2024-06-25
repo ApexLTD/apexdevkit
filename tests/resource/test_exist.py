@@ -20,15 +20,13 @@ def infra(apple: JsonDict) -> FakeServiceBuilder:
 
 
 @pytest.fixture
-def exists_error_resource(infra: FakeServiceBuilder) -> RestResource:
+def resource(infra: FakeServiceBuilder) -> RestResource:
     return RestCollection(TestClient(setup(infra)), RestfulName("apple"))
 
 
-def test_should_not_create_existing(
-    apple: JsonDict, exists_error_resource: RestResource
-) -> None:
+def test_should_not_create_existing(apple: JsonDict, resource: RestResource) -> None:
     (
-        exists_error_resource.create_one()
+        resource.create_one()
         .from_data(apple)
         .ensure()
         .fail()
@@ -38,10 +36,10 @@ def test_should_not_create_existing(
 
 
 def test_should_not_create_many_existing(
-    apple: JsonDict, exists_error_resource: RestResource
+    apple: JsonDict, resource: RestResource
 ) -> None:
     (
-        exists_error_resource.create_many()
+        resource.create_many()
         .from_data(apple)
         .ensure()
         .fail()
