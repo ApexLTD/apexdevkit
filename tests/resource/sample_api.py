@@ -17,51 +17,6 @@ from apexdevkit.http import JsonDict
 
 
 @dataclass
-class FakeService(RestfulService):
-    always_return: JsonDict
-    error: Exception | None = None
-
-    def create_one(self, item: RawItem) -> RawItem:
-        self.throw_error()
-        return self.always_return
-
-    def create_many(self, items: RawCollection) -> RawCollection:
-        self.throw_error()
-        return [self.always_return]
-
-    def read_one(self, item_id: str) -> RawItem:
-        self.throw_error()
-        return self.always_return
-
-    def read_all(self) -> RawCollection:
-        self.throw_error()
-        return [self.always_return]
-
-    def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
-        self.throw_error()
-        return self.always_return
-
-    def update_many(self, items: RawCollectionWithId) -> RawCollection:
-        self.throw_error()
-        return [self.always_return]
-
-    def replace_one(self, item: RawItem) -> RawItem:
-        self.throw_error()
-        return self.always_return
-
-    def replace_many(self, items: RawCollection) -> RawCollection:
-        self.throw_error()
-        return [self.always_return]
-
-    def delete_one(self, item_id: str) -> None:
-        self.throw_error()
-
-    def throw_error(self) -> None:
-        if self.error:
-            raise self.error
-
-
-@dataclass
 class FailingService(RestfulServiceBuilder, RestfulService):
     error: Exception | type[Exception]
 
@@ -149,7 +104,7 @@ class FakeServiceBuilder(RestfulServiceBuilder):
         return self
 
     def build(self) -> RestfulService:
-        return FakeService(self.data)
+        return SuccessfulService(always_return=self.data)
 
 
 class Color(Enum):
