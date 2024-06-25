@@ -10,7 +10,7 @@ from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
 from tests.sample_api import AppleFields, FakeServiceBuilder
-from tests.resource.test_rest_resource import FakeApple
+from tests.resource.test_resource import FakeApple
 
 
 @pytest.fixture
