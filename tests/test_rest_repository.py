@@ -167,3 +167,14 @@ def test_should_not_update_unknown_many(
         service.update_many(
             [updated_1.json().drop("name"), updated_2.json().drop("name")]  # type: ignore
         )
+
+
+def test_should_replace_one(
+    repository: InMemoryRepository[Animal], service: RestfulService
+) -> None:
+    initial = FakeAnimal().entity()
+    replaced = FakeAnimal(id=initial.id)
+    repository.create(initial)
+
+    assert service.replace_one(replaced.json()) == replaced.json()
+    assert repository.read(replaced.entity().id) == replaced.entity()
