@@ -178,3 +178,12 @@ def test_should_replace_one(
 
     assert service.replace_one(replaced.json()) == replaced.json()
     assert repository.read(replaced.entity().id) == replaced.entity()
+
+
+def test_should_not_replace_unknown(
+    repository: InMemoryRepository[Animal], service: RestfulService
+) -> None:
+    replaced = FakeAnimal()
+
+    with pytest.raises(DoesNotExistError):
+        service.replace_one(replaced.json())
