@@ -65,11 +65,11 @@ class RestfulRepositoryBuilder(Generic[ItemT]):
         return self
 
     def build(self) -> RestfulService:
-        return _RestfulNestedRepository(self.formatter, self.repository)
+        return _RestfulRepository(self.formatter, self.repository)
 
 
 @dataclass
-class _RestfulNestedRepository(RestfulService, Generic[ItemT]):
+class _RestfulRepository(RestfulService, Generic[ItemT]):
     formatter: Formatter[ItemT]
     repository: Repository[Any, ItemT]
 
