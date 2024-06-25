@@ -93,7 +93,7 @@ class FakeServiceBuilder(RestfulServiceBuilder):
 
     def with_user(self, user: Any) -> FakeServiceBuilder:
         self.times_called += 1
-        self.user = user
+
         super().with_user(user)
 
         return self
