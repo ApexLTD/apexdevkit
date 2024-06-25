@@ -25,39 +25,40 @@ from apexdevkit.testing import RestfulName
 
 @dataclass
 class FakeService(RestfulService):
+    always_return: JsonDict
     error: Exception | None = None
 
     def create_one(self, item: RawItem) -> RawItem:
         self.throw_error()
-        return item
+        return self.always_return
 
     def create_many(self, items: RawCollection) -> RawCollection:
         self.throw_error()
-        return items
+        return [self.always_return]
 
     def read_one(self, item_id: str) -> RawItem:
         self.throw_error()
-        return {"item_id": item_id}
+        return self.always_return
 
     def read_all(self) -> RawCollection:
         self.throw_error()
-        return []
+        return [self.always_return]
 
     def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
         self.throw_error()
-        return {"item_id": item_id, **with_fields}
+        return self.always_return
 
     def update_many(self, items: RawCollectionWithId) -> RawCollection:
         self.throw_error()
-        return items
+        return [self.always_return]
 
     def replace_one(self, item: RawItem) -> RawItem:
         self.throw_error()
-        return item
+        return self.always_return
 
     def replace_many(self, items: RawCollection) -> RawCollection:
         self.throw_error()
-        return items
+        return [self.always_return]
 
     def delete_one(self, item_id: str) -> None:
         self.throw_error()
@@ -69,15 +70,21 @@ class FakeService(RestfulService):
 
 @dataclass
 class FakeServiceBuilder(RestfulServiceBuilder):
+    data: JsonDict = field(init=False)
     error: Exception | None = None
 
-    def with_exception(self, error: Exception) -> FakeServiceBuilder:
+    def always_return(self, data: JsonDict) -> FakeServiceBuilder:
+        self.data = data
+
+        return self
+
+    def with_exception(self, error: Exception | None) -> FakeServiceBuilder:
         self.error = error
 
         return self
 
     def build(self) -> RestfulService:
-        return FakeService(self.error)
+        return FakeService(self.data, self.error)
 
 
 @dataclass
@@ -113,8 +120,9 @@ class SampleServiceBuilder(RestfulServiceBuilder):
         return self.services[self.parent_id]
 
 
-def setup() -> FastAPI:
-    infra = SampleServiceBuilder()
+def setup(always_return: JsonDict, error: Exception | None = None) -> FastAPI:
+    infra = FakeServiceBuilder().with_exception(error).always_return(always_return)
+
     return (
         FastApiBuilder()
         .with_title("Apple API")
@@ -132,12 +140,6 @@ def setup() -> FastAPI:
                     .with_fields(PriceFields())
                     .with_parent("apple")
                     .with_infra(infra)
-                    .with_create_one_endpoint()
-                    .with_create_many_endpoint()
-                    .with_read_one_endpoint()
-                    .with_read_all_endpoint()
-                    .with_update_one_endpoint()
-                    .with_update_many_endpoint()
                     .with_delete_one_endpoint()
                     .build()
                 )
