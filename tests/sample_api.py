@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 from uuid import uuid4
@@ -14,12 +14,9 @@ from apexdevkit.fastapi.service import (
     RawCollection,
     RawCollectionWithId,
     RawItem,
-    RestfulRepositoryBuilder,
     RestfulService,
 )
-from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.http import JsonDict
-from apexdevkit.repository import InMemoryRepository
 from apexdevkit.testing import RestfulName
 
 
@@ -95,39 +92,6 @@ class FakeServiceBuilder(RestfulServiceBuilder):
         return FakeService(self.data, self.error)
 
 
-@dataclass
-class SampleServiceBuilder(RestfulServiceBuilder):
-    services: dict[str, RestfulService] = field(default_factory=dict)
-
-    def __post_init__(self) -> None:
-        self.services[""] = (
-            RestfulRepositoryBuilder[Apple]()
-            .with_formatter(DataclassFormatter(Apple))
-            .with_repository(
-                InMemoryRepository[Apple]
-                .for_dataclass(Apple)
-                .with_unique(criteria=lambda item: f"name<{item.name}>")
-            )
-            .build()
-        )
-
-    def with_parent(self, identity: str) -> "RestfulServiceBuilder":
-        if identity not in self.services:
-            assert self.services[""].read_one(identity)
-
-            self.services[identity] = RestfulPriceService(
-                identity,
-                InMemoryRepository[Price]
-                .for_dataclass(Price)
-                .with_unique(criteria=lambda item: f"currency<{item.currecy}>"),
-            )
-
-        return super().with_parent(identity)
-
-    def build(self) -> RestfulService:
-        return self.services[self.parent_id]
-
-
 def setup(always_return: JsonDict, error: Exception | None = None) -> FastAPI:
     infra = FakeServiceBuilder().with_exception(error).always_return(always_return)
 
@@ -192,45 +156,6 @@ class AppleFields(SchemaFields):
         return JsonDict().with_a(name=Name)
 
 
-@dataclass(frozen=True)
-class Price:
-    apple_id: str
-    value: int
-    exponent: int
-    currency: str
-
-    id: str = field(default_factory=lambda: str(uuid4()))
-
-
 class PriceFields(SchemaFields):
     def readable(self) -> JsonDict:
-        return (
-            JsonDict()
-            .with_a(id=str)
-            .and_a(apple_id=str)
-            .and_a(value=int)
-            .and_a(exponent=int)
-            .and_a(currency=str)
-        )
-
-    def writable(self) -> JsonDict:
-        return self.readable().drop("id", "apple_id")
-
-    def editable(self) -> JsonDict:
-        return self.readable().select("value", "exponent")
-
-
-@dataclass
-class RestfulPriceService(RestfulService):
-    apple_id: str
-    repository: InMemoryRepository[Price]
-
-    def read_all(self) -> RawCollection:
-        yield from [asdict(price) for price in self.repository]
-
-    def create_one(self, item: RawItem) -> RawItem:
-        price = Price(**item, apple_id=self.apple_id)
-
-        self.repository.create(price)
-
-        return asdict(price)
+        return JsonDict().with_a(id=str).and_a(value=int)
