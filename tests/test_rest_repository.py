@@ -203,3 +203,13 @@ def test_should_replace_many(
         replaced_2.json(),
     ]
     assert list(repository) == [replaced_1.entity(), replaced_2.entity()]
+
+
+def test_should_not_replace_unknown_many(
+    repository: InMemoryRepository[Animal], service: RestfulService
+) -> None:
+    replaced_1 = FakeAnimal()
+    replaced_2 = FakeAnimal()
+
+    with pytest.raises(DoesNotExistError):
+        service.replace_many([replaced_1.json(), replaced_2.json()])
