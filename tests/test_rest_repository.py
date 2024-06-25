@@ -187,3 +187,19 @@ def test_should_not_replace_unknown(
 
     with pytest.raises(DoesNotExistError):
         service.replace_one(replaced.json())
+
+
+def test_should_replace_many(
+    repository: InMemoryRepository[Animal], service: RestfulService
+) -> None:
+    initial_1 = FakeAnimal().entity()
+    initial_2 = FakeAnimal().entity()
+    replaced_1 = FakeAnimal(id=initial_1.id)
+    replaced_2 = FakeAnimal(id=initial_2.id)
+    repository.create_many([initial_1, initial_2])
+
+    assert service.replace_many([replaced_1.json(), replaced_2.json()]) == [
+        replaced_1.json(),
+        replaced_2.json(),
+    ]
+    assert list(repository) == [replaced_1.entity(), replaced_2.entity()]
