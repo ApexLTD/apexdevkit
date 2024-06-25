@@ -131,3 +131,12 @@ def test_should_update_one(
         == updated.json()
     )
     assert repository.read(updated.entity().id) == updated.entity()
+
+
+def test_should_not_update_unknown(
+    repository: InMemoryRepository[Animal], service: RestfulService
+) -> None:
+    updated = FakeAnimal()
+
+    with pytest.raises(DoesNotExistError):
+        service.update_one(updated.entity().id, age=updated.entity().age)
