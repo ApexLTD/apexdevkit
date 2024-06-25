@@ -134,7 +134,6 @@ class SuccessfulService(RestfulServiceBuilder, RestfulService):
 @dataclass
 class FakeServiceBuilder(RestfulServiceBuilder):
     data: JsonDict = field(init=False)
-    error: Exception | None = None
     times_called: int = 0
 
     def with_user(self, user: Any) -> FakeServiceBuilder:
@@ -149,13 +148,8 @@ class FakeServiceBuilder(RestfulServiceBuilder):
 
         return self
 
-    def with_exception(self, error: Exception | None) -> FakeServiceBuilder:
-        self.error = error
-
-        return self
-
     def build(self) -> RestfulService:
-        return FakeService(self.data, self.error)
+        return FakeService(self.data)
 
 
 class Color(Enum):

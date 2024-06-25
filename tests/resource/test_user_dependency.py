@@ -15,7 +15,7 @@ from tests.resource.setup import FakeApple
 
 @pytest.fixture
 def infra() -> FakeServiceBuilder:
-    return FakeServiceBuilder().with_exception(None).always_return(FakeApple().json())
+    return FakeServiceBuilder().always_return(FakeApple().json())
 
 
 @pytest.fixture
