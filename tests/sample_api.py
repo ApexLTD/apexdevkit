@@ -72,6 +72,14 @@ class FakeService(RestfulService):
 class FakeServiceBuilder(RestfulServiceBuilder):
     data: JsonDict = field(init=False)
     error: Exception | None = None
+    times_called: int = 0
+
+    def with_user(self, user: Any) -> FakeServiceBuilder:
+        self.times_called += 1
+        self.user = user
+        super().with_user(user)
+
+        return self
 
     def always_return(self, data: JsonDict) -> FakeServiceBuilder:
         self.data = data

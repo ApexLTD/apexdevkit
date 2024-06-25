@@ -16,13 +16,13 @@ from apexdevkit.fastapi.service import (
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import InMemoryRepository
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
-from tests.sample_api import Apple, AppleFields
+from tests.sample_api import Apple, AppleFields, FakeServiceBuilder
 from tests.test_rest_resource import FakeApple
 
 
 @pytest.fixture
-def infra() -> SampleServiceBuilder:
-    return SampleServiceBuilder()
+def infra() -> FakeServiceBuilder:
+    return FakeServiceBuilder().with_exception(None).always_return(FakeApple().json())
 
 
 @pytest.fixture
@@ -31,13 +31,8 @@ def fake_user() -> FakeUser:
 
 
 @pytest.fixture
-def http(infra: SampleServiceBuilder, fake_user: FakeUser) -> TestClient:
-    return TestClient(setup(infra, fake_user))
-
-
-@pytest.fixture
-def resource(http: TestClient) -> RestResource:
-    return RestCollection(http, RestfulName("apple"))
+def resource(infra: FakeServiceBuilder, fake_user: FakeUser) -> RestResource:
+    return RestCollection(TestClient(setup(infra, fake_user)), RestfulName("apple"))
 
 
 @dataclass
@@ -69,7 +64,7 @@ class SampleServiceBuilder(RestfulServiceBuilder):
         )
 
 
-def setup(infra: SampleServiceBuilder, fake_user: FakeUser) -> FastAPI:
+def setup(infra: FakeServiceBuilder, fake_user: FakeUser) -> FastAPI:
     return (
         FastApiBuilder()
         .with_title("Apple API")
