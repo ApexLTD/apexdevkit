@@ -64,3 +64,16 @@ def test_should_not_create_one(
 
     with pytest.raises(AssertionError):
         service.create_one(animal.json())
+
+
+def test_should_create_many(
+    repository: InMemoryRepository[Animal], service: RestfulService
+) -> None:
+    animal_1 = FakeAnimal()
+    animal_2 = FakeAnimal()
+
+    assert service.create_many([animal_1.json(), animal_2.json()]) == [
+        animal_1.json(),
+        animal_2.json(),
+    ]
+    assert list(repository) == [animal_1.entity(), animal_2.entity()]
