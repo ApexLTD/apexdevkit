@@ -5,9 +5,10 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 
+from apexdevkit.fastapi.router import RestfulServiceBuilder
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
-from tests.resource.sample_api import FakeServiceBuilder
+from tests.resource.sample_api import FakeServiceBuilder, SuccessfulService
 from tests.resource.setup import FakeApple, setup
 
 
@@ -17,8 +18,8 @@ def apple() -> JsonDict:
 
 
 @pytest.fixture
-def infra(apple: JsonDict) -> FakeServiceBuilder:
-    return FakeServiceBuilder().always_return(apple)
+def infra(apple: JsonDict) -> RestfulServiceBuilder:
+    return SuccessfulService(always_return=apple)
 
 
 @pytest.fixture

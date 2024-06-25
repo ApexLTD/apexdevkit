@@ -97,6 +97,41 @@ class FailingService(RestfulServiceBuilder, RestfulService):
 
 
 @dataclass
+class SuccessfulService(RestfulServiceBuilder, RestfulService):
+    always_return: JsonDict
+
+    def build(self) -> RestfulService:
+        return self
+
+    def create_one(self, item: RawItem) -> RawItem:
+        return self.always_return
+
+    def create_many(self, items: RawCollection) -> RawCollection:
+        return [self.always_return]
+
+    def read_one(self, item_id: str) -> RawItem:
+        return self.always_return
+
+    def read_all(self) -> RawCollection:
+        return [self.always_return]
+
+    def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
+        return self.always_return
+
+    def update_many(self, items: RawCollectionWithId) -> RawCollection:
+        return [self.always_return]
+
+    def replace_one(self, item: RawItem) -> RawItem:
+        return self.always_return
+
+    def replace_many(self, items: RawCollection) -> RawCollection:
+        return [self.always_return]
+
+    def delete_one(self, item_id: str) -> None:
+        pass
+
+
+@dataclass
 class FakeServiceBuilder(RestfulServiceBuilder):
     data: JsonDict = field(init=False)
     error: Exception | None = None
