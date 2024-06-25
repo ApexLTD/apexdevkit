@@ -81,6 +81,8 @@ def setup(infra: FakeServiceBuilder, fake_user: FakeUser) -> FastAPI:
             .with_read_all_endpoint(extract_user=fake_user.user)
             .with_update_one_endpoint(extract_user=fake_user.user)
             .with_update_many_endpoint(extract_user=fake_user.user)
+            .with_replace_one_endpoint(extract_user=fake_user.user)
+            .with_replace_many_endpoint(extract_user=fake_user.user)
             .with_delete_one_endpoint(extract_user=fake_user.user)
             .build()
         )
@@ -255,6 +257,69 @@ def test_should_persist_user_for_update_many(
     resource.update_many().from_data(FakeApple().json().drop("color")).and_data(
         FakeApple().json().drop("color")
     ).ensure()
+
+    assert infra.user == "user"
+
+
+def test_should_call_extract_user_for_replace_one(
+    resource: RestResource, fake_user: FakeUser
+) -> None:
+    resource.replace_one().from_data(FakeApple().json()).ensure()
+
+    assert fake_user.times_called == 1
+
+
+def test_should_call_with_user_for_replace_one(
+    resource: RestResource, infra: SampleServiceBuilder
+) -> None:
+    resource.replace_one().from_data(FakeApple().json()).ensure()
+
+    assert infra.times_called == 1
+
+
+def test_should_persist_user_for_replace_one(
+    resource: RestResource, infra: SampleServiceBuilder
+) -> None:
+    resource.replace_one().from_data(FakeApple().json()).ensure()
+
+    assert infra.user == "user"
+
+
+def test_should_call_extract_user_for_replace_many(
+    resource: RestResource, fake_user: FakeUser
+) -> None:
+    (
+        resource.replace_many()
+        .from_data(FakeApple().json())
+        .and_data(FakeApple().json())
+        .ensure()
+    )
+
+    assert fake_user.times_called == 1
+
+
+def test_should_call_with_user_for_replace_many(
+    resource: RestResource, infra: SampleServiceBuilder
+) -> None:
+    (
+        resource.replace_many()
+        .from_data(FakeApple().json())
+        .and_data(FakeApple().json())
+        .ensure()
+    )
+
+    assert infra.times_called == 1
+
+
+def test_should_persist_user_for_replace_many(
+    resource: RestResource, infra: SampleServiceBuilder
+) -> None:
+    (
+        resource.replace_many()
+        .from_data(FakeApple().json())
+        .and_data(FakeApple().json())
+        .ensure()
+    )
 
     assert infra.user == "user"
 
