@@ -140,3 +140,18 @@ def test_should_not_update_unknown(
 
     with pytest.raises(DoesNotExistError):
         service.update_one(updated.entity().id, age=updated.entity().age)
+
+
+def test_should_update_many(
+    repository: InMemoryRepository[Animal], service: RestfulService
+) -> None:
+    initial_1 = FakeAnimal().entity()
+    initial_2 = FakeAnimal().entity()
+    updated_1 = FakeAnimal(id=initial_1.id, name=initial_1.name)
+    updated_2 = FakeAnimal(id=initial_2.id, name=initial_2.name)
+    repository.create_many([initial_1, initial_2])
+
+    assert service.update_many(
+        [updated_1.json().drop("name"), updated_2.json().drop("name")]  # type: ignore
+    ) == [updated_1.json(), updated_2.json()]
+    assert list(repository) == [updated_1.entity(), updated_2.entity()]
