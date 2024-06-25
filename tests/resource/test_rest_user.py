@@ -9,8 +9,8 @@ from starlette.testclient import TestClient
 from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
-from tests.sample_api import AppleFields, FakeServiceBuilder
-from tests.test_rest_resource import FakeApple
+from tests.resource.sample_api import AppleFields, FakeServiceBuilder
+from tests.resource.setup import FakeApple
 
 
 @pytest.fixture
