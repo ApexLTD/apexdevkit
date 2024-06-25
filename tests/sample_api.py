@@ -25,32 +25,46 @@ from apexdevkit.testing import RestfulName
 
 @dataclass
 class SampleService(RestfulService):
+    error: Exception | None = None
+
     def create_one(self, item: RawItem) -> RawItem:
+        self.throw_error()
         return item
 
     def create_many(self, items: RawCollection) -> RawCollection:
+        self.throw_error()
         return items
 
     def read_one(self, item_id: str) -> RawItem:
+        self.throw_error()
         return {"item_id": item_id}
 
     def read_all(self) -> RawCollection:
+        self.throw_error()
         return []
 
     def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
+        self.throw_error()
         return {"item_id": item_id, **with_fields}
 
     def update_many(self, items: RawCollectionWithId) -> RawCollection:
+        self.throw_error()
         return items
 
     def replace_one(self, item: RawItem) -> RawItem:
+        self.throw_error()
         return item
 
     def replace_many(self, items: RawCollection) -> RawCollection:
+        self.throw_error()
         return items
 
     def delete_one(self, item_id: str) -> None:
-        return
+        self.throw_error()
+
+    def throw_error(self) -> None:
+        if self.error:
+            raise self.error
 
 
 @dataclass
