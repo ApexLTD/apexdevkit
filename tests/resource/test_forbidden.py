@@ -6,9 +6,8 @@ from starlette.testclient import TestClient
 from apexdevkit.error import ForbiddenError
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
-from tests.resource.setup import setup
+from tests.resource.setup import FakeApple, setup
 from tests.sample_api import FakeServiceBuilder
-from tests.resource.test_resource import FakeApple
 
 
 @pytest.fixture

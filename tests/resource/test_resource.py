@@ -1,9 +1,5 @@
 from __future__ import annotations
 
-import random
-from dataclasses import dataclass, field
-from functools import cached_property
-from typing import Any, Type
 from uuid import uuid4
 
 import pytest
@@ -11,9 +7,8 @@ from fastapi.testclient import TestClient
 
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
-from apexdevkit.testing.fake import FakeResource
-from tests.resource.setup import setup
-from tests.sample_api import Apple, Color, FakeServiceBuilder, Name
+from tests.resource.setup import FakeApple, setup
+from tests.sample_api import FakeServiceBuilder
 
 
 @pytest.fixture
@@ -29,25 +24,6 @@ def infra(apple: JsonDict) -> FakeServiceBuilder:
 @pytest.fixture
 def resource(infra: FakeServiceBuilder) -> RestResource:
     return RestCollection(TestClient(setup(infra)), RestfulName("apple"))
-
-
-@dataclass
-class FakeApple(FakeResource[Apple]):
-    id: str | None = None
-    name: Name | None = None
-    item_type: Type[Apple] = field(default=Apple)
-
-    @cached_property
-    def _raw(self) -> dict[str, Any]:
-        return {
-            "id": self.id or self.fake.uuid(),
-            "name": self._name(),
-            "color": random.choice(list(Color)).value,
-        }
-
-    def _name(self) -> dict[str, Any]:
-        name = self.name or Name(self.fake.text(length=10), self.fake.text(length=10))
-        return {"scientific": name.scientific, "common": name.common}
 
 
 def test_should_create(apple: JsonDict, resource: RestResource) -> None:

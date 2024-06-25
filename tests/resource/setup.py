@@ -1,9 +1,24 @@
+from __future__ import annotations
+
+import random
+from dataclasses import dataclass, field
+from functools import cached_property
+from typing import Any, Type
+
 from fastapi import FastAPI
 
 from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.testing import RestfulName
-from tests.sample_api import AppleFields, FakeServiceBuilder, PriceFields
+from apexdevkit.testing.fake import FakeResource
+from tests.sample_api import (
+    Apple,
+    AppleFields,
+    Color,
+    FakeServiceBuilder,
+    Name,
+    PriceFields,
+)
 
 
 def setup(infra: FakeServiceBuilder) -> FastAPI:
@@ -35,3 +50,22 @@ def setup(infra: FakeServiceBuilder) -> FastAPI:
         )
         .build()
     )
+
+
+@dataclass
+class FakeApple(FakeResource[Apple]):
+    id: str | None = None
+    name: Name | None = None
+    item_type: Type[Apple] = field(default=Apple)
+
+    @cached_property
+    def _raw(self) -> dict[str, Any]:
+        return {
+            "id": self.id or self.fake.uuid(),
+            "name": self._name(),
+            "color": random.choice(list(Color)).value,
+        }
+
+    def _name(self) -> dict[str, Any]:
+        name = self.name or Name(self.fake.text(length=10), self.fake.text(length=10))
+        return {"scientific": name.scientific, "common": name.common}
