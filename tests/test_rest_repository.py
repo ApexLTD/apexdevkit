@@ -105,3 +105,13 @@ def test_should_not_read_unknown(service: RestfulService) -> None:
 
     with pytest.raises(DoesNotExistError):
         service.read_one(animal.entity().id)
+
+
+def test_should_read_all(
+    repository: InMemoryRepository[Animal], service: RestfulService
+) -> None:
+    animal_1 = FakeAnimal()
+    animal_2 = FakeAnimal()
+    repository.create_many([animal_1.entity(), animal_2.entity()])
+
+    assert service.read_all() == [animal_1.json(), animal_2.json()]
