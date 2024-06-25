@@ -155,3 +155,15 @@ def test_should_update_many(
         [updated_1.json().drop("name"), updated_2.json().drop("name")]  # type: ignore
     ) == [updated_1.json(), updated_2.json()]
     assert list(repository) == [updated_1.entity(), updated_2.entity()]
+
+
+def test_should_not_update_unknown_many(
+    repository: InMemoryRepository[Animal], service: RestfulService
+) -> None:
+    updated_1 = FakeAnimal()
+    updated_2 = FakeAnimal()
+
+    with pytest.raises(DoesNotExistError):
+        service.update_many(
+            [updated_1.json().drop("name"), updated_2.json().drop("name")]  # type: ignore
+        )
