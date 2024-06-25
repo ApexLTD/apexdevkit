@@ -24,7 +24,7 @@ from apexdevkit.testing import RestfulName
 
 
 @dataclass
-class SampleService(RestfulService):
+class FakeService(RestfulService):
     error: Exception | None = None
 
     def create_one(self, item: RawItem) -> RawItem:
@@ -65,6 +65,19 @@ class SampleService(RestfulService):
     def throw_error(self) -> None:
         if self.error:
             raise self.error
+
+
+@dataclass
+class FakeServiceBuilder(RestfulServiceBuilder):
+    error: Exception | None = None
+
+    def with_exception(self, error: Exception) -> FakeServiceBuilder:
+        self.error = error
+
+        return self
+
+    def build(self) -> RestfulService:
+        return FakeService(self.error)
 
 
 @dataclass
