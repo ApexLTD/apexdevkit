@@ -86,27 +86,6 @@ class SuccessfulService(RestfulServiceBuilder, RestfulService):
         pass
 
 
-@dataclass
-class FakeServiceBuilder(RestfulServiceBuilder):
-    data: JsonDict = field(init=False)
-    times_called: int = 0
-
-    def with_user(self, user: Any) -> FakeServiceBuilder:
-        self.times_called += 1
-
-        super().with_user(user)
-
-        return self
-
-    def always_return(self, data: JsonDict) -> FakeServiceBuilder:
-        self.data = data
-
-        return self
-
-    def build(self) -> RestfulService:
-        return SuccessfulService(always_return=self.data)
-
-
 class Color(Enum):
     red = "RED"
     gold = "GOLD"

@@ -9,13 +9,13 @@ from starlette.testclient import TestClient
 from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.router import RestfulRouter, RestfulServiceBuilder
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
-from tests.resource.sample_api import AppleFields, FakeServiceBuilder
+from tests.resource.sample_api import AppleFields, SuccessfulService
 from tests.resource.setup import FakeApple
 
 
 @pytest.fixture
 def infra() -> RestfulServiceBuilder:
-    return FakeServiceBuilder().always_return(FakeApple().json())
+    return SuccessfulService(always_return=FakeApple().json())
 
 
 @pytest.fixture
@@ -25,7 +25,10 @@ def fake_user() -> FakeUser:
 
 @pytest.fixture
 def resource(infra: RestfulServiceBuilder, fake_user: FakeUser) -> RestResource:
-    return RestCollection(TestClient(setup(infra, fake_user)), RestfulName("apple"))
+    return RestCollection(
+        name=RestfulName("apple"),
+        http=TestClient(setup(infra, fake_user)),
+    )
 
 
 @dataclass
