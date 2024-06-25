@@ -5,6 +5,7 @@ from uuid import uuid4
 
 import pytest
 
+from apexdevkit.error import DoesNotExistError
 from apexdevkit.fastapi.service import RestfulRepositoryBuilder, RestfulService
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import InMemoryRepository
@@ -97,3 +98,10 @@ def test_should_read_one(
     repository.create(animal.entity())
 
     assert service.read_one(animal.entity().id) == animal.json()
+
+
+def test_should_not_read_unknown(service: RestfulService) -> None:
+    animal = FakeAnimal()
+
+    with pytest.raises(DoesNotExistError):
+        service.read_one(animal.entity().id)
