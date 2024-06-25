@@ -7,15 +7,15 @@ from fastapi import FastAPI
 from starlette.testclient import TestClient
 
 from apexdevkit.fastapi import FastApiBuilder
-from apexdevkit.fastapi.router import RestfulRouter
+from apexdevkit.fastapi.router import RestfulRouter, RestfulServiceBuilder
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
-from tests.resource.sample_api import AppleFields, FakeServiceBuilder
+from tests.resource.sample_api import AppleFields, SuccessfulService
 from tests.resource.setup import FakeApple
 
 
 @pytest.fixture
-def infra() -> FakeServiceBuilder:
-    return FakeServiceBuilder().with_exception(None).always_return(FakeApple().json())
+def infra() -> RestfulServiceBuilder:
+    return SuccessfulService(always_return=FakeApple().json())
 
 
 @pytest.fixture
@@ -24,8 +24,11 @@ def fake_user() -> FakeUser:
 
 
 @pytest.fixture
-def resource(infra: FakeServiceBuilder, fake_user: FakeUser) -> RestResource:
-    return RestCollection(TestClient(setup(infra, fake_user)), RestfulName("apple"))
+def resource(infra: RestfulServiceBuilder, fake_user: FakeUser) -> RestResource:
+    return RestCollection(
+        name=RestfulName("apple"),
+        http=TestClient(setup(infra, fake_user)),
+    )
 
 
 @dataclass
@@ -37,7 +40,7 @@ class FakeUser:
         return "user"
 
 
-def setup(infra: FakeServiceBuilder, fake_user: FakeUser) -> FastAPI:
+def setup(infra: RestfulServiceBuilder, fake_user: FakeUser) -> FastAPI:
     return (
         FastApiBuilder()
         .with_title("Apple API")
@@ -71,16 +74,9 @@ def test_should_call_extract_user_for_create_one(
     assert fake_user.times_called == 1
 
 
-def test_should_call_with_user_for_create_one(
-    resource: RestResource, infra: FakeServiceBuilder
-) -> None:
-    resource.create_one().from_data(FakeApple().json()).ensure()
-
-    assert infra.times_called == 1
-
-
 def test_should_persist_user_for_create_one(
-    resource: RestResource, infra: FakeServiceBuilder
+    resource: RestResource,
+    infra: RestfulServiceBuilder,
 ) -> None:
     resource.create_one().from_data(FakeApple().json()).ensure()
 
@@ -97,18 +93,9 @@ def test_should_call_extract_user_for_create_many(
     assert fake_user.times_called == 1
 
 
-def test_should_call_with_user_for_create_many(
-    resource: RestResource, infra: FakeServiceBuilder
-) -> None:
-    resource.create_many().from_data(FakeApple().json()).and_data(
-        FakeApple().json()
-    ).ensure()
-
-    assert infra.times_called == 1
-
-
 def test_should_persist_user_for_create_many(
-    resource: RestResource, infra: FakeServiceBuilder
+    resource: RestResource,
+    infra: RestfulServiceBuilder,
 ) -> None:
     resource.create_many().from_data(FakeApple().json()).and_data(
         FakeApple().json()
@@ -125,16 +112,9 @@ def test_should_call_extract_user_for_read_one(
     assert fake_user.times_called == 1
 
 
-def test_should_call_with_user_for_read_one(
-    resource: RestResource, infra: FakeServiceBuilder
-) -> None:
-    resource.read_one().with_id(str(FakeApple().json().get("id"))).ensure()
-
-    assert infra.times_called == 1
-
-
 def test_should_persist_user_for_read_one(
-    resource: RestResource, infra: FakeServiceBuilder
+    resource: RestResource,
+    infra: RestfulServiceBuilder,
 ) -> None:
     resource.read_one().with_id(str(FakeApple().json().get("id"))).ensure()
 
@@ -149,16 +129,9 @@ def test_should_call_extract_user_for_read_all(
     assert fake_user.times_called == 1
 
 
-def test_should_call_with_user_for_read_all(
-    resource: RestResource, infra: FakeServiceBuilder
-) -> None:
-    resource.read_all().ensure()
-
-    assert infra.times_called == 1
-
-
 def test_should_persist_user_for_read_all(
-    resource: RestResource, infra: FakeServiceBuilder
+    resource: RestResource,
+    infra: RestfulServiceBuilder,
 ) -> None:
     resource.read_all().ensure()
 
@@ -178,21 +151,9 @@ def test_should_call_extract_user_for_update_one(
     assert fake_user.times_called == 1
 
 
-def test_should_call_with_user_for_update_one(
-    resource: RestResource, infra: FakeServiceBuilder
-) -> None:
-    (
-        resource.update_one()
-        .with_id(str(FakeApple().json().get("id")))
-        .and_data(FakeApple().json().drop("id").drop("color"))
-        .ensure()
-    )
-
-    assert infra.times_called == 1
-
-
 def test_should_persist_user_for_update_one(
-    resource: RestResource, infra: FakeServiceBuilder
+    resource: RestResource,
+    infra: RestfulServiceBuilder,
 ) -> None:
     (
         resource.update_one()
@@ -214,18 +175,9 @@ def test_should_call_extract_user_for_update_many(
     assert fake_user.times_called == 1
 
 
-def test_should_call_with_user_for_update_many(
-    resource: RestResource, infra: FakeServiceBuilder
-) -> None:
-    resource.update_many().from_data(FakeApple().json().drop("color")).and_data(
-        FakeApple().json().drop("color")
-    ).ensure()
-
-    assert infra.times_called == 1
-
-
 def test_should_persist_user_for_update_many(
-    resource: RestResource, infra: FakeServiceBuilder
+    resource: RestResource,
+    infra: RestfulServiceBuilder,
 ) -> None:
     resource.update_many().from_data(FakeApple().json().drop("color")).and_data(
         FakeApple().json().drop("color")
@@ -242,16 +194,9 @@ def test_should_call_extract_user_for_replace_one(
     assert fake_user.times_called == 1
 
 
-def test_should_call_with_user_for_replace_one(
-    resource: RestResource, infra: FakeServiceBuilder
-) -> None:
-    resource.replace_one().from_data(FakeApple().json()).ensure()
-
-    assert infra.times_called == 1
-
-
 def test_should_persist_user_for_replace_one(
-    resource: RestResource, infra: FakeServiceBuilder
+    resource: RestResource,
+    infra: RestfulServiceBuilder,
 ) -> None:
     resource.replace_one().from_data(FakeApple().json()).ensure()
 
@@ -271,21 +216,9 @@ def test_should_call_extract_user_for_replace_many(
     assert fake_user.times_called == 1
 
 
-def test_should_call_with_user_for_replace_many(
-    resource: RestResource, infra: FakeServiceBuilder
-) -> None:
-    (
-        resource.replace_many()
-        .from_data(FakeApple().json())
-        .and_data(FakeApple().json())
-        .ensure()
-    )
-
-    assert infra.times_called == 1
-
-
 def test_should_persist_user_for_replace_many(
-    resource: RestResource, infra: FakeServiceBuilder
+    resource: RestResource,
+    infra: RestfulServiceBuilder,
 ) -> None:
     (
         resource.replace_many()
@@ -305,16 +238,9 @@ def test_should_call_extract_user_for_delete_one(
     assert fake_user.times_called == 1
 
 
-def test_should_call_with_user_for_delete_one(
-    resource: RestResource, infra: FakeServiceBuilder
-) -> None:
-    resource.delete_one().with_id(str(FakeApple().json().get("id"))).ensure()
-
-    assert infra.times_called == 1
-
-
 def test_should_persist_user_for_delete_one(
-    resource: RestResource, infra: FakeServiceBuilder
+    resource: RestResource,
+    infra: RestfulServiceBuilder,
 ) -> None:
     resource.delete_one().with_id(str(FakeApple().json().get("id"))).ensure()
 

@@ -17,75 +17,73 @@ from apexdevkit.http import JsonDict
 
 
 @dataclass
-class FakeService(RestfulService):
-    always_return: JsonDict
-    error: Exception | None = None
+class FailingService(RestfulServiceBuilder, RestfulService):
+    error: Exception | type[Exception]
+
+    def build(self) -> RestfulService:
+        return self
 
     def create_one(self, item: RawItem) -> RawItem:
-        self.throw_error()
-        return self.always_return
+        raise self.error
 
     def create_many(self, items: RawCollection) -> RawCollection:
-        self.throw_error()
-        return [self.always_return]
+        raise self.error
 
     def read_one(self, item_id: str) -> RawItem:
-        self.throw_error()
-        return self.always_return
+        raise self.error
 
     def read_all(self) -> RawCollection:
-        self.throw_error()
-        return [self.always_return]
+        raise self.error
 
     def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
-        self.throw_error()
-        return self.always_return
+        raise self.error
 
     def update_many(self, items: RawCollectionWithId) -> RawCollection:
-        self.throw_error()
-        return [self.always_return]
+        raise self.error
 
     def replace_one(self, item: RawItem) -> RawItem:
-        self.throw_error()
-        return self.always_return
+        raise self.error
 
     def replace_many(self, items: RawCollection) -> RawCollection:
-        self.throw_error()
-        return [self.always_return]
+        raise self.error
 
     def delete_one(self, item_id: str) -> None:
-        self.throw_error()
-
-    def throw_error(self) -> None:
-        if self.error:
-            raise self.error
+        raise self.error
 
 
 @dataclass
-class FakeServiceBuilder(RestfulServiceBuilder):
-    data: JsonDict = field(init=False)
-    error: Exception | None = None
-    times_called: int = 0
-
-    def with_user(self, user: Any) -> FakeServiceBuilder:
-        self.times_called += 1
-        self.user = user
-        super().with_user(user)
-
-        return self
-
-    def always_return(self, data: JsonDict) -> FakeServiceBuilder:
-        self.data = data
-
-        return self
-
-    def with_exception(self, error: Exception | None) -> FakeServiceBuilder:
-        self.error = error
-
-        return self
+class SuccessfulService(RestfulServiceBuilder, RestfulService):
+    always_return: JsonDict
 
     def build(self) -> RestfulService:
-        return FakeService(self.data, self.error)
+        return self
+
+    def create_one(self, item: RawItem) -> RawItem:
+        return self.always_return
+
+    def create_many(self, items: RawCollection) -> RawCollection:
+        return [self.always_return]
+
+    def read_one(self, item_id: str) -> RawItem:
+        return self.always_return
+
+    def read_all(self) -> RawCollection:
+        return [self.always_return]
+
+    def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
+        return self.always_return
+
+    def update_many(self, items: RawCollectionWithId) -> RawCollection:
+        return [self.always_return]
+
+    def replace_one(self, item: RawItem) -> RawItem:
+        return self.always_return
+
+    def replace_many(self, items: RawCollection) -> RawCollection:
+        return [self.always_return]
+
+    def delete_one(self, item_id: str) -> None:
+        pass
 
 
 class Color(Enum):

@@ -8,20 +8,19 @@ from typing import Any, Type
 from fastapi import FastAPI
 
 from apexdevkit.fastapi import FastApiBuilder
-from apexdevkit.fastapi.router import RestfulRouter
+from apexdevkit.fastapi.router import RestfulRouter, RestfulServiceBuilder
 from apexdevkit.testing import RestfulName
 from apexdevkit.testing.fake import FakeResource
 from tests.resource.sample_api import (
     Apple,
     AppleFields,
     Color,
-    FakeServiceBuilder,
     Name,
     PriceFields,
 )
 
 
-def setup(infra: FakeServiceBuilder) -> FastAPI:
+def setup(infra: RestfulServiceBuilder) -> FastAPI:
     return (
         FastApiBuilder()
         .with_title("Apple API")
