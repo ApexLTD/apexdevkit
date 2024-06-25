@@ -11,7 +11,7 @@ from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.testing import RestfulName
 from apexdevkit.testing.fake import FakeResource
-from tests.sample_api import (
+from tests.resource.sample_api import (
     Apple,
     AppleFields,
     Color,

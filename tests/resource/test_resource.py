@@ -7,8 +7,8 @@ from fastapi.testclient import TestClient
 
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
+from tests.resource.sample_api import FakeServiceBuilder
 from tests.resource.setup import FakeApple, setup
-from tests.sample_api import FakeServiceBuilder
 
 
 @pytest.fixture

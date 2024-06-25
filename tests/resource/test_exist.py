@@ -4,8 +4,8 @@ from starlette.testclient import TestClient
 from apexdevkit.error import ExistsError
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
+from tests.resource.sample_api import FakeServiceBuilder
 from tests.resource.setup import FakeApple, setup
-from tests.sample_api import FakeServiceBuilder
 
 
 @pytest.fixture

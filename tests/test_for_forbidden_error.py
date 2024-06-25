@@ -17,7 +17,7 @@ from apexdevkit.fastapi.service import (
 )
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
-from tests.sample_api import (
+from tests.resource.sample_api import (
     AppleFields,
     Color,
 )
