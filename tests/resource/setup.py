@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.testing import RestfulName
-from tests.sample_api import FakeServiceBuilder, AppleFields, PriceFields
+from tests.sample_api import AppleFields, FakeServiceBuilder, PriceFields
 
 
 def setup(infra: FakeServiceBuilder) -> FastAPI:
