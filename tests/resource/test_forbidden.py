@@ -6,7 +6,7 @@ from starlette.testclient import TestClient
 from apexdevkit.error import ForbiddenError
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
-from tests.resource.sample_api import FakeServiceBuilder
+from tests.resource.sample_api import FakeServiceBuilder, FailingService
 from tests.resource.setup import FakeApple, setup
 
 
@@ -16,8 +16,8 @@ def apple() -> JsonDict:
 
 
 @pytest.fixture
-def infra(apple: JsonDict) -> FakeServiceBuilder:
-    return FakeServiceBuilder().with_exception(ForbiddenError()).always_return(apple)
+def infra() -> FailingService:
+    return FailingService(ForbiddenError)
 
 
 @pytest.fixture

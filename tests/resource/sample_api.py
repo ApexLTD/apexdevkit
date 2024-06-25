@@ -62,6 +62,41 @@ class FakeService(RestfulService):
 
 
 @dataclass
+class FailingService(RestfulServiceBuilder, RestfulService):
+    error: Exception | type[Exception]
+
+    def build(self) -> RestfulService:
+        return self
+
+    def create_one(self, item: RawItem) -> RawItem:
+        raise self.error
+
+    def create_many(self, items: RawCollection) -> RawCollection:
+        raise self.error
+
+    def read_one(self, item_id: str) -> RawItem:
+        raise self.error
+
+    def read_all(self) -> RawCollection:
+        raise self.error
+
+    def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
+        raise self.error
+
+    def update_many(self, items: RawCollectionWithId) -> RawCollection:
+        raise self.error
+
+    def replace_one(self, item: RawItem) -> RawItem:
+        raise self.error
+
+    def replace_many(self, items: RawCollection) -> RawCollection:
+        raise self.error
+
+    def delete_one(self, item_id: str) -> None:
+        raise self.error
+
+
+@dataclass
 class FakeServiceBuilder(RestfulServiceBuilder):
     data: JsonDict = field(init=False)
     error: Exception | None = None
