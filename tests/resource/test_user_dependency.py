@@ -7,7 +7,8 @@ from fastapi import FastAPI
 from starlette.testclient import TestClient
 
 from apexdevkit.fastapi import FastApiBuilder
-from apexdevkit.fastapi.router import RestfulRouter, RestfulServiceBuilder
+from apexdevkit.fastapi.builder import RestfulServiceBuilder
+from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
 from tests.resource.sample_api import AppleFields, SuccessfulService
 from tests.resource.setup import FakeApple

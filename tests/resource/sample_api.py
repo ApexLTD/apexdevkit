@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Any
 from uuid import uuid4
 
-from apexdevkit.fastapi.router import RestfulServiceBuilder
+from apexdevkit.fastapi.builder import RestfulServiceBuilder
 from apexdevkit.fastapi.schema import SchemaFields
 from apexdevkit.fastapi.service import (
     RawCollection,

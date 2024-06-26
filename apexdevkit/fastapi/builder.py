@@ -1,7 +1,10 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, Self
 
 from fastapi import APIRouter, FastAPI
+
+from apexdevkit.fastapi.service import RestfulService
 
 
 @dataclass
@@ -37,3 +40,23 @@ class FastApiBuilder:
             self.app.include_router(value, prefix=f"/{key}", tags=[key.title()])
 
         return self
+
+
+@dataclass
+class RestfulServiceBuilder(ABC):
+    parent_id: str = field(init=False)
+    user: Any = field(init=False)
+
+    def with_user(self, user: Any) -> "RestfulServiceBuilder":
+        self.user = user
+
+        return self
+
+    def with_parent(self, identity: str) -> "RestfulServiceBuilder":
+        self.parent_id = identity
+
+        return self
+
+    @abstractmethod
+    def build(self) -> RestfulService:  # pragma: no cover
+        pass
