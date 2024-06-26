@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
 
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
-from apexdevkit.fastapi.resource import APIResource
+from apexdevkit.fastapi.resource import RestfulResource
 from apexdevkit.fastapi.schema import RestfulSchema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
 from apexdevkit.testing import RestfulName
@@ -39,7 +39,7 @@ class RestfulRouter:
 
     parent: str = field(init=False, default="")
 
-    resource: APIResource = field(default_factory=APIResource)
+    resource: RestfulResource = field(default_factory=RestfulResource)
 
     def __post_init__(self) -> None:  # pragma: no cover
         if self.service:

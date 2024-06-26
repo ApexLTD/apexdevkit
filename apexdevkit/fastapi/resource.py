@@ -13,7 +13,7 @@ _Response = JSONResponse | dict[str, Any]
 
 
 @dataclass
-class APIResource:
+class RestfulResource:
     name: RestfulName = field(init=False)
     infra: RestfulServiceBuilder = field(init=False)
 
