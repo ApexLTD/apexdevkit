@@ -37,7 +37,6 @@ class RestfulRouter:
 
     name: RestfulName = field(init=False)
     fields: SchemaFields = field(init=False)
-    infra: RestfulServiceBuilder = field(init=False)
 
     parent: str = field(init=False, default="")
 
@@ -85,7 +84,6 @@ class RestfulRouter:
         return self
 
     def with_infra(self, value: RestfulServiceBuilder) -> Self:
-        self.infra = value
         self.resource.with_infra(value)
 
         return self
