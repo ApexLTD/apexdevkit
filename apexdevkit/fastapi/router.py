@@ -1,102 +1,21 @@
-from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Annotated, Any, Callable, Iterable, Self, TypeVar
+from typing import Annotated, Any, Callable, Self, TypeVar
 
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
+from apexdevkit.fastapi.builder import RestfulServiceBuilder
+from apexdevkit.fastapi.resource import ApiResource
+from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.schema import RestfulSchema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
 from apexdevkit.testing import RestfulName
 
 _Response = JSONResponse | dict[str, Any]
 
-
-@dataclass
-class RestfulResponse:
-    name: RestfulName
-
-    def _response(self, code: int, data: Any, error: str = "") -> dict[str, Any]:
-        content: dict[str, Any] = {"code": code, "status": "success"}
-
-        if error:
-            content["status"] = "fail"
-            content["error"] = {"message": error}
-
-        match data:
-            case None:
-                content["data"] = {}
-            case list():
-                content["data"] = {self.name.plural: data, "count": len(data)}
-            case _:
-                content["data"] = {self.name.singular: data}
-
-        return content
-
-    def ok(self) -> dict[str, Any]:
-        return self._response(200, data=None)
-
-    def not_found(self, e: DoesNotExistError) -> dict[str, Any]:
-        name = self.name.singular.capitalize()
-
-        return self._response(
-            404,
-            data={"id": str(e.id)},
-            error=f"An item<{name}> with id<{e.id}> does not exist.",
-        )
-
-    def exists(self, e: ExistsError) -> dict[str, Any]:
-        name = self.name.singular.capitalize()
-
-        return self._response(
-            409,
-            data={"id": str(e.id)},
-            error=f"An item<{name}> with the {e} already exists.",
-        )
-
-    def forbidden(self, e: ForbiddenError) -> dict[str, Any]:
-        return self._response(
-            403,
-            data={"id": str(e.id)},
-            error=e.message,
-        )
-
-    def created_one(self, item: Any) -> dict[str, Any]:
-        return self._response(201, item)
-
-    def created_many(self, items: Iterable[Any]) -> dict[str, Any]:
-        return self._response(201, list(items))
-
-    def found_one(self, item: Any) -> dict[str, Any]:
-        return self._response(200, item)
-
-    def found_many(self, items: list[Any]) -> dict[str, Any]:
-        return self._response(200, items)
-
-
 T = TypeVar("T")
-
-
-@dataclass
-class RestfulServiceBuilder(ABC):
-    parent_id: str = field(init=False)
-    user: Any = field(init=False)
-
-    def with_user(self, user: Any) -> "RestfulServiceBuilder":
-        self.user = user
-
-        return self
-
-    def with_parent(self, identity: str) -> "RestfulServiceBuilder":
-        self.parent_id = identity
-
-        return self
-
-    @abstractmethod
-    def build(self) -> RestfulService:  # pragma: no cover
-        pass
 
 
 @dataclass
@@ -123,9 +42,11 @@ class RestfulRouter:
 
     parent: str = field(init=False, default="")
 
+    resource: ApiResource = field(default_factory=ApiResource)
+
     def __post_init__(self) -> None:  # pragma: no cover
         if self.service:
-            self.infra = PreBuiltRestfulService(self.service)
+            self.with_infra(PreBuiltRestfulService(self.service))
 
     @cached_property
     def response(self) -> RestfulResponse:
@@ -149,6 +70,7 @@ class RestfulRouter:
 
     def with_name(self, value: RestfulName) -> Self:
         self.name = value
+        self.resource.with_name(value)
 
         return self
 
@@ -159,11 +81,13 @@ class RestfulRouter:
 
     def with_parent(self, name: str) -> Self:
         self.parent = name
+        self.resource.with_parent(name)
 
         return self
 
     def with_infra(self, value: RestfulServiceBuilder) -> Self:
         self.infra = value
+        self.resource.with_infra(value)
 
         return self
 
@@ -174,7 +98,7 @@ class RestfulRouter:
     ) -> Self:
         self.router.add_api_route(
             "",
-            self.create_one(
+            self.resource.create_one(
                 User=Annotated[
                     Any,
                     Depends(extract_user),
@@ -197,26 +121,6 @@ class RestfulRouter:
         )
 
         return self
-
-    def create_one(self, User, ParentId, Item) -> Callable[..., _Response]:  # type: ignore
-        def endpoint(user: User, parent_id: ParentId, item: Item) -> _Response:
-            try:
-                service = self.infra.with_user(user).with_parent(parent_id).build()
-            except DoesNotExistError as e:
-                return JSONResponse(
-                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
-                )
-
-            try:
-                item = service.create_one(item)
-            except ExistsError as e:
-                return JSONResponse(self.response.exists(e), 409)
-            except ForbiddenError as e:
-                return JSONResponse(self.response.forbidden(e), 403)
-
-            return self.response.created_one(item)
-
-        return endpoint
 
     def with_create_many_endpoint(
         self,
