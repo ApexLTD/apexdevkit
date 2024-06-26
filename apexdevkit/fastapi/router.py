@@ -5,7 +5,6 @@ from typing import Annotated, Any, Callable, Self, TypeVar
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
 
-from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
 from apexdevkit.fastapi.resource import ApiResource
 from apexdevkit.fastapi.response import RestfulResponse
@@ -129,7 +128,7 @@ class RestfulRouter:
     ) -> Self:
         self.router.add_api_route(
             "/batch",
-            self.create_many(
+            self.resource.create_many(
                 User=Annotated[
                     Any,
                     Depends(extract_user),
@@ -153,24 +152,6 @@ class RestfulRouter:
 
         return self
 
-    def create_many(self, User, ParentId, Collection) -> Callable[..., _Response]:  # type: ignore
-        def endpoint(user: User, parent_id: ParentId, items: Collection) -> _Response:
-            try:
-                service = self.infra.with_user(user).with_parent(parent_id).build()
-            except DoesNotExistError as e:
-                return JSONResponse(
-                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
-                )
-
-            try:
-                return self.response.created_many(service.create_many(items))
-            except ExistsError as e:
-                return JSONResponse(self.response.exists(e), 409)
-            except ForbiddenError as e:
-                return JSONResponse(self.response.forbidden(e), 403)
-
-        return endpoint
-
     def with_read_one_endpoint(
         self,
         is_documented: bool = True,
@@ -178,7 +159,7 @@ class RestfulRouter:
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
-            self.read_one(
+            self.resource.read_one(
                 User=Annotated[
                     Any,
                     Depends(extract_user),
@@ -202,24 +183,6 @@ class RestfulRouter:
 
         return self
 
-    def read_one(self, User, ParentId, ItemId) -> Callable[..., _Response]:  # type: ignore
-        def endpoint(user: User, parent_id: ParentId, item_id: ItemId) -> _Response:
-            try:
-                service = self.infra.with_user(user).with_parent(parent_id).build()
-            except DoesNotExistError as e:
-                return JSONResponse(
-                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
-                )
-
-            try:
-                return self.response.found_one(service.read_one(item_id))
-            except DoesNotExistError as e:
-                return JSONResponse(self.response.not_found(e), 404)
-            except ForbiddenError as e:
-                return JSONResponse(self.response.forbidden(e), 403)
-
-        return endpoint
-
     def with_read_all_endpoint(
         self,
         is_documented: bool = True,
@@ -227,7 +190,7 @@ class RestfulRouter:
     ) -> Self:
         self.router.add_api_route(
             "",
-            self.read_all(
+            self.resource.read_all(
                 User=Annotated[
                     Any,
                     Depends(extract_user),
@@ -247,21 +210,6 @@ class RestfulRouter:
 
         return self
 
-    def read_all(self, User, ParentId) -> Callable[..., _Response]:  # type: ignore
-        def endpoint(user: User, parent_id: ParentId) -> _Response:
-            try:
-                service = self.infra.with_user(user).with_parent(parent_id).build()
-            except DoesNotExistError as e:
-                return JSONResponse(
-                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
-                )
-            try:
-                return self.response.found_many(list(service.read_all()))
-            except ForbiddenError as e:
-                return JSONResponse(self.response.forbidden(e), 403)
-
-        return endpoint
-
     def with_update_one_endpoint(
         self,
         is_documented: bool = True,
@@ -269,7 +217,7 @@ class RestfulRouter:
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
-            self.update_one(
+            self.resource.update_one(
                 User=Annotated[
                     Any,
                     Depends(extract_user),
@@ -297,30 +245,6 @@ class RestfulRouter:
 
         return self
 
-    def update_one(self, User, ParentId, ItemId, Updates) -> Callable[..., _Response]:  # type: ignore
-        def endpoint(
-            user: User,
-            parent_id: ParentId,
-            item_id: ItemId,
-            updates: Updates,
-        ) -> _Response:
-            try:
-                service = self.infra.with_user(user).with_parent(parent_id).build()
-            except DoesNotExistError as e:
-                return JSONResponse(
-                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
-                )
-            try:
-                service.update_one(item_id, **updates)
-            except DoesNotExistError as e:
-                return JSONResponse(self.response.not_found(e), 404)
-            except ForbiddenError as e:
-                return JSONResponse(self.response.forbidden(e), 403)
-
-            return self.response.ok()
-
-        return endpoint
-
     def with_update_many_endpoint(
         self,
         is_documented: bool = True,
@@ -328,7 +252,7 @@ class RestfulRouter:
     ) -> Self:
         self.router.add_api_route(
             "",
-            self.update_many(
+            self.resource.update_many(
                 User=Annotated[
                     Any,
                     Depends(extract_user),
@@ -352,25 +276,6 @@ class RestfulRouter:
 
         return self
 
-    def update_many(self, User, ParentId, Collection) -> Callable[..., _Response]:  # type: ignore
-        def endpoint(user: User, parent_id: ParentId, items: Collection) -> _Response:
-            try:
-                service = self.infra.with_user(user).with_parent(parent_id).build()
-            except DoesNotExistError as e:
-                return JSONResponse(
-                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
-                )
-            try:
-                service.update_many(items)
-            except DoesNotExistError as e:
-                return JSONResponse(self.response.not_found(e), 404)
-            except ForbiddenError as e:
-                return JSONResponse(self.response.forbidden(e), 403)
-
-            return self.response.ok()
-
-        return endpoint
-
     def with_replace_one_endpoint(
         self,
         is_documented: bool = True,
@@ -378,7 +283,7 @@ class RestfulRouter:
     ) -> Self:
         self.router.add_api_route(
             "",
-            self.replace_one(
+            self.resource.replace_one(
                 User=Annotated[
                     Any,
                     Depends(extract_user),
@@ -402,25 +307,6 @@ class RestfulRouter:
 
         return self
 
-    def replace_one(self, User, ParentId, Item) -> Callable[..., _Response]:  # type: ignore
-        def endpoint(user: User, parent_id: ParentId, item: Item) -> _Response:
-            try:
-                service = self.infra.with_user(user).with_parent(parent_id).build()
-            except DoesNotExistError as e:
-                return JSONResponse(
-                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
-                )
-            try:
-                service.replace_one(item)
-            except DoesNotExistError as e:
-                return JSONResponse(self.response.not_found(e), 404)
-            except ForbiddenError as e:
-                return JSONResponse(self.response.forbidden(e), 403)
-
-            return self.response.ok()
-
-        return endpoint
-
     def with_replace_many_endpoint(
         self,
         is_documented: bool = True,
@@ -428,7 +314,7 @@ class RestfulRouter:
     ) -> Self:
         self.router.add_api_route(
             "/batch",
-            self.replace_many(
+            self.resource.replace_many(
                 User=Annotated[
                     Any,
                     Depends(extract_user),
@@ -452,25 +338,6 @@ class RestfulRouter:
 
         return self
 
-    def replace_many(self, User, ParentId, Collection) -> Callable[..., _Response]:  # type: ignore
-        def endpoint(user: User, parent_id: ParentId, items: Collection) -> _Response:
-            try:
-                service = self.infra.with_user(user).with_parent(parent_id).build()
-            except DoesNotExistError as e:
-                return JSONResponse(
-                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
-                )
-            try:
-                service.replace_many(items)
-            except DoesNotExistError as e:
-                return JSONResponse(self.response.not_found(e), 404)
-            except ForbiddenError as e:
-                return JSONResponse(self.response.forbidden(e), 403)
-
-            return self.response.ok()
-
-        return endpoint
-
     def with_delete_one_endpoint(
         self,
         is_documented: bool = True,
@@ -478,7 +345,7 @@ class RestfulRouter:
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
-            self.delete_one(
+            self.resource.delete_one(
                 User=Annotated[
                     Any,
                     Depends(extract_user),
@@ -501,26 +368,6 @@ class RestfulRouter:
         )
 
         return self
-
-    def delete_one(self, User, ParentId, ItemId) -> Callable[..., _Response]:  # type: ignore
-        def endpoint(user: User, parent_id: ParentId, item_id: ItemId) -> _Response:
-            try:
-                service = self.infra.with_user(user).with_parent(parent_id).build()
-            except DoesNotExistError as e:
-                return JSONResponse(
-                    RestfulResponse(RestfulName(self.parent)).not_found(e), 404
-                )
-
-            try:
-                service.delete_one(item_id)
-            except DoesNotExistError as e:
-                return JSONResponse(self.response.not_found(e), 404)
-            except ForbiddenError as e:
-                return JSONResponse(self.response.forbidden(e), 403)
-
-            return self.response.ok()
-
-        return endpoint
 
     def with_sub_resource(self, **names: APIRouter) -> Self:
         for name, router in names.items():
