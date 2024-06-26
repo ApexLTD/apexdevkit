@@ -120,7 +120,7 @@ class Apple:
 
 class AppleFields(SchemaFields):
     def readable(self) -> JsonDict:
-        return JsonDict().with_a(id=str).and_a(name=Name).and_a(color=Color)
+        return JsonDict().with_a(id=str).and_a(name=Name).and_a(color=str)
 
     def editable(self) -> JsonDict:
         return JsonDict().with_a(name=Name)
