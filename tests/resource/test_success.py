@@ -116,7 +116,7 @@ def test_should_replace_many(
 def test_should_delete_one(
     apple: JsonDict, infra: SuccessfulService, resource: RestResource
 ) -> None:
-    (resource.delete_one().with_id(apple["id"]).ensure().success().with_code(200))
+    resource.delete_one().with_id(apple["id"]).ensure().success().with_code(200)
     assert infra.called_with == apple["id"]
 
 
