@@ -54,36 +54,45 @@ class FailingService(RestfulServiceBuilder, RestfulService):
 @dataclass
 class SuccessfulService(RestfulServiceBuilder, RestfulService):
     always_return: JsonDict
+    called_with: Any | None = None
 
     def build(self) -> RestfulService:
         return self
 
     def create_one(self, item: RawItem) -> RawItem:
+        self.called_with = item
         return self.always_return
 
     def create_many(self, items: RawCollection) -> RawCollection:
+        self.called_with = items
         return [self.always_return]
 
     def read_one(self, item_id: str) -> RawItem:
+        self.called_with = item_id
         return self.always_return
 
     def read_all(self) -> RawCollection:
+        self.called_with = None
         return [self.always_return]
 
     def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
+        self.called_with = (item_id, with_fields)
         return self.always_return
 
     def update_many(self, items: RawCollectionWithId) -> RawCollection:
+        self.called_with = items
         return [self.always_return]
 
     def replace_one(self, item: RawItem) -> RawItem:
+        self.called_with = item
         return self.always_return
 
     def replace_many(self, items: RawCollection) -> RawCollection:
+        self.called_with = items
         return [self.always_return]
 
     def delete_one(self, item_id: str) -> None:
-        pass
+        self.called_with = item_id
 
 
 class Color(Enum):
