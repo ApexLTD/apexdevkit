@@ -39,7 +39,7 @@ class RestfulRouter:
 
     parent: str = field(init=False, default="")
 
-    resource: RestfulResource = field(default_factory=RestfulResource)
+    infra: RestfulServiceBuilder = field(init=False)
 
     def __post_init__(self) -> None:  # pragma: no cover
         if self.service:
@@ -48,6 +48,10 @@ class RestfulRouter:
     @cached_property
     def schema(self) -> RestfulSchema:
         return RestfulSchema(name=self.name, fields=self.fields)
+
+    @property
+    def resource(self) -> RestfulResource:
+        return RestfulResource(self.name, self.infra, RestfulName(self.parent))
 
     @property
     def id_alias(self) -> str:
@@ -63,7 +67,6 @@ class RestfulRouter:
 
     def with_name(self, value: RestfulName) -> Self:
         self.name = value
-        self.resource.with_name(value)
 
         return self
 
@@ -74,12 +77,11 @@ class RestfulRouter:
 
     def with_parent(self, name: str) -> Self:
         self.parent = name
-        self.resource.with_parent(name)
 
         return self
 
     def with_infra(self, value: RestfulServiceBuilder) -> Self:
-        self.resource.with_infra(value)
+        self.infra = value
 
         return self
 

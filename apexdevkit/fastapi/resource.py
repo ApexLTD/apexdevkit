@@ -1,6 +1,6 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Callable, Self
+from typing import Any, Callable
 
 from starlette.responses import JSONResponse
 
@@ -14,29 +14,13 @@ _Response = JSONResponse | dict[str, Any]
 
 @dataclass
 class RestfulResource:
-    name: RestfulName = field(init=False)
-    infra: RestfulServiceBuilder = field(init=False)
-
-    parent: RestfulName = field(init=False, default_factory=lambda: RestfulName(""))
+    name: RestfulName
+    infra: RestfulServiceBuilder
+    parent: RestfulName
 
     @cached_property
     def response(self) -> RestfulResponse:
         return RestfulResponse(name=self.name)
-
-    def with_name(self, name: RestfulName) -> Self:
-        self.name = name
-
-        return self
-
-    def with_infra(self, infra: RestfulServiceBuilder) -> Self:
-        self.infra = infra
-
-        return self
-
-    def with_parent(self, parent: str) -> Self:
-        self.parent = RestfulName(parent)
-
-        return self
 
     def create_one(self, User, ParentId, Item) -> Callable[..., _Response]:  # type: ignore
         def endpoint(user: User, parent_id: ParentId, item: Item) -> _Response:
