@@ -91,6 +91,7 @@ class RestfulResource:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
                 return JSONResponse(RestfulResponse(self.parent).not_found(e), 404)
+
             try:
                 return self.response.found_many(list(service.read_all()))
             except ForbiddenError as e:
@@ -111,6 +112,7 @@ class RestfulResource:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
                 return JSONResponse(RestfulResponse(self.parent).not_found(e), 404)
+
             try:
                 service.update_one(item_id, **updates)
             except DoesNotExistError as e:
@@ -130,6 +132,7 @@ class RestfulResource:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
                 return JSONResponse(RestfulResponse(self.parent).not_found(e), 404)
+
             try:
                 service.update_many(items)
             except DoesNotExistError as e:
@@ -149,6 +152,7 @@ class RestfulResource:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
                 return JSONResponse(RestfulResponse(self.parent).not_found(e), 404)
+
             try:
                 service.replace_one(item)
             except DoesNotExistError as e:
@@ -168,6 +172,7 @@ class RestfulResource:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
                 return JSONResponse(RestfulResponse(self.parent).not_found(e), 404)
+
             try:
                 service.replace_many(items)
             except DoesNotExistError as e:
