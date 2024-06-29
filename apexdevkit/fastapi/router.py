@@ -50,7 +50,7 @@ class RestfulRouter:
         return RestfulSchema(name=self.name, fields=self.fields)
 
     @property
-    def resource(self) -> RestfulSubResource:
+    def resource(self) -> RestfulRootResource | RestfulSubResource:
         if not self.parent:
             return RestfulRootResource(self.name, self.infra)
 
