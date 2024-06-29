@@ -21,10 +21,6 @@ from tests.resource.sample_api import (
 )
 
 
-def app() -> FastAPI:
-    return setup(None)
-
-
 def setup(infra: RestfulServiceBuilder) -> FastAPI:
     return (
         FastApiBuilder()
