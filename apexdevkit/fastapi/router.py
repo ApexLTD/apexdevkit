@@ -51,10 +51,10 @@ class RestfulRouter:
 
     @property
     def resource(self) -> RestfulResource:
-        if self.parent:
-            return RestfulResource(self.name, self.infra, RestfulName(self.parent))
+        if not self.parent:
+            return RestfulResourceWithoutParent(self.name, self.infra)
 
-        return RestfulResourceWithoutParent(self.name, self.infra)
+        return RestfulResource(self.name, self.infra, RestfulName(self.parent))
 
     @property
     def id_alias(self) -> str:
