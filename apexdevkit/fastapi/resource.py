@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Callable
+from typing import Any, Callable, Annotated
 
+from fastapi import Path
 from starlette.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
@@ -18,11 +19,20 @@ class RestfulResource:
     infra: RestfulServiceBuilder
     parent: RestfulName
 
+    @property
+    def parent_id_alias(self) -> str:
+        return self.parent.singular + "_id"
+
     @cached_property
     def response(self) -> RestfulResponse:
         return RestfulResponse(name=self.name)
 
-    def create_one(self, User, ParentId, Item) -> Callable[..., _Response]:  # type: ignore
+    def create_one(self, User, Item) -> Callable[..., _Response]:  # type: ignore
+        ParentId = Annotated[
+            str,
+            Path(alias=self.parent_id_alias, default_factory=str),
+        ]
+
         def endpoint(user: User, parent_id: ParentId, item: Item) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
@@ -40,7 +50,12 @@ class RestfulResource:
 
         return endpoint
 
-    def create_many(self, User, ParentId, Collection) -> Callable[..., _Response]:  # type: ignore
+    def create_many(self, User, Collection) -> Callable[..., _Response]:  # type: ignore
+        ParentId = Annotated[
+            str,
+            Path(alias=self.parent_id_alias, default_factory=str),
+        ]
+
         def endpoint(user: User, parent_id: ParentId, items: Collection) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
@@ -56,7 +71,12 @@ class RestfulResource:
 
         return endpoint
 
-    def read_one(self, User, ParentId, ItemId) -> Callable[..., _Response]:  # type: ignore
+    def read_one(self, User, ItemId) -> Callable[..., _Response]:  # type: ignore
+        ParentId = Annotated[
+            str,
+            Path(alias=self.parent_id_alias, default_factory=str),
+        ]
+
         def endpoint(user: User, parent_id: ParentId, item_id: ItemId) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
@@ -72,7 +92,12 @@ class RestfulResource:
 
         return endpoint
 
-    def read_all(self, User, ParentId) -> Callable[..., _Response]:  # type: ignore
+    def read_all(self, User) -> Callable[..., _Response]:  # type: ignore
+        ParentId = Annotated[
+            str,
+            Path(alias=self.parent_id_alias, default_factory=str),
+        ]
+
         def endpoint(user: User, parent_id: ParentId) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
@@ -85,7 +110,12 @@ class RestfulResource:
 
         return endpoint
 
-    def update_one(self, User, ParentId, ItemId, Updates) -> Callable[..., _Response]:  # type: ignore
+    def update_one(self, User, ItemId, Updates) -> Callable[..., _Response]:  # type: ignore
+        ParentId = Annotated[
+            str,
+            Path(alias=self.parent_id_alias, default_factory=str),
+        ]
+
         def endpoint(
             user: User,
             parent_id: ParentId,
@@ -107,7 +137,12 @@ class RestfulResource:
 
         return endpoint
 
-    def update_many(self, User, ParentId, Collection) -> Callable[..., _Response]:  # type: ignore
+    def update_many(self, User, Collection) -> Callable[..., _Response]:  # type: ignore
+        ParentId = Annotated[
+            str,
+            Path(alias=self.parent_id_alias, default_factory=str),
+        ]
+
         def endpoint(user: User, parent_id: ParentId, items: Collection) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
@@ -124,7 +159,12 @@ class RestfulResource:
 
         return endpoint
 
-    def replace_one(self, User, ParentId, Item) -> Callable[..., _Response]:  # type: ignore
+    def replace_one(self, User, Item) -> Callable[..., _Response]:  # type: ignore
+        ParentId = Annotated[
+            str,
+            Path(alias=self.parent_id_alias, default_factory=str),
+        ]
+
         def endpoint(user: User, parent_id: ParentId, item: Item) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
@@ -141,7 +181,12 @@ class RestfulResource:
 
         return endpoint
 
-    def replace_many(self, User, ParentId, Collection) -> Callable[..., _Response]:  # type: ignore
+    def replace_many(self, User, Collection) -> Callable[..., _Response]:  # type: ignore
+        ParentId = Annotated[
+            str,
+            Path(alias=self.parent_id_alias, default_factory=str),
+        ]
+
         def endpoint(user: User, parent_id: ParentId, items: Collection) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()
@@ -158,7 +203,12 @@ class RestfulResource:
 
         return endpoint
 
-    def delete_one(self, User, ParentId, ItemId) -> Callable[..., _Response]:  # type: ignore
+    def delete_one(self, User, ItemId) -> Callable[..., _Response]:  # type: ignore
+        ParentId = Annotated[
+            str,
+            Path(alias=self.parent_id_alias, default_factory=str),
+        ]
+
         def endpoint(user: User, parent_id: ParentId, item_id: ItemId) -> _Response:
             try:
                 service = self.infra.with_user(user).with_parent(parent_id).build()

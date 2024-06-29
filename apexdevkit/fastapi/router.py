@@ -58,10 +58,6 @@ class RestfulRouter:
         return self.name.singular + "_id"
 
     @property
-    def parent_id_alias(self) -> str:
-        return self.parent + "_id"
-
-    @property
     def item_path(self) -> str:
         return "/{" + self.id_alias + "}"
 
@@ -97,10 +93,6 @@ class RestfulRouter:
                     Any,
                     Depends(extract_user),
                 ],
-                ParentId=Annotated[
-                    str,
-                    Path(alias=self.parent_id_alias, default_factory=str),
-                ],
                 Item=Annotated[
                     RawItem,
                     Depends(self.schema.for_create_one()),
@@ -127,10 +119,6 @@ class RestfulRouter:
                 User=Annotated[
                     Any,
                     Depends(extract_user),
-                ],
-                ParentId=Annotated[
-                    str,
-                    Path(alias=self.parent_id_alias, default_factory=str),
                 ],
                 Collection=Annotated[
                     RawCollection,
@@ -159,10 +147,6 @@ class RestfulRouter:
                     Any,
                     Depends(extract_user),
                 ],
-                ParentId=Annotated[
-                    str,
-                    Path(alias=self.parent_id_alias, default_factory=str),
-                ],
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -190,10 +174,6 @@ class RestfulRouter:
                     Any,
                     Depends(extract_user),
                 ],
-                ParentId=Annotated[
-                    str,
-                    Path(alias=self.parent_id_alias, default_factory=str),
-                ],
             ),
             methods=["GET"],
             status_code=200,
@@ -216,10 +196,6 @@ class RestfulRouter:
                 User=Annotated[
                     Any,
                     Depends(extract_user),
-                ],
-                ParentId=Annotated[
-                    str,
-                    Path(alias=self.parent_id_alias, default_factory=str),
                 ],
                 ItemId=Annotated[
                     str,
@@ -252,10 +228,6 @@ class RestfulRouter:
                     Any,
                     Depends(extract_user),
                 ],
-                ParentId=Annotated[
-                    str,
-                    Path(alias=self.parent_id_alias, default_factory=str),
-                ],
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_update_many()),
@@ -282,10 +254,6 @@ class RestfulRouter:
                 User=Annotated[
                     Any,
                     Depends(extract_user),
-                ],
-                ParentId=Annotated[
-                    str,
-                    Path(alias=self.parent_id_alias, default_factory=str),
                 ],
                 Item=Annotated[
                     RawItem,
@@ -314,10 +282,6 @@ class RestfulRouter:
                     Any,
                     Depends(extract_user),
                 ],
-                ParentId=Annotated[
-                    str,
-                    Path(alias=self.parent_id_alias, default_factory=str),
-                ],
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_replace_many()),
@@ -344,10 +308,6 @@ class RestfulRouter:
                 User=Annotated[
                     Any,
                     Depends(extract_user),
-                ],
-                ParentId=Annotated[
-                    str,
-                    Path(alias=self.parent_id_alias, default_factory=str),
                 ],
                 ItemId=Annotated[
                     str,
