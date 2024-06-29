@@ -1,26 +1,10 @@
-from apexdevkit.fastapi.builder import FastApiBuilder
+from apexdevkit.fastapi.builder import FastApiBuilder, RestfulServiceBuilder
 from apexdevkit.fastapi.dependable import inject
-from apexdevkit.fastapi.docs import NoData, Response
-from apexdevkit.fastapi.response import (
-    BadRequest,
-    ErrorResponse,
-    ResourceCreated,
-    ResourceExists,
-    ResourceFound,
-    ResourceNotFound,
-    SuccessResponse,
-)
+from apexdevkit.fastapi.service import RestfulRepositoryBuilder
 
 __all__ = [
     "FastApiBuilder",
+    "RestfulServiceBuilder",
     "inject",
-    "NoData",
-    "Response",
-    "SuccessResponse",
-    "ResourceCreated",
-    "ResourceFound",
-    "ResourceExists",
-    "ResourceNotFound",
-    "ErrorResponse",
-    "BadRequest",
+    "RestfulRepositoryBuilder",
 ]
