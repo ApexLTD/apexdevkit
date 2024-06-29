@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Callable, Annotated
+from typing import Annotated, Any, Callable
 
 from fastapi import Path
 from starlette.responses import JSONResponse

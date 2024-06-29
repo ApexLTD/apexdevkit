@@ -7,7 +7,7 @@ from typing import Any, Type
 
 from fastapi import FastAPI
 
-from apexdevkit.fastapi import FastApiBuilder, RestfulRepositoryBuilder
+from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.testing import RestfulName

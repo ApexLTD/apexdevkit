@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
 
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
-from apexdevkit.fastapi.resource import RestfulSubResource, RestfulRootResource
+from apexdevkit.fastapi.resource import RestfulRootResource, RestfulSubResource
 from apexdevkit.fastapi.schema import RestfulSchema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
 from apexdevkit.testing import RestfulName
