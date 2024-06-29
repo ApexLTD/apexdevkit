@@ -28,10 +28,7 @@ class RestfulResource:
         return RestfulResponse(name=self.name)
 
     def create_one(self, User, Item) -> Callable[..., _Response]:  # type: ignore
-        ParentId = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
+        ParentId = Annotated[str, Path(alias=self.parent_id_alias)]
 
         def endpoint(user: User, parent_id: ParentId, item: Item) -> _Response:
             try:
@@ -51,10 +48,7 @@ class RestfulResource:
         return endpoint
 
     def create_many(self, User, Collection) -> Callable[..., _Response]:  # type: ignore
-        ParentId = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
+        ParentId = Annotated[str, Path(alias=self.parent_id_alias)]
 
         def endpoint(user: User, parent_id: ParentId, items: Collection) -> _Response:
             try:
@@ -72,10 +66,7 @@ class RestfulResource:
         return endpoint
 
     def read_one(self, User, ItemId) -> Callable[..., _Response]:  # type: ignore
-        ParentId = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
+        ParentId = Annotated[str, Path(alias=self.parent_id_alias)]
 
         def endpoint(user: User, parent_id: ParentId, item_id: ItemId) -> _Response:
             try:
@@ -93,10 +84,7 @@ class RestfulResource:
         return endpoint
 
     def read_all(self, User) -> Callable[..., _Response]:  # type: ignore
-        ParentId = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
+        ParentId = Annotated[str, Path(alias=self.parent_id_alias)]
 
         def endpoint(user: User, parent_id: ParentId) -> _Response:
             try:
@@ -111,10 +99,7 @@ class RestfulResource:
         return endpoint
 
     def update_one(self, User, ItemId, Updates) -> Callable[..., _Response]:  # type: ignore
-        ParentId = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
+        ParentId = Annotated[str, Path(alias=self.parent_id_alias)]
 
         def endpoint(
             user: User,
@@ -138,10 +123,7 @@ class RestfulResource:
         return endpoint
 
     def update_many(self, User, Collection) -> Callable[..., _Response]:  # type: ignore
-        ParentId = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
+        ParentId = Annotated[str, Path(alias=self.parent_id_alias)]
 
         def endpoint(user: User, parent_id: ParentId, items: Collection) -> _Response:
             try:
@@ -160,10 +142,7 @@ class RestfulResource:
         return endpoint
 
     def replace_one(self, User, Item) -> Callable[..., _Response]:  # type: ignore
-        ParentId = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
+        ParentId = Annotated[str, Path(alias=self.parent_id_alias)]
 
         def endpoint(user: User, parent_id: ParentId, item: Item) -> _Response:
             try:
@@ -182,10 +161,7 @@ class RestfulResource:
         return endpoint
 
     def replace_many(self, User, Collection) -> Callable[..., _Response]:  # type: ignore
-        ParentId = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
+        ParentId = Annotated[str, Path(alias=self.parent_id_alias)]
 
         def endpoint(user: User, parent_id: ParentId, items: Collection) -> _Response:
             try:
@@ -204,10 +180,7 @@ class RestfulResource:
         return endpoint
 
     def delete_one(self, User, ItemId) -> Callable[..., _Response]:  # type: ignore
-        ParentId = Annotated[
-            str,
-            Path(alias=self.parent_id_alias, default_factory=str),
-        ]
+        ParentId = Annotated[str, Path(alias=self.parent_id_alias)]
 
         def endpoint(user: User, parent_id: ParentId, item_id: ItemId) -> _Response:
             try:
