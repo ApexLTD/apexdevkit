@@ -14,7 +14,7 @@ _Response = JSONResponse | dict[str, Any]
 
 
 @dataclass
-class RestfulResource:
+class RestfulSubResource:
     name: RestfulName
     infra: RestfulServiceBuilder
     parent: RestfulName
@@ -206,7 +206,7 @@ class RestfulResource:
 
 
 @dataclass
-class RestfulResourceWithoutParent:
+class RestfulRootResource:
     name: RestfulName
     infra: RestfulServiceBuilder
 

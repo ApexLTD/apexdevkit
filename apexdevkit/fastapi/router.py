@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
 
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
-from apexdevkit.fastapi.resource import RestfulResource, RestfulResourceWithoutParent
+from apexdevkit.fastapi.resource import RestfulSubResource, RestfulRootResource
 from apexdevkit.fastapi.schema import RestfulSchema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
 from apexdevkit.testing import RestfulName
@@ -50,11 +50,11 @@ class RestfulRouter:
         return RestfulSchema(name=self.name, fields=self.fields)
 
     @property
-    def resource(self) -> RestfulResource:
+    def resource(self) -> RestfulSubResource:
         if not self.parent:
-            return RestfulResourceWithoutParent(self.name, self.infra)
+            return RestfulRootResource(self.name, self.infra)
 
-        return RestfulResource(self.name, self.infra, RestfulName(self.parent))
+        return RestfulSubResource(self.name, self.infra, RestfulName(self.parent))
 
     @property
     def id_alias(self) -> str:
