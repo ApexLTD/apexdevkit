@@ -31,30 +31,6 @@ def no_user() -> None:
 
 
 @dataclass
-class Child:
-    infra: RestfulServiceBuilder
-    parent: RestfulName
-
-    def service_for(self, extract_user: Callable[..., Any]) -> type[RestfulService]:
-        User = Annotated[Any, Depends(extract_user)]
-        ParentId = Annotated[str, Path(alias=self.parent.singular + "_id")]
-
-        def srv(user: User, parent_id: ParentId) -> RestfulServiceBuilder:
-            try:
-                return self.infra.with_user(user).with_parent(parent_id)
-            except DoesNotExistError as e:
-                raise HTTPException(
-                    status_code=404,
-                    detail=RestfulResponse(self.parent).not_found(e),
-                )
-
-        return ServiceDependency(srv).as_dependable()
-
-    def with_parent(self, name: RestfulName) -> "Child":
-        return Child(self.infra, name)
-
-
-@dataclass
 class Root:
     infra: RestfulServiceBuilder
 
@@ -93,6 +69,30 @@ class InfraDependency:
             return self.infra
 
         return Annotated[RestfulServiceBuilder, Depends(_)]
+
+
+@dataclass
+class Child:
+    infra: RestfulServiceBuilder
+    parent: RestfulName
+
+    def service_for(self, extract_user: Callable[..., Any]) -> type[RestfulService]:
+        User = Annotated[Any, Depends(extract_user)]
+        ParentId = Annotated[str, Path(alias=self.parent.singular + "_id")]
+
+        def srv(user: User, parent_id: ParentId) -> RestfulServiceBuilder:
+            try:
+                return self.infra.with_user(user).with_parent(parent_id)
+            except DoesNotExistError as e:
+                raise HTTPException(
+                    status_code=404,
+                    detail=RestfulResponse(self.parent).not_found(e),
+                )
+
+        return ServiceDependency(srv).as_dependable()
+
+    def with_parent(self, name: RestfulName) -> "Child":
+        return Child(self.infra, name)
 
 
 @dataclass
