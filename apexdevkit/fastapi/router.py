@@ -31,6 +31,19 @@ def no_user() -> None:
 
 
 @dataclass
+class Root:
+    infra: RestfulServiceBuilder
+
+    def service_for(self, extract_user: Callable[..., Any]) -> Type[RestfulService]:
+        User = Annotated[Any, Depends(extract_user)]
+
+        def srv(user: User) -> RestfulService:
+            return self.infra.with_user(user).build()
+
+        return Annotated[RestfulService, Depends(srv)]  # type: ignore
+
+
+@dataclass
 class Child:
     infra: RestfulServiceBuilder
     parent: RestfulName
@@ -47,19 +60,6 @@ class Child:
                     status_code=404,
                     detail=RestfulResponse(self.parent).not_found(e),
                 )
-
-        return Annotated[RestfulService, Depends(srv)]  # type: ignore
-
-
-@dataclass
-class Root:
-    infra: RestfulServiceBuilder
-
-    def service_for(self, extract_user: Callable[..., Any]) -> Type[RestfulService]:
-        User = Annotated[Any, Depends(extract_user)]
-
-        def srv(user: User) -> RestfulService:
-            return self.infra.with_user(user).build()
 
         return Annotated[RestfulService, Depends(srv)]  # type: ignore
 
