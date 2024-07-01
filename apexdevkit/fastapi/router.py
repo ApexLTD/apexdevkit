@@ -76,8 +76,6 @@ class RestfulRouter:
     name: RestfulName = field(init=False)
     fields: SchemaFields = field(init=False)
 
-    parent: str = field(init=False, default="")
-
     infra: RestfulServiceBuilder = field(init=False)
 
     dependable: Root | Child = field(init=False)
@@ -95,10 +93,6 @@ class RestfulRouter:
         return self.name.singular + "_id"
 
     @property
-    def parent_id_alias(self) -> str:
-        return self.parent + "_id"
-
-    @property
     def item_path(self) -> str:
         return "/{" + self.id_alias + "}"
 
@@ -113,7 +107,6 @@ class RestfulRouter:
         return self
 
     def with_parent(self, name: str) -> Self:
-        self.parent = name
         self.dependable = Child(self.infra, RestfulName(name))
 
         return self
