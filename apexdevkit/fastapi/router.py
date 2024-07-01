@@ -37,10 +37,7 @@ class Root:
     def service_for(self, extract_user: Callable[..., Any]) -> Type[RestfulService]:
         User = Annotated[Any, Depends(extract_user)]
 
-        def srv(
-            user: User,
-        ) -> RestfulService:
-            print(user)
+        def srv(user: User) -> RestfulService:
             return self.infra.with_user(user).build()
 
         return Annotated[RestfulService, Depends(srv)]  # type: ignore
