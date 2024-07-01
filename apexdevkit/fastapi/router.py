@@ -73,8 +73,6 @@ class RestfulRouter:
     name: RestfulName = field(init=False)
     fields: SchemaFields = field(init=False)
 
-    infra: RestfulServiceBuilder = field(init=False)
-
     dependable: Root | Child = field(init=False)
 
     @cached_property
