@@ -47,7 +47,8 @@ class Root:
 
 
 @dataclass
-class Child(Root):
+class Child:
+    infra: RestfulServiceBuilder
     parent: RestfulName
 
     def service_for(self, extract_user: Callable[..., Any]) -> Type[RestfulService]:
@@ -64,6 +65,9 @@ class Child(Root):
                 )
 
         return Annotated[RestfulService, Depends(srv)]  # type: ignore
+
+    def with_parent(self, name: RestfulName) -> "Child":
+        return Child(self.infra, name)
 
 
 @dataclass
