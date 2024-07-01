@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from typing import Annotated, Any, Callable, Self, Type, TypeVar
 
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, HTTPException, Path, Depends
 from fastapi.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError
@@ -326,28 +326,46 @@ class RestfulRouter:
     def _service(
         self, extract_user: Callable[..., Any] = no_user
     ) -> Type[RestfulService]:
-        User = Annotated[Any, Depends(extract_user)]
-        ParentId = Annotated[str, Path(alias=self.parent_id_alias)]
+        if self.parent:
+            return Child(self.infra, RestfulName(self.parent)).service_for(extract_user)  # type: ignore
+        else:
+            return Root(self.infra).service_for(extract_user)  # type: ignore
 
-        def srv_child(user: User, parent_id: ParentId) -> RestfulService:
+
+@dataclass
+class Root:
+    infra: RestfulServiceBuilder
+
+    def service_for(self, extract_user: Callable[..., Any]) -> Type[RestfulService]:
+        User = Annotated[Any, Depends(extract_user)]
+
+        def srv(
+            user: User,
+        ) -> RestfulService:
+            print(user)
+            return self.infra.with_user(user).build()
+
+        return Annotated[RestfulService, Depends(srv)]  # type: ignore
+
+
+@dataclass
+class Child:
+    infra: RestfulServiceBuilder
+    parent: RestfulName
+
+    def service_for(self, extract_user: Callable[..., Any]) -> Type[RestfulService]:
+        parent_alias = self.parent.singular + "_id"
+
+        def srv(
+            user: Any = Annotated[Any, Depends(extract_user)],
+            parent_id: Any = Annotated[str, Path(alias=parent_alias)],
+        ) -> RestfulService:
             try:
                 return self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
                 raise HTTPException(
                     status_code=404,
-                    detail=RestfulResponse(RestfulName(self.parent)).not_found(e),
+                    detail=RestfulResponse(self.parent).not_found(e),
                 )
 
-        def srv_root(user: User) -> RestfulService:
-            try:
-                return self.infra.with_user(user).build()
-            except DoesNotExistError as e:
-                raise HTTPException(
-                    status_code=404,
-                    detail=RestfulResponse(RestfulName(self.parent)).not_found(e),
-                )
-
-        if self.parent:
-            return Annotated[RestfulService, Depends(srv_child)]  # type: ignore
-        else:
-            return Annotated[RestfulService, Depends(srv_root)]  # type: ignore
+        return Annotated[RestfulService, Depends(srv)]  # type: ignore
