@@ -41,7 +41,9 @@ class Root:
         def srv(builder: Builder, user: User) -> RestfulServiceBuilder:
             return builder.with_user(user)
 
-        return ServiceDependency(srv).as_dependable()
+        Infra = Annotated[RestfulServiceBuilder, Depends(srv)]
+
+        return ServiceDependency(Infra).as_dependable()
 
     def with_parent(self, name: RestfulName) -> "Child":
         return Child(self.infra, name)
@@ -49,10 +51,10 @@ class Root:
 
 @dataclass
 class ServiceDependency:
-    dependency: Callable[..., RestfulServiceBuilder]
+    dependency: type[RestfulServiceBuilder]
 
     def as_dependable(self) -> type[RestfulService]:
-        Builder = Annotated[RestfulServiceBuilder, Depends(self.dependency)]
+        Builder = self.dependency
 
         def _(builder: Builder) -> RestfulService:
             return builder.build()
@@ -89,7 +91,9 @@ class Child:
                     detail=RestfulResponse(self.parent).not_found(e),
                 )
 
-        return ServiceDependency(srv).as_dependable()
+        Infra = Annotated[RestfulServiceBuilder, Depends(srv)]
+
+        return ServiceDependency(Infra).as_dependable()
 
     def with_parent(self, name: RestfulName) -> "Child":
         return Child(self.infra, name)
