@@ -50,11 +50,10 @@ class Child:
 
     def service_for(self, extract_user: Callable[..., Any]) -> Type[RestfulService]:
         parent_alias = self.parent.singular + "_id"
+        User = Annotated[Any, Depends(extract_user)]
+        ParentId = Annotated[str, Path(alias=parent_alias)]
 
-        def srv(
-            user: Any = Annotated[Any, Depends(extract_user)],
-            parent_id: Any = Annotated[str, Path(alias=parent_alias)],
-        ) -> RestfulService:
+        def srv(user: User, parent_id: ParentId) -> RestfulService:
             try:
                 return self.infra.with_user(user).with_parent(parent_id).build()
             except DoesNotExistError as e:
