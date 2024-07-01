@@ -5,7 +5,6 @@ from typing import Any, Callable
 from starlette.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
-from apexdevkit.fastapi.builder import RestfulServiceBuilder
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.testing import RestfulName
 
@@ -15,12 +14,6 @@ _Response = JSONResponse | dict[str, Any]
 @dataclass
 class RestfulSubResource:
     name: RestfulName
-    infra: RestfulServiceBuilder
-    parent: RestfulName
-
-    @property
-    def parent_id_alias(self) -> str:
-        return self.parent.singular + "_id"
 
     @cached_property
     def response(self) -> RestfulResponse:
@@ -143,7 +136,6 @@ class RestfulSubResource:
 @dataclass
 class RestfulRootResource:
     name: RestfulName
-    infra: RestfulServiceBuilder
 
     @cached_property
     def response(self) -> RestfulResponse:
