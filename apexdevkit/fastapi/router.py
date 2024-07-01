@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Annotated, Any, Callable, Self, Type, TypeVar
+from typing import Annotated, Any, Callable, Self, TypeVar
 
 from fastapi import APIRouter, Depends, HTTPException, Path
 from fastapi.responses import JSONResponse
@@ -34,13 +34,13 @@ def no_user() -> None:
 class Root:
     infra: RestfulServiceBuilder
 
-    def service_for(self, extract_user: Callable[..., Any]) -> Type[RestfulService]:
+    def service_for(self, extract_user: Callable[..., Any]) -> type[RestfulService]:
         User = Annotated[Any, Depends(extract_user)]
 
-        def srv(user: User) -> RestfulService:
-            return self.infra.with_user(user).build()
+        def srv(user: User) -> RestfulServiceBuilder:
+            return self.infra.with_user(user)
 
-        return Annotated[RestfulService, Depends(srv)]  # type: ignore
+        return ServiceDependency(srv).as_dependable()
 
     def with_parent(self, name: RestfulName) -> "Child":
         return Child(self.infra, name)
@@ -51,23 +51,36 @@ class Child:
     infra: RestfulServiceBuilder
     parent: RestfulName
 
-    def service_for(self, extract_user: Callable[..., Any]) -> Type[RestfulService]:
+    def service_for(self, extract_user: Callable[..., Any]) -> type[RestfulService]:
         User = Annotated[Any, Depends(extract_user)]
         ParentId = Annotated[str, Path(alias=self.parent.singular + "_id")]
 
-        def srv(user: User, parent_id: ParentId) -> RestfulService:
+        def srv(user: User, parent_id: ParentId) -> RestfulServiceBuilder:
             try:
-                return self.infra.with_user(user).with_parent(parent_id).build()
+                return self.infra.with_user(user).with_parent(parent_id)
             except DoesNotExistError as e:
                 raise HTTPException(
                     status_code=404,
                     detail=RestfulResponse(self.parent).not_found(e),
                 )
 
-        return Annotated[RestfulService, Depends(srv)]  # type: ignore
+        return ServiceDependency(srv).as_dependable()
 
     def with_parent(self, name: RestfulName) -> "Child":
         return Child(self.infra, name)
+
+
+@dataclass
+class ServiceDependency:
+    dependency: Callable[..., RestfulServiceBuilder]
+
+    def as_dependable(self) -> type[RestfulService]:
+        Builder = Annotated[RestfulServiceBuilder, Depends(self.dependency)]
+
+        def _(builder: Builder) -> RestfulService:
+            return builder.build()
+
+        return Annotated[RestfulService, Depends(_)]
 
 
 @dataclass
