@@ -12,7 +12,7 @@ _Response = JSONResponse | dict[str, Any]
 
 
 @dataclass
-class RestfulRootResource:
+class RestfulResource:
     name: RestfulName
 
     @cached_property
