@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Annotated, Any, Callable
+from typing import Any, Callable
 
-from fastapi import Path
 from starlette.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
@@ -27,15 +26,8 @@ class RestfulSubResource:
     def response(self) -> RestfulResponse:
         return RestfulResponse(name=self.name)
 
-    def create_one(self, User, Item) -> Callable[..., _Response]:  # type: ignore
-        ParentId = Annotated[str, Path(alias=self.parent_id_alias)]
-
-        def endpoint(user: User, parent_id: ParentId, item: Item) -> _Response:
-            try:
-                service = self.infra.with_user(user).with_parent(parent_id).build()
-            except DoesNotExistError as e:
-                return JSONResponse(RestfulResponse(self.parent).not_found(e), 404)
-
+    def create_one(self, Service, Item) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(service: Service, item: Item) -> _Response:
             try:
                 item = service.create_one(item)
             except ExistsError as e:
@@ -47,15 +39,8 @@ class RestfulSubResource:
 
         return endpoint
 
-    def create_many(self, User, Collection) -> Callable[..., _Response]:  # type: ignore
-        ParentId = Annotated[str, Path(alias=self.parent_id_alias)]
-
-        def endpoint(user: User, parent_id: ParentId, items: Collection) -> _Response:
-            try:
-                service = self.infra.with_user(user).with_parent(parent_id).build()
-            except DoesNotExistError as e:
-                return JSONResponse(RestfulResponse(self.parent).not_found(e), 404)
-
+    def create_many(self, Service, Collection) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(service: Service, items: Collection) -> _Response:
             try:
                 return self.response.created_many(service.create_many(items))
             except ExistsError as e:
@@ -164,10 +149,8 @@ class RestfulRootResource:
     def response(self) -> RestfulResponse:
         return RestfulResponse(name=self.name)
 
-    def create_one(self, User, Item) -> Callable[..., _Response]:  # type: ignore
-        def endpoint(user: User, item: Item) -> _Response:
-            service = self.infra.with_user(user).build()
-
+    def create_one(self, Service, Item) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(service: Service, item: Item) -> _Response:
             try:
                 item = service.create_one(item)
             except ExistsError as e:
@@ -179,10 +162,8 @@ class RestfulRootResource:
 
         return endpoint
 
-    def create_many(self, User, Collection) -> Callable[..., _Response]:  # type: ignore
-        def endpoint(user: User, items: Collection) -> _Response:
-            service = self.infra.with_user(user).build()
-
+    def create_many(self, Service, Collection) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(service: Service, items: Collection) -> _Response:
             try:
                 return self.response.created_many(service.create_many(items))
             except ExistsError as e:
