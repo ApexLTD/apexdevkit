@@ -35,12 +35,12 @@ class Root:
     infra: RestfulServiceBuilder
 
     def service_for(self, extract_user: Callable[..., Any]) -> type[RestfulService]:
-        User = UserDependency(
-            extract_user,
-            dependency=InfraDependency(self.infra).as_dependable(),
-        )
-
-        return ServiceDependency(User.as_dependable()).as_dependable()
+        return ServiceDependency(
+            UserDependency(
+                extract_user,
+                InfraDependency(self.infra).as_dependable(),
+            ).as_dependable()
+        ).as_dependable()
 
     def with_parent(self, name: RestfulName) -> "Child":
         return Child(self.infra, name)
