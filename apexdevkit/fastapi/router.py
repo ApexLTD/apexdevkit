@@ -35,10 +35,11 @@ class Root:
     infra: RestfulServiceBuilder
 
     def service_for(self, extract_user: Callable[..., Any]) -> type[RestfulService]:
+        Builder = InfraDependency(self.infra).as_dependable()
         User = Annotated[Any, Depends(extract_user)]
 
-        def srv(user: User) -> RestfulServiceBuilder:
-            return self.infra.with_user(user)
+        def srv(builder: Builder, user: User) -> RestfulServiceBuilder:
+            return builder.with_user(user)
 
         return ServiceDependency(srv).as_dependable()
 
@@ -81,6 +82,17 @@ class ServiceDependency:
             return builder.build()
 
         return Annotated[RestfulService, Depends(_)]
+
+
+@dataclass
+class InfraDependency:
+    infra: RestfulServiceBuilder
+
+    def as_dependable(self) -> type[RestfulServiceBuilder]:
+        def _() -> RestfulServiceBuilder:
+            return self.infra
+
+        return Annotated[RestfulServiceBuilder, Depends(_)]
 
 
 @dataclass
