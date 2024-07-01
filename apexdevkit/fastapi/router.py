@@ -31,6 +31,45 @@ def no_user() -> None:
 
 
 @dataclass
+class Root:
+    infra: RestfulServiceBuilder
+
+    def service_for(self, extract_user: Callable[..., Any]) -> Type[RestfulService]:
+        User = Annotated[Any, Depends(extract_user)]
+
+        def srv(
+            user: User,
+        ) -> RestfulService:
+            print(user)
+            return self.infra.with_user(user).build()
+
+        return Annotated[RestfulService, Depends(srv)]  # type: ignore
+
+
+@dataclass
+class Child:
+    infra: RestfulServiceBuilder
+    parent: RestfulName
+
+    def service_for(self, extract_user: Callable[..., Any]) -> Type[RestfulService]:
+        parent_alias = self.parent.singular + "_id"
+
+        def srv(
+            user: Any = Annotated[Any, Depends(extract_user)],
+            parent_id: Any = Annotated[str, Path(alias=parent_alias)],
+        ) -> RestfulService:
+            try:
+                return self.infra.with_user(user).with_parent(parent_id).build()
+            except DoesNotExistError as e:
+                raise HTTPException(
+                    status_code=404,
+                    detail=RestfulResponse(self.parent).not_found(e),
+                )
+
+        return Annotated[RestfulService, Depends(srv)]  # type: ignore
+
+
+@dataclass
 class RestfulRouter:
     router: APIRouter = field(default_factory=APIRouter)
 
@@ -40,6 +79,8 @@ class RestfulRouter:
     parent: str = field(init=False, default="")
 
     infra: RestfulServiceBuilder = field(init=False)
+
+    dependable: Root | Child = field(init=False)
 
     @cached_property
     def schema(self) -> RestfulSchema:
@@ -73,11 +114,13 @@ class RestfulRouter:
 
     def with_parent(self, name: str) -> Self:
         self.parent = name
+        self.dependable = Child(self.infra, RestfulName(name))
 
         return self
 
     def with_infra(self, value: RestfulServiceBuilder) -> Self:
         self.infra = value
+        self.dependable = Root(value)
 
         return self
 
@@ -324,42 +367,3 @@ class RestfulRouter:
             return Child(self.infra, RestfulName(self.parent)).service_for(extract_user)  # type: ignore
         else:
             return Root(self.infra).service_for(extract_user)  # type: ignore
-
-
-@dataclass
-class Root:
-    infra: RestfulServiceBuilder
-
-    def service_for(self, extract_user: Callable[..., Any]) -> Type[RestfulService]:
-        User = Annotated[Any, Depends(extract_user)]
-
-        def srv(
-            user: User,
-        ) -> RestfulService:
-            print(user)
-            return self.infra.with_user(user).build()
-
-        return Annotated[RestfulService, Depends(srv)]  # type: ignore
-
-
-@dataclass
-class Child:
-    infra: RestfulServiceBuilder
-    parent: RestfulName
-
-    def service_for(self, extract_user: Callable[..., Any]) -> Type[RestfulService]:
-        parent_alias = self.parent.singular + "_id"
-
-        def srv(
-            user: Any = Annotated[Any, Depends(extract_user)],
-            parent_id: Any = Annotated[str, Path(alias=parent_alias)],
-        ) -> RestfulService:
-            try:
-                return self.infra.with_user(user).with_parent(parent_id).build()
-            except DoesNotExistError as e:
-                raise HTTPException(
-                    status_code=404,
-                    detail=RestfulResponse(self.parent).not_found(e),
-                )
-
-        return Annotated[RestfulService, Depends(srv)]  # type: ignore
