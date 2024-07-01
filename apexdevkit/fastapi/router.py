@@ -260,10 +260,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "",
             self.resource.replace_one(
-                User=Annotated[
-                    Any,
-                    Depends(extract_user),
-                ],
+                Service=self._service(extract_user),
                 Item=Annotated[
                     RawItem,
                     Depends(self.schema.for_replace_one()),
@@ -287,10 +284,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "/batch",
             self.resource.replace_many(
-                User=Annotated[
-                    Any,
-                    Depends(extract_user),
-                ],
+                Service=self._service(extract_user),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_replace_many()),

@@ -144,15 +144,8 @@ class RestfulSubResource:
 
         return endpoint
 
-    def replace_one(self, User, Item) -> Callable[..., _Response]:  # type: ignore
-        ParentId = Annotated[str, Path(alias=self.parent_id_alias)]
-
-        def endpoint(user: User, parent_id: ParentId, item: Item) -> _Response:
-            try:
-                service = self.infra.with_user(user).with_parent(parent_id).build()
-            except DoesNotExistError as e:
-                return JSONResponse(RestfulResponse(self.parent).not_found(e), 404)
-
+    def replace_one(self, Service, Item) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(service: Service, item: Item) -> _Response:
             try:
                 service.replace_one(item)
             except DoesNotExistError as e:
@@ -164,15 +157,8 @@ class RestfulSubResource:
 
         return endpoint
 
-    def replace_many(self, User, Collection) -> Callable[..., _Response]:  # type: ignore
-        ParentId = Annotated[str, Path(alias=self.parent_id_alias)]
-
-        def endpoint(user: User, parent_id: ParentId, items: Collection) -> _Response:
-            try:
-                service = self.infra.with_user(user).with_parent(parent_id).build()
-            except DoesNotExistError as e:
-                return JSONResponse(RestfulResponse(self.parent).not_found(e), 404)
-
+    def replace_many(self, Service, Collection) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(service: Service, items: Collection) -> _Response:
             try:
                 service.replace_many(items)
             except DoesNotExistError as e:
@@ -289,10 +275,8 @@ class RestfulRootResource:
 
         return endpoint
 
-    def replace_one(self, User, Item) -> Callable[..., _Response]:  # type: ignore
-        def endpoint(user: User, item: Item) -> _Response:
-            service = self.infra.with_user(user).build()
-
+    def replace_one(self, Service, Item) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(service: Service, item: Item) -> _Response:
             try:
                 service.replace_one(item)
             except DoesNotExistError as e:
@@ -304,10 +288,8 @@ class RestfulRootResource:
 
         return endpoint
 
-    def replace_many(self, User, Collection) -> Callable[..., _Response]:  # type: ignore
-        def endpoint(user: User, items: Collection) -> _Response:
-            service = self.infra.with_user(user).build()
-
+    def replace_many(self, Service, Collection) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(service: Service, items: Collection) -> _Response:
             try:
                 service.replace_many(items)
             except DoesNotExistError as e:
