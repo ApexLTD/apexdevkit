@@ -49,9 +49,8 @@ class Child:
     parent: RestfulName
 
     def service_for(self, extract_user: Callable[..., Any]) -> Type[RestfulService]:
-        parent_alias = self.parent.singular + "_id"
         User = Annotated[Any, Depends(extract_user)]
-        ParentId = Annotated[str, Path(alias=parent_alias)]
+        ParentId = Annotated[str, Path(alias=self.parent.singular + "_id")]
 
         def srv(user: User, parent_id: ParentId) -> RestfulService:
             try:
