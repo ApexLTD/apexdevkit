@@ -32,8 +32,6 @@ def no_user() -> None:
 
 @dataclass
 class RestfulRouter:
-    service: RestfulService | None = None
-
     router: APIRouter = field(default_factory=APIRouter)
 
     name: RestfulName = field(init=False)
@@ -42,10 +40,6 @@ class RestfulRouter:
     parent: str = field(init=False, default="")
 
     infra: RestfulServiceBuilder = field(init=False)
-
-    def __post_init__(self) -> None:  # pragma: no cover
-        if self.service:
-            self.with_infra(PreBuiltRestfulService(self.service))
 
     @cached_property
     def schema(self) -> RestfulSchema:
