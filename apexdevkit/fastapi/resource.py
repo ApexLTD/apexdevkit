@@ -99,20 +99,12 @@ class RestfulSubResource:
 
         return endpoint
 
-    def update_one(self, User, ItemId, Updates) -> Callable[..., _Response]:  # type: ignore
-        ParentId = Annotated[str, Path(alias=self.parent_id_alias)]
-
+    def update_one(self, Service, ItemId, Updates) -> Callable[..., _Response]:  # type: ignore
         def endpoint(
-            user: User,
-            parent_id: ParentId,
+            service: Service,
             item_id: ItemId,
             updates: Updates,
         ) -> _Response:
-            try:
-                service = self.infra.with_user(user).with_parent(parent_id).build()
-            except DoesNotExistError as e:
-                return JSONResponse(RestfulResponse(self.parent).not_found(e), 404)
-
             try:
                 service.update_one(item_id, **updates)
             except DoesNotExistError as e:
@@ -124,15 +116,8 @@ class RestfulSubResource:
 
         return endpoint
 
-    def update_many(self, User, Collection) -> Callable[..., _Response]:  # type: ignore
-        ParentId = Annotated[str, Path(alias=self.parent_id_alias)]
-
-        def endpoint(user: User, parent_id: ParentId, items: Collection) -> _Response:
-            try:
-                service = self.infra.with_user(user).with_parent(parent_id).build()
-            except DoesNotExistError as e:
-                return JSONResponse(RestfulResponse(self.parent).not_found(e), 404)
-
+    def update_many(self, Service, Collection) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(service: Service, items: Collection) -> _Response:
             try:
                 service.update_many(items)
             except DoesNotExistError as e:
@@ -245,10 +230,8 @@ class RestfulRootResource:
 
         return endpoint
 
-    def update_one(self, User, ItemId, Updates) -> Callable[..., _Response]:  # type: ignore
-        def endpoint(user: User, item_id: ItemId, updates: Updates) -> _Response:
-            service = self.infra.with_user(user).build()
-
+    def update_one(self, Service, ItemId, Updates) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(service: Service, item_id: ItemId, updates: Updates) -> _Response:
             try:
                 service.update_one(item_id, **updates)
             except DoesNotExistError as e:
@@ -260,10 +243,8 @@ class RestfulRootResource:
 
         return endpoint
 
-    def update_many(self, User, Collection) -> Callable[..., _Response]:  # type: ignore
-        def endpoint(user: User, items: Collection) -> _Response:
-            service = self.infra.with_user(user).build()
-
+    def update_many(self, Service, Collection) -> Callable[..., _Response]:  # type: ignore
+        def endpoint(service: Service, items: Collection) -> _Response:
             try:
                 service.update_many(items)
             except DoesNotExistError as e:
