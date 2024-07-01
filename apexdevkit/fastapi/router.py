@@ -104,12 +104,11 @@ class RestfulRouter:
         return self
 
     def with_parent(self, name: str) -> Self:
-        self.dependable = Child(self.infra, RestfulName(name))
+        self.dependable = self.dependable.with_parent(RestfulName(name))
 
         return self
 
     def with_infra(self, value: RestfulServiceBuilder) -> Self:
-        self.infra = value
         self.dependable = Root(value)
 
         return self
