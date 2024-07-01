@@ -152,10 +152,7 @@ class RestfulRouter:
         self.router.add_api_route(
             self.item_path,
             self.resource.read_one(
-                User=Annotated[
-                    Any,
-                    Depends(extract_user),
-                ],
+                Service=self._service(extract_user),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -179,10 +176,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "",
             self.resource.read_all(
-                User=Annotated[
-                    Any,
-                    Depends(extract_user),
-                ],
+                Service=self._service(extract_user),
             ),
             methods=["GET"],
             status_code=200,
