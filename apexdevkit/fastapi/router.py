@@ -1,12 +1,14 @@
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Annotated, Any, Callable, Self, TypeVar
+from typing import Annotated, Any, Callable, Self, Type, TypeVar
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, HTTPException, Path
 from fastapi.responses import JSONResponse
 
+from apexdevkit.error import DoesNotExistError
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
-from apexdevkit.fastapi.resource import RestfulRootResource, RestfulSubResource
+from apexdevkit.fastapi.resource import RestfulResource
+from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.schema import RestfulSchema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
 from apexdevkit.testing import RestfulName
@@ -50,15 +52,16 @@ class RestfulRouter:
         return RestfulSchema(name=self.name, fields=self.fields)
 
     @property
-    def resource(self) -> RestfulRootResource | RestfulSubResource:
-        if not self.parent:
-            return RestfulRootResource(self.name, self.infra)
-
-        return RestfulSubResource(self.name, self.infra, RestfulName(self.parent))
+    def resource(self) -> RestfulResource:
+        return RestfulResource(self.name)
 
     @property
     def id_alias(self) -> str:
         return self.name.singular + "_id"
+
+    @property
+    def parent_id_alias(self) -> str:
+        return self.parent + "_id"
 
     @property
     def item_path(self) -> str:
@@ -92,10 +95,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "",
             self.resource.create_one(
-                User=Annotated[
-                    Any,
-                    Depends(extract_user),
-                ],
+                Service=self._service(extract_user),
                 Item=Annotated[
                     RawItem,
                     Depends(self.schema.for_create_one()),
@@ -119,10 +119,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "/batch",
             self.resource.create_many(
-                User=Annotated[
-                    Any,
-                    Depends(extract_user),
-                ],
+                Service=self._service(extract_user),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_create_many()),
@@ -146,10 +143,7 @@ class RestfulRouter:
         self.router.add_api_route(
             self.item_path,
             self.resource.read_one(
-                User=Annotated[
-                    Any,
-                    Depends(extract_user),
-                ],
+                Service=self._service(extract_user),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -173,10 +167,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "",
             self.resource.read_all(
-                User=Annotated[
-                    Any,
-                    Depends(extract_user),
-                ],
+                Service=self._service(extract_user),
             ),
             methods=["GET"],
             status_code=200,
@@ -196,10 +187,7 @@ class RestfulRouter:
         self.router.add_api_route(
             self.item_path,
             self.resource.update_one(
-                User=Annotated[
-                    Any,
-                    Depends(extract_user),
-                ],
+                Service=self._service(extract_user),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -227,10 +215,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "",
             self.resource.update_many(
-                User=Annotated[
-                    Any,
-                    Depends(extract_user),
-                ],
+                Service=self._service(extract_user),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_update_many()),
@@ -254,10 +239,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "",
             self.resource.replace_one(
-                User=Annotated[
-                    Any,
-                    Depends(extract_user),
-                ],
+                Service=self._service(extract_user),
                 Item=Annotated[
                     RawItem,
                     Depends(self.schema.for_replace_one()),
@@ -281,10 +263,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "/batch",
             self.resource.replace_many(
-                User=Annotated[
-                    Any,
-                    Depends(extract_user),
-                ],
+                Service=self._service(extract_user),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_replace_many()),
@@ -308,10 +287,7 @@ class RestfulRouter:
         self.router.add_api_route(
             self.item_path,
             self.resource.delete_one(
-                User=Annotated[
-                    Any,
-                    Depends(extract_user),
-                ],
+                Service=self._service(extract_user),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -346,3 +322,32 @@ class RestfulRouter:
 
     def build(self) -> APIRouter:
         return self.router
+
+    def _service(
+        self, extract_user: Callable[..., Any] = no_user
+    ) -> Type[RestfulService]:
+        User = Annotated[Any, Depends(extract_user)]
+        ParentId = Annotated[str, Path(alias=self.parent_id_alias)]
+
+        def srv_child(user: User, parent_id: ParentId) -> RestfulService:
+            try:
+                return self.infra.with_user(user).with_parent(parent_id).build()
+            except DoesNotExistError as e:
+                raise HTTPException(
+                    status_code=404,
+                    detail=RestfulResponse(RestfulName(self.parent)).not_found(e),
+                )
+
+        def srv_root(user: User) -> RestfulService:
+            try:
+                return self.infra.with_user(user).build()
+            except DoesNotExistError as e:
+                raise HTTPException(
+                    status_code=404,
+                    detail=RestfulResponse(RestfulName(self.parent)).not_found(e),
+                )
+
+        if self.parent:
+            return Annotated[RestfulService, Depends(srv_child)]  # type: ignore
+        else:
+            return Annotated[RestfulService, Depends(srv_root)]  # type: ignore
