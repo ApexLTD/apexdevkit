@@ -31,23 +31,6 @@ def no_user() -> None:
 
 
 @dataclass
-class Root:
-    infra: RestfulServiceBuilder
-
-    def service_for(self, extract_user: Callable[..., Any]) -> type[RestfulService]:
-        Builder = InfraDependency(self.infra).as_dependable()
-        User = Annotated[Any, Depends(extract_user)]
-
-        def srv(builder: Builder, user: User) -> RestfulServiceBuilder:
-            return builder.with_user(user)
-
-        return ServiceDependency(srv).as_dependable()
-
-    def with_parent(self, name: RestfulName) -> "Child":
-        return Child(self.infra, name)
-
-
-@dataclass
 class Child:
     infra: RestfulServiceBuilder
     parent: RestfulName
@@ -64,6 +47,23 @@ class Child:
                     status_code=404,
                     detail=RestfulResponse(self.parent).not_found(e),
                 )
+
+        return ServiceDependency(srv).as_dependable()
+
+    def with_parent(self, name: RestfulName) -> "Child":
+        return Child(self.infra, name)
+
+
+@dataclass
+class Root:
+    infra: RestfulServiceBuilder
+
+    def service_for(self, extract_user: Callable[..., Any]) -> type[RestfulService]:
+        Builder = InfraDependency(self.infra).as_dependable()
+        User = Annotated[Any, Depends(extract_user)]
+
+        def srv(builder: Builder, user: User) -> RestfulServiceBuilder:
+            return builder.with_user(user)
 
         return ServiceDependency(srv).as_dependable()
 
