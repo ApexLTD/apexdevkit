@@ -363,7 +363,4 @@ class RestfulRouter:
     def _service(
         self, extract_user: Callable[..., Any] = no_user
     ) -> Type[RestfulService]:
-        if self.parent:
-            return Child(self.infra, RestfulName(self.parent)).service_for(extract_user)  # type: ignore
-        else:
-            return Root(self.infra).service_for(extract_user)  # type: ignore
+        return self.dependable.service_for(extract_user)
