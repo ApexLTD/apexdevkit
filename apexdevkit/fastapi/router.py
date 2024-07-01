@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
-from apexdevkit.fastapi.resource import RestfulRootResource, RestfulSubResource
+from apexdevkit.fastapi.resource import RestfulRootResource
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.schema import RestfulSchema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
@@ -52,11 +52,8 @@ class RestfulRouter:
         return RestfulSchema(name=self.name, fields=self.fields)
 
     @property
-    def resource(self) -> RestfulRootResource | RestfulSubResource:
-        if not self.parent:
-            return RestfulRootResource(self.name)
-
-        return RestfulSubResource(self.name)
+    def resource(self) -> RestfulRootResource:
+        return RestfulRootResource(self.name)
 
     @property
     def id_alias(self) -> str:
