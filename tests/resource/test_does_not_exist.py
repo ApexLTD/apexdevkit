@@ -3,7 +3,6 @@ from uuid import uuid4
 import pytest
 
 from apexdevkit.error import DoesNotExistError
-from apexdevkit.fastapi import RestfulServiceBuilder
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestResource
 from tests.resource.sample_api import FailingService
@@ -16,7 +15,7 @@ def apple() -> JsonDict:
 
 
 @pytest.fixture
-def service() -> RestfulServiceBuilder:
+def service() -> FailingService:
     return FailingService(DoesNotExistError)
 
 
