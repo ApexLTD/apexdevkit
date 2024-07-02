@@ -111,8 +111,12 @@ class RestfulRouter:
     def item_path(self) -> str:
         return "/{" + self.id_alias + "}"
 
-    def _dependable_with(self) -> ServiceDependency:
-        return ServiceDependency(UserDependency(self._dependable))
+    def _dependable_with(
+        self, extract_user: Callable[..., Any]
+    ) -> type[RestfulServiceBuilder]:
+        return ServiceDependency(UserDependency(self._dependable)).as_dependable(  # type: ignore
+            extract_user=extract_user
+        )
 
     def with_name(self, value: RestfulName) -> Self:
         self.name = value
@@ -142,9 +146,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "",
             self.resource.create_one(
-                Service=self._dependable_with().as_dependable(
-                    extract_user=extract_user
-                ),
+                Service=self._dependable_with(extract_user),
                 Item=Annotated[
                     RawItem,
                     Depends(self.schema.for_create_one()),
@@ -168,9 +170,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "/batch",
             self.resource.create_many(
-                Service=self._dependable_with().as_dependable(
-                    extract_user=extract_user
-                ),
+                Service=self._dependable_with(extract_user),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_create_many()),
@@ -194,9 +194,7 @@ class RestfulRouter:
         self.router.add_api_route(
             self.item_path,
             self.resource.read_one(
-                Service=self._dependable_with().as_dependable(
-                    extract_user=extract_user
-                ),
+                Service=self._dependable_with(extract_user),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -220,9 +218,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "",
             self.resource.read_all(
-                Service=self._dependable_with().as_dependable(
-                    extract_user=extract_user
-                ),
+                Service=self._dependable_with(extract_user),
             ),
             methods=["GET"],
             status_code=200,
@@ -242,9 +238,7 @@ class RestfulRouter:
         self.router.add_api_route(
             self.item_path,
             self.resource.update_one(
-                Service=self._dependable_with().as_dependable(
-                    extract_user=extract_user
-                ),
+                Service=self._dependable_with(extract_user),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -272,9 +266,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "",
             self.resource.update_many(
-                Service=self._dependable_with().as_dependable(
-                    extract_user=extract_user
-                ),
+                Service=self._dependable_with(extract_user),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_update_many()),
@@ -298,9 +290,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "",
             self.resource.replace_one(
-                Service=self._dependable_with().as_dependable(
-                    extract_user=extract_user
-                ),
+                Service=self._dependable_with(extract_user),
                 Item=Annotated[
                     RawItem,
                     Depends(self.schema.for_replace_one()),
@@ -324,9 +314,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "/batch",
             self.resource.replace_many(
-                Service=self._dependable_with().as_dependable(
-                    extract_user=extract_user
-                ),
+                Service=self._dependable_with(extract_user),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_replace_many()),
@@ -350,9 +338,7 @@ class RestfulRouter:
         self.router.add_api_route(
             self.item_path,
             self.resource.delete_one(
-                Service=self._dependable_with().as_dependable(
-                    extract_user=extract_user
-                ),
+                Service=self._dependable_with(extract_user),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
