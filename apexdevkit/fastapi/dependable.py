@@ -95,7 +95,7 @@ class DependableBuilder:
 
         return self
 
-    def build(self) -> type[RestfulService]:
+    def as_dependable(self) -> type[RestfulService]:
         return ServiceDependency(
             UserDependency(self.extract_user, self.dependency)
         ).as_dependable()
