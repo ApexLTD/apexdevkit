@@ -58,35 +58,23 @@ class RestResource:
 @dataclass
 class RestCollection(RestResource):
     def sub_resource(self, name: str) -> RestItem:
-        assert isinstance(
-            self.http, Httpx
-        ), "sub resource only works with TestClientAdapter"
-        client = self.http.client
+        assert isinstance(self.http, Httpx), "sub resource only works with Httpx"
 
-        return RestItem(
-            TestClient(
-                client.app,
-                base_url=HttpUrl(str(client.base_url)) + self.name.plural,
-            ),
-            RestfulName(name),
-        )
+        client = self.http.client
+        client.base_url = client.base_url.join(self.name.plural)
+
+        return RestItem(self.http, RestfulName(name))
 
 
 @dataclass
 class RestItem(RestResource):
     def sub_resource(self, name: str) -> RestItem:
-        assert isinstance(
-            self.http, Httpx
-        ), "sub resource only works with TestClientAdapter"
-        client = self.http.client
+        assert isinstance(self.http, Httpx), "sub resource only works with Httpx"
 
-        return RestItem(
-            TestClient(
-                client.app,
-                base_url=HttpUrl(str(client.base_url)) + self.name.singular,
-            ),
-            RestfulName(name),
-        )
+        client = self.http.client
+        client.base_url = client.base_url.join(self.name.plural)
+
+        return RestItem(self.http, RestfulName(name))
 
 
 @dataclass
