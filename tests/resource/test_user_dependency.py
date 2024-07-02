@@ -56,7 +56,7 @@ def setup(infra: RestfulServiceBuilder, fake_user: FakeUser) -> FastAPI:
             .with_fields(AppleFields())
             .with_infra(infra)
             .with_create_one_endpoint(dependable)
-            .with_create_many_endpoint(extract_user=fake_user.user)
+            .with_create_many_endpoint(dependable)
             .with_read_one_endpoint(extract_user=fake_user.user)
             .with_read_all_endpoint(extract_user=fake_user.user)
             .with_update_one_endpoint(extract_user=fake_user.user)

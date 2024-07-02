@@ -105,14 +105,12 @@ class RestfulRouter:
         return self
 
     def with_create_many_endpoint(
-        self,
-        is_documented: bool = True,
-        extract_user: Callable[..., Any] = no_user,
+        self, dependable: Dependable, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             "/batch",
             self.resource.create_many(
-                Service=self.dependable.with_user(extract_user).as_dependable(),
+                Service=dependable.as_dependable(),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_create_many()),
@@ -305,7 +303,7 @@ class RestfulRouter:
     def default(self, dependable: Dependable) -> Self:
         return (
             self.with_create_one_endpoint(dependable)
-            .with_create_many_endpoint()
+            .with_create_many_endpoint(dependable)
             .with_read_one_endpoint()
             .with_read_all_endpoint()
             .with_update_one_endpoint()
