@@ -100,10 +100,6 @@ class RestfulRouter:
         return RestfulSchema(name=self.name, fields=self.fields)
 
     @property
-    def dependable(self) -> ServiceDependency:
-        return ServiceDependency(UserDependency(self._dependable))
-
-    @property
     def resource(self) -> RestfulResource:
         return RestfulResource(self.name)
 
@@ -114,6 +110,10 @@ class RestfulRouter:
     @property
     def item_path(self) -> str:
         return "/{" + self.id_alias + "}"
+
+    @property
+    def dependable(self) -> ServiceDependency:
+        return ServiceDependency(UserDependency(self._dependable))
 
     def with_name(self, value: RestfulName) -> Self:
         self.name = value
