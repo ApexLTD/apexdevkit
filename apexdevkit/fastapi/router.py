@@ -2,13 +2,11 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from typing import Annotated, Any, Callable, Self, TypeVar
 
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
 
-from apexdevkit.error import DoesNotExistError
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
 from apexdevkit.fastapi.resource import RestfulResource
-from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.schema import RestfulSchema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
 from apexdevkit.testing import RestfulName
@@ -75,6 +73,21 @@ class UserDependency:
 
 
 @dataclass
+class ParentDependency:
+    parent: RestfulName
+    dependency: type[RestfulServiceBuilder]
+
+    def as_dependable(self) -> type[RestfulServiceBuilder]:
+        Builder = self.dependency
+        ParentId = Annotated[str, Path(alias=self.parent.singular + "_id")]
+
+        def _(builder: Builder, parent_id: ParentId) -> RestfulServiceBuilder:
+            return builder.with_parent(parent_id)
+
+        return Annotated[RestfulServiceBuilder, Depends(_)]
+
+
+@dataclass
 class InfraDependency:
     infra: RestfulServiceBuilder
 
@@ -91,21 +104,15 @@ class Child:
     parent: RestfulName
 
     def service_for(self, extract_user: Callable[..., Any]) -> type[RestfulService]:
-        User = Annotated[Any, Depends(extract_user)]
-        ParentId = Annotated[str, Path(alias=self.parent.singular + "_id")]
-
-        def srv(user: User, parent_id: ParentId) -> RestfulServiceBuilder:
-            try:
-                return self.infra.with_user(user).with_parent(parent_id)
-            except DoesNotExistError as e:
-                raise HTTPException(
-                    status_code=404,
-                    detail=RestfulResponse(self.parent).not_found(e),
-                )
-
-        Infra = Annotated[RestfulServiceBuilder, Depends(srv)]
-
-        return ServiceDependency(Infra).as_dependable()
+        return ServiceDependency(
+            ParentDependency(
+                self.parent,
+                UserDependency(
+                    extract_user,
+                    InfraDependency(self.infra).as_dependable(),
+                ).as_dependable(),
+            ).as_dependable()
+        ).as_dependable()
 
     def with_parent(self, name: RestfulName) -> "Child":
         return Child(self.infra, name)
