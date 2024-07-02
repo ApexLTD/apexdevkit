@@ -29,7 +29,7 @@ def no_user() -> None:
 
 
 class _Dependency(Protocol):
-    def as_dependable(self, **data: Any) -> type[RestfulServiceBuilder]:
+    def as_dependable(self) -> type[RestfulServiceBuilder]:
         pass
 
 
@@ -37,8 +37,8 @@ class _Dependency(Protocol):
 class ServiceDependency:
     dependency: _Dependency
 
-    def as_dependable(self, **data: Any) -> type[RestfulService]:
-        Builder = self.dependency.as_dependable(**data)
+    def as_dependable(self) -> type[RestfulService]:
+        Builder = self.dependency.as_dependable()
 
         def _(builder: Builder) -> RestfulService:  # type: ignore
             return builder.build()  # type: ignore
@@ -51,8 +51,8 @@ class UserDependency:
     extract_user: Callable[..., Any]
     dependency: _Dependency
 
-    def as_dependable(self, **data: Any) -> type[RestfulServiceBuilder]:
-        Builder = self.dependency.as_dependable(**data)
+    def as_dependable(self) -> type[RestfulServiceBuilder]:
+        Builder = self.dependency.as_dependable()
         User = Annotated[Any, Depends(self.extract_user)]
 
         def _(builder: Builder, user: User) -> RestfulServiceBuilder:  # type: ignore
@@ -66,8 +66,8 @@ class ParentDependency:
     parent: RestfulName
     dependency: _Dependency
 
-    def as_dependable(self, **data: Any) -> type[RestfulServiceBuilder]:
-        Builder = self.dependency.as_dependable(**data)
+    def as_dependable(self) -> type[RestfulServiceBuilder]:
+        Builder = self.dependency.as_dependable()
         ParentId = Annotated[str, Path(alias=self.parent.singular + "_id")]
 
         def _(builder: Builder, parent_id: ParentId) -> RestfulServiceBuilder:  # type: ignore
@@ -80,7 +80,7 @@ class ParentDependency:
 class InfraDependency:
     infra: RestfulServiceBuilder
 
-    def as_dependable(self, **data: Any) -> type[RestfulServiceBuilder]:
+    def as_dependable(self) -> type[RestfulServiceBuilder]:
         def _() -> RestfulServiceBuilder:
             return self.infra
 
@@ -117,7 +117,7 @@ class RestfulRouter:
     ) -> type[RestfulServiceBuilder]:
         return ServiceDependency(  # type: ignore
             UserDependency(extract_user, self._dependable)
-        ).as_dependable(extract_user=extract_user)
+        ).as_dependable()
 
     def with_name(self, value: RestfulName) -> Self:
         self.name = value
