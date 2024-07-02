@@ -63,7 +63,7 @@ def setup(infra: RestfulServiceBuilder, fake_user: FakeUser) -> FastAPI:
             .with_update_many_endpoint(dependable)
             .with_replace_one_endpoint(dependable)
             .with_replace_many_endpoint(dependable)
-            .with_delete_one_endpoint(extract_user=fake_user.user)
+            .with_delete_one_endpoint(dependable)
             .build()
         )
         .build()

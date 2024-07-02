@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Annotated, Any, Callable, Protocol, Self, TypeVar
+from typing import Annotated, Any, Protocol, Self, TypeVar
 
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
@@ -259,14 +259,12 @@ class RestfulRouter:
         return self
 
     def with_delete_one_endpoint(
-        self,
-        is_documented: bool = True,
-        extract_user: Callable[..., Any] = no_user,
+        self, dependable: Dependable, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
             self.resource.delete_one(
-                Service=self.dependable.with_user(extract_user).as_dependable(),
+                Service=dependable.as_dependable(),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -296,7 +294,7 @@ class RestfulRouter:
             .with_read_all_endpoint(dependable)
             .with_update_one_endpoint(dependable)
             .with_update_many_endpoint(dependable)
-            .with_delete_one_endpoint()
+            .with_delete_one_endpoint(dependable)
         )
 
     def build(self) -> APIRouter:

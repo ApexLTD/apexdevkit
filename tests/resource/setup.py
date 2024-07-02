@@ -35,7 +35,9 @@ def setup(infra: RestfulServiceBuilder) -> FastAPI:
                     .with_fields(PriceFields())
                     .with_infra(infra)
                     .with_parent("apple")
-                    .with_delete_one_endpoint()
+                    .with_delete_one_endpoint(
+                        dependable.with_parent(RestfulName("apple"))
+                    )
                     .build()
                 )
             )
