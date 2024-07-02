@@ -54,7 +54,6 @@ def setup(infra: RestfulServiceBuilder, fake_user: FakeUser) -> FastAPI:
             apples=RestfulRouter()
             .with_name(RestfulName("apple"))
             .with_fields(AppleFields())
-            .with_infra(infra)
             .with_create_one_endpoint(dependable)
             .with_create_many_endpoint(dependable)
             .with_read_one_endpoint(dependable)

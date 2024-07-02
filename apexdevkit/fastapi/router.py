@@ -70,16 +70,6 @@ class RestfulRouter:
 
         return self
 
-    def with_parent(self, name: str) -> Self:
-        self.dependable = self.dependable.with_parent(RestfulName(name))
-
-        return self
-
-    def with_infra(self, value: RestfulServiceBuilder) -> Self:
-        self.dependable = self.dependable.from_infra(value)
-
-        return self
-
     def with_create_one_endpoint(
         self,
         dependable: Dependable,
