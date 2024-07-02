@@ -72,7 +72,7 @@ class RestItem(RestResource):
         assert isinstance(self.http, Httpx), "sub resource only works with Httpx"
 
         client = self.http.client
-        client.base_url = client.base_url.join(self.name.plural)
+        client.base_url = client.base_url.join(self.name.singular)
 
         return RestItem(self.http, RestfulName(name))
 
