@@ -88,7 +88,7 @@ class InfraDependency:
 
 
 @dataclass
-class DependencyBuilder:
+class DependableBuilder:
     dependency: _Dependency = field(init=False)
 
     def with_infra(self, value: RestfulServiceBuilder) -> Self:
