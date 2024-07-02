@@ -9,6 +9,7 @@ from fastapi import FastAPI
 
 from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
+from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.testing import RestfulName
 from apexdevkit.testing.fake import FakeResource
@@ -16,6 +17,7 @@ from tests.resource.sample_api import Apple, AppleFields, Color, Name, PriceFiel
 
 
 def setup(infra: RestfulServiceBuilder) -> FastAPI:
+    dependable = DependableBuilder().from_infra(infra).with_user(lambda: None)
     return (
         FastApiBuilder()
         .with_title("Apple API")
@@ -25,21 +27,20 @@ def setup(infra: RestfulServiceBuilder) -> FastAPI:
             apples=RestfulRouter()
             .with_name(RestfulName("apple"))
             .with_fields(AppleFields())
-            .with_infra(infra)
             .with_sub_resource(
                 prices=(
                     RestfulRouter()
                     .with_name(RestfulName("price"))
                     .with_fields(PriceFields())
-                    .with_parent("apple")
-                    .with_infra(infra)
-                    .with_delete_one_endpoint()
+                    .with_delete_one_endpoint(
+                        dependable.with_parent(RestfulName("apple"))
+                    )
                     .build()
                 )
             )
-            .default()
-            .with_replace_one_endpoint()
-            .with_replace_many_endpoint()
+            .default(dependable)
+            .with_replace_one_endpoint(dependable)
+            .with_replace_many_endpoint(dependable)
             .build()
         )
         .build()

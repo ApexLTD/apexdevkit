@@ -1,14 +1,12 @@
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Annotated, Any, Callable, Self, Type, TypeVar
+from typing import Annotated, Any, Protocol, Self, TypeVar
 
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
 
-from apexdevkit.error import DoesNotExistError
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
 from apexdevkit.fastapi.resource import RestfulResource
-from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.schema import RestfulSchema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
 from apexdevkit.testing import RestfulName
@@ -16,6 +14,11 @@ from apexdevkit.testing import RestfulName
 _Response = JSONResponse | dict[str, Any]
 
 T = TypeVar("T")
+
+
+class Dependable(Protocol):
+    def as_dependable(self) -> type[RestfulService]:
+        pass
 
 
 @dataclass
@@ -26,26 +29,12 @@ class PreBuiltRestfulService(RestfulServiceBuilder):  # pragma: no cover
         return self.service
 
 
-def no_user() -> None:
-    pass
-
-
 @dataclass
 class RestfulRouter:
-    service: RestfulService | None = None
-
     router: APIRouter = field(default_factory=APIRouter)
 
     name: RestfulName = field(init=False)
     fields: SchemaFields = field(init=False)
-
-    parent: str = field(init=False, default="")
-
-    infra: RestfulServiceBuilder = field(init=False)
-
-    def __post_init__(self) -> None:  # pragma: no cover
-        if self.service:
-            self.with_infra(PreBuiltRestfulService(self.service))
 
     @cached_property
     def schema(self) -> RestfulSchema:
@@ -58,10 +47,6 @@ class RestfulRouter:
     @property
     def id_alias(self) -> str:
         return self.name.singular + "_id"
-
-    @property
-    def parent_id_alias(self) -> str:
-        return self.parent + "_id"
 
     @property
     def item_path(self) -> str:
@@ -77,25 +62,15 @@ class RestfulRouter:
 
         return self
 
-    def with_parent(self, name: str) -> Self:
-        self.parent = name
-
-        return self
-
-    def with_infra(self, value: RestfulServiceBuilder) -> Self:
-        self.infra = value
-
-        return self
-
     def with_create_one_endpoint(
         self,
+        dependable: Dependable,
         is_documented: bool = True,
-        extract_user: Callable[..., Any] = no_user,
     ) -> Self:
         self.router.add_api_route(
             "",
             self.resource.create_one(
-                Service=self._service(extract_user),
+                Service=dependable.as_dependable(),
                 Item=Annotated[
                     RawItem,
                     Depends(self.schema.for_create_one()),
@@ -112,14 +87,12 @@ class RestfulRouter:
         return self
 
     def with_create_many_endpoint(
-        self,
-        is_documented: bool = True,
-        extract_user: Callable[..., Any] = no_user,
+        self, dependable: Dependable, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             "/batch",
             self.resource.create_many(
-                Service=self._service(extract_user),
+                Service=dependable.as_dependable(),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_create_many()),
@@ -136,14 +109,12 @@ class RestfulRouter:
         return self
 
     def with_read_one_endpoint(
-        self,
-        is_documented: bool = True,
-        extract_user: Callable[..., Any] = no_user,
+        self, dependable: Dependable, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
             self.resource.read_one(
-                Service=self._service(extract_user),
+                Service=dependable.as_dependable(),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -160,14 +131,12 @@ class RestfulRouter:
         return self
 
     def with_read_all_endpoint(
-        self,
-        is_documented: bool = True,
-        extract_user: Callable[..., Any] = no_user,
+        self, dependable: Dependable, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             "",
             self.resource.read_all(
-                Service=self._service(extract_user),
+                Service=dependable.as_dependable(),
             ),
             methods=["GET"],
             status_code=200,
@@ -180,14 +149,12 @@ class RestfulRouter:
         return self
 
     def with_update_one_endpoint(
-        self,
-        is_documented: bool = True,
-        extract_user: Callable[..., Any] = no_user,
+        self, dependable: Dependable, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
             self.resource.update_one(
-                Service=self._service(extract_user),
+                Service=dependable.as_dependable(),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -208,14 +175,12 @@ class RestfulRouter:
         return self
 
     def with_update_many_endpoint(
-        self,
-        is_documented: bool = True,
-        extract_user: Callable[..., Any] = no_user,
+        self, dependable: Dependable, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             "",
             self.resource.update_many(
-                Service=self._service(extract_user),
+                Service=dependable.as_dependable(),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_update_many()),
@@ -232,14 +197,12 @@ class RestfulRouter:
         return self
 
     def with_replace_one_endpoint(
-        self,
-        is_documented: bool = True,
-        extract_user: Callable[..., Any] = no_user,
+        self, dependable: Dependable, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             "",
             self.resource.replace_one(
-                Service=self._service(extract_user),
+                Service=dependable.as_dependable(),
                 Item=Annotated[
                     RawItem,
                     Depends(self.schema.for_replace_one()),
@@ -256,14 +219,12 @@ class RestfulRouter:
         return self
 
     def with_replace_many_endpoint(
-        self,
-        is_documented: bool = True,
-        extract_user: Callable[..., Any] = no_user,
+        self, dependable: Dependable, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             "/batch",
             self.resource.replace_many(
-                Service=self._service(extract_user),
+                Service=dependable.as_dependable(),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_replace_many()),
@@ -280,14 +241,12 @@ class RestfulRouter:
         return self
 
     def with_delete_one_endpoint(
-        self,
-        is_documented: bool = True,
-        extract_user: Callable[..., Any] = no_user,
+        self, dependable: Dependable, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
             self.resource.delete_one(
-                Service=self._service(extract_user),
+                Service=dependable.as_dependable(),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -309,45 +268,16 @@ class RestfulRouter:
 
         return self
 
-    def default(self) -> Self:
+    def default(self, dependable: Dependable) -> Self:
         return (
-            self.with_create_one_endpoint()
-            .with_create_many_endpoint()
-            .with_read_one_endpoint()
-            .with_read_all_endpoint()
-            .with_update_one_endpoint()
-            .with_update_many_endpoint()
-            .with_delete_one_endpoint()
+            self.with_create_one_endpoint(dependable)
+            .with_create_many_endpoint(dependable)
+            .with_read_one_endpoint(dependable)
+            .with_read_all_endpoint(dependable)
+            .with_update_one_endpoint(dependable)
+            .with_update_many_endpoint(dependable)
+            .with_delete_one_endpoint(dependable)
         )
 
     def build(self) -> APIRouter:
         return self.router
-
-    def _service(
-        self, extract_user: Callable[..., Any] = no_user
-    ) -> Type[RestfulService]:
-        User = Annotated[Any, Depends(extract_user)]
-        ParentId = Annotated[str, Path(alias=self.parent_id_alias)]
-
-        def srv_child(user: User, parent_id: ParentId) -> RestfulService:
-            try:
-                return self.infra.with_user(user).with_parent(parent_id).build()
-            except DoesNotExistError as e:
-                raise HTTPException(
-                    status_code=404,
-                    detail=RestfulResponse(RestfulName(self.parent)).not_found(e),
-                )
-
-        def srv_root(user: User) -> RestfulService:
-            try:
-                return self.infra.with_user(user).build()
-            except DoesNotExistError as e:
-                raise HTTPException(
-                    status_code=404,
-                    detail=RestfulResponse(RestfulName(self.parent)).not_found(e),
-                )
-
-        if self.parent:
-            return Annotated[RestfulService, Depends(srv_child)]  # type: ignore
-        else:
-            return Annotated[RestfulService, Depends(srv_root)]  # type: ignore

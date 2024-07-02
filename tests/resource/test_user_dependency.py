@@ -8,6 +8,7 @@ from starlette.testclient import TestClient
 
 from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
+from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.http import Httpx
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
@@ -43,6 +44,7 @@ class FakeUser:
 
 
 def setup(infra: RestfulServiceBuilder, fake_user: FakeUser) -> FastAPI:
+    dependable = DependableBuilder().from_infra(infra).with_user(fake_user.user)
     return (
         FastApiBuilder()
         .with_title("Apple API")
@@ -52,16 +54,15 @@ def setup(infra: RestfulServiceBuilder, fake_user: FakeUser) -> FastAPI:
             apples=RestfulRouter()
             .with_name(RestfulName("apple"))
             .with_fields(AppleFields())
-            .with_infra(infra)
-            .with_create_one_endpoint(extract_user=fake_user.user)
-            .with_create_many_endpoint(extract_user=fake_user.user)
-            .with_read_one_endpoint(extract_user=fake_user.user)
-            .with_read_all_endpoint(extract_user=fake_user.user)
-            .with_update_one_endpoint(extract_user=fake_user.user)
-            .with_update_many_endpoint(extract_user=fake_user.user)
-            .with_replace_one_endpoint(extract_user=fake_user.user)
-            .with_replace_many_endpoint(extract_user=fake_user.user)
-            .with_delete_one_endpoint(extract_user=fake_user.user)
+            .with_create_one_endpoint(dependable)
+            .with_create_many_endpoint(dependable)
+            .with_read_one_endpoint(dependable)
+            .with_read_all_endpoint(dependable)
+            .with_update_one_endpoint(dependable)
+            .with_update_many_endpoint(dependable)
+            .with_replace_one_endpoint(dependable)
+            .with_replace_many_endpoint(dependable)
+            .with_delete_one_endpoint(dependable)
             .build()
         )
         .build()
