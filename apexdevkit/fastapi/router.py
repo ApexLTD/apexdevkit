@@ -87,36 +87,6 @@ class InfraDependency:
 
 
 @dataclass
-class Root:
-    infra: RestfulServiceBuilder
-
-    def service_for(self, extract_user: Callable[..., Any]) -> type[RestfulService]:
-        return ServiceDependency(
-            UserDependency(InfraDependency(self.infra))
-        ).as_dependable(extract_user=extract_user)
-
-    def with_parent(self, name: RestfulName) -> "Child":
-        return Child(self.infra, name)
-
-
-@dataclass
-class Child:
-    infra: RestfulServiceBuilder
-    parent: RestfulName
-
-    def service_for(self, extract_user: Callable[..., Any]) -> type[RestfulService]:
-        return ServiceDependency(
-            ParentDependency(
-                self.parent,
-                UserDependency(InfraDependency(self.infra)),
-            )
-        ).as_dependable(extract_user=extract_user)
-
-    def with_parent(self, name: RestfulName) -> "Child":
-        return Child(self.infra, name)
-
-
-@dataclass
 class RestfulRouter:
     router: APIRouter = field(default_factory=APIRouter)
 
