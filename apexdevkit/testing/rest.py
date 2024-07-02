@@ -5,52 +5,68 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from typing import Any, Iterable, Self
 
-import httpx
 from fastapi.testclient import TestClient
 
-from apexdevkit.http import HttpUrl, JsonDict
+from apexdevkit.http import Http, HttpUrl, HttpxConfig, JsonDict
+from apexdevkit.http.fluent import HttpMethod, HttpResponse
+from apexdevkit.http.httpx import TestClientAdapter
 
 
 @dataclass
 class RestResource:
-    http: TestClient
+    http: TestClient | Http
     name: RestfulName
 
+    def __post_init__(self) -> None:
+        if isinstance(self.http, TestClient):
+            self.http = TestClientAdapter(self.http, HttpxConfig())
+
+    @property
+    def _http(self) -> Http:
+        assert not isinstance(self.http, TestClient)
+
+        return self.http
+
     def create_one(self) -> CreateOne:
-        return CreateOne(self.name, self.http)
+        return CreateOne(self.name, self._http)
 
     def create_many(self) -> CreateMany:
-        return CreateMany(self.name, self.http)
+        return CreateMany(self.name, self._http)
 
     def read_one(self) -> ReadOne:
-        return ReadOne(self.name, self.http)
+        return ReadOne(self.name, self._http)
 
     def read_all(self) -> ReadAll:
-        return ReadAll(self.name, self.http)
+        return ReadAll(self.name, self._http)
 
     def update_one(self) -> UpdateOne:
-        return UpdateOne(self.name, self.http)
+        return UpdateOne(self.name, self._http)
 
     def update_many(self) -> UpdateMany:
-        return UpdateMany(self.name, self.http)
+        return UpdateMany(self.name, self._http)
 
     def replace_one(self) -> ReplaceOne:
-        return ReplaceOne(self.name, self.http)
+        return ReplaceOne(self.name, self._http)
 
     def replace_many(self) -> ReplaceMany:
-        return ReplaceMany(self.name, self.http)
+        return ReplaceMany(self.name, self._http)
 
     def delete_one(self) -> DeleteOne:
-        return DeleteOne(self.name, self.http)
+        return DeleteOne(self.name, self._http)
 
 
 @dataclass
 class RestCollection(RestResource):
     def sub_resource(self, name: str) -> RestItem:
+        assert isinstance(
+            self.http, TestClientAdapter
+        ), "sub resource only works with TestClientAdapter"
+        client = self.http.client
+
         return RestItem(
             TestClient(
-                self.http.app,
-                base_url=HttpUrl(str(self.http.base_url)) + self.name.plural,
+                client.app,
+                base_url=HttpUrl(str(client.base_url)) + self.name.plural,
             ),
             RestfulName(name),
         )
@@ -59,10 +75,15 @@ class RestCollection(RestResource):
 @dataclass
 class RestItem(RestResource):
     def sub_resource(self, name: str) -> RestItem:
+        assert isinstance(
+            self.http, TestClientAdapter
+        ), "sub resource only works with TestClientAdapter"
+        client = self.http.client
+
         return RestItem(
             TestClient(
-                self.http.app,
-                base_url=HttpUrl(str(self.http.base_url)) + self.name.singular,
+                client.app,
+                base_url=HttpUrl(str(client.base_url)) + self.name.singular,
             ),
             RestfulName(name),
         )
@@ -103,11 +124,11 @@ def as_plural(singular: str) -> str:
 @dataclass
 class RestRequest:
     resource: RestfulName
-    http: TestClient
+    http: Http
 
     @abstractmethod
     @cached_property
-    def response(self) -> httpx.Response:  # pragma: no cover
+    def response(self) -> HttpResponse:  # pragma: no cover
         pass
 
     def unpack(self) -> JsonDict:
@@ -122,7 +143,7 @@ class RestRequest:
         return RestResponse(
             resource=self.resource,
             json=JsonDict(self.response.json()),
-            http_code=self.response.status_code,
+            http_code=self.response.code(),
         )
 
 
@@ -136,8 +157,11 @@ class CreateOne(RestRequest):
         return self
 
     @cached_property
-    def response(self) -> httpx.Response:
-        return self.http.post(self.resource + "", json=dict(self.data))
+    def response(self) -> HttpResponse:
+        return self.http.with_json(self.data).request(
+            method=HttpMethod.post,
+            endpoint=self.resource + "",
+        )
 
 
 @dataclass
@@ -145,8 +169,11 @@ class ReadOne(RestRequest):
     item_id: str = field(init=False)
 
     @cached_property
-    def response(self) -> httpx.Response:
-        return self.http.get(self.resource + str(self.item_id))
+    def response(self) -> HttpResponse:
+        return self.http.request(
+            method=HttpMethod.get,
+            endpoint=self.resource + str(self.item_id),
+        )
 
     def with_id(self, value: Any) -> Self:
         self.item_id = str(value)
@@ -159,8 +186,12 @@ class ReadAll(RestRequest):
     params: dict[str, Any] = field(init=False, default_factory=dict)
 
     @cached_property
-    def response(self) -> httpx.Response:
-        return self.http.get(self.resource + "", params=self.params)
+    def response(self) -> HttpResponse:
+        http = self.http
+        for param, value in self.params.items():
+            http = http.with_param(param, value)
+
+        return http.request(method=HttpMethod.get, endpoint=self.resource + "")
 
     def with_params(self, **kwargs: Any) -> Self:
         self.params = {**kwargs}
@@ -174,8 +205,11 @@ class UpdateOne(RestRequest):
     data: JsonDict = field(init=False)
 
     @cached_property
-    def response(self) -> httpx.Response:
-        return self.http.patch(self.resource + str(self.item_id), json=dict(self.data))
+    def response(self) -> HttpResponse:
+        return self.http.with_json(self.data).request(
+            method=HttpMethod.patch,
+            endpoint=self.resource + str(self.item_id),
+        )
 
     def with_id(self, value: Any) -> Self:
         self.item_id = str(value)
@@ -193,8 +227,11 @@ class ReplaceOne(RestRequest):
     data: JsonDict = field(init=False)
 
     @cached_property
-    def response(self) -> httpx.Response:
-        return self.http.put(self.resource + "", json=dict(self.data))
+    def response(self) -> HttpResponse:
+        return self.http.with_json(self.data).request(
+            method=HttpMethod.put,
+            endpoint=self.resource + "",
+        )
 
     def from_data(self, value: JsonDict) -> Self:
         self.data = value
@@ -207,10 +244,12 @@ class CreateMany(RestRequest):
     data: list[JsonDict] = field(default_factory=list)
 
     @cached_property
-    def response(self) -> httpx.Response:
-        return self.http.post(
-            self.resource + "batch",
-            json={self.resource.plural: [dict(data) for data in self.data]},
+    def response(self) -> HttpResponse:
+        json = JsonDict({self.resource.plural: [dict(data) for data in self.data]})
+
+        return self.http.with_json(json).request(
+            method=HttpMethod.post,
+            endpoint=self.resource + "batch",
         )
 
     def from_data(self, value: JsonDict) -> Self:
@@ -227,10 +266,12 @@ class UpdateMany(RestRequest):
     data: list[JsonDict] = field(default_factory=list)
 
     @cached_property
-    def response(self) -> httpx.Response:
-        return self.http.patch(
-            self.resource + "",
-            json={self.resource.plural: [dict(data) for data in self.data]},
+    def response(self) -> HttpResponse:
+        json = JsonDict({self.resource.plural: [dict(data) for data in self.data]})
+
+        return self.http.with_json(json).request(
+            method=HttpMethod.patch,
+            endpoint=self.resource + "",
         )
 
     def from_data(self, value: JsonDict) -> Self:
@@ -247,10 +288,12 @@ class ReplaceMany(RestRequest):
     data: list[JsonDict] = field(default_factory=list)
 
     @cached_property
-    def response(self) -> httpx.Response:
-        return self.http.put(
-            self.resource + "batch",
-            json={self.resource.plural: [dict(data) for data in self.data]},
+    def response(self) -> HttpResponse:
+        json = JsonDict({self.resource.plural: [dict(data) for data in self.data]})
+
+        return self.http.with_json(json).request(
+            method=HttpMethod.put,
+            endpoint=self.resource + "batch",
         )
 
     def from_data(self, value: JsonDict) -> Self:
@@ -267,8 +310,11 @@ class DeleteOne(RestRequest):
     item_id: str = field(init=False)
 
     @cached_property
-    def response(self) -> httpx.Response:
-        return self.http.delete(self.resource + str(self.item_id))
+    def response(self) -> HttpResponse:
+        return self.http.request(
+            method=HttpMethod.delete,
+            endpoint=self.resource + str(self.item_id),
+        )
 
     def with_id(self, value: Any) -> Self:
         self.item_id = str(value)
