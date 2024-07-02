@@ -4,10 +4,29 @@ from dataclasses import dataclass, field
 from typing import Any, Iterator, Mapping, Self
 
 import httpx
+from fastapi.testclient import TestClient
 
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
 from apexdevkit.http.json import JsonDict
 from apexdevkit.http.url import HttpUrl
+
+
+@dataclass(frozen=True)
+class TestClientAdapter:
+    client: TestClient
+    config: HttpxConfig
+
+    def with_header(self, key: str, value: str) -> TestClientAdapter:
+        return TestClientAdapter(self.client, self.config.with_header(key, value))
+
+    def with_param(self, key: str, value: str) -> TestClientAdapter:
+        return TestClientAdapter(self.client, self.config.with_param(key, value))
+
+    def with_json(self, value: JsonDict) -> TestClientAdapter:
+        return TestClientAdapter(self.client, self.config.with_json(value))
+
+    def request(self, method: HttpMethod, endpoint: str) -> HttpResponse:
+        return _HttpxResponse(self.client.request(method.name, endpoint, **self.config))
 
 
 @dataclass(frozen=True)
