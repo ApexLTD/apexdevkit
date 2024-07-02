@@ -28,10 +28,10 @@ class ServiceDependency:
     def as_dependable(self) -> type[RestfulService]:
         Builder = self.dependency.as_dependable()
 
-        def _(builder: Builder) -> RestfulService:  # type: ignore
-            return builder.build()  # type: ignore
+        def _(builder: Builder) -> RestfulService:
+            return builder.build()
 
-        return Annotated[RestfulService, Depends(_)]  # type: ignore
+        return Annotated[RestfulService, Depends(_)]
 
 
 @dataclass
@@ -43,10 +43,10 @@ class ParentDependency:
         Builder = self.dependency.as_dependable()
         ParentId = Annotated[str, Path(alias=self.parent.singular + "_id")]
 
-        def _(builder: Builder, parent_id: ParentId) -> RestfulServiceBuilder:  # type: ignore
-            return builder.with_parent(parent_id)  # type: ignore
+        def _(builder: Builder, parent_id: ParentId) -> RestfulServiceBuilder:
+            return builder.with_parent(parent_id)
 
-        return Annotated[RestfulServiceBuilder, Depends(_)]  # type: ignore
+        return Annotated[RestfulServiceBuilder, Depends(_)]
 
 
 @dataclass
@@ -58,10 +58,10 @@ class UserDependency:
         Builder = self.dependency.as_dependable()
         User = Annotated[Any, Depends(self.extract_user)]
 
-        def _(builder: Builder, user: User) -> RestfulServiceBuilder:  # type: ignore
-            return builder.with_user(user)  # type: ignore
+        def _(builder: Builder, user: User) -> RestfulServiceBuilder:
+            return builder.with_user(user)
 
-        return Annotated[RestfulServiceBuilder, Depends(_)]  # type: ignore
+        return Annotated[RestfulServiceBuilder, Depends(_)]
 
 
 @dataclass
@@ -72,7 +72,7 @@ class InfraDependency:
         def _() -> RestfulServiceBuilder:
             return self.infra
 
-        return Annotated[RestfulServiceBuilder, Depends(_)]  # type: ignore
+        return Annotated[RestfulServiceBuilder, Depends(_)]
 
 
 @dataclass
