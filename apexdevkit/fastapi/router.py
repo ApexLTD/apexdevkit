@@ -29,10 +29,6 @@ class PreBuiltRestfulService(RestfulServiceBuilder):  # pragma: no cover
         return self.service
 
 
-def no_user() -> None:
-    pass
-
-
 @dataclass
 class RestfulRouter:
     router: APIRouter = field(default_factory=APIRouter)
