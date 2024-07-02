@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Annotated, Any, Callable, Self, TypeVar
+from typing import Annotated, Any, Callable, Self, TypeVar, Protocol
 
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
@@ -42,6 +42,11 @@ class Root:
 
     def with_parent(self, name: RestfulName) -> "Child":
         return Child(self.infra, name)
+
+
+class _Dependency(Protocol):
+    def as_dependable(self, **data: Any) -> type[RestfulServiceBuilder]:
+        pass
 
 
 @dataclass
