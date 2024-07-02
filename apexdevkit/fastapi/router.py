@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Annotated, Any, Callable, Self, TypeVar
+from typing import Annotated, Any, Callable, Protocol, Self, TypeVar
 
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
@@ -17,6 +17,11 @@ from apexdevkit.testing import RestfulName
 _Response = JSONResponse | dict[str, Any]
 
 T = TypeVar("T")
+
+
+class Dependable(Protocol):
+    def as_dependable(self) -> type[RestfulService]:
+        pass
 
 
 @dataclass
