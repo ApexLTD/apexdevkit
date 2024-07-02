@@ -7,7 +7,7 @@ from typing import Any, Iterable, Self
 
 from fastapi.testclient import TestClient
 
-from apexdevkit.http import Http, HttpUrl, HttpxConfig, JsonDict
+from apexdevkit.http import Http, HttpUrl, JsonDict
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
 from apexdevkit.http.httpx import Httpx
 
@@ -19,7 +19,7 @@ class RestResource:
 
     def __post_init__(self) -> None:
         if isinstance(self.http, TestClient):
-            self.http = Httpx(self.http, HttpxConfig())
+            self.http = Httpx(self.http)
 
     @property
     def _http(self) -> Http:
