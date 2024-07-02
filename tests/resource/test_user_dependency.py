@@ -9,6 +9,7 @@ from starlette.testclient import TestClient
 from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
 from apexdevkit.fastapi.router import RestfulRouter
+from apexdevkit.http import Httpx
 from apexdevkit.testing import RestCollection, RestfulName, RestResource
 from tests.resource.sample_api import AppleFields, SuccessfulService
 from tests.resource.setup import FakeApple
@@ -28,7 +29,7 @@ def fake_user() -> FakeUser:
 def resource(infra: RestfulServiceBuilder, fake_user: FakeUser) -> RestResource:
     return RestCollection(
         name=RestfulName("apple"),
-        http=TestClient(setup(infra, fake_user)),
+        http=Httpx(TestClient(setup(infra, fake_user))),
     )
 
 
