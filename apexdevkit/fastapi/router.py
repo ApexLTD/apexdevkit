@@ -48,11 +48,12 @@ class ServiceDependency:
 
 @dataclass
 class UserDependency:
+    extract_user: Callable[..., Any]
     dependency: _Dependency
 
     def as_dependable(self, **data: Any) -> type[RestfulServiceBuilder]:
         Builder = self.dependency.as_dependable(**data)
-        User = Annotated[Any, Depends(data["extract_user"])]
+        User = Annotated[Any, Depends(self.extract_user)]
 
         def _(builder: Builder, user: User) -> RestfulServiceBuilder:  # type: ignore
             return builder.with_user(user)  # type: ignore
@@ -114,9 +115,9 @@ class RestfulRouter:
     def _dependable_with(
         self, extract_user: Callable[..., Any]
     ) -> type[RestfulServiceBuilder]:
-        return ServiceDependency(UserDependency(self._dependable)).as_dependable(  # type: ignore
-            extract_user=extract_user
-        )
+        return ServiceDependency(  # type: ignore
+            UserDependency(extract_user, self._dependable)
+        ).as_dependable(extract_user=extract_user)
 
     def with_name(self, value: RestfulName) -> Self:
         self.name = value
