@@ -85,14 +85,16 @@ class DependableBuilder:
         return self
 
     def with_parent(self, value: RestfulName) -> Self:
-        self.dependency = ParentDependency(value, self.dependency)
+        dependable = DependableBuilder()
+        dependable.dependency = ParentDependency(value, self.dependency)
 
-        return self
+        return dependable
 
     def with_user(self, extract_user: Callable[..., Any]) -> Self:
-        self.dependency = UserDependency(extract_user, self.dependency)
+        dependable = DependableBuilder()
+        dependable.dependency = UserDependency(extract_user, self.dependency)
 
-        return self
+        return dependable
 
     def as_dependable(self) -> type[RestfulService]:
         return ServiceDependency(self.dependency).as_dependable()
