@@ -4,53 +4,32 @@ from dataclasses import dataclass, field
 from typing import Any, Iterator, Mapping, Self
 
 import httpx
-from fastapi.testclient import TestClient
+from httpx import Client
 
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
 from apexdevkit.http.json import JsonDict
-from apexdevkit.http.url import HttpUrl
-
-
-@dataclass(frozen=True)
-class TestClientAdapter:
-    client: TestClient
-    config: HttpxConfig
-
-    def with_header(self, key: str, value: str) -> TestClientAdapter:
-        return TestClientAdapter(self.client, self.config.with_header(key, value))
-
-    def with_param(self, key: str, value: str) -> TestClientAdapter:
-        return TestClientAdapter(self.client, self.config.with_param(key, value))
-
-    def with_json(self, value: JsonDict) -> TestClientAdapter:
-        return TestClientAdapter(self.client, self.config.with_json(value))
-
-    def request(self, method: HttpMethod, endpoint: str) -> HttpResponse:
-        return _HttpxResponse(self.client.request(method.name, endpoint, **self.config))
 
 
 @dataclass(frozen=True)
 class Httpx:
-    url: HttpUrl
+    client: httpx.Client
     config: HttpxConfig
 
     @classmethod
     def create_for(cls, url: str) -> Self:
-        return cls(HttpUrl(url), HttpxConfig())
+        return cls(Client(base_url=url), HttpxConfig())
 
     def with_header(self, key: str, value: str) -> Httpx:
-        return Httpx(self.url, self.config.with_header(key, value))
+        return Httpx(self.client, self.config.with_header(key, value))
 
     def with_param(self, key: str, value: str) -> Httpx:
-        return Httpx(self.url, self.config.with_param(key, value))
+        return Httpx(self.client, self.config.with_param(key, value))
 
     def with_json(self, value: JsonDict) -> Httpx:
-        return Httpx(self.url, self.config.with_json(value))
+        return Httpx(self.client, self.config.with_json(value))
 
     def request(self, method: HttpMethod, endpoint: str) -> HttpResponse:
-        return _HttpxResponse(
-            httpx.request(method.name, self.url + endpoint, **self.config)
-        )
+        return _HttpxResponse(self.client.request(method.name, endpoint, **self.config))
 
 
 @dataclass

@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 
 from apexdevkit.http import Http, HttpUrl, HttpxConfig, JsonDict
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
-from apexdevkit.http.httpx import TestClientAdapter
+from apexdevkit.http.httpx import Httpx
 
 
 @dataclass
@@ -19,7 +19,7 @@ class RestResource:
 
     def __post_init__(self) -> None:
         if isinstance(self.http, TestClient):
-            self.http = TestClientAdapter(self.http, HttpxConfig())
+            self.http = Httpx(self.http, HttpxConfig())
 
     @property
     def _http(self) -> Http:
@@ -59,7 +59,7 @@ class RestResource:
 class RestCollection(RestResource):
     def sub_resource(self, name: str) -> RestItem:
         assert isinstance(
-            self.http, TestClientAdapter
+            self.http, Httpx
         ), "sub resource only works with TestClientAdapter"
         client = self.http.client
 
@@ -76,7 +76,7 @@ class RestCollection(RestResource):
 class RestItem(RestResource):
     def sub_resource(self, name: str) -> RestItem:
         assert isinstance(
-            self.http, TestClientAdapter
+            self.http, Httpx
         ), "sub resource only works with TestClientAdapter"
         client = self.http.client
 
