@@ -82,13 +82,13 @@ class RestfulRouter:
 
     def with_create_one_endpoint(
         self,
+        dependable: Dependable,
         is_documented: bool = True,
-        extract_user: Callable[..., Any] = no_user,
     ) -> Self:
         self.router.add_api_route(
             "",
             self.resource.create_one(
-                Service=self.dependable.with_user(extract_user).as_dependable(),
+                Service=dependable.as_dependable(),
                 Item=Annotated[
                     RawItem,
                     Depends(self.schema.for_create_one()),
@@ -302,9 +302,9 @@ class RestfulRouter:
 
         return self
 
-    def default(self) -> Self:
+    def default(self, dependable: Dependable) -> Self:
         return (
-            self.with_create_one_endpoint()
+            self.with_create_one_endpoint(dependable)
             .with_create_many_endpoint()
             .with_read_one_endpoint()
             .with_read_all_endpoint()
