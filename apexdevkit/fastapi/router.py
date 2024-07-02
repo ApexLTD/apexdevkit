@@ -215,14 +215,12 @@ class RestfulRouter:
         return self
 
     def with_replace_one_endpoint(
-        self,
-        is_documented: bool = True,
-        extract_user: Callable[..., Any] = no_user,
+        self, dependable: Dependable, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             "",
             self.resource.replace_one(
-                Service=self.dependable.with_user(extract_user).as_dependable(),
+                Service=dependable.as_dependable(),
                 Item=Annotated[
                     RawItem,
                     Depends(self.schema.for_replace_one()),
@@ -239,14 +237,12 @@ class RestfulRouter:
         return self
 
     def with_replace_many_endpoint(
-        self,
-        is_documented: bool = True,
-        extract_user: Callable[..., Any] = no_user,
+        self, dependable: Dependable, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             "/batch",
             self.resource.replace_many(
-                Service=self.dependable.with_user(extract_user).as_dependable(),
+                Service=dependable.as_dependable(),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_replace_many()),
