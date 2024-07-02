@@ -83,7 +83,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "",
             self.resource.create_one(
-                Service=self.dependable.build(extract_user),
+                Service=self.dependable.with_user(extract_user).build(),
                 Item=Annotated[
                     RawItem,
                     Depends(self.schema.for_create_one()),
@@ -107,7 +107,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "/batch",
             self.resource.create_many(
-                Service=self.dependable.build(extract_user),
+                Service=self.dependable.with_user(extract_user).build(),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_create_many()),
@@ -131,7 +131,7 @@ class RestfulRouter:
         self.router.add_api_route(
             self.item_path,
             self.resource.read_one(
-                Service=self.dependable.build(extract_user),
+                Service=self.dependable.with_user(extract_user).build(),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -155,7 +155,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "",
             self.resource.read_all(
-                Service=self.dependable.build(extract_user),
+                Service=self.dependable.with_user(extract_user).build(),
             ),
             methods=["GET"],
             status_code=200,
@@ -175,7 +175,7 @@ class RestfulRouter:
         self.router.add_api_route(
             self.item_path,
             self.resource.update_one(
-                Service=self.dependable.build(extract_user),
+                Service=self.dependable.with_user(extract_user).build(),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -203,7 +203,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "",
             self.resource.update_many(
-                Service=self.dependable.build(extract_user),
+                Service=self.dependable.with_user(extract_user).build(),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_update_many()),
@@ -227,7 +227,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "",
             self.resource.replace_one(
-                Service=self.dependable.build(extract_user),
+                Service=self.dependable.with_user(extract_user).build(),
                 Item=Annotated[
                     RawItem,
                     Depends(self.schema.for_replace_one()),
@@ -251,7 +251,7 @@ class RestfulRouter:
         self.router.add_api_route(
             "/batch",
             self.resource.replace_many(
-                Service=self.dependable.build(extract_user),
+                Service=self.dependable.with_user(extract_user).build(),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_replace_many()),
@@ -275,7 +275,7 @@ class RestfulRouter:
         self.router.add_api_route(
             self.item_path,
             self.resource.delete_one(
-                Service=self.dependable.build(extract_user),
+                Service=self.dependable.with_user(extract_user).build(),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
