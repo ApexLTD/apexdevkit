@@ -101,7 +101,7 @@ class RestfulRouter:
 
     @property
     def dependable(self) -> ServiceDependency:
-        return ServiceDependency(self._dependable)
+        return ServiceDependency(UserDependency(self._dependable))
 
     @property
     def resource(self) -> RestfulResource:
@@ -131,7 +131,7 @@ class RestfulRouter:
         return self
 
     def with_infra(self, value: RestfulServiceBuilder) -> Self:
-        self._dependable = UserDependency(InfraDependency(value))
+        self._dependable = InfraDependency(value)
 
         return self
 
