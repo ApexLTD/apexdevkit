@@ -17,7 +17,7 @@ from tests.resource.sample_api import Apple, AppleFields, Color, Name, PriceFiel
 
 
 def setup(infra: RestfulServiceBuilder) -> FastAPI:
-    dependable = DependableBuilder().with_infra(infra).with_user(lambda: None)
+    dependable = DependableBuilder().from_infra(infra).with_user(lambda: None)
     return (
         FastApiBuilder()
         .with_title("Apple API")

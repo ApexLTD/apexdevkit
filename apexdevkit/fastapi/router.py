@@ -76,7 +76,7 @@ class RestfulRouter:
         return self
 
     def with_infra(self, value: RestfulServiceBuilder) -> Self:
-        self.dependable = self.dependable.with_infra(value)
+        self.dependable = self.dependable.from_infra(value)
 
         return self
 

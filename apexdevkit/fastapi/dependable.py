@@ -79,7 +79,7 @@ class InfraDependency:
 class DependableBuilder:
     dependency: _Dependency = field(init=False)
 
-    def with_infra(self, value: RestfulServiceBuilder) -> Self:
+    def from_infra(self, value: RestfulServiceBuilder) -> Self:
         self.dependency = InfraDependency(value)
 
         return self

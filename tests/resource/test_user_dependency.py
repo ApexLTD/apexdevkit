@@ -44,7 +44,7 @@ class FakeUser:
 
 
 def setup(infra: RestfulServiceBuilder, fake_user: FakeUser) -> FastAPI:
-    dependable = DependableBuilder().with_infra(infra).with_user(fake_user.user)
+    dependable = DependableBuilder().from_infra(infra).with_user(fake_user.user)
     return (
         FastApiBuilder()
         .with_title("Apple API")
