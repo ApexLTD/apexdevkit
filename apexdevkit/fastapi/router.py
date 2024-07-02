@@ -110,11 +110,10 @@ class DependableBuilder:
 @dataclass
 class RestfulRouter:
     router: APIRouter = field(default_factory=APIRouter)
+    dependable: DependableBuilder = field(default_factory=DependableBuilder)
 
     name: RestfulName = field(init=False)
     fields: SchemaFields = field(init=False)
-
-    dependable: DependableBuilder = field(default_factory=DependableBuilder)
 
     @cached_property
     def schema(self) -> RestfulSchema:
