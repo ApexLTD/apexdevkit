@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Annotated, Any, Callable, Self, TypeVar, Protocol
+from typing import Annotated, Any, Callable, Protocol, Self, Type, TypeVar
 
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
@@ -28,48 +28,18 @@ def no_user() -> None:
     pass
 
 
-@dataclass
-class Root:
-    infra: RestfulServiceBuilder
-
-    def service_for(self, extract_user: Callable[..., Any]) -> type[RestfulService]:
-        return ServiceDependency(
-            UserDependency(
-                extract_user,
-                InfraDependency(self.infra).as_dependable(),
-            ).as_dependable()
-        ).as_dependable()
-
-    def with_parent(self, name: RestfulName) -> "Child":
-        return Child(self.infra, name)
-
-
 class _Dependency(Protocol):
-    def as_dependable(self, **data: Any) -> type[RestfulServiceBuilder]:
+    def as_dependable(self, **data: Any) -> Type[RestfulServiceBuilder]:
         pass
 
 
 @dataclass
-class ServiceDependency:
-    dependency: type[RestfulServiceBuilder]
-
-    def as_dependable(self) -> type[RestfulService]:
-        Builder = self.dependency
-
-        def _(builder: Builder) -> RestfulService:  # type: ignore
-            return builder.build()  # type: ignore
-
-        return Annotated[RestfulService, Depends(_)]  # type: ignore
-
-
-@dataclass
 class UserDependency:
-    extract_user: Callable[..., Any]
-    dependency: type[RestfulServiceBuilder]
+    dependency: _Dependency
 
-    def as_dependable(self) -> type[RestfulServiceBuilder]:
-        Builder = self.dependency
-        User = Annotated[Any, Depends(self.extract_user)]
+    def as_dependable(self, **data: Any) -> Type[RestfulServiceBuilder]:
+        Builder = self.dependency.as_dependable(**data)
+        User = Annotated[Any, Depends(data["extract_user"])]
 
         def _(builder: Builder, user: User) -> RestfulServiceBuilder:  # type: ignore
             return builder.with_user(user)  # type: ignore
@@ -80,10 +50,10 @@ class UserDependency:
 @dataclass
 class ParentDependency:
     parent: RestfulName
-    dependency: type[RestfulServiceBuilder]
+    dependency: _Dependency
 
-    def as_dependable(self) -> type[RestfulServiceBuilder]:
-        Builder = self.dependency
+    def as_dependable(self, **data: Any) -> Type[RestfulServiceBuilder]:
+        Builder = self.dependency.as_dependable(**data)
         ParentId = Annotated[str, Path(alias=self.parent.singular + "_id")]
 
         def _(builder: Builder, parent_id: ParentId) -> RestfulServiceBuilder:  # type: ignore
@@ -93,14 +63,40 @@ class ParentDependency:
 
 
 @dataclass
+class ServiceDependency:
+    dependency: _Dependency
+
+    def as_dependable(self, **data: Any) -> Type[RestfulService]:
+        Builder = self.dependency.as_dependable(**data)
+
+        def _(builder: Builder) -> RestfulService:  # type: ignore
+            return builder.build()  # type: ignore
+
+        return Annotated[RestfulService, Depends(_)]  # type: ignore
+
+
+@dataclass
 class InfraDependency:
     infra: RestfulServiceBuilder
 
-    def as_dependable(self) -> type[RestfulServiceBuilder]:
+    def as_dependable(self, **data: Any) -> Type[RestfulServiceBuilder]:
         def _() -> RestfulServiceBuilder:
             return self.infra
 
         return Annotated[RestfulServiceBuilder, Depends(_)]  # type: ignore
+
+
+@dataclass
+class Root:
+    infra: RestfulServiceBuilder
+
+    def service_for(self, extract_user: Callable[..., Any]) -> type[RestfulService]:
+        return ServiceDependency(
+            UserDependency(InfraDependency(self.infra))
+        ).as_dependable(extract_user=extract_user)
+
+    def with_parent(self, name: RestfulName) -> "Child":
+        return Child(self.infra, name)
 
 
 @dataclass
@@ -112,12 +108,9 @@ class Child:
         return ServiceDependency(
             ParentDependency(
                 self.parent,
-                UserDependency(
-                    extract_user,
-                    InfraDependency(self.infra).as_dependable(),
-                ).as_dependable(),
-            ).as_dependable()
-        ).as_dependable()
+                UserDependency(InfraDependency(self.infra)),
+            )
+        ).as_dependable(extract_user=extract_user)
 
     def with_parent(self, name: RestfulName) -> "Child":
         return Child(self.infra, name)
