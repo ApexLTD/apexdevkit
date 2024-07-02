@@ -6,9 +6,6 @@ from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
 
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
-from apexdevkit.fastapi.dependable import (
-    DependableBuilder,
-)
 from apexdevkit.fastapi.resource import RestfulResource
 from apexdevkit.fastapi.schema import RestfulSchema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
@@ -39,7 +36,6 @@ def no_user() -> None:
 @dataclass
 class RestfulRouter:
     router: APIRouter = field(default_factory=APIRouter)
-    dependable: DependableBuilder = field(default_factory=DependableBuilder)
 
     name: RestfulName = field(init=False)
     fields: SchemaFields = field(init=False)
