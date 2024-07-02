@@ -34,6 +34,19 @@ class _Dependency(Protocol):
 
 
 @dataclass
+class ServiceDependency:
+    dependency: _Dependency
+
+    def as_dependable(self, **data: Any) -> Type[RestfulService]:
+        Builder = self.dependency.as_dependable(**data)
+
+        def _(builder: Builder) -> RestfulService:  # type: ignore
+            return builder.build()  # type: ignore
+
+        return Annotated[RestfulService, Depends(_)]  # type: ignore
+
+
+@dataclass
 class UserDependency:
     dependency: _Dependency
 
@@ -60,19 +73,6 @@ class ParentDependency:
             return builder.with_parent(parent_id)  # type: ignore
 
         return Annotated[RestfulServiceBuilder, Depends(_)]  # type: ignore
-
-
-@dataclass
-class ServiceDependency:
-    dependency: _Dependency
-
-    def as_dependable(self, **data: Any) -> Type[RestfulService]:
-        Builder = self.dependency.as_dependable(**data)
-
-        def _(builder: Builder) -> RestfulService:  # type: ignore
-            return builder.build()  # type: ignore
-
-        return Annotated[RestfulService, Depends(_)]  # type: ignore
 
 
 @dataclass
