@@ -10,10 +10,15 @@ from apexdevkit.http.fluent import HttpMethod, HttpResponse
 from apexdevkit.http.json import JsonDict
 
 
+def default_config() -> HttpxConfig:
+    return HttpxConfig()
+
+
 @dataclass(frozen=True)
 class Httpx:
     client: httpx.Client
-    config: HttpxConfig
+
+    config: HttpxConfig = field(default_factory=default_config)
 
     @classmethod
     def create_for(cls, url: str) -> Self:
