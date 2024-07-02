@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Annotated, Any, Callable, Protocol, Self, Type, TypeVar
+from typing import Annotated, Any, Callable, Protocol, Self, TypeVar
 
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
@@ -29,7 +29,7 @@ def no_user() -> None:
 
 
 class _Dependency(Protocol):
-    def as_dependable(self, **data: Any) -> Type[RestfulServiceBuilder]:
+    def as_dependable(self, **data: Any) -> type[RestfulServiceBuilder]:
         pass
 
 
@@ -37,7 +37,7 @@ class _Dependency(Protocol):
 class ServiceDependency:
     dependency: _Dependency
 
-    def as_dependable(self, **data: Any) -> Type[RestfulService]:
+    def as_dependable(self, **data: Any) -> type[RestfulService]:
         Builder = self.dependency.as_dependable(**data)
 
         def _(builder: Builder) -> RestfulService:  # type: ignore
@@ -50,7 +50,7 @@ class ServiceDependency:
 class UserDependency:
     dependency: _Dependency
 
-    def as_dependable(self, **data: Any) -> Type[RestfulServiceBuilder]:
+    def as_dependable(self, **data: Any) -> type[RestfulServiceBuilder]:
         Builder = self.dependency.as_dependable(**data)
         User = Annotated[Any, Depends(data["extract_user"])]
 
@@ -65,7 +65,7 @@ class ParentDependency:
     parent: RestfulName
     dependency: _Dependency
 
-    def as_dependable(self, **data: Any) -> Type[RestfulServiceBuilder]:
+    def as_dependable(self, **data: Any) -> type[RestfulServiceBuilder]:
         Builder = self.dependency.as_dependable(**data)
         ParentId = Annotated[str, Path(alias=self.parent.singular + "_id")]
 
@@ -79,7 +79,7 @@ class ParentDependency:
 class InfraDependency:
     infra: RestfulServiceBuilder
 
-    def as_dependable(self, **data: Any) -> Type[RestfulServiceBuilder]:
+    def as_dependable(self, **data: Any) -> type[RestfulServiceBuilder]:
         def _() -> RestfulServiceBuilder:
             return self.infra
 
