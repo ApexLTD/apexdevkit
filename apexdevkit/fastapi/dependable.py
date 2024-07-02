@@ -78,7 +78,6 @@ class InfraDependency:
 @dataclass
 class DependableBuilder:
     dependency: _Dependency = field(init=False)
-    extract_user: Callable[..., Any] = field(init=False)
 
     def with_infra(self, value: RestfulServiceBuilder) -> Self:
         self.dependency = InfraDependency(value)
@@ -91,11 +90,9 @@ class DependableBuilder:
         return self
 
     def with_user(self, extract_user: Callable[..., Any]) -> Self:
-        self.extract_user = extract_user
+        self.dependency = UserDependency(extract_user, self.dependency)
 
         return self
 
     def as_dependable(self) -> type[RestfulService]:
-        return ServiceDependency(
-            UserDependency(self.extract_user, self.dependency)
-        ).as_dependable()
+        return ServiceDependency(self.dependency).as_dependable()
