@@ -167,14 +167,12 @@ class RestfulRouter:
         return self
 
     def with_update_one_endpoint(
-        self,
-        is_documented: bool = True,
-        extract_user: Callable[..., Any] = no_user,
+        self, dependable: Dependable, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
             self.resource.update_one(
-                Service=self.dependable.with_user(extract_user).as_dependable(),
+                Service=dependable.as_dependable(),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -195,14 +193,12 @@ class RestfulRouter:
         return self
 
     def with_update_many_endpoint(
-        self,
-        is_documented: bool = True,
-        extract_user: Callable[..., Any] = no_user,
+        self, dependable: Dependable, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             "",
             self.resource.update_many(
-                Service=self.dependable.with_user(extract_user).as_dependable(),
+                Service=dependable.as_dependable(),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_update_many()),
@@ -302,8 +298,8 @@ class RestfulRouter:
             .with_create_many_endpoint(dependable)
             .with_read_one_endpoint(dependable)
             .with_read_all_endpoint(dependable)
-            .with_update_one_endpoint()
-            .with_update_many_endpoint()
+            .with_update_one_endpoint(dependable)
+            .with_update_many_endpoint(dependable)
             .with_delete_one_endpoint()
         )
 
