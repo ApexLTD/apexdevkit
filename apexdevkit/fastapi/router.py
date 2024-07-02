@@ -88,6 +88,26 @@ class InfraDependency:
 
 
 @dataclass
+class DependencyBuilder:
+    dependency: _Dependency = field(init=False)
+
+    def with_infra(self, value: RestfulServiceBuilder) -> Self:
+        self.dependency = InfraDependency(value)
+
+        return self
+
+    def with_parent(self, value: RestfulName) -> Self:
+        self.dependency = ParentDependency(value, self.dependency)
+
+        return self
+
+    def build(self, extract_user: Callable[..., Any]) -> type[RestfulService]:
+        return ServiceDependency(
+            UserDependency(extract_user, self.dependency)
+        ).as_dependable()
+
+
+@dataclass
 class RestfulRouter:
     router: APIRouter = field(default_factory=APIRouter)
 
