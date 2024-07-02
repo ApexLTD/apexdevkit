@@ -1,11 +1,10 @@
 import pytest
-from starlette.testclient import TestClient
 
 from apexdevkit.error import ExistsError
 from apexdevkit.http import JsonDict
-from apexdevkit.testing import RestCollection, RestfulName, RestResource
+from apexdevkit.testing import RestResource
 from tests.resource.sample_api import FailingService
-from tests.resource.setup import FakeApple, setup
+from tests.resource.setup import FakeApple
 
 
 @pytest.fixture
@@ -14,11 +13,8 @@ def apple() -> JsonDict:
 
 
 @pytest.fixture
-def resource() -> RestResource:
-    return RestCollection(
-        name=RestfulName("apple"),
-        http=TestClient(setup(FailingService(ExistsError))),
-    )
+def service() -> FailingService:
+    return FailingService(ExistsError)
 
 
 def test_should_not_create_existing(apple: JsonDict, resource: RestResource) -> None:

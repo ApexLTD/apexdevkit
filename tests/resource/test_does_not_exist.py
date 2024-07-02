@@ -1,13 +1,12 @@
 from uuid import uuid4
 
 import pytest
-from starlette.testclient import TestClient
 
 from apexdevkit.error import DoesNotExistError
 from apexdevkit.http import JsonDict
-from apexdevkit.testing import RestCollection, RestfulName, RestResource
+from apexdevkit.testing import RestResource
 from tests.resource.sample_api import FailingService
-from tests.resource.setup import FakeApple, setup
+from tests.resource.setup import FakeApple
 
 
 @pytest.fixture
@@ -16,11 +15,8 @@ def apple() -> JsonDict:
 
 
 @pytest.fixture
-def resource() -> RestResource:
-    return RestCollection(
-        name=RestfulName("apple"),
-        http=TestClient(setup(FailingService(DoesNotExistError))),
-    )
+def service() -> FailingService:
+    return FailingService(DoesNotExistError)
 
 
 def test_should_not_read_unknown(resource: RestResource) -> None:
