@@ -10,7 +10,7 @@ from apexdevkit.fastapi.service import RestfulService
 
 @dataclass
 class ApiError(Exception):
-    http_code: int
+    code: int
     data: dict[str, Any]
 
 
@@ -21,9 +21,7 @@ class FastApiBuilder:
     def build(self) -> FastAPI:
         self.app.add_exception_handler(
             ApiError,
-            lambda request, exc: JSONResponse(
-                content=exc.data, status_code=exc.http_code
-            ),
+            lambda request, exc: JSONResponse(content=exc.data, status_code=exc.code),
         )
         return self.app
 
