@@ -5,13 +5,8 @@ from typing import Any, Self
 from fastapi import APIRouter, FastAPI
 from starlette.responses import JSONResponse
 
+from apexdevkit.error import ApiError
 from apexdevkit.fastapi.service import RestfulService
-
-
-@dataclass
-class ApiError(Exception):
-    code: int
-    data: dict[str, Any]
 
 
 @dataclass

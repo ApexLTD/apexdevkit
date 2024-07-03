@@ -4,9 +4,8 @@ from typing import Annotated, Any, Callable, Protocol, Self
 from fastapi import Depends, Path
 from fastapi.requests import Request
 
-from apexdevkit.error import DoesNotExistError
+from apexdevkit.error import ApiError, DoesNotExistError
 from apexdevkit.fastapi import RestfulServiceBuilder
-from apexdevkit.fastapi.builder import ApiError
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.service import RestfulService
 from apexdevkit.testing import RestfulName

@@ -48,3 +48,9 @@ class ForbiddenError(Exception):
     @property
     def id(self) -> Any:
         return self.item.id
+
+
+@dataclass
+class ApiError(Exception):
+    code: int
+    data: dict[str, Any]
