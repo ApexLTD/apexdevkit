@@ -1,11 +1,12 @@
 from dataclasses import dataclass, field
 from typing import Annotated, Any, Callable, Protocol, Self
 
-from fastapi import Depends, HTTPException, Path
+from fastapi import Depends, Path
 from fastapi.requests import Request
 
 from apexdevkit.error import DoesNotExistError
 from apexdevkit.fastapi import RestfulServiceBuilder
+from apexdevkit.fastapi.builder import ApiError
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.service import RestfulService
 from apexdevkit.testing import RestfulName
@@ -49,9 +50,7 @@ class ParentDependency:
             try:
                 return builder.with_parent(parent_id)
             except DoesNotExistError as e:
-                raise HTTPException(
-                    status_code=404, detail=RestfulResponse(self.parent).not_found(e)
-                )
+                raise ApiError(404, RestfulResponse(self.parent).not_found(e))
 
         return Annotated[RestfulServiceBuilder, Depends(_)]
 

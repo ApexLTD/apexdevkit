@@ -3,8 +3,15 @@ from dataclasses import dataclass, field
 from typing import Any, Self
 
 from fastapi import APIRouter, FastAPI
+from starlette.responses import JSONResponse
 
 from apexdevkit.fastapi.service import RestfulService
+
+
+@dataclass
+class ApiError(Exception):
+    http_code: int
+    data: dict[str, Any]
 
 
 @dataclass
@@ -12,6 +19,12 @@ class FastApiBuilder:
     app: FastAPI = field(default_factory=FastAPI)
 
     def build(self) -> FastAPI:
+        self.app.add_exception_handler(
+            ApiError,
+            lambda request, exc: JSONResponse(
+                content=exc.data, status_code=exc.http_code
+            ),
+        )
         return self.app
 
     def with_title(self, value: str) -> Self:

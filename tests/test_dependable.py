@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 from starlette.testclient import TestClient
 
+from apexdevkit.error import DoesNotExistError
 from apexdevkit.fastapi import (
     FastApiBuilder,
     RestfulServiceBuilder,
@@ -116,3 +117,17 @@ def test_should_build_dependable_with_parent(
 
     infra.with_parent.assert_called_once_with(identifier)
     infra.with_parent().build.assert_called_once()
+
+
+def test_should_not_build_dependable_when_no_parent(
+    identifier: str, parent: RestfulName, child: RestfulName
+) -> None:
+    infra = MagicMock(spec=RestfulServiceBuilder)
+    infra.with_parent.side_effect = DoesNotExistError(identifier)
+    dependency = ServiceDependency(ParentDependency(parent, InfraDependency(infra)))
+
+    parent_resource(dependency).sub_resource(identifier).sub_resource(
+        child.singular
+    ).read_all().ensure().fail().with_code(404).and_message(
+        f"An item<{parent.singular.capitalize()}> with id<{identifier}> does not exist."
+    )
