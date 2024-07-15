@@ -43,7 +43,9 @@ class ParentDependency:
 
     def as_dependable(self) -> type[RestfulServiceBuilder]:
         Builder = self.dependency.as_dependable()
-        ParentId = Annotated[str, Path(alias=self.parent.singular + "_id")]
+        ParentId = Annotated[
+            str, Path(alias=self.parent.singular.replace("-", "_") + "_id")
+        ]
 
         def _(builder: Builder, parent_id: ParentId) -> RestfulServiceBuilder:
             try:
