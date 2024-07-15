@@ -24,7 +24,7 @@ def test_should_not_create_existing(apple: JsonDict, resource: RestResource) -> 
         .ensure()
         .fail()
         .with_code(409)
-        .and_message("An item<Apple> with the  already exists.")
+        .and_message("An item<Market-apple> with the  already exists.")
     )
 
 
@@ -37,5 +37,5 @@ def test_should_not_create_many_existing(
         .ensure()
         .fail()
         .with_code(409)
-        .and_message("An item<Apple> with the  already exists.")
+        .and_message("An item<Market-apple> with the  already exists.")
     )
