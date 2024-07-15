@@ -26,7 +26,7 @@ def test_should_not_read_unknown(resource: RestResource) -> None:
         .ensure()
         .fail()
         .with_code(404)
-        .and_message("An item<Apple> with id<unknown> does not exist.")
+        .and_message("An item<Market-apple> with id<unknown> does not exist.")
     )
 
 
@@ -38,7 +38,7 @@ def test_should_not_update_unknown(apple: JsonDict, resource: RestResource) -> N
         .ensure()
         .fail()
         .with_code(404)
-        .and_message("An item<Apple> with id<unknown> does not exist.")
+        .and_message("An item<Market-apple> with id<unknown> does not exist.")
     )
 
 
@@ -51,7 +51,7 @@ def test_should_not_update_many_unknown(
         .ensure()
         .fail()
         .with_code(404)
-        .and_message("An item<Apple> with id<unknown> does not exist.")
+        .and_message("An item<Market-apple> with id<unknown> does not exist.")
     )
 
 
@@ -62,7 +62,7 @@ def test_should_not_replace_unknown(apple: JsonDict, resource: RestResource) -> 
         .ensure()
         .fail()
         .with_code(404)
-        .and_message("An item<Apple> with id<unknown> does not exist.")
+        .and_message("An item<Market-apple> with id<unknown> does not exist.")
     )
 
 
@@ -75,7 +75,7 @@ def test_should_not_replace_many_unknown(
         .ensure()
         .fail()
         .with_code(404)
-        .and_message("An item<Apple> with id<unknown> does not exist.")
+        .and_message("An item<Market-apple> with id<unknown> does not exist.")
     )
 
 
@@ -86,5 +86,5 @@ def test_should_not_delete_unknown(apple: JsonDict, resource: RestResource) -> N
         .ensure()
         .fail()
         .with_code(404)
-        .and_message("An item<Apple> with id<unknown> does not exist.")
+        .and_message("An item<Market-apple> with id<unknown> does not exist.")
     )

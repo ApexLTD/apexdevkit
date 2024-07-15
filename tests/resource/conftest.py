@@ -10,6 +10,6 @@ from tests.resource.setup import setup
 @pytest.fixture
 def resource(service: RestfulServiceBuilder) -> RestResource:
     return RestCollection(
-        name=RestfulName("apple"),
+        name=RestfulName("market-apple"),
         http=Httpx(TestClient(setup(service))),
     )
