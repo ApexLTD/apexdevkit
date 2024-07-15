@@ -46,7 +46,7 @@ class RestfulRouter:
 
     @property
     def id_alias(self) -> str:
-        return self.name.singular + "_id"
+        return self.name.singular.replace("-", "_") + "_id"
 
     @property
     def item_path(self) -> str:
@@ -264,6 +264,7 @@ class RestfulRouter:
 
     def with_sub_resource(self, **names: APIRouter) -> Self:
         for name, router in names.items():
+            print(self.item_path)
             self.router.include_router(router, prefix=f"{self.item_path}/{name}")
 
         return self
