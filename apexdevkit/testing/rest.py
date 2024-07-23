@@ -169,11 +169,13 @@ class ReadOne(RestRequest):
 
 @dataclass
 class ReadAll(RestRequest):
+    item_id: str = ""
+
     @cached_property
     def response(self) -> HttpResponse:
         return self.http.request(
             method=HttpMethod.get,
-            endpoint=self.resource + "",
+            endpoint=self.resource + str(self.item_id),
         )
 
     def with_params(self, **kwargs: Any) -> ReadAll:
