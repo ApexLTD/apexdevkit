@@ -212,19 +212,17 @@ class UpdateOne(RestRequest):
 
 @dataclass
 class ReplaceOne(RestRequest):
-    data: JsonDict = field(init=False)
+    item_id: str = ""
 
     @cached_property
     def response(self) -> HttpResponse:
-        return self.http.with_json(self.data).request(
+        return self.http.request(
             method=HttpMethod.put,
-            endpoint=self.resource + "",
+            endpoint=self.resource + str(self.item_id),
         )
 
-    def from_data(self, value: JsonDict) -> Self:
-        self.data = value
-
-        return self
+    def from_data(self, value: JsonDict) -> ReplaceOne:
+        return ReplaceOne(self.resource, self.http.with_json(value))
 
 
 @dataclass
