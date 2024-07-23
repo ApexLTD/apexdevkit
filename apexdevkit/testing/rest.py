@@ -120,6 +120,11 @@ class RestRequest:
     def endpoint(self) -> str:
         return self.resource + self._endpoint
 
+    def with_id(self, value: Any) -> Self:
+        self._endpoint = str(value)
+
+        return self
+
     @abstractmethod
     @cached_property
     def response(self) -> HttpResponse:  # pragma: no cover
@@ -153,11 +158,6 @@ class CreateOne(RestRequest):
 
 @dataclass
 class ReadOne(RestRequest):
-    def with_id(self, value: Any) -> Self:
-        self._endpoint = str(value)
-
-        return self
-
     @cached_property
     def response(self) -> HttpResponse:
         return self.http.request(method=HttpMethod.get, endpoint=self.endpoint)
@@ -182,11 +182,6 @@ class UpdateOne(RestRequest):
     @cached_property
     def response(self) -> HttpResponse:
         return self.http.request(method=HttpMethod.patch, endpoint=self.endpoint)
-
-    def with_id(self, value: Any) -> Self:
-        self._endpoint = str(value)
-
-        return self
 
     def and_data(self, value: JsonDict) -> UpdateOne:
         return UpdateOne(
@@ -276,11 +271,6 @@ class DeleteOne(RestRequest):
     @cached_property
     def response(self) -> HttpResponse:
         return self.http.request(method=HttpMethod.delete, endpoint=self.endpoint)
-
-    def with_id(self, value: Any) -> Self:
-        self._endpoint = str(value)
-
-        return self
 
 
 @dataclass
