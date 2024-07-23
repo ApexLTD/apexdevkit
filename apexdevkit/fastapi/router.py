@@ -17,7 +17,7 @@ _Response = JSONResponse | dict[str, Any]
 T = TypeVar("T")
 
 
-class Dependable(Protocol):
+class Dependable(Protocol):  # pragma: no cover
     def as_dependable(self) -> type[RestfulService]:
         pass
 
