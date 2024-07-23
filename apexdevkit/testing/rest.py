@@ -6,6 +6,7 @@ from typing import Any, Iterable, Self
 
 from fastapi.testclient import TestClient
 
+from apexdevkit.annotation import deprecated
 from apexdevkit.http import Http, HttpUrl, JsonDict
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
 from apexdevkit.http.httpx import Httpx
@@ -35,8 +36,8 @@ class RestResource:
     def read_one(self) -> RestRequest:
         return RestRequest(self.name, self._http, method=HttpMethod.get)
 
-    def read_all(self) -> ReadAll:
-        return ReadAll(self.name, self._http)
+    def read_all(self) -> RestRequest:
+        return RestRequest(self.name, self._http, method=HttpMethod.get)
 
     def update_one(self) -> RestRequest:
         return RestRequest(self.name, self._http, method=HttpMethod.patch)
@@ -137,6 +138,26 @@ class RestRequest:
 
         return self
 
+    @deprecated(
+        """
+        .with_params is deprecated and will be removed in a future version,
+        use .with_param instead.
+        """
+    )
+    def with_params(self, **kwargs: Any) -> Self:
+        for name, value in kwargs:
+            self.with_param(name, value)
+
+        return self
+
+    def and_param(self, name: str, value: Any) -> Self:
+        return self.with_param(name, value)
+
+    def with_param(self, name: str, value: Any) -> Self:
+        self.http = self.http.with_param(name, str(value))
+
+        return self
+
     @cached_property
     def response(self) -> HttpResponse:  # pragma: no cover
         return self.http.request(method=self.method, endpoint=self.endpoint)
@@ -155,20 +176,6 @@ class RestRequest:
             json=JsonDict(self.response.json()),
             http_code=self.response.code(),
         )
-
-
-@dataclass
-class ReadAll(RestRequest):
-    def with_params(self, **kwargs: Any) -> ReadAll:
-        http = self.http
-        for param, value in kwargs:
-            http = http.with_param(param, value)
-
-        return ReadAll(self.resource, http)
-
-    @cached_property
-    def response(self) -> HttpResponse:
-        return self.http.request(method=HttpMethod.get, endpoint=self.endpoint)
 
 
 @dataclass
