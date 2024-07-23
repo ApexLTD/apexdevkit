@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from abc import abstractmethod
 from dataclasses import dataclass, field
 from functools import cached_property
 from typing import Any, Iterable, Self
@@ -51,8 +50,8 @@ class RestResource:
     def replace_many(self) -> ReplaceMany:
         return ReplaceMany(self.name, self._http)
 
-    def delete_one(self) -> DeleteOne:
-        return DeleteOne(self.name, self._http)
+    def delete_one(self) -> RestRequest:
+        return RestRequest(self.name, self._http)
 
 
 @dataclass
@@ -125,10 +124,9 @@ class RestRequest:
 
         return self
 
-    @abstractmethod
     @cached_property
     def response(self) -> HttpResponse:  # pragma: no cover
-        pass
+        return self.http.request(method=HttpMethod.delete, endpoint=self.endpoint)
 
     def unpack(self) -> JsonDict:
         return JsonDict(self.response.json()["data"][self.resource.singular])
@@ -264,13 +262,6 @@ class ReplaceMany(RestRequest):
 
     def and_data(self, value: JsonDict) -> Self:
         return self.from_data(value)
-
-
-@dataclass
-class DeleteOne(RestRequest):
-    @cached_property
-    def response(self) -> HttpResponse:
-        return self.http.request(method=HttpMethod.delete, endpoint=self.endpoint)
 
 
 @dataclass
