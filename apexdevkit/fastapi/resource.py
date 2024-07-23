@@ -9,6 +9,7 @@ from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.testing import RestfulName
 
 _Response = JSONResponse | dict[str, Any]
+_Endpoint = Callable[..., _Response]
 
 
 @dataclass
@@ -19,7 +20,7 @@ class RestfulResource:
     def response(self) -> RestfulResponse:
         return RestfulResponse(name=self.name)
 
-    def create_one(self, Service, Item) -> Callable[..., _Response]:  # type: ignore
+    def create_one(self, Service, Item) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, item: Item) -> _Response:
             try:
                 item = service.create_one(item)
@@ -32,7 +33,7 @@ class RestfulResource:
 
         return endpoint
 
-    def create_many(self, Service, Collection) -> Callable[..., _Response]:  # type: ignore
+    def create_many(self, Service, Collection) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, items: Collection) -> _Response:
             try:
                 return self.response.created_many(service.create_many(items))
@@ -43,7 +44,7 @@ class RestfulResource:
 
         return endpoint
 
-    def read_one(self, Service, ItemId) -> Callable[..., _Response]:  # type: ignore
+    def read_one(self, Service, ItemId) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, item_id: ItemId) -> _Response:
             try:
                 return self.response.found_one(service.read_one(item_id))
@@ -54,7 +55,7 @@ class RestfulResource:
 
         return endpoint
 
-    def read_all(self, Service) -> Callable[..., _Response]:  # type: ignore
+    def read_all(self, Service) -> _Endpoint:  # type: ignore
         def endpoint(service: Service) -> _Response:
             try:
                 return self.response.found_many(list(service.read_all()))
@@ -63,7 +64,7 @@ class RestfulResource:
 
         return endpoint
 
-    def update_one(self, Service, ItemId, Updates) -> Callable[..., _Response]:  # type: ignore
+    def update_one(self, Service, ItemId, Updates) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, item_id: ItemId, updates: Updates) -> _Response:
             try:
                 service.update_one(item_id, **updates)
@@ -76,7 +77,7 @@ class RestfulResource:
 
         return endpoint
 
-    def update_many(self, Service, Collection) -> Callable[..., _Response]:  # type: ignore
+    def update_many(self, Service, Collection) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, items: Collection) -> _Response:
             try:
                 service.update_many(items)
@@ -89,7 +90,7 @@ class RestfulResource:
 
         return endpoint
 
-    def replace_one(self, Service, Item) -> Callable[..., _Response]:  # type: ignore
+    def replace_one(self, Service, Item) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, item: Item) -> _Response:
             try:
                 service.replace_one(item)
@@ -102,7 +103,7 @@ class RestfulResource:
 
         return endpoint
 
-    def replace_many(self, Service, Collection) -> Callable[..., _Response]:  # type: ignore
+    def replace_many(self, Service, Collection) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, items: Collection) -> _Response:
             try:
                 service.replace_many(items)
@@ -115,7 +116,7 @@ class RestfulResource:
 
         return endpoint
 
-    def delete_one(self, Service, ItemId) -> Callable[..., _Response]:  # type: ignore
+    def delete_one(self, Service, ItemId) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, item_id: ItemId) -> _Response:
             try:
                 service.delete_one(item_id)
