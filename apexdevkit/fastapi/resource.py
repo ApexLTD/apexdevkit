@@ -1,12 +1,10 @@
 from dataclasses import dataclass
-from functools import cached_property
 from typing import Any, Callable
 
 from starlette.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
 from apexdevkit.fastapi.response import RestfulResponse
-from apexdevkit.testing import RestfulName
 
 _Response = JSONResponse | dict[str, Any]
 _Endpoint = Callable[..., _Response]
@@ -14,11 +12,7 @@ _Endpoint = Callable[..., _Response]
 
 @dataclass
 class RestfulResource:
-    name: RestfulName
-
-    @cached_property
-    def response(self) -> RestfulResponse:
-        return RestfulResponse(name=self.name)
+    response: RestfulResponse
 
     def create_one(self, Service, Item) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, item: Item) -> _Response:
