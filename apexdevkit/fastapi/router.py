@@ -17,7 +17,7 @@ _Response = JSONResponse | dict[str, Any]
 T = TypeVar("T")
 
 
-class Dependable(Protocol):  # pragma: no cover
+class Dependency(Protocol):  # pragma: no cover
     def as_dependable(self) -> type[RestfulService]:
         pass
 
@@ -65,13 +65,13 @@ class RestfulRouter:
 
     def with_create_one_endpoint(
         self,
-        dependable: Dependable,
+        dependency: Dependency,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "",
             self.resource.create_one(
-                Service=dependable.as_dependable(),
+                Service=dependency.as_dependable(),
                 Item=Annotated[
                     RawItem,
                     Depends(self.schema.for_create_one()),
@@ -88,12 +88,12 @@ class RestfulRouter:
         return self
 
     def with_create_many_endpoint(
-        self, dependable: Dependable, is_documented: bool = True
+        self, dependency: Dependency, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             "/batch",
             self.resource.create_many(
-                Service=dependable.as_dependable(),
+                Service=dependency.as_dependable(),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_create_many()),
@@ -110,12 +110,12 @@ class RestfulRouter:
         return self
 
     def with_read_one_endpoint(
-        self, dependable: Dependable, is_documented: bool = True
+        self, dependency: Dependency, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
             self.resource.read_one(
-                Service=dependable.as_dependable(),
+                Service=dependency.as_dependable(),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -132,12 +132,12 @@ class RestfulRouter:
         return self
 
     def with_read_all_endpoint(
-        self, dependable: Dependable, is_documented: bool = True
+        self, dependency: Dependency, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             "",
             self.resource.read_all(
-                Service=dependable.as_dependable(),
+                Service=dependency.as_dependable(),
             ),
             methods=["GET"],
             status_code=200,
@@ -150,12 +150,12 @@ class RestfulRouter:
         return self
 
     def with_update_one_endpoint(
-        self, dependable: Dependable, is_documented: bool = True
+        self, dependency: Dependency, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
             self.resource.update_one(
-                Service=dependable.as_dependable(),
+                Service=dependency.as_dependable(),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -176,12 +176,12 @@ class RestfulRouter:
         return self
 
     def with_update_many_endpoint(
-        self, dependable: Dependable, is_documented: bool = True
+        self, dependency: Dependency, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             "",
             self.resource.update_many(
-                Service=dependable.as_dependable(),
+                Service=dependency.as_dependable(),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_update_many()),
@@ -198,12 +198,12 @@ class RestfulRouter:
         return self
 
     def with_replace_one_endpoint(
-        self, dependable: Dependable, is_documented: bool = True
+        self, dependency: Dependency, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             "",
             self.resource.replace_one(
-                Service=dependable.as_dependable(),
+                Service=dependency.as_dependable(),
                 Item=Annotated[
                     RawItem,
                     Depends(self.schema.for_replace_one()),
@@ -220,12 +220,12 @@ class RestfulRouter:
         return self
 
     def with_replace_many_endpoint(
-        self, dependable: Dependable, is_documented: bool = True
+        self, dependency: Dependency, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             "/batch",
             self.resource.replace_many(
-                Service=dependable.as_dependable(),
+                Service=dependency.as_dependable(),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_replace_many()),
@@ -242,12 +242,12 @@ class RestfulRouter:
         return self
 
     def with_delete_one_endpoint(
-        self, dependable: Dependable, is_documented: bool = True
+        self, dependency: Dependency, is_documented: bool = True
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
             self.resource.delete_one(
-                Service=dependable.as_dependable(),
+                Service=dependency.as_dependable(),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -270,15 +270,15 @@ class RestfulRouter:
 
         return self
 
-    def default(self, dependable: Dependable) -> Self:
+    def default(self, dependency: Dependency) -> Self:
         return (
-            self.with_create_one_endpoint(dependable)
-            .with_create_many_endpoint(dependable)
-            .with_read_one_endpoint(dependable)
-            .with_read_all_endpoint(dependable)
-            .with_update_one_endpoint(dependable)
-            .with_update_many_endpoint(dependable)
-            .with_delete_one_endpoint(dependable)
+            self.with_create_one_endpoint(dependency)
+            .with_create_many_endpoint(dependency)
+            .with_read_one_endpoint(dependency)
+            .with_read_all_endpoint(dependency)
+            .with_update_one_endpoint(dependency)
+            .with_update_many_endpoint(dependency)
+            .with_delete_one_endpoint(dependency)
         )
 
     def build(self) -> APIRouter:
