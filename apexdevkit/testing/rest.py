@@ -154,17 +154,17 @@ class CreateOne(RestRequest):
 class ReadOne(RestRequest):
     item_id: str = field(init=False)
 
+    def with_id(self, value: Any) -> Self:
+        self.item_id = str(value)
+
+        return self
+
     @cached_property
     def response(self) -> HttpResponse:
         return self.http.request(
             method=HttpMethod.get,
             endpoint=self.resource + str(self.item_id),
         )
-
-    def with_id(self, value: Any) -> Self:
-        self.item_id = str(value)
-
-        return self
 
 
 @dataclass
