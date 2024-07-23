@@ -126,6 +126,17 @@ class RestRequest:
 
         return self
 
+    def and_data(self, value: JsonDict) -> Self:
+        return self.with_data(value)
+
+    def from_data(self, value: JsonDict) -> Self:
+        return self.with_data(value)
+
+    def with_data(self, value: JsonDict) -> Self:
+        self.http = self.http.with_json(value)
+
+        return self
+
     @cached_property
     def response(self) -> HttpResponse:  # pragma: no cover
         return self.http.request(method=self.method, endpoint=self.endpoint)
@@ -148,9 +159,6 @@ class RestRequest:
 
 @dataclass
 class CreateOne(RestRequest):
-    def from_data(self, value: JsonDict) -> CreateOne:
-        return CreateOne(self.resource, self.http.with_json(value))
-
     @cached_property
     def response(self) -> HttpResponse:
         return self.http.request(method=HttpMethod.post, endpoint=self.endpoint)
@@ -176,21 +184,12 @@ class UpdateOne(RestRequest):
     def response(self) -> HttpResponse:
         return self.http.request(method=HttpMethod.patch, endpoint=self.endpoint)
 
-    def and_data(self, value: JsonDict) -> UpdateOne:
-        return UpdateOne(
-            self.resource,
-            self.http.with_json(value),
-        ).with_id(self._endpoint)
-
 
 @dataclass
 class ReplaceOne(RestRequest):
     @cached_property
     def response(self) -> HttpResponse:
         return self.http.request(method=HttpMethod.put, endpoint=self.endpoint)
-
-    def from_data(self, value: JsonDict) -> ReplaceOne:
-        return ReplaceOne(self.resource, self.http.with_json(value))
 
 
 @dataclass
