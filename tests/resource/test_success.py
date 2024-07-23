@@ -33,6 +33,7 @@ def test_should_create(
         .with_code(201)
         .and_item(apple)
     )
+
     assert service.called_with == apple.drop("id")
 
 
@@ -43,12 +44,13 @@ def test_should_create_many(
 ) -> None:
     (
         resource.create_many()
-        .from_data(apple)
+        .from_collection([apple])
         .ensure()
         .success()
         .with_code(201)
         .and_collection([apple])
     )
+
     assert service.called_with == [apple.drop("id")]
 
 
@@ -65,6 +67,7 @@ def test_should_read_one(
         .with_code(200)
         .with_item(apple)
     )
+
     assert service.called_with == apple["id"]
 
 
@@ -74,6 +77,7 @@ def test_should_read_all(
     resource: RestResource,
 ) -> None:
     resource.read_all().ensure().success().with_code(200).and_collection([apple])
+
     assert service.called_with is None
 
 
@@ -90,6 +94,7 @@ def test_should_update_one(
         .success()
         .with_code(200)
     )
+
     assert service.called_with == (apple["id"], apple.drop("id").drop("color"))
 
 
@@ -98,7 +103,8 @@ def test_should_update_many(
     service: SuccessfulService,
     resource: RestResource,
 ) -> None:
-    resource.update_many().from_data(apple).ensure().success().with_code(200)
+    resource.update_many().from_collection([apple]).ensure().success().with_code(200)
+
     assert service.called_with == [apple.drop("color")]
 
 
@@ -108,6 +114,7 @@ def test_should_replace_one(
     resource: RestResource,
 ) -> None:
     resource.replace_one().from_data(apple).ensure().success().with_code(200)
+
     assert service.called_with == apple
 
 
@@ -116,7 +123,8 @@ def test_should_replace_many(
     service: SuccessfulService,
     resource: RestResource,
 ) -> None:
-    resource.replace_many().from_data(apple).ensure().success().with_code(200)
+    resource.replace_many().from_collection([apple]).ensure().success().with_code(200)
+
     assert service.called_with == [apple]
 
 
@@ -126,6 +134,7 @@ def test_should_delete_one(
     resource: RestResource,
 ) -> None:
     resource.delete_one().with_id(apple["id"]).ensure().success().with_code(200)
+
     assert service.called_with == apple["id"]
 
 

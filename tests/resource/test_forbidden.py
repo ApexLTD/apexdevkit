@@ -35,7 +35,7 @@ def test_should_not_create_many_forbidden(
 ) -> None:
     (
         resource.create_many()
-        .from_data(apple)
+        .from_collection([apple])
         .ensure()
         .fail()
         .with_code(403)
@@ -75,7 +75,7 @@ def test_should_not_update_many_forbidden(
 ) -> None:
     (
         resource.update_many()
-        .from_data(apple)
+        .from_collection([apple])
         .ensure()
         .fail()
         .with_code(403)
@@ -99,7 +99,7 @@ def test_should_not_replace_many_forbidden(
 ) -> None:
     (
         resource.replace_many()
-        .from_data(apple)
+        .from_collection([apple])
         .ensure()
         .fail()
         .with_code(403)

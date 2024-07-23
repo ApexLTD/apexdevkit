@@ -33,7 +33,7 @@ def test_should_not_create_many_existing(
 ) -> None:
     (
         resource.create_many()
-        .from_data(apple)
+        .from_collection([apple])
         .ensure()
         .fail()
         .with_code(409)
