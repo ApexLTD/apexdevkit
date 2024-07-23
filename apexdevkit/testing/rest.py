@@ -137,7 +137,7 @@ class RestRequest:
 
 @dataclass
 class CreateOne(RestRequest):
-    item_id: str = ""
+    item_id: str = field(init=False, default_factory=str)
 
     def from_data(self, value: JsonDict) -> CreateOne:
         return CreateOne(self.resource, self.http.with_json(value))
@@ -169,7 +169,7 @@ class ReadOne(RestRequest):
 
 @dataclass
 class ReadAll(RestRequest):
-    item_id: str = ""
+    item_id: str = field(init=False, default_factory=str)
 
     def with_params(self, **kwargs: Any) -> ReadAll:
         http = self.http
