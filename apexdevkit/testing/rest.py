@@ -188,12 +188,11 @@ class ReadAll(RestRequest):
 
 @dataclass
 class UpdateOne(RestRequest):
-    item_id: str = field(init=False)
-    data: JsonDict = field(init=False)
+    item_id: str = ""
 
     @cached_property
     def response(self) -> HttpResponse:
-        return self.http.with_json(self.data).request(
+        return self.http.request(
             method=HttpMethod.patch,
             endpoint=self.resource + str(self.item_id),
         )
@@ -203,10 +202,12 @@ class UpdateOne(RestRequest):
 
         return self
 
-    def and_data(self, value: JsonDict) -> Self:
-        self.data = value
-
-        return self
+    def and_data(self, value: JsonDict) -> UpdateOne:
+        return UpdateOne(
+            self.resource,
+            self.http.with_json(value),
+            self.item_id,
+        )
 
 
 @dataclass
