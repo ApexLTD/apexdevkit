@@ -273,17 +273,12 @@ class ReplaceMany(RestRequest):
 
 @dataclass
 class DeleteOne(RestRequest):
-    item_id: str = field(init=False)
-
     @cached_property
     def response(self) -> HttpResponse:
-        return self.http.request(
-            method=HttpMethod.delete,
-            endpoint=self.resource + str(self.item_id),
-        )
+        return self.http.request(method=HttpMethod.delete, endpoint=self.endpoint)
 
     def with_id(self, value: Any) -> Self:
-        self.item_id = str(value)
+        self._endpoint = str(value)
 
         return self
 
