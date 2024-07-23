@@ -47,7 +47,7 @@ def test_should_not_update_many_unknown(
 ) -> None:
     (
         resource.update_many()
-        .from_data(apple)
+        .from_collection([apple])
         .ensure()
         .fail()
         .with_code(404)
@@ -71,7 +71,7 @@ def test_should_not_replace_many_unknown(
 ) -> None:
     (
         resource.replace_many()
-        .from_data(apple)
+        .from_collection([apple])
         .ensure()
         .fail()
         .with_code(404)

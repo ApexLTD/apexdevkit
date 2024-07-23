@@ -89,9 +89,16 @@ def test_should_persist_user_for_create_one(
 def test_should_call_extract_user_for_create_many(
     resource: RestResource, fake_user: FakeUser
 ) -> None:
-    resource.create_many().from_data(FakeApple().json()).and_data(
-        FakeApple().json()
-    ).ensure()
+    (
+        resource.create_many()
+        .from_collection(
+            [
+                FakeApple().json(),
+                FakeApple().json(),
+            ]
+        )
+        .ensure()
+    )
 
     assert fake_user.times_called == 1
 
@@ -100,9 +107,16 @@ def test_should_persist_user_for_create_many(
     resource: RestResource,
     infra: RestfulServiceBuilder,
 ) -> None:
-    resource.create_many().from_data(FakeApple().json()).and_data(
-        FakeApple().json()
-    ).ensure()
+    (
+        resource.create_many()
+        .from_collection(
+            [
+                FakeApple().json(),
+                FakeApple().json(),
+            ]
+        )
+        .ensure()
+    )
 
     assert infra.user == "user"
 
@@ -171,9 +185,16 @@ def test_should_persist_user_for_update_one(
 def test_should_call_extract_user_for_update_many(
     resource: RestResource, fake_user: FakeUser
 ) -> None:
-    resource.update_many().from_data(FakeApple().json().drop("color")).and_data(
-        FakeApple().json().drop("color")
-    ).ensure()
+    (
+        resource.update_many()
+        .from_collection(
+            [
+                FakeApple().json().drop("color"),
+                FakeApple().json().drop("color"),
+            ]
+        )
+        .ensure()
+    )
 
     assert fake_user.times_called == 1
 
@@ -182,9 +203,16 @@ def test_should_persist_user_for_update_many(
     resource: RestResource,
     infra: RestfulServiceBuilder,
 ) -> None:
-    resource.update_many().from_data(FakeApple().json().drop("color")).and_data(
-        FakeApple().json().drop("color")
-    ).ensure()
+    (
+        resource.update_many()
+        .from_collection(
+            [
+                FakeApple().json().drop("color"),
+                FakeApple().json().drop("color"),
+            ]
+        )
+        .ensure()
+    )
 
     assert infra.user == "user"
 
@@ -211,8 +239,12 @@ def test_should_call_extract_user_for_replace_many(
 ) -> None:
     (
         resource.replace_many()
-        .from_data(FakeApple().json())
-        .and_data(FakeApple().json())
+        .from_collection(
+            [
+                FakeApple().json(),
+                FakeApple().json(),
+            ]
+        )
         .ensure()
     )
 
@@ -225,8 +257,12 @@ def test_should_persist_user_for_replace_many(
 ) -> None:
     (
         resource.replace_many()
-        .from_data(FakeApple().json())
-        .and_data(FakeApple().json())
+        .from_collection(
+            [
+                FakeApple().json(),
+                FakeApple().json(),
+            ]
+        )
         .ensure()
     )
 
