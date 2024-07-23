@@ -25,7 +25,10 @@ ruff = "*"
 python_version = "3.11"
 ignore_missing_imports = true
 strict = true
-exclude = ["apexdevkit/fastapi/schema.py", "apexdevkit/fastapi/dependable.py"]
+exclude = [
+    "apexdevkit/fastapi/schema.py",
+    "apexdevkit/fastapi/dependable.py",
+]
 
 [tool.ruff]
 target-version = "py311"
