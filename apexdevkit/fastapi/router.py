@@ -88,7 +88,9 @@ class RestfulRouter:
         return self
 
     def with_create_many_endpoint(
-        self, dependency: Dependency, is_documented: bool = True
+        self,
+        dependency: Dependency,
+        is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "/batch",
@@ -110,7 +112,9 @@ class RestfulRouter:
         return self
 
     def with_read_one_endpoint(
-        self, dependency: Dependency, is_documented: bool = True
+        self,
+        dependency: Dependency,
+        is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
@@ -132,7 +136,9 @@ class RestfulRouter:
         return self
 
     def with_read_all_endpoint(
-        self, dependency: Dependency, is_documented: bool = True
+        self,
+        dependency: Dependency,
+        is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "",
@@ -150,7 +156,9 @@ class RestfulRouter:
         return self
 
     def with_update_one_endpoint(
-        self, dependency: Dependency, is_documented: bool = True
+        self,
+        dependency: Dependency,
+        is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
@@ -176,7 +184,9 @@ class RestfulRouter:
         return self
 
     def with_update_many_endpoint(
-        self, dependency: Dependency, is_documented: bool = True
+        self,
+        dependency: Dependency,
+        is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "",
@@ -198,7 +208,9 @@ class RestfulRouter:
         return self
 
     def with_replace_one_endpoint(
-        self, dependency: Dependency, is_documented: bool = True
+        self,
+        dependency: Dependency,
+        is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "",
@@ -220,7 +232,9 @@ class RestfulRouter:
         return self
 
     def with_replace_many_endpoint(
-        self, dependency: Dependency, is_documented: bool = True
+        self,
+        dependency: Dependency,
+        is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "/batch",
@@ -242,7 +256,9 @@ class RestfulRouter:
         return self
 
     def with_delete_one_endpoint(
-        self, dependency: Dependency, is_documented: bool = True
+        self,
+        dependency: Dependency,
+        is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
