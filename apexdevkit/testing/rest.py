@@ -114,6 +114,12 @@ class RestRequest:
     resource: RestfulName
     http: Http
 
+    _endpoint: str = field(init=False, default_factory=str)
+
+    @property
+    def endpoint(self) -> str:
+        return self.resource + self._endpoint
+
     @abstractmethod
     @cached_property
     def response(self) -> HttpResponse:  # pragma: no cover
@@ -137,40 +143,28 @@ class RestRequest:
 
 @dataclass
 class CreateOne(RestRequest):
-    item_id: str = field(init=False, default_factory=str)
-
     def from_data(self, value: JsonDict) -> CreateOne:
         return CreateOne(self.resource, self.http.with_json(value))
 
     @cached_property
     def response(self) -> HttpResponse:
-        return self.http.request(
-            method=HttpMethod.post,
-            endpoint=self.resource + str(self.item_id),
-        )
+        return self.http.request(method=HttpMethod.post, endpoint=self.endpoint)
 
 
 @dataclass
 class ReadOne(RestRequest):
-    item_id: str = field(init=False)
-
     def with_id(self, value: Any) -> Self:
-        self.item_id = str(value)
+        self._endpoint = str(value)
 
         return self
 
     @cached_property
     def response(self) -> HttpResponse:
-        return self.http.request(
-            method=HttpMethod.get,
-            endpoint=self.resource + str(self.item_id),
-        )
+        return self.http.request(method=HttpMethod.get, endpoint=self.endpoint)
 
 
 @dataclass
 class ReadAll(RestRequest):
-    item_id: str = field(init=False, default_factory=str)
-
     def with_params(self, **kwargs: Any) -> ReadAll:
         http = self.http
         for param, value in kwargs:
@@ -180,25 +174,17 @@ class ReadAll(RestRequest):
 
     @cached_property
     def response(self) -> HttpResponse:
-        return self.http.request(
-            method=HttpMethod.get,
-            endpoint=self.resource + str(self.item_id),
-        )
+        return self.http.request(method=HttpMethod.get, endpoint=self.endpoint)
 
 
 @dataclass
 class UpdateOne(RestRequest):
-    item_id: str = ""
-
     @cached_property
     def response(self) -> HttpResponse:
-        return self.http.request(
-            method=HttpMethod.patch,
-            endpoint=self.resource + str(self.item_id),
-        )
+        return self.http.request(method=HttpMethod.patch, endpoint=self.endpoint)
 
     def with_id(self, value: Any) -> Self:
-        self.item_id = str(value)
+        self._endpoint = str(value)
 
         return self
 
@@ -206,20 +192,14 @@ class UpdateOne(RestRequest):
         return UpdateOne(
             self.resource,
             self.http.with_json(value),
-            self.item_id,
-        )
+        ).with_id(self._endpoint)
 
 
 @dataclass
 class ReplaceOne(RestRequest):
-    item_id: str = ""
-
     @cached_property
     def response(self) -> HttpResponse:
-        return self.http.request(
-            method=HttpMethod.put,
-            endpoint=self.resource + str(self.item_id),
-        )
+        return self.http.request(method=HttpMethod.put, endpoint=self.endpoint)
 
     def from_data(self, value: JsonDict) -> ReplaceOne:
         return ReplaceOne(self.resource, self.http.with_json(value))
