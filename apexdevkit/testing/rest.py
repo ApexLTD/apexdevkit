@@ -6,7 +6,6 @@ from typing import Any, Iterable, Self
 
 from fastapi.testclient import TestClient
 
-from apexdevkit.annotation import deprecated
 from apexdevkit.http import Http, HttpUrl, JsonDict
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
 from apexdevkit.http.httpx import Httpx
@@ -138,18 +137,6 @@ class RestRequest:
 
         return self
 
-    @deprecated(
-        """
-        .with_params is deprecated and will be removed in a future version,
-        use .with_param instead.
-        """
-    )
-    def with_params(self, **kwargs: Any) -> Self:
-        for name, value in kwargs:
-            self.with_param(name, value)
-
-        return self
-
     def and_param(self, name: str, value: Any) -> Self:
         return self.with_param(name, value)
 
@@ -184,11 +171,14 @@ class CreateMany(RestRequest):
 
     @cached_property
     def response(self) -> HttpResponse:
-        json = JsonDict({self.resource.plural: [dict(data) for data in self.data]})
-
-        return self.http.with_json(json).request(
+        return self.from_collection(self.data).http.request(
             method=HttpMethod.post,
             endpoint=self.resource + "batch",
+        )
+
+    def from_collection(self, value: list[JsonDict]) -> Self:
+        return self.with_data(
+            JsonDict({self.resource.plural: [dict(item) for item in value]})
         )
 
     def from_data(self, value: JsonDict) -> Self:
@@ -206,11 +196,14 @@ class UpdateMany(RestRequest):
 
     @cached_property
     def response(self) -> HttpResponse:
-        json = JsonDict({self.resource.plural: [dict(data) for data in self.data]})
-
-        return self.http.with_json(json).request(
+        return self.from_collection(self.data).http.request(
             method=HttpMethod.patch,
             endpoint=self.resource + "",
+        )
+
+    def from_collection(self, value: list[JsonDict]) -> Self:
+        return self.with_data(
+            JsonDict({self.resource.plural: [dict(item) for item in value]})
         )
 
     def from_data(self, value: JsonDict) -> Self:
@@ -228,11 +221,14 @@ class ReplaceMany(RestRequest):
 
     @cached_property
     def response(self) -> HttpResponse:
-        json = JsonDict({self.resource.plural: [dict(data) for data in self.data]})
-
-        return self.http.with_json(json).request(
+        return self.from_collection(self.data).http.request(
             method=HttpMethod.put,
             endpoint=self.resource + "batch",
+        )
+
+    def from_collection(self, value: list[JsonDict]) -> Self:
+        return self.with_data(
+            JsonDict({self.resource.plural: [dict(item) for item in value]})
         )
 
     def from_data(self, value: JsonDict) -> Self:
