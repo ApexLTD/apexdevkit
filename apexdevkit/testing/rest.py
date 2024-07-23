@@ -169,20 +169,19 @@ class ReadOne(RestRequest):
 
 @dataclass
 class ReadAll(RestRequest):
-    params: dict[str, Any] = field(init=False, default_factory=dict)
-
     @cached_property
     def response(self) -> HttpResponse:
+        return self.http.request(
+            method=HttpMethod.get,
+            endpoint=self.resource + "",
+        )
+
+    def with_params(self, **kwargs: Any) -> ReadAll:
         http = self.http
-        for param, value in self.params.items():
+        for param, value in kwargs:
             http = http.with_param(param, value)
 
-        return http.request(method=HttpMethod.get, endpoint=self.resource + "")
-
-    def with_params(self, **kwargs: Any) -> Self:
-        self.params = {**kwargs}
-
-        return self
+        return ReadAll(self.resource, http)
 
 
 @dataclass
