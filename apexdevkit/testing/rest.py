@@ -51,7 +51,7 @@ class RestResource:
         return ReplaceMany(self.name, self._http)
 
     def delete_one(self) -> RestRequest:
-        return RestRequest(self.name, self._http)
+        return RestRequest(self.name, self._http, method=HttpMethod.delete)
 
 
 @dataclass
@@ -113,6 +113,8 @@ class RestRequest:
     resource: RestfulName
     http: Http
 
+    method: HttpMethod = field(default=HttpMethod.delete)
+
     _endpoint: str = field(init=False, default_factory=str)
 
     @property
@@ -126,7 +128,7 @@ class RestRequest:
 
     @cached_property
     def response(self) -> HttpResponse:  # pragma: no cover
-        return self.http.request(method=HttpMethod.delete, endpoint=self.endpoint)
+        return self.http.request(method=self.method, endpoint=self.endpoint)
 
     def unpack(self) -> JsonDict:
         return JsonDict(self.response.json()["data"][self.resource.singular])
