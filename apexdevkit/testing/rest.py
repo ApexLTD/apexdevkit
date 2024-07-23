@@ -137,19 +137,12 @@ class RestRequest:
 
 @dataclass
 class CreateOne(RestRequest):
-    data: JsonDict = field(init=False)
-
-    def from_data(self, value: JsonDict) -> Self:
-        self.data = value
-
-        return self
+    def from_data(self, value: JsonDict) -> CreateOne:
+        return CreateOne(self.resource, self.http.with_json(value))
 
     @cached_property
     def response(self) -> HttpResponse:
-        return self.http.with_json(self.data).request(
-            method=HttpMethod.post,
-            endpoint=self.resource + "",
-        )
+        return self.http.request(method=HttpMethod.post, endpoint=self.resource + "")
 
 
 @dataclass
