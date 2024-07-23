@@ -32,8 +32,8 @@ class RestResource:
     def create_many(self) -> CreateMany:
         return CreateMany(self.name, self._http)
 
-    def read_one(self) -> ReadOne:
-        return ReadOne(self.name, self._http)
+    def read_one(self) -> RestRequest:
+        return RestRequest(self.name, self._http, method=HttpMethod.get)
 
     def read_all(self) -> ReadAll:
         return ReadAll(self.name, self._http)
@@ -154,13 +154,6 @@ class CreateOne(RestRequest):
     @cached_property
     def response(self) -> HttpResponse:
         return self.http.request(method=HttpMethod.post, endpoint=self.endpoint)
-
-
-@dataclass
-class ReadOne(RestRequest):
-    @cached_property
-    def response(self) -> HttpResponse:
-        return self.http.request(method=HttpMethod.get, endpoint=self.endpoint)
 
 
 @dataclass
