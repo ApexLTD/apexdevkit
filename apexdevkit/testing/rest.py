@@ -26,8 +26,8 @@ class RestResource:
 
         return self.http
 
-    def create_one(self) -> CreateOne:
-        return CreateOne(self.name, self._http)
+    def create_one(self) -> RestRequest:
+        return RestRequest(self.name, self._http, method=HttpMethod.post)
 
     def create_many(self) -> CreateMany:
         return CreateMany(self.name, self._http)
@@ -38,14 +38,14 @@ class RestResource:
     def read_all(self) -> ReadAll:
         return ReadAll(self.name, self._http)
 
-    def update_one(self) -> UpdateOne:
-        return UpdateOne(self.name, self._http)
+    def update_one(self) -> RestRequest:
+        return RestRequest(self.name, self._http, method=HttpMethod.patch)
 
     def update_many(self) -> UpdateMany:
         return UpdateMany(self.name, self._http)
 
-    def replace_one(self) -> ReplaceOne:
-        return ReplaceOne(self.name, self._http)
+    def replace_one(self) -> RestRequest:
+        return RestRequest(self.name, self._http, method=HttpMethod.put)
 
     def replace_many(self) -> ReplaceMany:
         return ReplaceMany(self.name, self._http)
@@ -158,13 +158,6 @@ class RestRequest:
 
 
 @dataclass
-class CreateOne(RestRequest):
-    @cached_property
-    def response(self) -> HttpResponse:
-        return self.http.request(method=HttpMethod.post, endpoint=self.endpoint)
-
-
-@dataclass
 class ReadAll(RestRequest):
     def with_params(self, **kwargs: Any) -> ReadAll:
         http = self.http
@@ -176,20 +169,6 @@ class ReadAll(RestRequest):
     @cached_property
     def response(self) -> HttpResponse:
         return self.http.request(method=HttpMethod.get, endpoint=self.endpoint)
-
-
-@dataclass
-class UpdateOne(RestRequest):
-    @cached_property
-    def response(self) -> HttpResponse:
-        return self.http.request(method=HttpMethod.patch, endpoint=self.endpoint)
-
-
-@dataclass
-class ReplaceOne(RestRequest):
-    @cached_property
-    def response(self) -> HttpResponse:
-        return self.http.request(method=HttpMethod.put, endpoint=self.endpoint)
 
 
 @dataclass
