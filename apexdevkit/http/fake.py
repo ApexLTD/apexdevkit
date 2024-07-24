@@ -66,7 +66,7 @@ class FakeHttp:
 
         return self
 
-    def request(self, method: HttpMethod, endpoint: str) -> HttpResponse:
+    def request(self, method: HttpMethod, endpoint: str = "") -> HttpResponse:
         self._request = InterceptedRequest(method, endpoint)
 
         return self.response

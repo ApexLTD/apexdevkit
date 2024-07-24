@@ -38,7 +38,7 @@ class Httpx:
     def with_json(self, value: JsonDict) -> Httpx:
         return Httpx(self.client, self.config.with_json(value))
 
-    def request(self, method: HttpMethod, endpoint: str) -> HttpResponse:
+    def request(self, method: HttpMethod, endpoint: str = "") -> HttpResponse:
         return _HttpxResponse(self.client.request(method.name, endpoint, **self.config))
 
 

@@ -20,7 +20,7 @@ class Http(Protocol):  # pragma: no cover
     def with_json(self, value: JsonDict) -> Http:
         pass
 
-    def request(self, method: HttpMethod, endpoint: str) -> HttpResponse:
+    def request(self, method: HttpMethod, endpoint: str = "") -> HttpResponse:
         pass
 
 

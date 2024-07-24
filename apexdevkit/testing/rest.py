@@ -160,7 +160,7 @@ class HttpRequest:
         return self
 
     def __call__(self) -> HttpResponse:
-        return self.http.request(method=self.method, endpoint="")
+        return self.http.request(self.method)
 
 
 @dataclass
