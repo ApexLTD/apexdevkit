@@ -6,7 +6,6 @@ from typing import Any, Iterable, Self
 
 from apexdevkit.http import Http, HttpUrl, JsonDict
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
-from apexdevkit.http.httpx import Httpx
 
 
 @dataclass
@@ -17,86 +16,95 @@ class RestResource:
     def create_one(self) -> RestRequest:
         return RestRequest(
             self.name,
-            HttpRequest(HttpMethod.post, self.http).with_endpoint(self.name.plural),
+            HttpRequest(
+                HttpMethod.post,
+                self.http.with_endpoint(self.name.plural),
+            ),
         )
 
     def create_many(self) -> RestRequest:
         return RestRequest(
             self.name,
-            request=(
-                HttpRequest(HttpMethod.post, self.http)
-                .with_endpoint(self.name.plural)
-                .with_endpoint("batch")
+            HttpRequest(
+                HttpMethod.post,
+                self.http.with_endpoint(self.name.plural).with_endpoint("batch"),
             ),
         )
 
     def read_one(self) -> RestRequest:
         return RestRequest(
             self.name,
-            HttpRequest(HttpMethod.get, self.http).with_endpoint(self.name.plural),
+            HttpRequest(
+                HttpMethod.get,
+                self.http.with_endpoint(self.name.plural),
+            ),
         )
 
     def read_all(self) -> RestRequest:
         return RestRequest(
             self.name,
-            HttpRequest(HttpMethod.get, self.http).with_endpoint(self.name.plural),
+            HttpRequest(
+                HttpMethod.get,
+                self.http.with_endpoint(self.name.plural),
+            ),
         )
 
     def update_one(self) -> RestRequest:
         return RestRequest(
             self.name,
-            HttpRequest(HttpMethod.patch, self.http).with_endpoint(self.name.plural),
+            HttpRequest(
+                HttpMethod.patch,
+                self.http.with_endpoint(self.name.plural),
+            ),
         )
 
     def update_many(self) -> RestRequest:
         return RestRequest(
             self.name,
-            HttpRequest(HttpMethod.patch, self.http).with_endpoint(self.name.plural),
+            HttpRequest(
+                HttpMethod.patch,
+                self.http.with_endpoint(self.name.plural),
+            ),
         )
 
     def replace_one(self) -> RestRequest:
         return RestRequest(
             self.name,
-            HttpRequest(HttpMethod.put, self.http).with_endpoint(self.name.plural),
+            HttpRequest(
+                HttpMethod.put,
+                self.http.with_endpoint(self.name.plural),
+            ),
         )
 
     def replace_many(self) -> RestRequest:
         return RestRequest(
             self.name,
-            request=(
-                HttpRequest(HttpMethod.put, self.http)
-                .with_endpoint(self.name.plural)
-                .with_endpoint("batch")
+            HttpRequest(
+                HttpMethod.put,
+                self.http.with_endpoint(self.name.plural).with_endpoint("batch"),
             ),
         )
 
     def delete_one(self) -> RestRequest:
         return RestRequest(
             self.name,
-            HttpRequest(HttpMethod.delete, self.http).with_endpoint(self.name.plural),
+            HttpRequest(
+                HttpMethod.delete,
+                self.http.with_endpoint(self.name.plural),
+            ),
         )
 
 
 @dataclass
 class RestCollection(RestResource):
     def sub_resource(self, name: str) -> RestItem:
-        assert isinstance(self.http, Httpx), "sub resource only works with Httpx"
-
-        client = self.http.client
-        client.base_url = client.base_url.join(self.name.plural)
-
-        return RestItem(self.http, RestfulName(name))
+        return RestItem(self.http.with_endpoint(self.name.plural), RestfulName(name))
 
 
 @dataclass
 class RestItem(RestResource):
     def sub_resource(self, name: str) -> RestItem:
-        assert isinstance(self.http, Httpx), "sub resource only works with Httpx"
-
-        client = self.http.client
-        client.base_url = client.base_url.join(self.name.singular)
-
-        return RestItem(self.http, RestfulName(name))
+        return RestItem(self.http.with_endpoint(self.name.singular), RestfulName(name))
 
 
 @dataclass
@@ -112,7 +120,7 @@ class RestfulName:
         return HttpUrl(self.plural) + other
 
 
-def as_plural(singular: str) -> str:
+def as_plural(singular: str) -> str:  # pragma: no cover
     if singular.endswith("y"):
         return singular[:-1] + "ies"
 
@@ -136,10 +144,8 @@ class HttpRequest:
     method: HttpMethod
     http: Http
 
-    endpoint: str = ""
-
     def with_endpoint(self, value: Any) -> HttpRequest:
-        self.endpoint = HttpUrl(self.endpoint) + str(value)
+        self.http = self.http.with_endpoint(str(value))
 
         return self
 
@@ -154,7 +160,7 @@ class HttpRequest:
         return self
 
     def __call__(self) -> HttpResponse:
-        return self.http.request(method=self.method, endpoint=self.endpoint)
+        return self.http.request(self.method)
 
 
 @dataclass

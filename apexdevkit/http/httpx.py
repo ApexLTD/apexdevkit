@@ -24,6 +24,11 @@ class Httpx:
     def create_for(cls, url: str) -> Self:
         return cls(Client(base_url=url), HttpxConfig())
 
+    def with_endpoint(self, value: str) -> Httpx:
+        self.client.base_url = self.client.base_url.join(value)
+
+        return self
+
     def with_header(self, key: str, value: str) -> Httpx:
         return Httpx(self.client, self.config.with_header(key, value))
 
@@ -33,7 +38,7 @@ class Httpx:
     def with_json(self, value: JsonDict) -> Httpx:
         return Httpx(self.client, self.config.with_json(value))
 
-    def request(self, method: HttpMethod, endpoint: str) -> HttpResponse:
+    def request(self, method: HttpMethod, endpoint: str = "") -> HttpResponse:
         return _HttpxResponse(self.client.request(method.name, endpoint, **self.config))
 
 

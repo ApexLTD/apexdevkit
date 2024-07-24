@@ -48,6 +48,9 @@ class FakeHttp:
 
     _request: InterceptedRequest = field(init=False)
 
+    def with_endpoint(self, value: str) -> Self:  # pragma: no cover
+        raise NotImplementedError
+
     def with_header(self, key: str, value: str) -> Self:
         self.headers[key] = value
 
@@ -63,7 +66,7 @@ class FakeHttp:
 
         return self
 
-    def request(self, method: HttpMethod, endpoint: str) -> HttpResponse:
+    def request(self, method: HttpMethod, endpoint: str = "") -> HttpResponse:
         self._request = InterceptedRequest(method, endpoint)
 
         return self.response
