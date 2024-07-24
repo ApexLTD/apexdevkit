@@ -126,6 +126,11 @@ class RestRequest:
 
         return self
 
+    def from_collection(self, value: list[JsonDict]) -> Self:
+        return self.with_data(
+            JsonDict({self.resource.plural: [dict(item) for item in value]})
+        )
+
     def and_data(self, value: JsonDict) -> Self:
         return self.with_data(value)
 
@@ -162,11 +167,6 @@ class RestRequest:
             resource=self.resource,
             json=JsonDict(self.response.json()),
             http_code=self.response.code(),
-        )
-
-    def from_collection(self, value: list[JsonDict]) -> Self:
-        return self.with_data(
-            JsonDict({self.resource.plural: [dict(item) for item in value]})
         )
 
 
