@@ -6,7 +6,6 @@ from typing import Any, Iterable, Self
 
 from apexdevkit.http import Http, HttpUrl, JsonDict
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
-from apexdevkit.http.httpx import Httpx
 
 
 @dataclass
@@ -80,23 +79,13 @@ class RestResource:
 @dataclass
 class RestCollection(RestResource):
     def sub_resource(self, name: str) -> RestItem:
-        assert isinstance(self.http, Httpx), "sub resource only works with Httpx"
-
-        client = self.http.client
-        client.base_url = client.base_url.join(self.name.plural)
-
-        return RestItem(self.http, RestfulName(name))
+        return RestItem(self.http.with_endpoint(self.name.plural), RestfulName(name))
 
 
 @dataclass
 class RestItem(RestResource):
     def sub_resource(self, name: str) -> RestItem:
-        assert isinstance(self.http, Httpx), "sub resource only works with Httpx"
-
-        client = self.http.client
-        client.base_url = client.base_url.join(self.name.singular)
-
-        return RestItem(self.http, RestfulName(name))
+        return RestItem(self.http.with_endpoint(self.name.singular), RestfulName(name))
 
 
 @dataclass

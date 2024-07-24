@@ -8,6 +8,9 @@ from apexdevkit.http.json import JsonDict
 
 
 class Http(Protocol):  # pragma: no cover
+    def with_endpoint(self, value: str) -> Http:
+        pass
+
     def with_header(self, key: str, value: str) -> Http:
         pass
 
