@@ -6,7 +6,6 @@ from typing import Any, Iterable, Self
 
 from fastapi.testclient import TestClient
 
-from apexdevkit.annotation import deprecated
 from apexdevkit.http import Http, HttpUrl, JsonDict
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
 from apexdevkit.http.httpx import Httpx
@@ -165,6 +164,11 @@ class RestRequest:
             http_code=self.response.code(),
         )
 
+    def from_collection(self, value: list[JsonDict]) -> Self:
+        return self.with_data(
+            JsonDict({self.resource.plural: [dict(item) for item in value]})
+        )
+
 
 @dataclass
 class CreateMany(RestRequest):
@@ -182,29 +186,6 @@ class CreateMany(RestRequest):
             method=HttpMethod.post,
             endpoint=self.resource + "batch",
         )
-
-    def from_collection(self, value: list[JsonDict]) -> Self:
-        return self.with_data(
-            JsonDict({self.resource.plural: [dict(item) for item in value]})
-        )
-
-    @deprecated(
-        """
-        .from_data is deprecated, use .from_collection instead
-        """
-    )
-    def from_data(self, value: JsonDict) -> Self:
-        self.data.append(value)
-
-        return self
-
-    @deprecated(
-        """
-        .and_data is deprecated, use .from_collection instead
-        """
-    )
-    def and_data(self, value: JsonDict) -> Self:
-        return self.from_data(value)
 
 
 @dataclass
@@ -224,29 +205,6 @@ class UpdateMany(RestRequest):
             endpoint=self.resource + "",
         )
 
-    def from_collection(self, value: list[JsonDict]) -> Self:
-        return self.with_data(
-            JsonDict({self.resource.plural: [dict(item) for item in value]})
-        )
-
-    @deprecated(
-        """
-        .from_data is deprecated, use .from_collection instead
-        """
-    )
-    def from_data(self, value: JsonDict) -> Self:
-        self.data.append(value)
-
-        return self
-
-    @deprecated(
-        """
-        .and_data is deprecated, use .from_collection instead
-        """
-    )
-    def and_data(self, value: JsonDict) -> Self:
-        return self.from_data(value)
-
 
 @dataclass
 class ReplaceMany(RestRequest):
@@ -264,29 +222,6 @@ class ReplaceMany(RestRequest):
             method=HttpMethod.put,
             endpoint=self.resource + "batch",
         )
-
-    def from_collection(self, value: list[JsonDict]) -> Self:
-        return self.with_data(
-            JsonDict({self.resource.plural: [dict(item) for item in value]})
-        )
-
-    @deprecated(
-        """
-        .from_data is deprecated, use .from_collection instead
-        """
-    )
-    def from_data(self, value: JsonDict) -> Self:
-        self.data.append(value)
-
-        return self
-
-    @deprecated(
-        """
-        .and_data is deprecated, use .from_collection instead
-        """
-    )
-    def and_data(self, value: JsonDict) -> Self:
-        return self.from_data(value)
 
 
 @dataclass
