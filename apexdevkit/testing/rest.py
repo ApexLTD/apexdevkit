@@ -120,21 +120,21 @@ class RestfulName:
         return HttpUrl(self.plural) + other
 
 
-def as_plural(singular: str) -> str:  # pragma: no cover
-    if singular.endswith("y"):
-        return singular[:-1] + "ies"
+def as_plural(singular: str) -> str:
+    suffixes = {
+        "y": "ies",
+        "ch": "ches",
+        "sh": "shes",
+        "s": "ses",
+        "z": "zes",
+        "x": "xes",
+        "fe": "ves",
+        "f": "ves",
+    }
 
-    if singular.endswith("ch") or singular.endswith("sh") or singular.endswith("ss"):
-        return singular[:-2] + "es"
-
-    if singular.endswith("s") or singular.endswith("z") or singular.endswith("x"):
-        return singular[:-1] + "es"
-
-    if singular.endswith("fe"):
-        return singular[:-2] + "ves"
-
-    if singular.endswith("f"):
-        return singular[:-1] + "ves"
+    for singular_suffix, plural_suffix in suffixes.items():
+        if singular.endswith(singular_suffix):
+            return singular.removesuffix(singular_suffix) + plural_suffix
 
     return singular + "s"
 
