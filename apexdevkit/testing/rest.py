@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, Iterable, Self
 
@@ -27,35 +27,66 @@ class RestResource:
         return self.http
 
     def create_one(self) -> RestRequest:
-        return RestRequest(self.name, self._http, method=HttpMethod.post)
+        return RestRequest(
+            self.name,
+            HttpRequest(HttpMethod.post, self.http).with_endpoint(self.name.plural),
+        )
 
     def create_many(self) -> RestRequest:
-        return RestRequest(self.name, self._http, method=HttpMethod.post).with_id(
-            "batch"
+        return RestRequest(
+            self.name,
+            request=(
+                HttpRequest(HttpMethod.post, self.http)
+                .with_endpoint(self.name.plural)
+                .with_endpoint("batch")
+            ),
         )
 
     def read_one(self) -> RestRequest:
-        return RestRequest(self.name, self._http, method=HttpMethod.get)
+        return RestRequest(
+            self.name,
+            HttpRequest(HttpMethod.get, self.http).with_endpoint(self.name.plural),
+        )
 
     def read_all(self) -> RestRequest:
-        return RestRequest(self.name, self._http, method=HttpMethod.get)
+        return RestRequest(
+            self.name,
+            HttpRequest(HttpMethod.get, self.http).with_endpoint(self.name.plural),
+        )
 
     def update_one(self) -> RestRequest:
-        return RestRequest(self.name, self._http, method=HttpMethod.patch)
+        return RestRequest(
+            self.name,
+            HttpRequest(HttpMethod.patch, self.http).with_endpoint(self.name.plural),
+        )
 
     def update_many(self) -> RestRequest:
-        return RestRequest(self.name, self._http, method=HttpMethod.patch)
+        return RestRequest(
+            self.name,
+            HttpRequest(HttpMethod.patch, self.http).with_endpoint(self.name.plural),
+        )
 
     def replace_one(self) -> RestRequest:
-        return RestRequest(self.name, self._http, method=HttpMethod.put)
+        return RestRequest(
+            self.name,
+            HttpRequest(HttpMethod.put, self.http).with_endpoint(self.name.plural),
+        )
 
     def replace_many(self) -> RestRequest:
-        return RestRequest(self.name, self._http, method=HttpMethod.put).with_id(
-            "batch"
+        return RestRequest(
+            self.name,
+            request=(
+                HttpRequest(HttpMethod.put, self.http)
+                .with_endpoint(self.name.plural)
+                .with_endpoint("batch")
+            ),
         )
 
     def delete_one(self) -> RestRequest:
-        return RestRequest(self.name, self._http, method=HttpMethod.delete)
+        return RestRequest(
+            self.name,
+            HttpRequest(HttpMethod.delete, self.http).with_endpoint(self.name.plural),
+        )
 
 
 @dataclass
@@ -113,20 +144,38 @@ def as_plural(singular: str) -> str:
 
 
 @dataclass
-class RestRequest:
-    resource: RestfulName
+class HttpRequest:
+    method: HttpMethod
     http: Http
 
-    method: HttpMethod = field(default=HttpMethod.delete)
+    endpoint: str = ""
 
-    _endpoint: str = field(init=False, default_factory=str)
+    def with_endpoint(self, value: Any) -> HttpRequest:
+        self.endpoint = HttpUrl(self.endpoint) + str(value)
 
-    @property
-    def endpoint(self) -> str:
-        return self.resource + self._endpoint
+        return self
+
+    def with_param(self, name: str, value: Any) -> HttpRequest:
+        self.http = self.http.with_param(name, value)
+
+        return self
+
+    def with_json(self, value: JsonDict) -> HttpRequest:
+        self.http = self.http.with_json(value)
+
+        return self
+
+    def __call__(self):
+        return self.http.request(method=self.method, endpoint=self.endpoint)
+
+
+@dataclass
+class RestRequest:
+    resource: RestfulName
+    request: HttpRequest
 
     def with_id(self, value: Any) -> Self:
-        self._endpoint = str(value)
+        self.request = self.request.with_endpoint(value)
 
         return self
 
@@ -142,7 +191,7 @@ class RestRequest:
         return self.with_data(value)
 
     def with_data(self, value: JsonDict) -> Self:
-        self.http = self.http.with_json(value)
+        self.request = self.request.with_json(value)
 
         return self
 
@@ -150,13 +199,13 @@ class RestRequest:
         return self.with_param(name, value)
 
     def with_param(self, name: str, value: Any) -> Self:
-        self.http = self.http.with_param(name, str(value))
+        self.request = self.request.with_param(name, str(value))
 
         return self
 
     @cached_property
-    def response(self) -> HttpResponse:  # pragma: no cover
-        return self.http.request(method=self.method, endpoint=self.endpoint)
+    def response(self) -> HttpResponse:
+        return self.request()
 
     def unpack(self) -> JsonDict:
         return JsonDict(self.response.json()["data"][self.resource.singular])
