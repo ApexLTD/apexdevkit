@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, Iterable, Self
 
-from fastapi.testclient import TestClient
-
-from apexdevkit.annotation import deprecated
 from apexdevkit.http import Http, HttpUrl, JsonDict
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
 from apexdevkit.http.httpx import Httpx
@@ -14,45 +11,70 @@ from apexdevkit.http.httpx import Httpx
 
 @dataclass
 class RestResource:
-    http: TestClient | Http
+    http: Http
     name: RestfulName
 
-    def __post_init__(self) -> None:
-        if isinstance(self.http, TestClient):
-            self.http = Httpx(self.http)
-
-    @property
-    def _http(self) -> Http:
-        assert not isinstance(self.http, TestClient)
-
-        return self.http
-
     def create_one(self) -> RestRequest:
-        return RestRequest(self.name, self._http, method=HttpMethod.post)
+        return RestRequest(
+            self.name,
+            HttpRequest(HttpMethod.post, self.http).with_endpoint(self.name.plural),
+        )
 
-    def create_many(self) -> CreateMany:
-        return CreateMany(self.name, self._http)
+    def create_many(self) -> RestRequest:
+        return RestRequest(
+            self.name,
+            request=(
+                HttpRequest(HttpMethod.post, self.http)
+                .with_endpoint(self.name.plural)
+                .with_endpoint("batch")
+            ),
+        )
 
     def read_one(self) -> RestRequest:
-        return RestRequest(self.name, self._http, method=HttpMethod.get)
+        return RestRequest(
+            self.name,
+            HttpRequest(HttpMethod.get, self.http).with_endpoint(self.name.plural),
+        )
 
     def read_all(self) -> RestRequest:
-        return RestRequest(self.name, self._http, method=HttpMethod.get)
+        return RestRequest(
+            self.name,
+            HttpRequest(HttpMethod.get, self.http).with_endpoint(self.name.plural),
+        )
 
     def update_one(self) -> RestRequest:
-        return RestRequest(self.name, self._http, method=HttpMethod.patch)
+        return RestRequest(
+            self.name,
+            HttpRequest(HttpMethod.patch, self.http).with_endpoint(self.name.plural),
+        )
 
-    def update_many(self) -> UpdateMany:
-        return UpdateMany(self.name, self._http)
+    def update_many(self) -> RestRequest:
+        return RestRequest(
+            self.name,
+            HttpRequest(HttpMethod.patch, self.http).with_endpoint(self.name.plural),
+        )
 
     def replace_one(self) -> RestRequest:
-        return RestRequest(self.name, self._http, method=HttpMethod.put)
+        return RestRequest(
+            self.name,
+            HttpRequest(HttpMethod.put, self.http).with_endpoint(self.name.plural),
+        )
 
-    def replace_many(self) -> ReplaceMany:
-        return ReplaceMany(self.name, self._http)
+    def replace_many(self) -> RestRequest:
+        return RestRequest(
+            self.name,
+            request=(
+                HttpRequest(HttpMethod.put, self.http)
+                .with_endpoint(self.name.plural)
+                .with_endpoint("batch")
+            ),
+        )
 
     def delete_one(self) -> RestRequest:
-        return RestRequest(self.name, self._http, method=HttpMethod.delete)
+        return RestRequest(
+            self.name,
+            HttpRequest(HttpMethod.delete, self.http).with_endpoint(self.name.plural),
+        )
 
 
 @dataclass
@@ -110,22 +132,45 @@ def as_plural(singular: str) -> str:
 
 
 @dataclass
-class RestRequest:
-    resource: RestfulName
+class HttpRequest:
+    method: HttpMethod
     http: Http
 
-    method: HttpMethod = field(default=HttpMethod.delete)
+    endpoint: str = ""
 
-    _endpoint: str = field(init=False, default_factory=str)
-
-    @property
-    def endpoint(self) -> str:
-        return self.resource + self._endpoint
-
-    def with_id(self, value: Any) -> Self:
-        self._endpoint = str(value)
+    def with_endpoint(self, value: Any) -> HttpRequest:
+        self.endpoint = HttpUrl(self.endpoint) + str(value)
 
         return self
+
+    def with_param(self, name: str, value: Any) -> HttpRequest:
+        self.http = self.http.with_param(name, value)
+
+        return self
+
+    def with_json(self, value: JsonDict) -> HttpRequest:
+        self.http = self.http.with_json(value)
+
+        return self
+
+    def __call__(self) -> HttpResponse:
+        return self.http.request(method=self.method, endpoint=self.endpoint)
+
+
+@dataclass
+class RestRequest:
+    resource: RestfulName
+    request: HttpRequest
+
+    def with_id(self, value: Any) -> Self:
+        self.request = self.request.with_endpoint(value)
+
+        return self
+
+    def from_collection(self, value: list[JsonDict]) -> Self:
+        return self.with_data(
+            JsonDict({self.resource.plural: [dict(item) for item in value]})
+        )
 
     def and_data(self, value: JsonDict) -> Self:
         return self.with_data(value)
@@ -134,7 +179,7 @@ class RestRequest:
         return self.with_data(value)
 
     def with_data(self, value: JsonDict) -> Self:
-        self.http = self.http.with_json(value)
+        self.request = self.request.with_json(value)
 
         return self
 
@@ -142,13 +187,13 @@ class RestRequest:
         return self.with_param(name, value)
 
     def with_param(self, name: str, value: Any) -> Self:
-        self.http = self.http.with_param(name, str(value))
+        self.request = self.request.with_param(name, str(value))
 
         return self
 
     @cached_property
-    def response(self) -> HttpResponse:  # pragma: no cover
-        return self.http.request(method=self.method, endpoint=self.endpoint)
+    def response(self) -> HttpResponse:
+        return self.request()
 
     def unpack(self) -> JsonDict:
         return JsonDict(self.response.json()["data"][self.resource.singular])
@@ -164,129 +209,6 @@ class RestRequest:
             json=JsonDict(self.response.json()),
             http_code=self.response.code(),
         )
-
-
-@dataclass
-class CreateMany(RestRequest):
-    data: list[JsonDict] = field(default_factory=list)
-
-    @cached_property
-    def response(self) -> HttpResponse:
-        if self.data:
-            return self.from_collection(self.data).http.request(
-                method=HttpMethod.post,
-                endpoint=self.resource + "batch",
-            )
-
-        return self.http.request(
-            method=HttpMethod.post,
-            endpoint=self.resource + "batch",
-        )
-
-    def from_collection(self, value: list[JsonDict]) -> Self:
-        return self.with_data(
-            JsonDict({self.resource.plural: [dict(item) for item in value]})
-        )
-
-    @deprecated(
-        """
-        .from_data is deprecated, use .from_collection instead
-        """
-    )
-    def from_data(self, value: JsonDict) -> Self:
-        self.data.append(value)
-
-        return self
-
-    @deprecated(
-        """
-        .and_data is deprecated, use .from_collection instead
-        """
-    )
-    def and_data(self, value: JsonDict) -> Self:
-        return self.from_data(value)
-
-
-@dataclass
-class UpdateMany(RestRequest):
-    data: list[JsonDict] = field(default_factory=list)
-
-    @cached_property
-    def response(self) -> HttpResponse:
-        if self.data:
-            return self.from_collection(self.data).http.request(
-                method=HttpMethod.patch,
-                endpoint=self.resource + "",
-            )
-
-        return self.http.request(
-            method=HttpMethod.patch,
-            endpoint=self.resource + "",
-        )
-
-    def from_collection(self, value: list[JsonDict]) -> Self:
-        return self.with_data(
-            JsonDict({self.resource.plural: [dict(item) for item in value]})
-        )
-
-    @deprecated(
-        """
-        .from_data is deprecated, use .from_collection instead
-        """
-    )
-    def from_data(self, value: JsonDict) -> Self:
-        self.data.append(value)
-
-        return self
-
-    @deprecated(
-        """
-        .and_data is deprecated, use .from_collection instead
-        """
-    )
-    def and_data(self, value: JsonDict) -> Self:
-        return self.from_data(value)
-
-
-@dataclass
-class ReplaceMany(RestRequest):
-    data: list[JsonDict] = field(default_factory=list)
-
-    @cached_property
-    def response(self) -> HttpResponse:
-        if self.data:
-            return self.from_collection(self.data).http.request(
-                method=HttpMethod.put,
-                endpoint=self.resource + "batch",
-            )
-
-        return self.http.request(
-            method=HttpMethod.put,
-            endpoint=self.resource + "batch",
-        )
-
-    def from_collection(self, value: list[JsonDict]) -> Self:
-        return self.with_data(
-            JsonDict({self.resource.plural: [dict(item) for item in value]})
-        )
-
-    @deprecated(
-        """
-        .from_data is deprecated, use .from_collection instead
-        """
-    )
-    def from_data(self, value: JsonDict) -> Self:
-        self.data.append(value)
-
-        return self
-
-    @deprecated(
-        """
-        .and_data is deprecated, use .from_collection instead
-        """
-    )
-    def and_data(self, value: JsonDict) -> Self:
-        return self.from_data(value)
 
 
 @dataclass
