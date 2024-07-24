@@ -172,16 +172,8 @@ class RestRequest:
 
 @dataclass
 class CreateMany(RestRequest):
-    data: list[JsonDict] = field(default_factory=list)
-
     @cached_property
     def response(self) -> HttpResponse:
-        if self.data:
-            return self.from_collection(self.data).http.request(
-                method=HttpMethod.post,
-                endpoint=self.resource + "batch",
-            )
-
         return self.http.request(
             method=HttpMethod.post,
             endpoint=self.resource + "batch",
@@ -190,16 +182,8 @@ class CreateMany(RestRequest):
 
 @dataclass
 class UpdateMany(RestRequest):
-    data: list[JsonDict] = field(default_factory=list)
-
     @cached_property
     def response(self) -> HttpResponse:
-        if self.data:
-            return self.from_collection(self.data).http.request(
-                method=HttpMethod.patch,
-                endpoint=self.resource + "",
-            )
-
         return self.http.request(
             method=HttpMethod.patch,
             endpoint=self.resource + "",
@@ -208,16 +192,8 @@ class UpdateMany(RestRequest):
 
 @dataclass
 class ReplaceMany(RestRequest):
-    data: list[JsonDict] = field(default_factory=list)
-
     @cached_property
     def response(self) -> HttpResponse:
-        if self.data:
-            return self.from_collection(self.data).http.request(
-                method=HttpMethod.put,
-                endpoint=self.resource + "batch",
-            )
-
         return self.http.request(
             method=HttpMethod.put,
             endpoint=self.resource + "batch",
