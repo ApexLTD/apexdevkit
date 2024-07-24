@@ -17,6 +17,7 @@ def test_ending_with_x() -> None:
 
 def test_ending_with_y() -> None:
     assert as_plural("baby") == "babies"
+    assert as_plural("category") == "categories"
 
 
 def test_ending_with_z() -> None:
@@ -38,3 +39,5 @@ def test_ending_with_fe() -> None:
 
 def test_ending_with_unknown() -> None:
     assert as_plural("cat") == "cats"
+    assert as_plural("unit") == "units"
+    assert as_plural("product") == "products"
