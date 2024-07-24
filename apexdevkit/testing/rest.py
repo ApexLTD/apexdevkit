@@ -29,14 +29,14 @@ class RestResource:
     def create_one(self) -> RestRequest:
         return RestRequest(
             self.name,
-            HttpRequest(HttpMethod.post, self.http).with_endpoint(self.name.plural),
+            HttpRequest(HttpMethod.post, self._http).with_endpoint(self.name.plural),
         )
 
     def create_many(self) -> RestRequest:
         return RestRequest(
             self.name,
             request=(
-                HttpRequest(HttpMethod.post, self.http)
+                HttpRequest(HttpMethod.post, self._http)
                 .with_endpoint(self.name.plural)
                 .with_endpoint("batch")
             ),
@@ -45,38 +45,38 @@ class RestResource:
     def read_one(self) -> RestRequest:
         return RestRequest(
             self.name,
-            HttpRequest(HttpMethod.get, self.http).with_endpoint(self.name.plural),
+            HttpRequest(HttpMethod.get, self._http).with_endpoint(self.name.plural),
         )
 
     def read_all(self) -> RestRequest:
         return RestRequest(
             self.name,
-            HttpRequest(HttpMethod.get, self.http).with_endpoint(self.name.plural),
+            HttpRequest(HttpMethod.get, self._http).with_endpoint(self.name.plural),
         )
 
     def update_one(self) -> RestRequest:
         return RestRequest(
             self.name,
-            HttpRequest(HttpMethod.patch, self.http).with_endpoint(self.name.plural),
+            HttpRequest(HttpMethod.patch, self._http).with_endpoint(self.name.plural),
         )
 
     def update_many(self) -> RestRequest:
         return RestRequest(
             self.name,
-            HttpRequest(HttpMethod.patch, self.http).with_endpoint(self.name.plural),
+            HttpRequest(HttpMethod.patch, self._http).with_endpoint(self.name.plural),
         )
 
     def replace_one(self) -> RestRequest:
         return RestRequest(
             self.name,
-            HttpRequest(HttpMethod.put, self.http).with_endpoint(self.name.plural),
+            HttpRequest(HttpMethod.put, self._http).with_endpoint(self.name.plural),
         )
 
     def replace_many(self) -> RestRequest:
         return RestRequest(
             self.name,
             request=(
-                HttpRequest(HttpMethod.put, self.http)
+                HttpRequest(HttpMethod.put, self._http)
                 .with_endpoint(self.name.plural)
                 .with_endpoint("batch")
             ),
@@ -85,7 +85,7 @@ class RestResource:
     def delete_one(self) -> RestRequest:
         return RestRequest(
             self.name,
-            HttpRequest(HttpMethod.delete, self.http).with_endpoint(self.name.plural),
+            HttpRequest(HttpMethod.delete, self._http).with_endpoint(self.name.plural),
         )
 
 
@@ -165,7 +165,7 @@ class HttpRequest:
 
         return self
 
-    def __call__(self):
+    def __call__(self) -> HttpResponse:
         return self.http.request(method=self.method, endpoint=self.endpoint)
 
 
