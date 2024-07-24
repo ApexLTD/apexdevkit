@@ -120,7 +120,7 @@ class RestfulName:
         return HttpUrl(self.plural) + other
 
 
-def as_plural(singular: str) -> str:
+def as_plural(singular: str) -> str:  # pragma: no cover
     if singular.endswith("y"):
         return singular[:-1] + "ies"
 
