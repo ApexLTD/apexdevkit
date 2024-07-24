@@ -29,8 +29,10 @@ class RestResource:
     def create_one(self) -> RestRequest:
         return RestRequest(self.name, self._http, method=HttpMethod.post)
 
-    def create_many(self) -> CreateMany:
-        return CreateMany(self.name, self._http)
+    def create_many(self) -> RestRequest:
+        return RestRequest(self.name, self._http, method=HttpMethod.post).with_id(
+            "batch"
+        )
 
     def read_one(self) -> RestRequest:
         return RestRequest(self.name, self._http, method=HttpMethod.get)
@@ -41,14 +43,16 @@ class RestResource:
     def update_one(self) -> RestRequest:
         return RestRequest(self.name, self._http, method=HttpMethod.patch)
 
-    def update_many(self) -> UpdateMany:
-        return UpdateMany(self.name, self._http)
+    def update_many(self) -> RestRequest:
+        return RestRequest(self.name, self._http, method=HttpMethod.patch)
 
     def replace_one(self) -> RestRequest:
         return RestRequest(self.name, self._http, method=HttpMethod.put)
 
-    def replace_many(self) -> ReplaceMany:
-        return ReplaceMany(self.name, self._http)
+    def replace_many(self) -> RestRequest:
+        return RestRequest(self.name, self._http, method=HttpMethod.put).with_id(
+            "batch"
+        )
 
     def delete_one(self) -> RestRequest:
         return RestRequest(self.name, self._http, method=HttpMethod.delete)
@@ -167,36 +171,6 @@ class RestRequest:
             resource=self.resource,
             json=JsonDict(self.response.json()),
             http_code=self.response.code(),
-        )
-
-
-@dataclass
-class CreateMany(RestRequest):
-    @cached_property
-    def response(self) -> HttpResponse:
-        return self.http.request(
-            method=HttpMethod.post,
-            endpoint=self.resource + "batch",
-        )
-
-
-@dataclass
-class UpdateMany(RestRequest):
-    @cached_property
-    def response(self) -> HttpResponse:
-        return self.http.request(
-            method=HttpMethod.patch,
-            endpoint=self.resource + "",
-        )
-
-
-@dataclass
-class ReplaceMany(RestRequest):
-    @cached_property
-    def response(self) -> HttpResponse:
-        return self.http.request(
-            method=HttpMethod.put,
-            endpoint=self.resource + "batch",
         )
 
 
