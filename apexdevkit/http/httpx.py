@@ -8,6 +8,7 @@ from httpx import Client
 
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
 from apexdevkit.http.json import JsonDict
+from apexdevkit.http.url import HttpUrl
 
 
 def default_config() -> HttpxConfig:
@@ -22,12 +23,10 @@ class Httpx:
 
     @classmethod
     def create_for(cls, url: str) -> Self:
-        return cls(Client(base_url=url), HttpxConfig())
+        return cls(Client(base_url=url))
 
     def with_endpoint(self, value: str) -> Httpx:
-        self.client.base_url = self.client.base_url.join(value)
-
-        return self
+        return Httpx(self.client, self.config.with_endpoint(value))
 
     def with_header(self, key: str, value: str) -> Httpx:
         return Httpx(self.client, self.config.with_header(key, value))
@@ -39,7 +38,12 @@ class Httpx:
         return Httpx(self.client, self.config.with_json(value))
 
     def request(self, method: HttpMethod, endpoint: str = "") -> HttpResponse:
-        return _HttpxResponse(self.client.request(method.name, endpoint, **self.config))
+        return _HttpxResponse(
+            self.client.request(
+                method.name,
+                **self.config.with_endpoint(endpoint),
+            )
+        )
 
 
 @dataclass
@@ -58,14 +62,22 @@ class _HttpxResponse:
 
 @dataclass(frozen=True)
 class HttpxConfig(Mapping[str, Any]):
-    timeout_s: int = 30
+    endpoint: str = ""
     headers: JsonDict = field(default_factory=JsonDict)
     params: JsonDict = field(default_factory=JsonDict)
     json: JsonDict = field(default_factory=JsonDict)
 
+    def with_endpoint(self, endpoint: str) -> HttpxConfig:
+        return HttpxConfig(
+            endpoint=HttpUrl(self.endpoint) + endpoint,
+            headers=self.headers,
+            params=self.params,
+            json=self.json,
+        )
+
     def with_header(self, key: str, value: str) -> HttpxConfig:
         return HttpxConfig(
-            timeout_s=self.timeout_s,
+            endpoint=self.endpoint,
             headers=self.headers.merge(JsonDict({key: value})),
             params=self.params,
             json=self.json,
@@ -73,7 +85,7 @@ class HttpxConfig(Mapping[str, Any]):
 
     def with_param(self, key: str, value: str) -> HttpxConfig:
         return HttpxConfig(
-            timeout_s=self.timeout_s,
+            endpoint=self.endpoint,
             headers=self.headers,
             params=self.params.merge(JsonDict({key: value})),
             json=self.json,
@@ -81,7 +93,7 @@ class HttpxConfig(Mapping[str, Any]):
 
     def with_json(self, value: JsonDict) -> HttpxConfig:
         return HttpxConfig(
-            timeout_s=self.timeout_s,
+            endpoint=self.endpoint,
             headers=self.headers,
             params=self.params,
             json=value,
@@ -89,7 +101,7 @@ class HttpxConfig(Mapping[str, Any]):
 
     def as_dict(self) -> dict[str, Any]:
         return {
-            "timeout": self.timeout_s,
+            "url": self.endpoint,
             "headers": dict(self.headers),
             "params": dict(self.params),
             "json": dict(self.json),
