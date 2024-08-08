@@ -9,12 +9,17 @@ from faker import Faker
 
 from apexdevkit.error import DoesNotExistError
 from apexdevkit.repository import Database, DatabaseCommand
-from apexdevkit.repository.sqlite import SqliteRepository, UnknownError
+from apexdevkit.repository.sqlite import SqliteRepository, SqlTable, UnknownError
 from apexdevkit.testing import FakeConnector
 
 
+class _Item(Protocol):
+    id: str
+    external_id: str
+
+
 @dataclass
-class FakeTable:
+class FakeTable(SqlTable[_Item]):
     def setup(self) -> DatabaseCommand:
         return DatabaseCommand("Command: Create")
 
@@ -67,11 +72,6 @@ class Loaded:
 
     id: str = "id"
     external_id: str = "external_id"
-
-
-class _Item(Protocol):
-    id: str
-    external_id: str
 
 
 def test_should_fail_to_count(faker: Faker) -> None:
