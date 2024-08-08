@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from sqlite3 import IntegrityError
-from typing import Any, Generic, Iterator, Protocol, TypeVar
+from typing import Any, Callable, Generic, Iterator, Protocol, TypeVar
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.repository import Database, DatabaseCommand
@@ -14,16 +14,13 @@ ItemT = TypeVar("ItemT")
 class SqliteRepository(Generic[ItemT]):
     db: Database
     table: SqlTable[ItemT]
+    duplicate_criteria: Callable[[ItemT], str] = lambda i: "Unknown"
 
     def create(self, item: ItemT) -> ItemT:
         try:
             return self.table.load(self.db.execute(self.table.insert(item)).fetch_one())
         except IntegrityError:  # pragma: no cover
-            (
-                ExistsError(item)
-                .with_duplicate(lambda p: f"external_id<{p.external_id}>")
-                .fire()
-            )
+            ExistsError(item).with_duplicate(self.duplicate_criteria).fire()
             return item
 
     def create_many(self, items: list[ItemT]) -> list[ItemT]:
@@ -36,11 +33,7 @@ class SqliteRepository(Generic[ItemT]):
                     )
                 )
             except IntegrityError:  # pragma: no cover
-                (
-                    ExistsError(item)
-                    .with_duplicate(lambda p: f"external_id<{p.external_id}>")
-                    .fire()
-                )
+                ExistsError(item).with_duplicate(self.duplicate_criteria).fire()
         return result
 
     def read(self, item_id: str) -> ItemT:
