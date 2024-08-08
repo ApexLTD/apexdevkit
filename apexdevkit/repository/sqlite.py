@@ -79,28 +79,28 @@ class SqliteRepository(Generic[ItemT]):
 
 class SqlTable(Protocol[ItemT]):  # pragma: no cover
     def count_all(self) -> DatabaseCommand:
-        pass
+        raise NotImplementedError("Not implemented")
 
     def insert(self, item: ItemT) -> DatabaseCommand:
-        pass
+        raise NotImplementedError("Not implemented")
 
     def select(self, item_id: str) -> DatabaseCommand:
-        pass
+        raise NotImplementedError("Not implemented")
 
     def select_all(self) -> DatabaseCommand:
-        pass
+        raise NotImplementedError("Not implemented")
 
     def delete(self, item_id: str) -> DatabaseCommand:
-        pass
+        raise NotImplementedError("Not implemented")
 
     def delete_all(self) -> DatabaseCommand:
-        pass
+        raise NotImplementedError("Not implemented")
 
     def load(self, data: dict[str, Any]) -> ItemT:
-        pass
+        raise NotImplementedError("Not implemented")
 
     def update(self, item: ItemT) -> DatabaseCommand:
-        pass
+        raise NotImplementedError("Not implemented")
 
 
 @dataclass
