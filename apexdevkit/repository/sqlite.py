@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from sqlite3 import IntegrityError
-from typing import Any, Callable, Generic, Iterator, Protocol, TypeVar
+from typing import Any, Callable, Generic, Iterator, TypeVar
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.repository import Database, DatabaseCommand
@@ -70,7 +70,7 @@ class SqliteRepository(Generic[ItemT]):
         self.db.execute(self.table.delete_all()).fetch_none()
 
 
-class SqlTable(Protocol[ItemT]):  # pragma: no cover
+class SqlTable(Generic[ItemT]):  # pragma: no cover
     def count_all(self) -> DatabaseCommand:
         raise NotImplementedError("Not implemented")
 
