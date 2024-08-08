@@ -16,6 +16,18 @@ class SqliteRepository(Generic[ItemT]):
     table: SqlTable[ItemT]
     duplicate_criteria: Callable[[ItemT], str] = lambda i: "Unknown"
 
+    def __iter__(self) -> Iterator[ItemT]:
+        for raw in self.db.execute(self.table.select_all()).fetch_all():
+            yield self.table.load(raw)
+
+    def __len__(self) -> int:
+        raw = self.db.execute(self.table.count_all()).fetch_one()
+
+        try:
+            return int(raw["n_items"])
+        except KeyError:
+            raise UnknownError(raw)
+
     def create(self, item: ItemT) -> ItemT:
         try:
             return self.table.load(self.db.execute(self.table.insert(item)).fetch_one())
@@ -44,18 +56,6 @@ class SqliteRepository(Generic[ItemT]):
 
         return self.table.load(raw)
 
-    def __iter__(self) -> Iterator[ItemT]:
-        for raw in self.db.execute(self.table.select_all()).fetch_all():
-            yield self.table.load(raw)
-
-    def __len__(self) -> int:
-        raw = self.db.execute(self.table.count_all()).fetch_one()
-
-        try:
-            return int(raw["n_items"])
-        except KeyError:
-            raise UnknownError(raw)
-
     def update(self, item: ItemT) -> None:
         self.db.execute(self.table.update(item)).fetch_none()
 
@@ -71,10 +71,10 @@ class SqliteRepository(Generic[ItemT]):
 
 
 class SqlTable(Protocol[ItemT]):  # pragma: no cover
-    def insert(self, item: ItemT) -> DatabaseCommand:
+    def count_all(self) -> DatabaseCommand:
         raise NotImplementedError("Not implemented")
 
-    def count_all(self) -> DatabaseCommand:
+    def insert(self, item: ItemT) -> DatabaseCommand:
         raise NotImplementedError("Not implemented")
 
     def select(self, item_id: str) -> DatabaseCommand:

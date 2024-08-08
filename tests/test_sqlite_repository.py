@@ -16,19 +16,22 @@ from apexdevkit.testing import FakeConnector
 @dataclass
 class FakeTable:
     def setup(self) -> DatabaseCommand:
-        return DatabaseCommand("Query: Create")
-
-    def count_all(self) -> DatabaseCommand:
-        return DatabaseCommand("Query: Count All")
+        return DatabaseCommand("Command: Create")
 
     def insert(self, item: Any) -> DatabaseCommand:
         return DatabaseCommand("Command: Insert").with_data(self.dump(item))
 
     def select(self, item_id: str) -> DatabaseCommand:
-        return DatabaseCommand("Query: Select").with_data({"item_id": item_id})
+        return DatabaseCommand("Command: Select").with_data({"item_id": item_id})
 
     def select_all(self) -> DatabaseCommand:
-        return DatabaseCommand("Query: Select All")
+        return DatabaseCommand("Command: Select All")
+
+    def count_all(self) -> DatabaseCommand:
+        return DatabaseCommand("Command: Count All")
+
+    def update(self, item: _Item) -> DatabaseCommand:
+        return DatabaseCommand("Command: Update").with_data(self.dump(item))
 
     def delete(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand("Command: Delete").with_data({"item_id": item_id})
@@ -41,9 +44,6 @@ class FakeTable:
 
     def dump(self, data: Any) -> dict[str, Any]:
         return {"dumped": data}
-
-    def update(self, item: _Item) -> DatabaseCommand:
-        return DatabaseCommand("Command: Update").with_data(self.dump(item))
 
 
 @dataclass
