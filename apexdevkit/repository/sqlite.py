@@ -1,0 +1,108 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from sqlite3 import IntegrityError
+from typing import Any, Generic, Iterator, Protocol, TypeVar
+
+from apexdevkit.error import DoesNotExistError, ExistsError
+from apexdevkit.repository import Database, DatabaseCommand
+
+ItemT = TypeVar("ItemT")
+
+
+@dataclass
+class SqliteRepository(Generic[ItemT]):
+    db: Database
+    table: SqlTable[ItemT]
+
+    def __iter__(self) -> Iterator[ItemT]:
+        for raw in self.db.execute(self.table.select_all()).fetch_all():
+            yield self.table.load(raw)
+
+    def __len__(self) -> int:
+        raw = self.db.execute(self.table.count_all()).fetch_one()
+
+        try:
+            return int(raw["n_items"])
+        except KeyError:
+            raise UnknownError(raw)
+
+    def delete(self, item_id: str) -> None:
+        self.db.execute(self.table.delete(item_id)).fetch_none()
+
+    def delete_all(self) -> None:
+        self.db.execute(self.table.delete_all()).fetch_none()
+
+    def create(self, item: ItemT) -> ItemT:
+        try:
+            return self.table.load(self.db.execute(self.table.insert(item)).fetch_one())
+        except IntegrityError:  # pragma: no cover
+            (
+                ExistsError(item)
+                .with_duplicate(lambda p: f"external_id<{p.external_id}>")
+                .fire()
+            )
+            return item
+
+    def create_many(self, items: list[ItemT]) -> list[ItemT]:
+        result = []
+        for item in items:
+            try:
+                result.append(
+                    self.table.load(
+                        self.db.execute(self.table.insert(item)).fetch_one()
+                    )
+                )
+            except IntegrityError:  # pragma: no cover
+                (
+                    ExistsError(item)
+                    .with_duplicate(lambda p: f"external_id<{p.external_id}>")
+                    .fire()
+                )
+        return result
+
+    def read(self, item_id: str) -> ItemT:
+        raw = self.db.execute(self.table.select(item_id)).fetch_one()
+
+        if not raw:
+            raise DoesNotExistError(item_id)
+
+        return self.table.load(raw)
+
+    def update(self, item: ItemT) -> None:
+        self.db.execute(self.table.update(item)).fetch_none()
+
+    def update_many(self, items: list[ItemT]) -> None:
+        for item in items:
+            self.update(item)
+
+
+class SqlTable(Protocol[ItemT]):  # pragma: no cover
+    def count_all(self) -> DatabaseCommand:
+        pass
+
+    def insert(self, item: ItemT) -> DatabaseCommand:
+        pass
+
+    def select(self, item_id: str) -> DatabaseCommand:
+        pass
+
+    def select_all(self) -> DatabaseCommand:
+        pass
+
+    def delete(self, item_id: str) -> DatabaseCommand:
+        pass
+
+    def delete_all(self) -> DatabaseCommand:
+        pass
+
+    def load(self, data: dict[str, Any]) -> ItemT:
+        pass
+
+    def update(self, item: ItemT) -> DatabaseCommand:
+        pass
+
+
+@dataclass
+class UnknownError(Exception):
+    raw: dict[str, Any]
