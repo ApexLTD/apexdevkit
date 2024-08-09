@@ -23,7 +23,7 @@ def test_should_fetch_one(faker: Faker) -> None:
 
 
 def test_should_fetch_all(faker: Faker) -> None:
-    expected = faker.pylist()
+    expected = faker.pylist(value_types=[dict])
     connector = FakeConnector().with_result(expected)
 
     actual = Database(connector).execute(DatabaseCommand("")).fetch_all()

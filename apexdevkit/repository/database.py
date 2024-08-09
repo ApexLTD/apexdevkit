@@ -39,7 +39,7 @@ class Database:
             raw = cursor.fetchall()
             cursor.close()
 
-        return list(raw)
+        return [dict(raw or {}) for raw in raw]
 
 
 class Connector(Protocol):  # pragma: no cover
