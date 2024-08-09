@@ -102,3 +102,22 @@ def test_should_not_duplicate_on_create_many(
 
     with raises(ExistsError, match=f"_Item with id<{items[1].id}> already exists."):
         repository.create_many(items)
+
+
+def test_should_persist(repository: Repository[str, _Item]) -> None:
+    item = _Item(id=str(uuid4()), external_id=str(uuid4()))
+    repository.create(item)
+
+    assert len(repository) == 1
+    assert repository.read(item.id) == item
+
+
+def test_should_persist_many(repository: Repository[str, _Item]) -> None:
+    items = [
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+    ]
+    repository.create_many(items)
+
+    assert len(repository) == 2
+    assert list(repository) == items
