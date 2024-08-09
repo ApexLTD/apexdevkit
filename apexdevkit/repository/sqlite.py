@@ -36,17 +36,7 @@ class SqliteRepository(Generic[ItemT]):
             return item
 
     def create_many(self, items: list[ItemT]) -> list[ItemT]:
-        result = []
-        for item in items:
-            try:
-                result.append(
-                    self.table.load(
-                        self.db.execute(self.table.insert(item)).fetch_one()
-                    )
-                )
-            except IntegrityError:  # pragma: no cover
-                ExistsError(item).with_duplicate(self.duplicate_criteria).fire()
-        return result
+        return [self.create(item) for item in items]
 
     def read(self, item_id: str) -> ItemT:
         raw = self.db.execute(self.table.select(item_id)).fetch_one()
