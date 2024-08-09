@@ -74,9 +74,31 @@ def test_should_create(repository: Repository[str, _Item]) -> None:
     assert repository.create(item) == item
 
 
-def test_should_not_duplicate(repository: Repository[str, _Item]) -> None:
+def test_should_not_duplicate_on_create(repository: Repository[str, _Item]) -> None:
     item = _Item(id=str(uuid4()), external_id=str(uuid4()))
     repository.create(item)
 
     with raises(ExistsError, match=f"_Item with id<{item.id}> already exists."):
         repository.create(item)
+
+
+def test_should_create_many(repository: Repository[str, _Item]) -> None:
+    items = [
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+    ]
+
+    assert repository.create_many(items) == items
+
+
+def test_should_not_duplicate_on_create_many(
+    repository: Repository[str, _Item],
+) -> None:
+    items = [
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+    ]
+    repository.create(items[1])
+
+    with raises(ExistsError, match=f"_Item with id<{items[1].id}> already exists."):
+        repository.create_many(items)
