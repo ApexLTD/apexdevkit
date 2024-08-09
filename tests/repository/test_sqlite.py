@@ -37,6 +37,9 @@ class FakeTable(SqlTable[_Item]):
     def select(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand("SELECT * FROM ITEM WHERE id=:id").with_data(id=item_id)
 
+    def select_duplicate(self, item: _Item) -> DatabaseCommand:
+        return self.select(item.id)
+
     def insert(self, item: _Item) -> DatabaseCommand:
         return DatabaseCommand("""
             INSERT INTO ITEM (id, external_id) VALUES (:id, :external_id)
@@ -57,17 +60,18 @@ class FakeTable(SqlTable[_Item]):
     def load(self, data: dict[str, Any]) -> _Item:
         return DataclassFormatter[_Item](_Item).load(data)
 
+    def duplicate(self, item: _Item) -> ExistsError:
+        return ExistsError(item).with_duplicate(
+            lambda i: f"_Item with id<{i.id}> already exists."
+        )
+
 
 @fixture
 def repository() -> SqliteRepository[_Item]:
     db = Database(SqliteInMemoryConnector())
     db.execute(FakeTable().setup()).fetch_none()
 
-    return SqliteRepository[_Item](
-        table=FakeTable(),
-        db=db,
-        duplicate_criteria=lambda item: f"_Item with id<{item.id}> already exists.",
-    )
+    return SqliteRepository[_Item](table=FakeTable(), db=db)
 
 
 def test_should_list_nothing_when_empty(repository: SqliteRepository[_Item]) -> None:

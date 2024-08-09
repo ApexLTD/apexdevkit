@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from sqlite3 import IntegrityError
-from typing import Any, Callable, Generic, Iterator, TypeVar
+from typing import Any, Generic, Iterator, TypeVar
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.repository import Database, DatabaseCommand
@@ -14,7 +14,6 @@ ItemT = TypeVar("ItemT")
 class SqliteRepository(Generic[ItemT]):
     db: Database
     table: SqlTable[ItemT]
-    duplicate_criteria: Callable[[ItemT], str] = lambda i: "Unknown"
 
     def __iter__(self) -> Iterator[ItemT]:
         for raw in self.db.execute(self.table.select_all()).fetch_all():
@@ -32,7 +31,10 @@ class SqliteRepository(Generic[ItemT]):
         try:
             return self.table.load(self.db.execute(self.table.insert(item)).fetch_one())
         except IntegrityError:  # pragma: no cover
-            ExistsError(item).with_duplicate(self.duplicate_criteria).fire()
+            item = self.table.load(
+                self.db.execute(self.table.select_duplicate(item)).fetch_one()
+            )
+            self.table.duplicate(item).fire()
             return item
 
     def create_many(self, items: list[ItemT]) -> list[ItemT]:
@@ -70,6 +72,9 @@ class SqlTable(Generic[ItemT]):  # pragma: no cover
     def select(self, item_id: str) -> DatabaseCommand:
         raise NotImplementedError("Not implemented")
 
+    def select_duplicate(self, item: ItemT) -> DatabaseCommand:
+        raise NotImplementedError("Not implemented")
+
     def select_all(self) -> DatabaseCommand:
         raise NotImplementedError("Not implemented")
 
@@ -84,6 +89,9 @@ class SqlTable(Generic[ItemT]):  # pragma: no cover
 
     def load(self, data: dict[str, Any]) -> ItemT:
         raise NotImplementedError("Not implemented")
+
+    def duplicate(self, item: ItemT) -> ExistsError:
+        return ExistsError(item).with_duplicate(lambda i: "Unknown")
 
 
 @dataclass
