@@ -1,192 +1,185 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
-from typing import Any, Iterator, Protocol
-from unittest.mock import ANY
+from typing import Any
+from uuid import uuid4
 
-import pytest
-from faker import Faker
+from pytest import fixture, raises
 
-from apexdevkit.error import DoesNotExistError
+from apexdevkit.error import DoesNotExistError, ExistsError
+from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Database, DatabaseCommand
-from apexdevkit.repository.sqlite import SqliteRepository, SqlTable, UnknownError
-from apexdevkit.testing import FakeConnector
+from apexdevkit.repository.connector import SqliteInMemoryConnector
+from apexdevkit.repository.sqlite import SqliteRepository, SqlTable
 
 
-class _Item(Protocol):
+@dataclass
+class _Item:
     id: str
     external_id: str
 
 
-@dataclass
 class FakeTable(SqlTable[_Item]):
     def setup(self) -> DatabaseCommand:
-        return DatabaseCommand("Command: Create")
+        return DatabaseCommand("""
+            CREATE TABLE IF NOT EXISTS ITEM (
+                id              TEXT        NOT NULL    PRIMARY KEY,
+                external_id     TEXT        NOT NULL,
 
-    def insert(self, item: Any) -> DatabaseCommand:
-        return DatabaseCommand("Command: Insert").with_data(self.dump(item))
-
-    def select(self, item_id: str) -> DatabaseCommand:
-        return DatabaseCommand("Command: Select").with_data({"item_id": item_id})
-
-    def select_all(self) -> DatabaseCommand:
-        return DatabaseCommand("Command: Select All")
+                UNIQUE(id)
+            );
+        """)
 
     def count_all(self) -> DatabaseCommand:
-        return DatabaseCommand("Command: Count All")
+        return DatabaseCommand("SELECT COUNT(*) as n_items FROM ITEM;")
+
+    def select_all(self) -> DatabaseCommand:
+        return DatabaseCommand("SELECT * FROM ITEM;")
+
+    def select(self, item_id: str) -> DatabaseCommand:
+        return DatabaseCommand("SELECT * FROM ITEM WHERE id=:id").with_data(id=item_id)
+
+    def insert(self, item: _Item) -> DatabaseCommand:
+        return DatabaseCommand("""
+            INSERT INTO ITEM (id, external_id) VALUES (:id, :external_id)
+            RETURNING id, external_id;
+        """).with_data(DataclassFormatter[_Item](_Item).dump(item))
 
     def update(self, item: _Item) -> DatabaseCommand:
-        return DatabaseCommand("Command: Update").with_data(self.dump(item))
+        return DatabaseCommand("""
+            UPDATE ITEM SET id=:id, external_id=:external_id WHERE id=:id;
+        """).with_data(DataclassFormatter[_Item](_Item).dump(item))
 
     def delete(self, item_id: str) -> DatabaseCommand:
-        return DatabaseCommand("Command: Delete").with_data({"item_id": item_id})
+        return DatabaseCommand("DELETE FROM ITEM WHERE id=:id").with_data(id=item_id)
 
     def delete_all(self) -> DatabaseCommand:
-        return DatabaseCommand("Command: Delete All")
+        return DatabaseCommand("DELETE FROM ITEM")
 
-    def load(self, data: Any) -> Any:
-        return Loaded(data)
-
-    def dump(self, data: Any) -> dict[str, Any]:
-        return {"dumped": data}
+    def load(self, data: dict[str, Any]) -> _Item:
+        return DataclassFormatter[_Item](_Item).load(data)
 
 
-@dataclass
-class NonExisting:
-    id: str = "new_id"
-    external_id: str = "new_external_id"
+@fixture
+def repository() -> SqliteRepository[_Item]:
+    db = Database(SqliteInMemoryConnector())
+    db.execute(FakeTable().setup()).fetch_none()
+
+    return SqliteRepository[_Item](
+        table=FakeTable(),
+        db=db,
+        duplicate_criteria=lambda item: f"_Item with id<{item.id}> already exists.",
+    )
 
 
-@dataclass
-class Existing:
-    id: str = "existing_id"
-    external_id: str = "existing_external_id"
-
-    def __iter__(self) -> Iterator[Any]:
-        yield from {"id": self.id, "external_id": self.external_id}.items()
+def test_should_list_nothing_when_empty(repository: SqliteRepository[_Item]) -> None:
+    assert len(repository) == 0
+    assert list(repository) == []
 
 
-@dataclass
-class Loaded:
-    value: Any
-
-    id: str = "id"
-    external_id: str = "external_id"
+def test_should_not_read_unknown(repository: SqliteRepository[_Item]) -> None:
+    with raises(DoesNotExistError):
+        repository.read(str(uuid4()))
 
 
-def test_should_fail_to_count(faker: Faker) -> None:
-    expected = faker.pydict()
-    connector = FakeConnector().with_result(expected)
+def test_should_create(repository: SqliteRepository[_Item]) -> None:
+    item = _Item(id=str(uuid4()), external_id=str(uuid4()))
 
-    repository = SqliteRepository[_Item](table=FakeTable(), db=Database(connector))
-
-    with pytest.raises(UnknownError) as cm:
-        len(repository)
-
-    assert cm.value.raw == expected
+    assert repository.create(item) == item
 
 
-def test_should_perform_count_query(faker: Faker) -> None:
-    connector = FakeConnector().with_result({"n_items": faker.pyint()})
-    repository = SqliteRepository[_Item](table=FakeTable(), db=Database(connector))
+def test_should_not_duplicate_on_create(repository: SqliteRepository[_Item]) -> None:
+    item = _Item(id=str(uuid4()), external_id=str(uuid4()))
+    repository.create(item)
 
-    len(repository)
-
-    connector.assert_contains(FakeTable().count_all())
-
-
-def test_should_count(faker: Faker) -> None:
-    expected = faker.pyint()
-    connector = FakeConnector().with_result({"n_items": expected})
-
-    repository = SqliteRepository[_Item](table=FakeTable(), db=Database(connector))
-
-    actual = len(repository)
-
-    assert actual == expected
+    with raises(ExistsError, match=f"_Item with id<{item.id}> already exists."):
+        repository.create(item)
 
 
-def test_should_perform_create_command() -> None:
-    connector = FakeConnector().with_result({"id": ANY, "code": 0})
-    repository = SqliteRepository[_Item](table=FakeTable(), db=Database(connector))
+def test_should_create_many(repository: SqliteRepository[_Item]) -> None:
+    items = [
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+    ]
 
-    repository.create(NonExisting())
-
-    connector.assert_contains(FakeTable().insert(NonExisting()))
-
-
-def test_should_not_read_unknown() -> None:
-    connector = FakeConnector().with_result({})
-    repository = SqliteRepository[_Item](table=FakeTable(), db=Database(connector))
-
-    with pytest.raises(DoesNotExistError):
-        repository.read(NonExisting().id)
+    assert repository.create_many(items) == items
 
 
-def test_should_perform_read_query() -> None:
-    connector = FakeConnector().with_result(Existing())
-    repository = SqliteRepository[_Item](table=FakeTable(), db=Database(connector))
+def test_should_not_duplicate_on_create_many(
+    repository: SqliteRepository[_Item],
+) -> None:
+    items = [
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+    ]
+    repository.create(items[1])
 
-    repository.read(Existing().id)
-
-    connector.assert_contains(FakeTable().select(Existing().id))
-
-
-def test_should_read() -> None:
-    connector = FakeConnector().with_result(Existing())
-    repository = SqliteRepository[_Item](table=FakeTable(), db=Database(connector))
-
-    actual = repository.read(Existing().id)
-
-    assert actual == Loaded(dict(Existing()))
+    with raises(ExistsError, match=f"_Item with id<{items[1].id}> already exists."):
+        repository.create_many(items)
 
 
-def test_should_perform_delete_all_command() -> None:
-    connector = FakeConnector().with_result(Existing())
-    repository = SqliteRepository[_Item](table=FakeTable(), db=Database(connector))
+def test_should_persist(repository: SqliteRepository[_Item]) -> None:
+    item = _Item(id=str(uuid4()), external_id=str(uuid4()))
+    repository.create(item)
+
+    assert len(repository) == 1
+    assert repository.read(item.id) == item
+
+
+def test_should_persist_many(repository: SqliteRepository[_Item]) -> None:
+    items = [
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+    ]
+    repository.create_many(items)
+
+    assert len(repository) == 2
+    assert list(repository) == items
+
+
+def test_should_persist_update(repository: SqliteRepository[_Item]) -> None:
+    old_item = _Item(id=str(uuid4()), external_id=str(uuid4()))
+    repository.create(old_item)
+
+    item = _Item(id=old_item.id, external_id=str(uuid4()))
+    repository.update(item)
+
+    assert repository.read(item.id) == item
+
+
+def test_should_persist_update_many(repository: SqliteRepository[_Item]) -> None:
+    old_items = [
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+    ]
+    repository.create_many(old_items)
+
+    items = [
+        _Item(id=old_items[0].id, external_id=str(uuid4())),
+        _Item(id=old_items[1].id, external_id=str(uuid4())),
+    ]
+    repository.update_many(items)
+
+    assert list(repository) == items
+
+
+def test_should_persist_delete(repository: SqliteRepository[_Item]) -> None:
+    items = [
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+    ]
+    repository.create_many(items)
+
+    repository.delete(items[1].id)
+
+    assert list(repository) == [items[0]]
+
+
+def test_should_persist_delete_all(repository: SqliteRepository[_Item]) -> None:
+    items = [
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+    ]
+    repository.create_many(items)
 
     repository.delete_all()
 
-    connector.assert_contains(FakeTable().delete_all())
-
-
-def test_should_perform_delete_command() -> None:
-    connector = FakeConnector()
-    repository = SqliteRepository[_Item](table=FakeTable(), db=Database(connector))
-
-    repository.delete(Existing().id)
-
-    connector.assert_contains(FakeTable().delete(Existing().id))
-
-
-def test_should_not_list_anything_when_none_exist() -> None:
-    connector = FakeConnector().with_result([])
-    repository = SqliteRepository[_Item](table=FakeTable(), db=Database(connector))
-
-    assert [item for item in repository] == []
-
-
-def test_should_perform_select_all_query() -> None:
-    connector = FakeConnector().with_result([])
-    repository = SqliteRepository[_Item](table=FakeTable(), db=Database(connector))
-
-    _ = [item for item in repository]
-
-    connector.assert_contains(FakeTable().select_all())
-
-
-def test_should_list_all() -> None:
-    connector = FakeConnector().with_result([Existing(str(i)) for i in range(10)])
-
-    repository = SqliteRepository[_Item](table=FakeTable(), db=Database(connector))
-
-    assert [Loaded(Existing(str(i))) for i in range(10)] == [i for i in repository]
-
-
-def test_should_perform_update_query() -> None:
-    connector = FakeConnector().with_result(Existing())
-    repository = SqliteRepository[_Item](table=FakeTable(), db=Database(connector))
-
-    repository.update(Existing())
-
-    connector.assert_contains(FakeTable().update(Existing()))
+    assert list(repository) == []
