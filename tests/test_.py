@@ -1,9 +1,10 @@
 from dataclasses import dataclass
+from typing import Any
 from uuid import uuid4
 
 from pytest import fixture, raises
 
-from apexdevkit.error import DoesNotExistError
+from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.repository import Database, DatabaseCommand, Repository
 from apexdevkit.repository.connector import SqliteInMemoryConnector
 from apexdevkit.repository.sqlite import SqliteRepository, SqlTable
@@ -35,13 +36,26 @@ class FakeTable(SqlTable[_Item]):
     def select(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand("SELECT * FROM ITEM WHERE id=:id").with_data(id=item_id)
 
+    def insert(self, item: _Item) -> DatabaseCommand:
+        return DatabaseCommand("""
+            INSERT INTO ITEM (id, external_id) VALUES (:id, :external_id)
+            RETURNING id, external_id;
+        """).with_data({"id": item.id, "external_id": item.external_id})
+
+    def load(self, data: dict[str, Any]) -> _Item:
+        return _Item(data["id"], data["external_id"])
+
 
 @fixture
 def repository() -> Repository[str, _Item]:
     db = Database(SqliteInMemoryConnector())
     db.execute(FakeTable().setup()).fetch_none()
 
-    return SqliteRepository[_Item](table=FakeTable(), db=db)
+    return SqliteRepository[_Item](
+        table=FakeTable(),
+        db=db,
+        duplicate_criteria=lambda item: f"_Item with id<{item.id}> already exists.",
+    )
 
 
 def test_should_list_nothing_when_empty(repository: Repository[str, _Item]) -> None:
@@ -58,3 +72,11 @@ def test_should_create(repository: Repository[str, _Item]) -> None:
     item = _Item(id=str(uuid4()), external_id=str(uuid4()))
 
     assert repository.create(item) == item
+
+
+def test_should_not_duplicate(repository: Repository[str, _Item]) -> None:
+    item = _Item(id=str(uuid4()), external_id=str(uuid4()))
+    repository.create(item)
+
+    with raises(ExistsError, match=f"_Item with id<{item.id}> already exists."):
+        repository.create(item)
