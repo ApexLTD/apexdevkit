@@ -5,6 +5,7 @@ from uuid import uuid4
 from pytest import fixture, raises
 
 from apexdevkit.error import DoesNotExistError, ExistsError
+from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Database, DatabaseCommand
 from apexdevkit.repository.connector import SqliteInMemoryConnector
 from apexdevkit.repository.sqlite import SqliteRepository, SqlTable
@@ -40,12 +41,12 @@ class FakeTable(SqlTable[_Item]):
         return DatabaseCommand("""
             INSERT INTO ITEM (id, external_id) VALUES (:id, :external_id)
             RETURNING id, external_id;
-        """).with_data({"id": item.id, "external_id": item.external_id})
+        """).with_data(DataclassFormatter[_Item](_Item).dump(item))
 
     def update(self, item: _Item) -> DatabaseCommand:
         return DatabaseCommand("""
             UPDATE ITEM SET id=:id, external_id=:external_id WHERE id=:id;
-        """).with_data({"id": item.id, "external_id": item.external_id})
+        """).with_data(DataclassFormatter[_Item](_Item).dump(item))
 
     def delete(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand("DELETE FROM ITEM WHERE id=:id").with_data(id=item_id)
@@ -54,7 +55,7 @@ class FakeTable(SqlTable[_Item]):
         return DatabaseCommand("DELETE FROM ITEM")
 
     def load(self, data: dict[str, Any]) -> _Item:
-        return _Item(data["id"], data["external_id"])
+        return DataclassFormatter[_Item](_Item).load(data)
 
 
 @fixture
