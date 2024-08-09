@@ -42,6 +42,11 @@ class FakeTable(SqlTable[_Item]):
             RETURNING id, external_id;
         """).with_data({"id": item.id, "external_id": item.external_id})
 
+    def update(self, item: _Item) -> DatabaseCommand:
+        return DatabaseCommand("""
+            UPDATE ITEM SET id=:id, external_id=:external_id WHERE id=:id;
+        """).with_data({"id": item.id, "external_id": item.external_id})
+
     def load(self, data: dict[str, Any]) -> _Item:
         return _Item(data["id"], data["external_id"])
 
@@ -120,4 +125,30 @@ def test_should_persist_many(repository: Repository[str, _Item]) -> None:
     repository.create_many(items)
 
     assert len(repository) == 2
+    assert list(repository) == items
+
+
+def test_should_persist_update(repository: Repository[str, _Item]) -> None:
+    old_item = _Item(id=str(uuid4()), external_id=str(uuid4()))
+    repository.create(old_item)
+
+    item = _Item(id=old_item.id, external_id=str(uuid4()))
+    repository.update(item)
+
+    assert repository.read(item.id) == item
+
+
+def test_should_persist_update_many(repository: Repository[str, _Item]) -> None:
+    old_items = [
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+        _Item(id=str(uuid4()), external_id=str(uuid4())),
+    ]
+    repository.create_many(old_items)
+
+    items = [
+        _Item(id=old_items[0].id, external_id=str(uuid4())),
+        _Item(id=old_items[1].id, external_id=str(uuid4())),
+    ]
+    repository.update_many(items)
+
     assert list(repository) == items
