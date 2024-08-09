@@ -71,11 +71,7 @@ def repository() -> SqliteRepository[_Item]:
     db = Database(SqliteInMemoryConnector())
     db.execute(FakeTable().setup()).fetch_none()
 
-    return SqliteRepository[_Item](
-        table=FakeTable(),
-        db=db,
-        duplicate_criteria=lambda item: f"_Item with id<{item.id}> already exists.",
-    )
+    return SqliteRepository[_Item](table=FakeTable(), db=db)
 
 
 def test_should_list_nothing_when_empty(repository: SqliteRepository[_Item]) -> None:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from sqlite3 import IntegrityError
-from typing import Any, Callable, Generic, Iterator, TypeVar
+from typing import Any, Generic, Iterator, TypeVar
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.repository import Database, DatabaseCommand
@@ -14,7 +14,6 @@ ItemT = TypeVar("ItemT")
 class SqliteRepository(Generic[ItemT]):
     db: Database
     table: SqlTable[ItemT]
-    duplicate_criteria: Callable[[ItemT], str] = lambda i: "Unknown"
 
     def __iter__(self) -> Iterator[ItemT]:
         for raw in self.db.execute(self.table.select_all()).fetch_all():
