@@ -19,8 +19,8 @@ class Fake:
     def text(self, *, length: int) -> str:
         return "".join(self.faker.random_letters(length=length))
 
-    def number(self) -> int:
-        return int(self.faker.random.randint(0, 100000))
+    def number(self, top: int = 100000) -> int:
+        return int(self.faker.random.randint(0, top))
 
     def timestamp(self) -> int:
         return int(self.faker.unix_time())
@@ -30,6 +30,24 @@ class Fake:
 
     def hour(self) -> int:
         return int(self.faker.random_int(min=0, max=23))
+
+    def first_name(self) -> str:
+        return str(self.faker.first_name())
+
+    def last_name(self) -> str:
+        return str(self.faker.last_name())
+
+    def sentence(self, *, words: int) -> str:
+        return str(self.faker.sentence(nb_words=words))
+
+    def country(self) -> str:
+        return str(self.faker.country())
+
+    def address(self) -> str:
+        return str(self.faker.address())
+
+    def bool(self) -> bool:
+        return bool(self.faker.boolean())
 
 
 @dataclass
