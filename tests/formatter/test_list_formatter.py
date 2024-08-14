@@ -25,3 +25,11 @@ def test_should_dump() -> None:
     )
 
     assert result == [{"name": "a", "age": 1}, {"name": "b", "age": 2}]
+
+
+def test_should_load() -> None:
+    result = ListFormatter[SampleClass](SampleClassFormatter()).load(
+        [{"name": "a", "age": 1}, {"name": "b", "age": 2}]
+    )
+
+    assert result == [SampleClass("a", 1), SampleClass("b", 2)]
