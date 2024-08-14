@@ -14,14 +14,33 @@ class Formatter(Protocol[ItemT]):  # pragma: no cover
 
 
 @dataclass
+class ListFormatter(Generic[ItemT]):
+    inner: Formatter[ItemT]
+
+    def load(self, raw: list[dict[str, Any]]) -> list[ItemT]:
+        result = []
+        for item in raw:
+            result.append(self.inner.load(item))
+        return result
+
+    def dump(self, items: list[ItemT]) -> list[dict[str, Any]]:
+        result: list[dict[str, Any]] = []
+        for item in items:
+            result.append(self.inner.dump(item))
+        return result
+
+
+@dataclass
 class DataclassFormatter(Generic[ItemT]):
     resource: type[ItemT]
-    sub_formatters: dict[str, Formatter[Any]] = field(default_factory=dict)
+    sub_formatters: dict[str, Formatter[Any] | ListFormatter[Any]] = field(
+        default_factory=dict
+    )
 
-    def and_nested(self, **formatters: Formatter[Any]) -> Self:
+    def and_nested(self, **formatters: Formatter[Any] | ListFormatter[Any]) -> Self:
         return self.with_nested(**formatters)
 
-    def with_nested(self, **formatters: Formatter[Any]) -> Self:
+    def with_nested(self, **formatters: Formatter[Any] | ListFormatter[Any]) -> Self:
         self.sub_formatters.update(formatters)
 
         return self
