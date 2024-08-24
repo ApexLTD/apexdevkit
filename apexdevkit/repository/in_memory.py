@@ -13,12 +13,13 @@ class _Item(Protocol):  # pragma: no cover
 
 
 ItemT = TypeVar("ItemT", bound=_Item)
+_Raw = dict[str, Any]
 
 
 @dataclass
 class InMemoryRepository(Generic[ItemT]):
-    formatter: Formatter[ItemT]
-    items: dict[str, dict[str, Any]] = field(default_factory=dict)
+    formatter: Formatter[_Raw, ItemT]
+    items: dict[str, _Raw] = field(default_factory=dict)
 
     _uniques: list[Criteria] = field(init=False, default_factory=list)
     _search_by: list[str] = field(init=False, default_factory=list)
