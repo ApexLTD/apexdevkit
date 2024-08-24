@@ -2,29 +2,30 @@ from copy import deepcopy
 from dataclasses import asdict, dataclass, field
 from typing import Any, Generic, Protocol, Self, TypeVar
 
+RawT = TypeVar("RawT")
 ItemT = TypeVar("ItemT")
 
 
-class Formatter(Protocol[ItemT]):  # pragma: no cover
-    def load(self, raw: dict[str, Any]) -> ItemT:
+class Formatter(Protocol[RawT, ItemT]):  # pragma: no cover
+    def load(self, raw: RawT) -> ItemT:
         pass
 
-    def dump(self, item: ItemT) -> dict[str, Any]:
+    def dump(self, item: ItemT) -> RawT:
         pass
 
 
 @dataclass
-class ListFormatter(Generic[ItemT]):
-    inner: Formatter[ItemT]
+class ListFormatter(Generic[ItemT, RawT]):
+    inner: Formatter[RawT, ItemT]
 
-    def load(self, raw: list[dict[str, Any]]) -> list[ItemT]:
+    def load(self, raw: list[RawT]) -> list[ItemT]:
         result = []
         for item in raw:
             result.append(self.inner.load(item))
         return result
 
-    def dump(self, items: list[ItemT]) -> list[dict[str, Any]]:
-        result: list[dict[str, Any]] = []
+    def dump(self, items: list[ItemT]) -> list[RawT]:
+        result: list[RawT] = []
         for item in items:
             result.append(self.inner.dump(item))
         return result
@@ -33,14 +34,12 @@ class ListFormatter(Generic[ItemT]):
 @dataclass
 class DataclassFormatter(Generic[ItemT]):
     resource: type[ItemT]
-    sub_formatters: dict[str, Formatter[Any] | ListFormatter[Any]] = field(
-        default_factory=dict
-    )
+    sub_formatters: dict[str, Formatter[Any, Any]] = field(default_factory=dict)
 
-    def and_nested(self, **formatters: Formatter[Any] | ListFormatter[Any]) -> Self:
+    def and_nested(self, **formatters: Formatter[Any, Any]) -> Self:
         return self.with_nested(**formatters)
 
-    def with_nested(self, **formatters: Formatter[Any] | ListFormatter[Any]) -> Self:
+    def with_nested(self, **formatters: Formatter[Any, Any]) -> Self:
         self.sub_formatters.update(formatters)
 
         return self

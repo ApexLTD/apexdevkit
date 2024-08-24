@@ -20,23 +20,23 @@ class SampleClassFormatter:
 
 
 def test_should_dump() -> None:
-    result = ListFormatter[SampleClass](SampleClassFormatter()).dump(
-        [SampleClass("a", 1), SampleClass("b", 2)]
-    )
+    target = [SampleClass("a", 1), SampleClass("b", 2)]
+
+    result = ListFormatter(SampleClassFormatter()).dump(target)
 
     assert result == [{"name": "a", "age": 1}, {"name": "b", "age": 2}]
 
 
 def test_should_load() -> None:
-    result = ListFormatter[SampleClass](SampleClassFormatter()).load(
-        [{"name": "a", "age": 1}, {"name": "b", "age": 2}]
-    )
+    source = [{"name": "a", "age": 1}, {"name": "b", "age": 2}]
+
+    result = ListFormatter(SampleClassFormatter()).load(source)
 
     assert result == [SampleClass("a", 1), SampleClass("b", 2)]
 
 
 def test_should_retain_dumped_integrity() -> None:
-    formatter = ListFormatter[SampleClass](SampleClassFormatter())
+    formatter = ListFormatter(SampleClassFormatter())
 
     dumped = formatter.dump([SampleClass("a", 1), SampleClass("b", 2)])
     formatter.load(dumped)
@@ -45,7 +45,7 @@ def test_should_retain_dumped_integrity() -> None:
 
 
 def test_should_retain_loaded_integrity() -> None:
-    formatter = ListFormatter[SampleClass](SampleClassFormatter())
+    formatter = ListFormatter(SampleClassFormatter())
 
     loaded = formatter.load([{"name": "a", "age": 1}, {"name": "b", "age": 2}])
     formatter.dump(loaded)
