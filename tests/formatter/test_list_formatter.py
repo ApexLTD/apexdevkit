@@ -35,7 +35,7 @@ def test_should_load() -> None:
     assert result == [SampleClass("a", 1), SampleClass("b", 2)]
 
 
-def test_should_retain_dumped_integrity() -> None:
+def test_should_not_mutate_input_while_loading() -> None:
     formatter = ListFormatter(SampleClassFormatter())
 
     dumped = formatter.dump([SampleClass("a", 1), SampleClass("b", 2)])
@@ -44,7 +44,7 @@ def test_should_retain_dumped_integrity() -> None:
     assert dumped == [{"name": "a", "age": 1}, {"name": "b", "age": 2}]
 
 
-def test_should_retain_loaded_integrity() -> None:
+def test_should_not_mutate_input_while_dumping() -> None:
     formatter = ListFormatter(SampleClassFormatter())
 
     loaded = formatter.load([{"name": "a", "age": 1}, {"name": "b", "age": 2}])
