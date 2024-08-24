@@ -18,17 +18,11 @@ class Formatter(Protocol[_SourceT, _TargetT]):  # pragma: no cover
 class ListFormatter(Generic[_TargetT, _SourceT]):
     inner: Formatter[_SourceT, _TargetT]
 
-    def load(self, raw: list[_SourceT]) -> list[_TargetT]:
-        result = []
-        for item in raw:
-            result.append(self.inner.load(item))
-        return result
+    def load(self, source: list[_SourceT]) -> list[_TargetT]:
+        return [self.inner.load(item) for item in source]
 
-    def dump(self, items: list[_TargetT]) -> list[_SourceT]:
-        result: list[_SourceT] = []
-        for item in items:
-            result.append(self.inner.dump(item))
-        return result
+    def dump(self, target: list[_TargetT]) -> list[_SourceT]:
+        return [self.inner.dump(item) for item in target]
 
 
 @dataclass
