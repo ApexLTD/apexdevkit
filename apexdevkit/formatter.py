@@ -7,10 +7,10 @@ _TargetT = TypeVar("_TargetT")
 
 
 class Formatter(Protocol[_SourceT, _TargetT]):  # pragma: no cover
-    def load(self, raw: _SourceT) -> _TargetT:
+    def load(self, source: _SourceT) -> _TargetT:
         pass
 
-    def dump(self, item: _TargetT) -> _SourceT:
+    def dump(self, target: _TargetT) -> _SourceT:
         pass
 
 
