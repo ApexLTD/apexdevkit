@@ -15,7 +15,7 @@ class Formatter(Protocol[_SourceT, _TargetT]):  # pragma: no cover
 
 
 @dataclass
-class ListFormatter(Generic[_TargetT, _SourceT]):
+class ListFormatter(Generic[_SourceT, _TargetT]):
     inner: Formatter[_SourceT, _TargetT]
 
     def load(self, source: list[_SourceT]) -> list[_TargetT]:
