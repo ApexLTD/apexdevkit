@@ -24,8 +24,8 @@ interactions:
         \n  \"files\": {}, \n  \"form\": {}, \n  \"headers\": {\n    \"Accept\": \"*/*\",
         \n    \"Accept-Encoding\": \"gzip, deflate\", \n    \"Content-Length\": \"19\",
         \n    \"Content-Type\": \"application/json\", \n    \"Host\": \"httpbin.org\",
-        \n    \"User-Agent\": \"hogwarts\", \n    \"X-Amzn-Trace-Id\": \"Root=1-6632616e-01fb25f570d439342891a00a\"\n
-        \ }, \n  \"json\": {\n    \"Harry\": \"Potter\"\n  }, \n  \"origin\": \"95.104.119.242\",
+        \n    \"User-Agent\": \"hogwarts\", \n    \"X-Amzn-Trace-Id\": \"Root=1-66ccef7f-785ee6d956e4be6d3ac66de4\"\n
+        \ }, \n  \"json\": {\n    \"Harry\": \"Potter\"\n  }, \n  \"origin\": \"5.178.149.253\",
         \n  \"url\": \"http://httpbin.org/patch\"\n}\n"
     headers:
       Access-Control-Allow-Credentials:
@@ -35,11 +35,11 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '474'
+      - '473'
       Content-Type:
       - application/json
       Date:
-      - Wed, 01 May 2024 15:36:14 GMT
+      - Mon, 26 Aug 2024 21:11:27 GMT
       Server:
       - gunicorn/19.9.0
     status:

@@ -1,6 +1,6 @@
 interactions:
 - request:
-    body: '{}'
+    body: ''
     headers:
       accept:
       - '*/*'
@@ -8,10 +8,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      content-length:
-      - '2'
-      content-type:
-      - application/json
       host:
       - httpbin.org
       user-agent:
@@ -20,12 +16,11 @@ interactions:
     uri: http://httpbin.org/delete
   response:
     body:
-      string: "{\n  \"args\": {}, \n  \"data\": \"{}\", \n  \"files\": {}, \n  \"form\":
+      string: "{\n  \"args\": {}, \n  \"data\": \"\", \n  \"files\": {}, \n  \"form\":
         {}, \n  \"headers\": {\n    \"Accept\": \"*/*\", \n    \"Accept-Encoding\":
-        \"gzip, deflate\", \n    \"Content-Length\": \"2\", \n    \"Content-Type\":
-        \"application/json\", \n    \"Host\": \"httpbin.org\", \n    \"User-Agent\":
-        \"hogwarts\", \n    \"X-Amzn-Trace-Id\": \"Root=1-6632616e-1f43bcf1173f75602c8d787c\"\n
-        \ }, \n  \"json\": {}, \n  \"origin\": \"95.104.119.242\", \n  \"url\": \"http://httpbin.org/delete\"\n}\n"
+        \"gzip, deflate\", \n    \"Host\": \"httpbin.org\", \n    \"User-Agent\":
+        \"hogwarts\", \n    \"X-Amzn-Trace-Id\": \"Root=1-66ccef7f-43a9ebaa7480c62a48ccf73b\"\n
+        \ }, \n  \"json\": null, \n  \"origin\": \"5.178.149.253\", \n  \"url\": \"http://httpbin.org/delete\"\n}\n"
     headers:
       Access-Control-Allow-Credentials:
       - 'true'
@@ -34,11 +29,11 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '428'
+      - '358'
       Content-Type:
       - application/json
       Date:
-      - Wed, 01 May 2024 15:36:15 GMT
+      - Mon, 26 Aug 2024 21:11:29 GMT
       Server:
       - gunicorn/19.9.0
     status:
