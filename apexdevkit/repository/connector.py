@@ -1,7 +1,9 @@
 import sqlite3
 from dataclasses import dataclass
 from functools import cached_property
-from typing import ContextManager
+from typing import Any, ContextManager
+
+from pymongo import MongoClient
 
 from apexdevkit.repository import Connection
 
@@ -28,5 +30,15 @@ class SqliteInMemoryConnector:
     def _connection(self) -> ContextManager[Connection]:
         connection = sqlite3.connect(self.dsn, check_same_thread=False)
         connection.row_factory = sqlite3.Row
+
+        return connection
+
+
+@dataclass
+class MongoDBConnector:
+    dsn: str
+
+    def connect(self) -> ContextManager[MongoClient[Any]]:
+        connection: MongoClient[Any] = MongoClient(self.dsn)
 
         return connection
