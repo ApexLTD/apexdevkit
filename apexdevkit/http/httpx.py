@@ -65,7 +65,7 @@ class HttpxConfig(Mapping[str, Any]):
     endpoint: str = ""
     headers: JsonDict = field(default_factory=JsonDict)
     params: JsonDict = field(default_factory=JsonDict)
-    json: JsonDict = field(default_factory=JsonDict)
+    json: JsonDict | None = None
 
     def with_endpoint(self, endpoint: str) -> HttpxConfig:
         return HttpxConfig(
@@ -104,7 +104,7 @@ class HttpxConfig(Mapping[str, Any]):
             "url": self.endpoint,
             "headers": dict(self.headers),
             "params": dict(self.params),
-            "json": dict(self.json),
+            "json": dict(self.json) if self.json is not None else None,
         }
 
     def __len__(self) -> int:
