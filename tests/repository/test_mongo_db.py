@@ -34,7 +34,7 @@ class FakeTable(MongoTable[_Item]):
 def repository() -> Iterator[MongoDBRepository[_Item]]:
     repo = MongoDBRepository(
         MongoDatabase(
-            MongoDBConnector("mongodb://localhost:2717/"),
+            MongoDBConnector("mongodb://10.10.0.77:2717/"),
             "test_database",
             "test_collection",
         ),
