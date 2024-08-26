@@ -22,13 +22,13 @@ lint:
 	poetry run mypy apexdevkit tests
 
 test:
-	poetry run pytest \
+	poetry run pytest tests \
 		--cov \
 		--last-failed \
 		--record-mode once
 
 test-ci:
-	poetry run pytest
+	poetry run pytest tests
 
 run:
 	uvicorn tests.resource.setup:app --factory
