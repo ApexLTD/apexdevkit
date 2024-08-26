@@ -1,6 +1,6 @@
 interactions:
 - request:
-    body: '{}'
+    body: ''
     headers:
       accept:
       - '*/*'
@@ -8,10 +8,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      content-length:
-      - '2'
-      content-type:
-      - application/json
       host:
       - httpbin.org
       user-agent:
@@ -22,9 +18,8 @@ interactions:
     body:
       string: "{\n  \"args\": {\n    \"Color\": \"Yellow\"\n  }, \n  \"headers\":
         {\n    \"Accept\": \"*/*\", \n    \"Accept-Encoding\": \"gzip, deflate\",
-        \n    \"Content-Length\": \"2\", \n    \"Content-Type\": \"application/json\",
         \n    \"Host\": \"httpbin.org\", \n    \"User-Agent\": \"hogwarts\", \n    \"X-Amzn-Trace-Id\":
-        \"Root=1-66326376-71eeb1743efc8d0c678be874\"\n  }, \n  \"origin\": \"95.104.119.242\",
+        \"Root=1-66ccef7b-24c30bd92c2238fc171f1daa\"\n  }, \n  \"origin\": \"5.178.149.253\",
         \n  \"url\": \"http://httpbin.org/get?Color=Yellow\"\n}\n"
     headers:
       Access-Control-Allow-Credentials:
@@ -32,13 +27,13 @@ interactions:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
-      - close
+      - keep-alive
       Content-Length:
-      - '400'
+      - '330'
       Content-Type:
       - application/json
       Date:
-      - Wed, 01 May 2024 15:44:54 GMT
+      - Mon, 26 Aug 2024 21:11:26 GMT
       Server:
       - gunicorn/19.9.0
     status:

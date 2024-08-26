@@ -1,6 +1,6 @@
 interactions:
 - request:
-    body: '{}'
+    body: ''
     headers:
       accept:
       - '*/*'
@@ -8,10 +8,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      content-length:
-      - '2'
-      content-type:
-      - application/json
       host:
       - httpbin.org
       user-agent:
@@ -21,23 +17,22 @@ interactions:
   response:
     body:
       string: "{\n  \"args\": {}, \n  \"headers\": {\n    \"Accept\": \"*/*\", \n
-        \   \"Accept-Encoding\": \"gzip, deflate\", \n    \"Content-Length\": \"2\",
-        \n    \"Content-Type\": \"application/json\", \n    \"Host\": \"httpbin.org\",
-        \n    \"User-Agent\": \"hogwarts\", \n    \"X-Amzn-Trace-Id\": \"Root=1-6632616d-3504fa1c0921a70262379bf4\"\n
-        \ }, \n  \"origin\": \"95.104.119.242\", \n  \"url\": \"http://httpbin.org/get\"\n}\n"
+        \   \"Accept-Encoding\": \"gzip, deflate\", \n    \"Host\": \"httpbin.org\",
+        \n    \"User-Agent\": \"hogwarts\", \n    \"X-Amzn-Trace-Id\": \"Root=1-66ccef7b-0faf88ad043a1610159a00a2\"\n
+        \ }, \n  \"origin\": \"5.178.149.253\", \n  \"url\": \"http://httpbin.org/get\"\n}\n"
     headers:
       Access-Control-Allow-Credentials:
       - 'true'
       Access-Control-Allow-Origin:
       - '*'
       Connection:
-      - close
+      - keep-alive
       Content-Length:
-      - '362'
+      - '292'
       Content-Type:
       - application/json
       Date:
-      - Wed, 01 May 2024 15:36:14 GMT
+      - Mon, 26 Aug 2024 21:11:23 GMT
       Server:
       - gunicorn/19.9.0
     status:
