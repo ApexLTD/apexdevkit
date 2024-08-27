@@ -1,12 +1,13 @@
 import dataclasses
 from dataclasses import dataclass, field
-from typing import Any, Iterator
+from typing import Any, ContextManager, Iterator, Optional
 from uuid import uuid4
 
+import mongomock
 import pytest
+from pymongo import MongoClient
 
 from apexdevkit.error import DoesNotExistError, ExistsError
-from apexdevkit.repository.connector import MongoDBConnector
 from apexdevkit.repository.database import MongoDatabase
 from apexdevkit.repository.mongo import MongoDBRepository, MongoTable
 
@@ -30,11 +31,21 @@ class FakeTable(MongoTable[_Item]):
         return item.id
 
 
+@dataclass
+class MongoFakeConnector:
+    _client: Optional[MongoClient[Any]] = field(default=None, init=False)
+
+    def connect(self) -> ContextManager[MongoClient[Any]]:
+        if self._client is None:
+            self._client = mongomock.MongoClient()
+        return self._client
+
+
 @pytest.fixture
 def repository() -> Iterator[MongoDBRepository[_Item]]:
     repo = MongoDBRepository(
         MongoDatabase(
-            MongoDBConnector("mongodb://10.10.0.77:2717/"),
+            MongoFakeConnector(),
             "test_database",
             "test_collection",
         ),
