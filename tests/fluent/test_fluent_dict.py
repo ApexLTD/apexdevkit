@@ -106,12 +106,12 @@ def test_should_merge_empty_json_objects() -> None:
     assert FluentDict({}).merge(FluentDict({})) == {}
 
 
-def test_should_merge_json_object_with_empty(faker: Faker) -> None:
-    json_object = FluentDict({faker.word(): faker.word()})
+def test_should_merge_with_empty_fluent_dict(faker: Faker) -> None:
+    a_fluent_dict = FluentDict({faker.word(): faker.word()})
 
-    result = json_object.merge(FluentDict({}))
+    result = a_fluent_dict.merge(FluentDict({}))
 
-    assert result == json_object
+    assert result == a_fluent_dict
 
 
 def test_should_merge_json_objects_without_overlap(faker: Faker) -> None:
