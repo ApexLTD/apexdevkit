@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Generic, Iterator, Protocol, TypeVar
+from typing import Any, Generic, Iterator, Protocol, TypeVar
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.repository.database import MongoDatabase
@@ -66,8 +66,8 @@ class MongoDBRepository(Generic[ItemT]):
 
 
 class MongoTable(Generic[ItemT]):
-    def dump(self, item: ItemT) -> Dict[str, Any]:
+    def dump(self, item: ItemT) -> dict[str, Any]:
         raise NotImplementedError("Not implemented")
 
-    def load(self, data: Dict[str, Any]) -> ItemT:
+    def load(self, data: dict[str, Any]) -> ItemT:
         raise NotImplementedError("Not implemented")
