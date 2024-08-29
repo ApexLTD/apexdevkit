@@ -20,11 +20,11 @@ ItemT = TypeVar("ItemT", bound=_Item)
 @dataclass
 class MongoDBRepository(Generic[ItemT]):
     database: MongoDatabase
-    table: Formatter[dict[str, Any], ItemT]
+    formatter: Formatter[dict[str, Any], ItemT]
 
     def __iter__(self) -> Iterator[ItemT]:
         for raw in self.database:
-            yield self.table.load(raw)
+            yield self.formatter.load(raw)
 
     def __len__(self) -> int:
         return len(self.database)
@@ -36,7 +36,7 @@ class MongoDBRepository(Generic[ItemT]):
                 lambda i: f"_Item with id<{i.id}> already exists."
             )
         except DoesNotExistError:
-            self.database.create(self.table.dump(item))
+            self.database.create(self.formatter.dump(item))
             return item
 
     def create_many(self, items: list[ItemT]) -> list[ItemT]:
@@ -48,10 +48,10 @@ class MongoDBRepository(Generic[ItemT]):
         if not raw:
             raise DoesNotExistError(item_id)
 
-        return self.table.load(raw)
+        return self.formatter.load(raw)
 
     def update(self, item: ItemT) -> None:
-        self.database.update(item.id, self.table.dump(item))
+        self.database.update(item.id, self.formatter.dump(item))
 
     def update_many(self, items: list[ItemT]) -> None:
         for item in items:
