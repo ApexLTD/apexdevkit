@@ -260,27 +260,13 @@ class RestResponse:
         return self.with_item(value)
 
     def with_item(self, value: Any) -> Self:
-        return self.with_data(
-            **{
-                self.resource.singular: dict(value)
-                if isinstance(value, JsonDict)
-                else value
-            }
-        )
+        return self.with_data(**{self.resource.singular: value})
 
     def and_collection(self, value: list[Any]) -> Self:
         return self.with_collection(value)
 
     def with_collection(self, values: list[Any]) -> Self:
-        return self.with_data(
-            **{
-                self.resource.plural: [
-                    dict(value) if isinstance(value, JsonDict) else value
-                    for value in values
-                ],
-            },
-            count=len(values),
-        )
+        return self.with_data(**{self.resource.plural: values}, count=len(values))
 
     def and_no_data(self) -> Self:
         return self.no_data()
