@@ -11,8 +11,7 @@ from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.http import JsonDict
 from apexdevkit.repository import Repository
-from apexdevkit.repository.database import MongoDatabase
-from apexdevkit.repository.mongo import MongoDBRepository
+from apexdevkit.repository.mongo import MongoDatabase, MongoDBRepository
 
 
 @dataclass
