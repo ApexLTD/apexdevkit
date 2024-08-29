@@ -30,7 +30,7 @@ class FakeTable(MongoTable[_Item]):
 
 
 @dataclass
-class MongoFakeConnector:
+class MongoMockConnector:
     def connect(self) -> ContextManager[MongoClient[Any]]:
         return self._client
 
@@ -43,7 +43,7 @@ class MongoFakeConnector:
 def repository() -> Iterator[MongoDBRepository[_Item]]:
     repo = MongoDBRepository(
         MongoDatabase(
-            MongoFakeConnector(),
+            MongoMockConnector(),
             "test_database",
             "test_collection",
         ),
