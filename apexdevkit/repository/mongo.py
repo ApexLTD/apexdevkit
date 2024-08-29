@@ -35,7 +35,7 @@ class MongoDBRepository(Generic[ItemT]):
                 lambda i: f"_Item with id<{i.id}> already exists."
             )
         except DoesNotExistError:
-            self.database.create(self.table.to_dict(item))
+            self.database.create(self.table.dump(item))
             return item
 
     def create_many(self, items: list[ItemT]) -> list[ItemT]:
@@ -50,7 +50,7 @@ class MongoDBRepository(Generic[ItemT]):
         return self.table.load(raw)
 
     def update(self, item: ItemT) -> None:
-        self.database.update(item.id, self.table.to_dict(item))
+        self.database.update(item.id, self.table.dump(item))
 
     def update_many(self, items: list[ItemT]) -> None:
         for item in items:
@@ -66,7 +66,7 @@ class MongoDBRepository(Generic[ItemT]):
 
 
 class MongoTable(Generic[ItemT]):
-    def to_dict(self, item: ItemT) -> Dict[str, Any]:
+    def dump(self, item: ItemT) -> Dict[str, Any]:
         raise NotImplementedError("Not implemented")
 
     def load(self, data: Dict[str, Any]) -> ItemT:

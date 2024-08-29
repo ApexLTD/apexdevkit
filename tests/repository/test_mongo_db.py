@@ -21,7 +21,7 @@ class _Item:
 
 
 class FakeTable(MongoTable[_Item]):
-    def to_dict(self, item: _Item) -> dict[str, Any]:
+    def dump(self, item: _Item) -> dict[str, Any]:
         return dataclasses.asdict(item)
 
     def load(self, data: dict[str, Any]) -> _Item:
