@@ -84,10 +84,6 @@ class MongoDatabase:
         with self.connector.connect() as client:
             return self.collection(client).delete_one({"id": item_id})
 
-    def delete_all(self) -> DeleteResult:
-        with self.connector.connect() as client:
-            return self.collection(client).delete_many({})
-
 
 class Connector(Protocol):  # pragma: no cover
     def connect(self) -> ContextManager[Connection]:

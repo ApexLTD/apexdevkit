@@ -61,6 +61,3 @@ class MongoDBRepository(Generic[ItemT]):
         result = self.database.delete(item_id)
         if result.deleted_count == 0:
             raise DoesNotExistError(item_id)
-
-    def delete_all(self) -> None:
-        self.database.delete_all()
