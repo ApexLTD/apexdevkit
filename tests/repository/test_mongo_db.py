@@ -27,9 +27,6 @@ class FakeTable(MongoTable[_Item]):
         data.pop("_id")
         return _Item(**data)
 
-    def get_id(self, item: _Item) -> str:
-        return item.id
-
 
 @dataclass
 class MongoFakeConnector:

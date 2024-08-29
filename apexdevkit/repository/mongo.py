@@ -50,10 +50,7 @@ class MongoDBRepository(Generic[ItemT]):
         return self.table.load(raw)
 
     def update(self, item: ItemT) -> None:
-        self.database.update(
-            self.table.get_id(item),
-            self.table.to_dict(item),
-        )
+        self.database.update(item.id, self.table.to_dict(item))
 
     def update_many(self, items: list[ItemT]) -> None:
         for item in items:
@@ -73,7 +70,4 @@ class MongoTable(Generic[ItemT]):
         raise NotImplementedError("Not implemented")
 
     def load(self, data: Dict[str, Any]) -> ItemT:
-        raise NotImplementedError("Not implemented")
-
-    def get_id(self, item: ItemT) -> str:
         raise NotImplementedError("Not implemented")
