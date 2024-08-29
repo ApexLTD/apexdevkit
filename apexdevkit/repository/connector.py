@@ -35,7 +35,7 @@ class SqliteInMemoryConnector:
 
 
 @dataclass
-class MongoDBConnector:
+class PyMongoConnector:
     dsn: str
 
     def connect(self) -> ContextManager[MongoClient[Any]]:
