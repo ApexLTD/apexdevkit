@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Generic, Iterator, Protocol, TypeVar
 
 from apexdevkit.error import DoesNotExistError, ExistsError
+from apexdevkit.formatter import Formatter
 from apexdevkit.repository.database import MongoDatabase
 
 
@@ -19,7 +20,7 @@ ItemT = TypeVar("ItemT", bound=_Item)
 @dataclass
 class MongoDBRepository(Generic[ItemT]):
     database: MongoDatabase
-    table: MongoTable[ItemT]
+    table: Formatter[dict[str, Any], ItemT]
 
     def __iter__(self) -> Iterator[ItemT]:
         for raw in self.database:
@@ -63,11 +64,3 @@ class MongoDBRepository(Generic[ItemT]):
 
     def delete_all(self) -> None:
         self.database.delete_all()
-
-
-class MongoTable(Generic[ItemT]):
-    def dump(self, item: ItemT) -> dict[str, Any]:
-        raise NotImplementedError("Not implemented")
-
-    def load(self, data: dict[str, Any]) -> ItemT:
-        raise NotImplementedError("Not implemented")

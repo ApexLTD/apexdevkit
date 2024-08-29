@@ -10,7 +10,7 @@ from pymongo import MongoClient
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.repository.database import MongoDatabase
-from apexdevkit.repository.mongo import MongoDBRepository, MongoTable
+from apexdevkit.repository.mongo import MongoDBRepository
 
 
 @dataclass
@@ -20,7 +20,7 @@ class _Item:
     id: str = field(default_factory=lambda: str(uuid4()))
 
 
-class FakeTable(MongoTable[_Item]):
+class FakeTable:
     def dump(self, item: _Item) -> dict[str, Any]:
         return dataclasses.asdict(item)
 
