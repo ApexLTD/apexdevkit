@@ -11,7 +11,7 @@ from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.http import JsonDict
 from apexdevkit.repository import Repository
-from apexdevkit.repository.mongo import MongoDatabase, MongoDBRepository
+from apexdevkit.repository.mongo import MongoDatabase, MongoRepository
 
 
 @dataclass
@@ -32,8 +32,8 @@ class MongoMockConnector:
 
 
 @pytest.fixture
-def repository() -> MongoDBRepository[_Item]:
-    return MongoDBRepository(
+def repository() -> MongoRepository[_Item]:
+    return MongoRepository(
         MongoDatabase(
             MongoMockConnector(),
             "test_database",

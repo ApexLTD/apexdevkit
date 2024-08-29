@@ -21,7 +21,7 @@ ItemT = TypeVar("ItemT", bound=_Item)
 
 
 @dataclass
-class MongoDBRepository(Generic[ItemT]):
+class MongoRepository(Generic[ItemT]):
     database: MongoDatabase
     formatter: Formatter[dict[str, Any], ItemT]
 
