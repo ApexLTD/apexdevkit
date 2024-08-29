@@ -1,3 +1,4 @@
+from typing import Any
 from unittest.mock import ANY
 
 from faker import Faker
@@ -97,7 +98,7 @@ def test_should_add_a_key(faker: Faker) -> None:
     key = faker.word()
     value = faker.word()
 
-    updated = FluentDict({}).with_a(**{key: value})
+    updated = FluentDict[Any]({}).with_a(**{key: value})
 
     assert updated == {key: value}
 
