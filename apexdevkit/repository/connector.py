@@ -39,6 +39,4 @@ class PyMongoConnector:
     dsn: str
 
     def connect(self) -> ContextManager[MongoClient[Any]]:
-        connection: MongoClient[Any] = MongoClient(self.dsn)
-
-        return connection
+        return MongoClient(self.dsn)
