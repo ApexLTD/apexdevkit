@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, TypeVar, Generic
+from typing import Callable, Generic, TypeVar
 
 ItemT = TypeVar("ItemT")
 
