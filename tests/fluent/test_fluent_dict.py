@@ -102,7 +102,7 @@ def test_should_add_a_key(faker: Faker) -> None:
     assert updated == {key: value}
 
 
-def test_should_merge_empty_json_objects() -> None:
+def test_should_merge_empty_fluent_dicts() -> None:
     assert FluentDict({}).merge(FluentDict({})) == {}
 
 
