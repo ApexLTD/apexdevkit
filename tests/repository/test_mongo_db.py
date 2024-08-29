@@ -1,6 +1,7 @@
 import dataclasses
 from dataclasses import dataclass, field
-from typing import Any, ContextManager, Iterator, Optional
+from functools import cached_property
+from typing import Any, ContextManager, Iterator
 from uuid import uuid4
 
 import mongomock
@@ -30,12 +31,12 @@ class FakeTable(MongoTable[_Item]):
 
 @dataclass
 class MongoFakeConnector:
-    _client: Optional[MongoClient[Any]] = field(default=None, init=False)
-
     def connect(self) -> ContextManager[MongoClient[Any]]:
-        if self._client is None:
-            self._client = mongomock.MongoClient()
         return self._client
+
+    @cached_property
+    def _client(self) -> MongoClient[Any]:
+        return mongomock.MongoClient()
 
 
 @pytest.fixture
