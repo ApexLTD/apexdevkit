@@ -1,4 +1,3 @@
-import dataclasses
 from dataclasses import dataclass, field
 from functools import cached_property
 from typing import Any, ContextManager, Iterator
@@ -9,6 +8,8 @@ import pytest
 from pymongo import MongoClient
 
 from apexdevkit.error import DoesNotExistError, ExistsError
+from apexdevkit.formatter import DataclassFormatter
+from apexdevkit.http import JsonDict
 from apexdevkit.repository.database import MongoDatabase
 from apexdevkit.repository.mongo import MongoDBRepository
 
@@ -18,15 +19,6 @@ class _Item:
     external_id: str
 
     id: str = field(default_factory=lambda: str(uuid4()))
-
-
-class FakeTable:
-    def dump(self, item: _Item) -> dict[str, Any]:
-        return dataclasses.asdict(item)
-
-    def load(self, data: dict[str, Any]) -> _Item:
-        data.pop("_id")
-        return _Item(**data)
 
 
 @dataclass
@@ -47,7 +39,11 @@ def repository() -> Iterator[MongoDBRepository[_Item]]:
             "test_database",
             "test_collection",
         ),
-        FakeTable(),
+        DataclassFormatter(
+            resource=lambda **raw: _Item(
+                **JsonDict(raw).select(*_Item.__annotations__.keys())
+            )
+        ),
     )
     try:
         yield repo
