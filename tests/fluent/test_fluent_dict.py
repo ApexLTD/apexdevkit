@@ -114,7 +114,7 @@ def test_should_merge_with_empty_fluent_dict(faker: Faker) -> None:
     assert result == a_fluent_dict
 
 
-def test_should_merge_json_objects_without_overlap(faker: Faker) -> None:
+def test_should_merge_without_overlap(faker: Faker) -> None:
     key1 = faker.word()
     key2 = faker.word()
 
@@ -123,7 +123,7 @@ def test_should_merge_json_objects_without_overlap(faker: Faker) -> None:
     assert result == {key1: ANY, key2: ANY}
 
 
-def test_should_merge_json_objects_with_overlap(faker: Faker) -> None:
+def test_should_merge_with_overlap(faker: Faker) -> None:
     key = faker.word()
     value = faker.word()
 
