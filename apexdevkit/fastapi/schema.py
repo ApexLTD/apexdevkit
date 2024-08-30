@@ -5,22 +5,22 @@ from typing import Any, Callable, Iterable, List
 
 from pydantic import BaseModel, create_model
 
-from apexdevkit.http import JsonDict
+from apexdevkit.fluent import FluentDict
 from apexdevkit.testing import RestfulName
 
 
 class SchemaFields(ABC):
-    def id(self) -> JsonDict:
+    def id(self) -> FluentDict[type]:
         return self.readable().select("id")
 
-    def writable(self) -> JsonDict:
+    def writable(self) -> FluentDict[type]:
         return self.readable().drop("id")
 
-    def editable(self) -> JsonDict:
+    def editable(self) -> FluentDict[type]:
         return self.readable().drop("id")
 
     @abstractmethod
-    def readable(self) -> JsonDict:  # pragma: no cover
+    def readable(self) -> FluentDict[type]:  # pragma: no cover
         pass
 
 
@@ -38,26 +38,11 @@ class RestfulSchema:
             "UpdateManyItem", self.fields.editable().merge(self.fields.id())
         )
 
-        self._schema_for(
-            "Item",
-            JsonDict({self.name.singular: schema}),
-        )
-        self._schema_for(
-            "Collection",
-            JsonDict({self.name.plural: List[schema]}).with_a(count=int),
-        )
-
-        self._schema_for(
-            "CreateMany",
-            JsonDict({self.name.plural: List[create_schema]}),
-        )
-        self._schema_for(
-            "UpdateMany",
-            JsonDict({self.name.plural: List[update_many_item]}),
-        )
-        self._schema_for(
-            "ReplaceMany", JsonDict({self.name.plural: List[replace_schema]})
-        )
+        self._schema_for("Item", {self.name.singular: schema})
+        self._schema_for("Collection", {self.name.plural: List[schema], "count": int})
+        self._schema_for("CreateMany", {self.name.plural: List[create_schema]})
+        self._schema_for("UpdateMany", {self.name.plural: List[update_many_item]})
+        self._schema_for("ReplaceMany", {self.name.plural: List[replace_schema]})
 
     def _schema_for(self, action: str, fields: dict[str, Any]) -> type[BaseModel]:
         if action not in self.schemas:
@@ -81,13 +66,13 @@ class RestfulSchema:
 
         return self._schema_for(
             "NoDataResponse",
-            JsonDict().with_a(status=str).and_a(code=int).and_a(data=NoData),
+            FluentDict[type]().with_a(status=str).and_a(code=int).and_a(data=NoData),
         )
 
     def for_item(self) -> type[BaseModel]:
         return self._schema_for(
             "ItemResponse",
-            JsonDict()
+            FluentDict[type]()
             .with_a(status=str)
             .and_a(code=int)
             .and_a(data=self.schemas["Item"]),
@@ -96,7 +81,7 @@ class RestfulSchema:
     def for_collection(self) -> type[BaseModel]:
         return self._schema_for(
             "CollectionResponse",
-            JsonDict()
+            FluentDict[type]()
             .with_a(status=str)
             .and_a(code=int)
             .and_a(data=self.schemas["Collection"]),
