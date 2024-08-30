@@ -8,8 +8,8 @@ import pytest
 from pymongo import MongoClient
 
 from apexdevkit.error import DoesNotExistError, ExistsError
+from apexdevkit.fluent import FluentDict
 from apexdevkit.formatter import DataclassFormatter
-from apexdevkit.http import JsonDict
 from apexdevkit.repository import Repository
 from apexdevkit.repository.mongo import MongoDatabase, MongoRepository
 
@@ -41,7 +41,7 @@ def repository() -> MongoRepository[_Item]:
         ),
         DataclassFormatter(
             resource=lambda **raw: _Item(  # type: ignore
-                **JsonDict(raw).select(*_Item.__annotations__.keys())
+                **FluentDict[Any](raw).select(*_Item.__annotations__.keys())
             )
         ),
     )
