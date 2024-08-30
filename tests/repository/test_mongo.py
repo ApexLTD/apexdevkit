@@ -11,7 +11,7 @@ from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.fluent import FluentDict
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Repository
-from apexdevkit.repository.mongo import MongoDatabase, MongoRepository
+from apexdevkit.repository.mongo import MongoRepository
 
 
 @dataclass
@@ -34,11 +34,9 @@ class MongoMockConnector:
 @pytest.fixture
 def repository() -> MongoRepository[_Item]:
     return MongoRepository(
-        MongoDatabase(
-            MongoMockConnector(),
-            "test_database",
-            "test_collection",
-        ),
+        MongoMockConnector(),
+        "test_database",
+        "test_collection",
         DataclassFormatter(
             resource=lambda **raw: _Item(  # type: ignore
                 **FluentDict[Any](raw).select(*_Item.__annotations__.keys())
