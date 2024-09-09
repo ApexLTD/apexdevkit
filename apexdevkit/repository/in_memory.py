@@ -39,7 +39,7 @@ class InMemoryRepository(Generic[ItemT]):
         return cls(DataclassFormatter(value))
 
     def __post_init__(self) -> None:
-        self._search_by = ["id", *self._search_by]
+        self._search_by = ["id"]
 
     def with_searchable(self, attribute: str) -> Self:
         self._search_by.append(attribute)
