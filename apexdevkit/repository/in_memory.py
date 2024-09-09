@@ -44,7 +44,10 @@ class InMemoryRepository(Generic[ItemT]):
         return self.with_unique(AttributeKey(attribute))
 
     def with_unique(self, criteria: KeyFunction) -> Self:
-        self._key_functions.append(criteria)
+        return self.with_key(criteria)
+
+    def with_key(self, function: KeyFunction) -> Self:
+        self._key_functions.append(function)
 
         return self
 
