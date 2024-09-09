@@ -69,9 +69,9 @@ class InMemoryRepository(Generic[ItemT]):
         for existing in self:
             error = ExistsError(existing)
 
-            for criteria in self._key_functions:
-                if criteria(new) == criteria(existing):
-                    error.with_duplicate(criteria)
+            for key in self._key_functions:
+                if key(new) == key(existing):
+                    error.with_duplicate(key)
 
             error.fire()
 
