@@ -1,8 +1,8 @@
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, Generic, Iterable, Iterator, Protocol, Self, TypeVar
+from typing import Any, Callable, Generic, Iterable, Iterator, Protocol, Self, TypeVar
 
-from apexdevkit.error import Criteria, DoesNotExistError, ExistsError
+from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter, Formatter
 
 
@@ -11,6 +11,8 @@ class _Item(Protocol):  # pragma: no cover
     def id(self) -> Any:
         pass
 
+
+Criteria = Callable[[Any], str]
 
 ItemT = TypeVar("ItemT", bound=_Item)
 _Raw = dict[str, Any]
