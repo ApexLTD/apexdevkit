@@ -31,20 +31,20 @@ class InMemoryRepository(Generic[ItemT]):
     formatter: Formatter[_Raw, ItemT]
     items: dict[str, _Raw] = field(default_factory=dict)
 
-    _uniques: list[KeyFunction] = field(init=False, default_factory=list)
+    _key_functions: list[KeyFunction] = field(init=False, default_factory=list)
 
     @classmethod
     def for_dataclass(cls, value: type[ItemT]) -> "InMemoryRepository[ItemT]":
         return cls(DataclassFormatter(value))
 
     def __post_init__(self) -> None:
-        self._uniques = [AttributeKey("id")]
+        self._key_functions = [AttributeKey("id")]
 
     def with_searchable(self, attribute: str) -> Self:
         return self.with_unique(AttributeKey(attribute))
 
     def with_unique(self, criteria: KeyFunction) -> Self:
-        self._uniques.append(criteria)
+        self._key_functions.append(criteria)
 
         return self
 
@@ -69,7 +69,7 @@ class InMemoryRepository(Generic[ItemT]):
         for existing in self:
             error = ExistsError(existing)
 
-            for criteria in self._uniques:
+            for criteria in self._key_functions:
                 if criteria(new) == criteria(existing):
                     error.with_duplicate(criteria)
 
@@ -77,7 +77,7 @@ class InMemoryRepository(Generic[ItemT]):
 
     def read(self, item_id: Any) -> ItemT:
         for item in self:
-            for key in self._uniques:
+            for key in self._key_functions:
                 if key(item) == item_id:
                     return item
 
