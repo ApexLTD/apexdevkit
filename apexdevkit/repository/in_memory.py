@@ -41,7 +41,7 @@ class InMemoryRepository(Generic[ItemT]):
         self._key_functions = [AttributeKey("id")]
 
     def with_searchable(self, attribute: str) -> Self:
-        return self.with_unique(AttributeKey(attribute))
+        return self.with_key(AttributeKey(attribute))
 
     def with_unique(self, criteria: KeyFunction) -> Self:
         return self.with_key(criteria)
