@@ -32,19 +32,15 @@ class InMemoryRepository(Generic[ItemT]):
     items: dict[str, _Raw] = field(default_factory=dict)
 
     _uniques: list[KeyFunction] = field(init=False, default_factory=list)
-    _search_by: list[str] = field(init=False, default_factory=list)
 
     @classmethod
     def for_dataclass(cls, value: type[ItemT]) -> "InMemoryRepository[ItemT]":
         return cls(DataclassFormatter(value))
 
     def __post_init__(self) -> None:
-        self._search_by = ["id"]
         self._uniques = [AttributeKey("id")]
 
     def with_searchable(self, attribute: str) -> Self:
-        self._search_by.append(attribute)
-
         return self.with_unique(AttributeKey(attribute))
 
     def with_unique(self, criteria: KeyFunction) -> Self:
