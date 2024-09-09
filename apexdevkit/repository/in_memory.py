@@ -44,7 +44,7 @@ class InMemoryRepository(Generic[ItemT]):
     def with_searchable(self, attribute: str) -> Self:
         self._search_by.append(attribute)
 
-        return self
+        return self.with_unique(AttributeKey(attribute))
 
     def with_unique(self, criteria: KeyFunction) -> Self:
         self._uniques.append(criteria)
