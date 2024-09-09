@@ -12,7 +12,7 @@ class _Item(Protocol):  # pragma: no cover
         pass
 
 
-Criteria = Callable[[Any], str]
+KeyFunction = Callable[[Any], str]
 
 ItemT = TypeVar("ItemT", bound=_Item)
 _Raw = dict[str, Any]
@@ -23,7 +23,7 @@ class InMemoryRepository(Generic[ItemT]):
     formatter: Formatter[_Raw, ItemT]
     items: dict[str, _Raw] = field(default_factory=dict)
 
-    _uniques: list[Criteria] = field(init=False, default_factory=list)
+    _uniques: list[KeyFunction] = field(init=False, default_factory=list)
     _search_by: list[str] = field(init=False, default_factory=list)
 
     @classmethod
@@ -38,7 +38,7 @@ class InMemoryRepository(Generic[ItemT]):
 
         return self
 
-    def with_unique(self, criteria: Criteria) -> Self:
+    def with_unique(self, criteria: KeyFunction) -> Self:
         self._uniques.append(criteria)
 
         return self
