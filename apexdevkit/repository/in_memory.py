@@ -1,8 +1,9 @@
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, Generic, Iterable, Iterator, Protocol, Self, TypeVar
+from typing import Any, Callable, Generic, Iterable, Iterator, Protocol, Self, TypeVar
 
-from apexdevkit.error import Criteria, DoesNotExistError, ExistsError
+from apexdevkit.annotation import deprecated
+from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter, Formatter
 
 
@@ -12,8 +13,18 @@ class _Item(Protocol):  # pragma: no cover
         pass
 
 
+KeyFunction = Callable[[Any], str]
+
 ItemT = TypeVar("ItemT", bound=_Item)
 _Raw = dict[str, Any]
+
+
+@dataclass
+class AttributeKey:
+    name: str
+
+    def __call__(self, item: Any) -> str:
+        return str(getattr(item, self.name))
 
 
 @dataclass
@@ -21,23 +32,35 @@ class InMemoryRepository(Generic[ItemT]):
     formatter: Formatter[_Raw, ItemT]
     items: dict[str, _Raw] = field(default_factory=dict)
 
-    _uniques: list[Criteria] = field(init=False, default_factory=list)
-    _search_by: list[str] = field(init=False, default_factory=list)
+    _key_functions: list[KeyFunction] = field(init=False, default_factory=list)
 
     @classmethod
     def for_dataclass(cls, value: type[ItemT]) -> "InMemoryRepository[ItemT]":
         return cls(DataclassFormatter(value))
 
     def __post_init__(self) -> None:
-        self._search_by = ["id", *self._search_by]
+        self._key_functions = [AttributeKey("id")]
 
+    @deprecated(
+        """
+        .with_searchable() is deprecated. Use .with_key() instead.
+        Instead of .with_searchable("code") use .with_key(AttributeKey("code"))
+        """
+    )
     def with_searchable(self, attribute: str) -> Self:
-        self._search_by.append(attribute)
+        return self.with_key(AttributeKey(attribute))
 
-        return self
+    @deprecated(
+        """
+        .with_unique() is deprecated. Use .with_key() instead.
+        Instead of .with_unique(criteria) use .with_key(criteria)
+        """
+    )
+    def with_unique(self, criteria: KeyFunction) -> Self:
+        return self.with_key(criteria)
 
-    def with_unique(self, criteria: Criteria) -> Self:
-        self._uniques.append(criteria)
+    def with_key(self, function: KeyFunction) -> Self:
+        self._key_functions.append(function)
 
         return self
 
@@ -62,18 +85,16 @@ class InMemoryRepository(Generic[ItemT]):
         for existing in self:
             error = ExistsError(existing)
 
-            for criteria in self._uniques:
-                if criteria(new) == criteria(existing):
-                    error.with_duplicate(criteria)
+            for key in self._key_functions:
+                if key(new) == key(existing):
+                    error.with_duplicate(key)
 
             error.fire()
 
-        assert str(new.id) not in self.items, f"Item with id<{new.id}> already exists"
-
     def read(self, item_id: Any) -> ItemT:
         for item in self:
-            for attribute in self._search_by:
-                if getattr(item, attribute) == item_id:
+            for key in self._key_functions:
+                if key(item) == str(item_id):
                     return item
 
         raise DoesNotExistError(item_id)

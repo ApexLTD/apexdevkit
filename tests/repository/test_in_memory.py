@@ -9,6 +9,7 @@ from faker import Faker
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.repository import InMemoryRepository
+from apexdevkit.repository.in_memory import AttributeKey
 
 
 @dataclass
@@ -91,8 +92,8 @@ def test_should_persist_seeded(faker: Faker) -> None:
 
 def test_should_read_by_custom_field(faker: Faker) -> None:
     company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[_Company](formatter=_Formatter()).with_searchable(
-        "code"
+    repository = InMemoryRepository[_Company](formatter=_Formatter()).with_key(
+        AttributeKey("code")
     )
 
     repository.create(company)
@@ -103,8 +104,8 @@ def test_should_read_by_custom_field(faker: Faker) -> None:
 
 def test_should_not_duplicate(faker: Faker) -> None:
     company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[_Company](formatter=_Formatter()).with_unique(
-        criteria=lambda item: f"code<{item.code}>"
+    repository = InMemoryRepository[_Company](formatter=_Formatter()).with_key(
+        function=lambda item: f"code<{item.code}>"
     )
     repository.create(company)
 
@@ -120,8 +121,8 @@ def test_should_not_not_duplicate_many_fields(faker: Faker) -> None:
     company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
     repository = (
         InMemoryRepository[_Company](formatter=_Formatter())
-        .with_unique(criteria=lambda item: f"code<{item.code}>")
-        .with_unique(criteria=lambda item: f"name<{item.name}>")
+        .with_key(function=lambda item: f"code<{item.code}>")
+        .with_key(function=lambda item: f"name<{item.name}>")
     )
     repository.create(company)
 
