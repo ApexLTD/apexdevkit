@@ -83,8 +83,8 @@ class InMemoryRepository(Generic[ItemT]):
 
     def read(self, item_id: Any) -> ItemT:
         for item in self:
-            for attribute in self._search_by:
-                if AttributeKey(attribute)(item) == item_id:
+            for attribute in self._uniques:
+                if attribute(item) == item_id:
                     return item
 
         raise DoesNotExistError(item_id)
