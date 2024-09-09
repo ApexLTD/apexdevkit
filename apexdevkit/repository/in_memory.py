@@ -40,6 +40,7 @@ class InMemoryRepository(Generic[ItemT]):
 
     def __post_init__(self) -> None:
         self._search_by = ["id"]
+        self._uniques = [AttributeKey("id")]
 
     def with_searchable(self, attribute: str) -> Self:
         self._search_by.append(attribute)

@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import pytest
 
-from apexdevkit.error import DoesNotExistError
+from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.fastapi.service import RestfulRepositoryBuilder, RestfulService
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import InMemoryRepository
@@ -65,7 +65,7 @@ def test_should_not_create_one(
     animal = FakeAnimal()
     repository.create(animal.entity())
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ExistsError):
         service.create_one(animal.json())
 
 
@@ -89,7 +89,7 @@ def test_should_not_create_many(
     animal_2 = FakeAnimal()
     repository.create(animal_1.entity())
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ExistsError):
         service.create_many([animal_1.json(), animal_2.json()])
 
 
