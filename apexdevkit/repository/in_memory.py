@@ -24,7 +24,7 @@ class AttributeKey:
     name: str
 
     def __call__(self, item: Any) -> str:
-        return getattr(item, self.name)
+        return str(getattr(item, self.name))
 
 
 @dataclass
@@ -94,7 +94,7 @@ class InMemoryRepository(Generic[ItemT]):
     def read(self, item_id: Any) -> ItemT:
         for item in self:
             for key in self._key_functions:
-                if key(item) == item_id:
+                if key(item) == str(item_id):
                     return item
 
         raise DoesNotExistError(item_id)
