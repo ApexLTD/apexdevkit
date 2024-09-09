@@ -75,8 +75,6 @@ class InMemoryRepository(Generic[ItemT]):
 
             error.fire()
 
-        assert str(new.id) not in self.items, f"Item with id<{new.id}> already exists"
-
     def read(self, item_id: Any) -> ItemT:
         for item in self:
             for key in self._uniques:
