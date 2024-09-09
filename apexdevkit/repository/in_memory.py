@@ -19,6 +19,14 @@ _Raw = dict[str, Any]
 
 
 @dataclass
+class AttributeKey:
+    name: str
+
+    def __call__(self, item: Any) -> str:
+        return getattr(item, self.name)
+
+
+@dataclass
 class InMemoryRepository(Generic[ItemT]):
     formatter: Formatter[_Raw, ItemT]
     items: dict[str, _Raw] = field(default_factory=dict)
@@ -75,7 +83,7 @@ class InMemoryRepository(Generic[ItemT]):
     def read(self, item_id: Any) -> ItemT:
         for item in self:
             for attribute in self._search_by:
-                if getattr(item, attribute) == item_id:
+                if AttributeKey(attribute)(item) == item_id:
                     return item
 
         raise DoesNotExistError(item_id)
