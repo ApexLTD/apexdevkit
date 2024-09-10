@@ -2,7 +2,6 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Callable, Generic, Iterable, Iterator, Protocol, Self, TypeVar
 
-from apexdevkit.annotation import deprecated
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter, Formatter
 
@@ -37,27 +36,6 @@ class InMemoryRepository(Generic[ItemT]):
     @classmethod
     def for_dataclass(cls, value: type[ItemT]) -> "InMemoryRepository[ItemT]":
         return cls(DataclassFormatter(value))
-
-    def __post_init__(self) -> None:
-        self._key_functions = [AttributeKey("id")]
-
-    @deprecated(
-        """
-        .with_searchable() is deprecated. Use .with_key() instead.
-        Instead of .with_searchable("code") use .with_key(AttributeKey("code"))
-        """
-    )
-    def with_searchable(self, attribute: str) -> Self:
-        return self.with_key(AttributeKey(attribute))
-
-    @deprecated(
-        """
-        .with_unique() is deprecated. Use .with_key() instead.
-        Instead of .with_unique(criteria) use .with_key(criteria)
-        """
-    )
-    def with_unique(self, criteria: KeyFunction) -> Self:
-        return self.with_key(criteria)
 
     def with_key(self, function: KeyFunction) -> Self:
         self._key_functions.append(function)

@@ -9,6 +9,7 @@ from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.fastapi.service import RestfulRepositoryBuilder, RestfulService
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import InMemoryRepository
+from apexdevkit.repository.in_memory import AttributeKey
 from apexdevkit.testing.fake import FakeResource
 
 
@@ -37,7 +38,9 @@ class FakeAnimal(FakeResource[Animal]):
 
 @pytest.fixture
 def repository() -> InMemoryRepository[Animal]:
-    return InMemoryRepository[Animal](DataclassFormatter(Animal))
+    return InMemoryRepository[Animal](DataclassFormatter(Animal)).with_key(
+        AttributeKey("id")
+    )
 
 
 @pytest.fixture
