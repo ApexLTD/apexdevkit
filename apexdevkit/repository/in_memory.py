@@ -1,20 +1,13 @@
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, Callable, Generic, Iterable, Iterator, Protocol, Self, TypeVar
+from typing import Any, Callable, Iterable, Iterator, Self
 
 from apexdevkit.error import DoesNotExistError, ExistsError
-from apexdevkit.formatter import DataclassFormatter, Formatter
-
-
-class _Item(Protocol):  # pragma: no cover
-    @property
-    def id(self) -> Any:
-        pass
-
+from apexdevkit.formatter import Formatter
+from apexdevkit.repository import RepositoryBase
+from apexdevkit.repository.interface import IdT, ItemT
 
 KeyFunction = Callable[[Any], str]
-
-ItemT = TypeVar("ItemT", bound=_Item)
 _Raw = dict[str, Any]
 
 
@@ -27,15 +20,11 @@ class AttributeKey:
 
 
 @dataclass
-class InMemoryRepository(Generic[ItemT]):
+class InMemoryRepository(RepositoryBase[IdT, ItemT]):
     formatter: Formatter[_Raw, ItemT]
     items: dict[str, _Raw] = field(default_factory=dict)
 
     _key_functions: list[KeyFunction] = field(init=False, default_factory=list)
-
-    @classmethod
-    def for_dataclass(cls, value: type[ItemT]) -> "InMemoryRepository[ItemT]":
-        return cls(DataclassFormatter(value))
 
     def with_key(self, function: KeyFunction) -> Self:
         self._key_functions.append(function)
@@ -55,7 +44,7 @@ class InMemoryRepository(Generic[ItemT]):
 
     def create(self, item: ItemT) -> ItemT:
         self._ensure_does_not_exist(item)
-        self.items[str(item.id)] = deepcopy(self.formatter.dump(item))
+        self.items[self._key_functions[0](item)] = deepcopy(self.formatter.dump(item))
 
         return item
 
@@ -69,27 +58,32 @@ class InMemoryRepository(Generic[ItemT]):
 
             error.fire()
 
-    def read(self, item_id: Any) -> ItemT:
-        for item in self:
-            for key in self._key_functions:
+    def read(self, item_id: IdT) -> ItemT:
+        for key in self._key_functions:
+            for item in self:
                 if key(item) == str(item_id):
                     return item
 
         raise DoesNotExistError(item_id)
 
     def update(self, item: ItemT) -> None:
-        self.delete(item.id)
+        try:
+            del self.items[self._key_functions[0](item)]
+        except KeyError:
+            raise DoesNotExistError(self._key_functions[0](item))
         self.create(item)
 
     def update_many(self, items: list[ItemT]) -> None:
         for item in items:
             self.update(item)
 
-    def delete(self, item_id: Any) -> None:
-        try:
-            del self.items[str(item_id)]
-        except KeyError:
-            raise DoesNotExistError(item_id)
+    def delete(self, item_id: IdT) -> None:
+        for key in self._key_functions:
+            for item in self:
+                if key(item) == str(item_id):
+                    del self.items[self._key_functions[0](item)]
+                    return
+        raise DoesNotExistError(item_id)
 
     def search(self, **kwargs: Any) -> Iterable[ItemT]:
         items = []
