@@ -10,6 +10,7 @@ KeyFunction = Callable[[Any], str]
 
 ItemT = TypeVar("ItemT")
 IdT = TypeVar("IdT", contravariant=True)
+
 _Raw = dict[str, Any]
 
 
@@ -60,7 +61,7 @@ class InMemoryRepository(Repository[IdT, ItemT]):
 
             error.fire()
 
-    def read(self, item_id: Any) -> ItemT:
+    def read(self, item_id: IdT) -> ItemT:
         for key in self._key_functions:
             for item in self:
                 if key(item) == str(item_id):
@@ -76,7 +77,7 @@ class InMemoryRepository(Repository[IdT, ItemT]):
         for item in items:
             self.update(item)
 
-    def delete(self, item_id: Any) -> None:
+    def delete(self, item_id: IdT | str) -> None:
         for key in self._key_functions:
             for item in self:
                 if key(item) == str(item_id):
