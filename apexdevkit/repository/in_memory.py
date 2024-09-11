@@ -55,7 +55,7 @@ class InMemoryRepository(Generic[ItemT]):
 
     def create(self, item: ItemT) -> ItemT:
         self._ensure_does_not_exist(item)
-        self.items[str(item.id)] = deepcopy(self.formatter.dump(item))
+        self.items[self._key_functions[0](item)] = deepcopy(self.formatter.dump(item))
 
         return item
 
@@ -78,7 +78,7 @@ class InMemoryRepository(Generic[ItemT]):
         raise DoesNotExistError(item_id)
 
     def update(self, item: ItemT) -> None:
-        self.delete(item.id)
+        self.delete(self._key_functions[0](item))
         self.create(item)
 
     def update_many(self, items: list[ItemT]) -> None:
@@ -86,10 +86,15 @@ class InMemoryRepository(Generic[ItemT]):
             self.update(item)
 
     def delete(self, item_id: Any) -> None:
-        try:
-            del self.items[str(item_id)]
-        except KeyError:
-            raise DoesNotExistError(item_id)
+        found = False
+        for item in self:
+            for key in self._key_functions:
+                if key(item) == str(item_id):
+                    del self.items[self._key_functions[0](item)]
+                    found = True
+                    break
+        if not found:
+            raise DoesNotExistError()
 
     def search(self, **kwargs: Any) -> Iterable[ItemT]:
         items = []
