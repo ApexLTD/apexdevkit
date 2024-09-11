@@ -1,20 +1,13 @@
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, Callable, Generic, Iterable, Iterator, Protocol, Self, TypeVar
+from typing import Any, Callable, Generic, Iterable, Iterator, Self, TypeVar
 
 from apexdevkit.error import DoesNotExistError, ExistsError
-from apexdevkit.formatter import DataclassFormatter, Formatter
-
-
-class _Item(Protocol):  # pragma: no cover
-    @property
-    def id(self) -> Any:
-        pass
-
+from apexdevkit.formatter import Formatter
 
 KeyFunction = Callable[[Any], str]
 
-ItemT = TypeVar("ItemT", bound=_Item)
+ItemT = TypeVar("ItemT")
 _Raw = dict[str, Any]
 
 
