@@ -70,8 +70,8 @@ class InMemoryRepository(Generic[ItemT]):
             error.fire()
 
     def read(self, item_id: Any) -> ItemT:
-        for item in self:
-            for key in self._key_functions:
+        for key in self._key_functions:
+            for item in self:
                 if key(item) == str(item_id):
                     return item
 
@@ -86,15 +86,12 @@ class InMemoryRepository(Generic[ItemT]):
             self.update(item)
 
     def delete(self, item_id: Any) -> None:
-        found = False
-        for item in self:
-            for key in self._key_functions:
+        for key in self._key_functions:
+            for item in self:
                 if key(item) == str(item_id):
                     del self.items[self._key_functions[0](item)]
-                    found = True
-                    break
-        if not found:
-            raise DoesNotExistError()
+                    return
+        raise DoesNotExistError(item_id)
 
     def search(self, **kwargs: Any) -> Iterable[ItemT]:
         items = []
