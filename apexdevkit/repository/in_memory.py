@@ -33,10 +33,6 @@ class InMemoryRepository(Generic[ItemT]):
 
     _key_functions: list[KeyFunction] = field(init=False, default_factory=list)
 
-    @classmethod
-    def for_dataclass(cls, value: type[ItemT]) -> "InMemoryRepository[ItemT]":
-        return cls(DataclassFormatter(value))
-
     def with_key(self, function: KeyFunction) -> Self:
         self._key_functions.append(function)
 
