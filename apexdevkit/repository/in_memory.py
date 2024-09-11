@@ -70,14 +70,17 @@ class InMemoryRepository(Repository[IdT, ItemT]):
         raise DoesNotExistError(item_id)
 
     def update(self, item: ItemT) -> None:
-        self.delete(self._key_functions[0](item))
+        try:
+            del self.items[self._key_functions[0](item)]
+        except KeyError:
+            raise DoesNotExistError(self._key_functions[0](item))
         self.create(item)
 
     def update_many(self, items: list[ItemT]) -> None:
         for item in items:
             self.update(item)
 
-    def delete(self, item_id: IdT | str) -> None:
+    def delete(self, item_id: IdT) -> None:
         for key in self._key_functions:
             for item in self:
                 if key(item) == str(item_id):
