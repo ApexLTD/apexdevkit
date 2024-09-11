@@ -226,9 +226,9 @@ def test_should_preserve_nested_object() -> None:
     company = _Company(id=_id, name="company", code="code")
     inner = _InnerClass(id=_id, company=company)
     outer = _OuterClass(id=_id, inner=inner)
-    repository = InMemoryRepository[str, _OuterClass](formatter=_OuterFormatter()).with_key(
-        AttributeKey("id")
-    )
+    repository = InMemoryRepository[str, _OuterClass](
+        formatter=_OuterFormatter()
+    ).with_key(AttributeKey("id"))
     repository.create(outer)
     company.name = "changed"
 
