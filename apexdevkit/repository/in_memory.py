@@ -1,13 +1,15 @@
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, Callable, Generic, Iterable, Iterator, Self, TypeVar
+from typing import Any, Callable, Iterable, Iterator, Self, TypeVar
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
+from apexdevkit.repository.interface import Repository
 
 KeyFunction = Callable[[Any], str]
 
 ItemT = TypeVar("ItemT")
+IdT = TypeVar("IdT", contravariant=True)
 _Raw = dict[str, Any]
 
 
@@ -20,7 +22,7 @@ class AttributeKey:
 
 
 @dataclass
-class InMemoryRepository(Generic[ItemT]):
+class InMemoryRepository(Repository[IdT, ItemT]):
     formatter: Formatter[_Raw, ItemT]
     items: dict[str, _Raw] = field(default_factory=dict)
 

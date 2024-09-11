@@ -60,7 +60,7 @@ class _OuterFormatter:
 
 def test_should_not_read_unknown() -> None:
     unknown_id = uuid4()
-    repository = InMemoryRepository[_Company](formatter=_Formatter())
+    repository = InMemoryRepository[str, _Company](formatter=_Formatter())
 
     with pytest.raises(DoesNotExistError):
         repository.read(unknown_id)
@@ -68,7 +68,7 @@ def test_should_not_read_unknown() -> None:
 
 def test_should_persist(faker: Faker) -> None:
     company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[_Company](formatter=_Formatter()).with_key(
+    repository = InMemoryRepository[str, _Company](formatter=_Formatter()).with_key(
         AttributeKey("id")
     )
 
@@ -83,7 +83,7 @@ def test_should_persist_seeded(faker: Faker) -> None:
     company_2 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
 
     repository = (
-        InMemoryRepository[_Company](formatter=_Formatter())
+        InMemoryRepository[str, _Company](formatter=_Formatter())
         .with_key(AttributeKey("id"))
         .with_seeded(company_1, company_2)
     )
@@ -97,7 +97,7 @@ def test_should_persist_seeded(faker: Faker) -> None:
 def test_should_read_by_custom_field(faker: Faker) -> None:
     company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
     repository = (
-        InMemoryRepository[_Company](formatter=_Formatter())
+        InMemoryRepository[str, _Company](formatter=_Formatter())
         .with_key(AttributeKey("code"))
         .with_key(AttributeKey("id"))
     )
@@ -110,7 +110,7 @@ def test_should_read_by_custom_field(faker: Faker) -> None:
 
 def test_should_not_duplicate(faker: Faker) -> None:
     company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[_Company](formatter=_Formatter()).with_key(
+    repository = InMemoryRepository[str, _Company](formatter=_Formatter()).with_key(
         function=lambda item: f"code<{item.code}>"
     )
     repository.create(company)
@@ -126,7 +126,7 @@ def test_should_not_duplicate(faker: Faker) -> None:
 def test_should_not_not_duplicate_many_fields(faker: Faker) -> None:
     company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
     repository = (
-        InMemoryRepository[_Company](formatter=_Formatter())
+        InMemoryRepository[str, _Company](formatter=_Formatter())
         .with_key(function=lambda item: f"code<{item.code}>")
         .with_key(function=lambda item: f"name<{item.name}>")
     )
@@ -146,7 +146,7 @@ def test_should_list(faker: Faker) -> None:
         _Company(id=uuid4(), name=faker.company(), code=faker.ein()),
     ]
 
-    repository = InMemoryRepository[_Company](formatter=_Formatter()).with_key(
+    repository = InMemoryRepository[str, _Company](formatter=_Formatter()).with_key(
         AttributeKey("id")
     )
     for company in companies:
@@ -158,7 +158,7 @@ def test_should_list(faker: Faker) -> None:
 
 def test_should_update(faker: Faker) -> None:
     company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[_Company](formatter=_Formatter()).with_key(
+    repository = InMemoryRepository[str, _Company](formatter=_Formatter()).with_key(
         AttributeKey("id")
     )
     repository.create(company)
@@ -173,7 +173,7 @@ def test_should_update(faker: Faker) -> None:
 def test_should_update_many(faker: Faker) -> None:
     company_1 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
     company_2 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[_Company](formatter=_Formatter()).with_key(
+    repository = InMemoryRepository[str, _Company](formatter=_Formatter()).with_key(
         AttributeKey("id")
     )
     repository.create_many([company_1, company_2])
@@ -190,7 +190,7 @@ def test_should_update_many(faker: Faker) -> None:
 
 def test_should_not_delete_unknown() -> None:
     unknown_id = uuid4()
-    repository = InMemoryRepository[_Company](formatter=_Formatter())
+    repository = InMemoryRepository[str, _Company](formatter=_Formatter())
 
     with pytest.raises(DoesNotExistError):
         repository.delete(unknown_id)
@@ -198,7 +198,7 @@ def test_should_not_delete_unknown() -> None:
 
 def test_should_delete(faker: Faker) -> None:
     company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[_Company](formatter=_Formatter()).with_key(
+    repository = InMemoryRepository[str, _Company](formatter=_Formatter()).with_key(
         AttributeKey("id")
     )
     repository.create(company)
@@ -212,7 +212,7 @@ def test_should_delete(faker: Faker) -> None:
 def test_should_preserve_object() -> None:
     _id = uuid4()
     company = _Company(id=_id, name="company", code="code")
-    repository = InMemoryRepository[_Company](formatter=_Formatter()).with_key(
+    repository = InMemoryRepository[str, _Company](formatter=_Formatter()).with_key(
         AttributeKey("id")
     )
     repository.create(company)
@@ -226,7 +226,7 @@ def test_should_preserve_nested_object() -> None:
     company = _Company(id=_id, name="company", code="code")
     inner = _InnerClass(id=_id, company=company)
     outer = _OuterClass(id=_id, inner=inner)
-    repository = InMemoryRepository[_OuterClass](formatter=_OuterFormatter()).with_key(
+    repository = InMemoryRepository[str, _OuterClass](formatter=_OuterFormatter()).with_key(
         AttributeKey("id")
     )
     repository.create(outer)
@@ -237,7 +237,7 @@ def test_should_preserve_nested_object() -> None:
 
 def test_should_search(faker: Faker) -> None:
     company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[_Company](formatter=_Formatter()).with_key(
+    repository = InMemoryRepository[str, _Company](formatter=_Formatter()).with_key(
         AttributeKey("id")
     )
 
@@ -249,7 +249,7 @@ def test_should_search(faker: Faker) -> None:
 def test_should_search_unique(faker: Faker) -> None:
     company_1 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
     company_2 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[_Company](formatter=_Formatter()).with_key(
+    repository = InMemoryRepository[str, _Company](formatter=_Formatter()).with_key(
         AttributeKey("id")
     )
 
@@ -264,7 +264,7 @@ def test_should_search_many(faker: Faker) -> None:
     company_2 = _Company(id=uuid4(), name=company_1.name, code=faker.ein())
     company_3 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
 
-    repository = InMemoryRepository[_Company](formatter=_Formatter()).with_key(
+    repository = InMemoryRepository[str, _Company](formatter=_Formatter()).with_key(
         AttributeKey("id")
     )
 
@@ -283,7 +283,7 @@ def test_should_search_with_multiple_kwargs(faker: Faker) -> None:
     company_2 = _Company(id=uuid4(), name=company_1.name, code=faker.ein())
     company_3 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
 
-    repository = InMemoryRepository[_Company](formatter=_Formatter()).with_key(
+    repository = InMemoryRepository[str, _Company](formatter=_Formatter()).with_key(
         AttributeKey("id")
     )
 
