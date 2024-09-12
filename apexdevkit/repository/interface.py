@@ -1,4 +1,4 @@
-from typing import Iterator, Protocol, TypeVar
+from typing import Any, Iterator, Protocol, TypeVar
 
 ItemT = TypeVar("ItemT")
 IdT = TypeVar("IdT", contravariant=True)
@@ -21,6 +21,9 @@ class Repository(Protocol[IdT, ItemT]):  # pragma: no cover
         pass
 
     def delete(self, item_id: IdT) -> None:
+        pass
+
+    def bind(self, **kwargs: Any) -> None:
         pass
 
     def __iter__(self) -> Iterator[ItemT]:

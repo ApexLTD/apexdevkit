@@ -1,9 +1,9 @@
-from typing import Iterator
+from typing import Any, Generic, Iterator
 
-from apexdevkit.repository.interface import IdT, ItemT, Repository
+from apexdevkit.repository.interface import IdT, ItemT
 
 
-class RepositoryBase(Repository[IdT, ItemT]):  # pragma: no cover
+class RepositoryBase(Generic[IdT, ItemT]):  # pragma: no cover
     def create(self, item: ItemT) -> ItemT:
         raise NotImplementedError
 
@@ -20,6 +20,9 @@ class RepositoryBase(Repository[IdT, ItemT]):  # pragma: no cover
         raise NotImplementedError
 
     def delete(self, item_id: IdT) -> None:
+        raise NotImplementedError
+
+    def bind(self, **kwargs: Any) -> None:
         raise NotImplementedError
 
     def __iter__(self) -> Iterator[ItemT]:
