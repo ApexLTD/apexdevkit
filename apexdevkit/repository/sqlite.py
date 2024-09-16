@@ -2,16 +2,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from sqlite3 import IntegrityError
-from typing import Any, Generic, Iterator, TypeVar
+from typing import Any, Generic, Iterator
 
 from apexdevkit.error import DoesNotExistError, ExistsError
-from apexdevkit.repository import Database, DatabaseCommand
-
-ItemT = TypeVar("ItemT")
+from apexdevkit.repository import Database, DatabaseCommand, RepositoryBase
+from apexdevkit.repository.interface import IdT, ItemT
 
 
 @dataclass
-class SqliteRepository(Generic[ItemT]):
+class SqliteRepository(RepositoryBase[IdT, ItemT]):
     db: Database
     table: SqlTable[ItemT]
 
@@ -40,8 +39,8 @@ class SqliteRepository(Generic[ItemT]):
     def create_many(self, items: list[ItemT]) -> list[ItemT]:
         return [self.create(item) for item in items]
 
-    def read(self, item_id: str) -> ItemT:
-        raw = self.db.execute(self.table.select(item_id)).fetch_one()
+    def read(self, item_id: IdT) -> ItemT:
+        raw = self.db.execute(self.table.select(str(item_id))).fetch_one()
 
         if not raw:
             raise DoesNotExistError(item_id)
@@ -55,8 +54,8 @@ class SqliteRepository(Generic[ItemT]):
         for item in items:
             self.update(item)
 
-    def delete(self, item_id: str) -> None:
-        self.db.execute(self.table.delete(item_id)).fetch_none()
+    def delete(self, item_id: IdT) -> None:
+        self.db.execute(self.table.delete(str(item_id))).fetch_none()
 
     def delete_all(self) -> None:
         self.db.execute(self.table.delete_all()).fetch_none()
