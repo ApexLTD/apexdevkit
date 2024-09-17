@@ -80,6 +80,9 @@ class MongoRepository(Generic[ItemT]):
             if result.deleted_count == 0:
                 raise DoesNotExistError(item_id)
 
+    def bind(self, **kwargs: Any) -> None:
+        pass
+
 
 class MongoConnector(Protocol):  # pragma: no cover
     def connect(self) -> ContextManager[MongoClient[Any]]:
