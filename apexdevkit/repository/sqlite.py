@@ -14,6 +14,9 @@ class SqliteRepository(RepositoryBase[IdT, ItemT]):
     db: Database
     table: SqlTable[ItemT]
 
+    def bind(self, **kwargs: Any) -> SqliteRepository[IdT, ItemT]:
+        return SqliteRepository(self.db, self.table.bind(**kwargs))
+
     def __iter__(self) -> Iterator[ItemT]:
         for raw in self.db.execute(self.table.select_all()).fetch_all():
             yield self.table.load(raw)
