@@ -62,6 +62,9 @@ class SqliteRepository(RepositoryBase[IdT, ItemT]):
 
 
 class SqlTable(Generic[ItemT]):  # pragma: no cover
+    def bind(self, **kwargs: Any) -> SqlTable[ItemT]:
+        return self
+
     def count_all(self) -> DatabaseCommand:
         raise NotImplementedError
 
