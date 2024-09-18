@@ -1,14 +1,12 @@
 from dataclasses import dataclass
-from typing import Any, Generic, Iterator, TypeVar
+from typing import Iterator
 
-from apexdevkit.repository import Repository
-
-ItemT = TypeVar("ItemT")
-IdT = TypeVar("IdT", contravariant=True)
+from apexdevkit.repository.base import RepositoryBase
+from apexdevkit.repository.interface import IdT, ItemT, Repository
 
 
 @dataclass
-class RepositoryDecorator(Generic[IdT, ItemT]):
+class RepositoryDecorator(RepositoryBase[IdT, ItemT]):
     inner: Repository[IdT, ItemT]
 
     def create(self, item: ItemT) -> ItemT:
@@ -28,9 +26,6 @@ class RepositoryDecorator(Generic[IdT, ItemT]):
 
     def delete(self, item_id: IdT) -> None:
         self.inner.delete(item_id)
-
-    def bind(self, **kwargs: Any) -> None:
-        self.inner.bind(**kwargs)
 
     def __iter__(self) -> Iterator[ItemT]:
         return self.inner.__iter__()
