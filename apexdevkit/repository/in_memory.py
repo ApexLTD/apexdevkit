@@ -36,6 +36,9 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
             self.create(item)
         return self
 
+    def bind(self, **kwargs: Any) -> Self:
+        return self
+
     def create_many(self, items: list[ItemT]) -> list[ItemT]:
         for item in items:
             self.create(item)
