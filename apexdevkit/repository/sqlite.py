@@ -62,32 +62,35 @@ class SqliteRepository(RepositoryBase[IdT, ItemT]):
 
 
 class SqlTable(Generic[ItemT]):  # pragma: no cover
+    def bind(self, **kwargs: Any) -> SqlTable[ItemT]:
+        return self
+
     def count_all(self) -> DatabaseCommand:
-        raise NotImplementedError("Not implemented")
+        raise NotImplementedError
 
     def insert(self, item: ItemT) -> DatabaseCommand:
-        raise NotImplementedError("Not implemented")
+        raise NotImplementedError
 
     def select(self, item_id: str) -> DatabaseCommand:
-        raise NotImplementedError("Not implemented")
+        raise NotImplementedError
 
     def select_duplicate(self, item: ItemT) -> DatabaseCommand:
-        raise NotImplementedError("Not implemented")
+        raise NotImplementedError
 
     def select_all(self) -> DatabaseCommand:
-        raise NotImplementedError("Not implemented")
+        raise NotImplementedError
 
     def update(self, item: ItemT) -> DatabaseCommand:
-        raise NotImplementedError("Not implemented")
+        raise NotImplementedError
 
     def delete(self, item_id: str) -> DatabaseCommand:
-        raise NotImplementedError("Not implemented")
+        raise NotImplementedError
 
     def delete_all(self) -> DatabaseCommand:
-        raise NotImplementedError("Not implemented")
+        raise NotImplementedError
 
     def load(self, data: dict[str, Any]) -> ItemT:
-        raise NotImplementedError("Not implemented")
+        raise NotImplementedError
 
     def duplicate(self, item: ItemT) -> ExistsError:
         return ExistsError(item).with_duplicate(lambda i: "Unknown")
