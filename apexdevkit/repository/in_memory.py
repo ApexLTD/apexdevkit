@@ -80,13 +80,8 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
             self.update(item)
 
     def delete(self, item_id: IdT) -> None:
-        for key in self._keys:
-            for item in self:
-                if key(item) == str(item_id):
-                    del self.items[self._pk(item)]
-                    return
-
-        raise DoesNotExistError(item_id)
+        item = self.read(item_id)
+        del self.items[self._pk(item)]
 
     def search(self, **kwargs: Any) -> Iterable[ItemT]:
         items = []
