@@ -34,8 +34,7 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
         return self
 
     def with_seeded(self, *items: ItemT) -> Self:
-        for item in items:
-            self.create(item)
+        self.create_many(list(items))
 
         return self
 
