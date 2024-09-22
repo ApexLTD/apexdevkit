@@ -24,10 +24,10 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
     formatter: Formatter[_Raw, ItemT]
     items: dict[str, _Raw] = field(default_factory=dict)
 
-    _key_functions: list[KeyFunction] = field(init=False, default_factory=list)
+    _keys: list[KeyFunction] = field(init=False, default_factory=list)
 
     def with_key(self, function: KeyFunction) -> Self:
-        self._key_functions.append(function)
+        self._keys.append(function)
 
         return self
 
@@ -47,7 +47,7 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
 
     def create(self, item: ItemT) -> ItemT:
         self._ensure_does_not_exist(item)
-        self.items[self._key_functions[0](item)] = deepcopy(self.formatter.dump(item))
+        self.items[self._keys[0](item)] = deepcopy(self.formatter.dump(item))
 
         return item
 
@@ -55,14 +55,14 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
         for existing in self:
             error = ExistsError(existing)
 
-            for key in self._key_functions:
+            for key in self._keys:
                 if key(new) == key(existing):
                     error.with_duplicate(key)
 
             error.fire()
 
     def read(self, item_id: IdT) -> ItemT:
-        for key in self._key_functions:
+        for key in self._keys:
             for item in self:
                 if key(item) == str(item_id):
                     return item
@@ -71,9 +71,9 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
 
     def update(self, item: ItemT) -> None:
         try:
-            del self.items[self._key_functions[0](item)]
+            del self.items[self._keys[0](item)]
         except KeyError:
-            raise DoesNotExistError(self._key_functions[0](item))
+            raise DoesNotExistError(self._keys[0](item))
         self.create(item)
 
     def update_many(self, items: list[ItemT]) -> None:
@@ -81,10 +81,10 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
             self.update(item)
 
     def delete(self, item_id: IdT) -> None:
-        for key in self._key_functions:
+        for key in self._keys:
             for item in self:
                 if key(item) == str(item_id):
-                    del self.items[self._key_functions[0](item)]
+                    del self.items[self._keys[0](item)]
                     return
         raise DoesNotExistError(item_id)
 
