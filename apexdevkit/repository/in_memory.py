@@ -25,6 +25,9 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
 
     _keys: list[KeyFunction] = field(init=False, default_factory=list)
 
+    def bind(self, **kwargs: Any) -> Self:
+        return self
+
     def with_key(self, function: KeyFunction) -> Self:
         self._keys.append(function)
 
@@ -34,9 +37,6 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
         for item in items:
             self.create(item)
 
-        return self
-
-    def bind(self, **kwargs: Any) -> Self:
         return self
 
     def create_many(self, items: list[ItemT]) -> list[ItemT]:
