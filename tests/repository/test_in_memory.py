@@ -9,6 +9,7 @@ import pytest
 from faker import Faker
 
 from apexdevkit.error import DoesNotExistError, ExistsError
+from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import InMemoryRepository
 from apexdevkit.repository.in_memory import AttributeKey
 
@@ -35,17 +36,6 @@ class _InnerClass:
     company: _Company
 
 
-@dataclass(frozen=True)
-class _InnerFormatter:
-    def load(self, raw: dict[str, Any]) -> _InnerClass:
-        raw = deepcopy(raw)
-
-        return _InnerClass(company=_Formatter().load(raw.pop("company")), **raw)
-
-    def dump(self, item: _InnerClass) -> dict[str, Any]:
-        return asdict(item)
-
-
 @dataclass
 class _OuterClass:
     id: UUID
@@ -56,8 +46,10 @@ class _OuterClass:
 class _OuterFormatter:
     def load(self, raw: dict[str, Any]) -> _OuterClass:
         raw = deepcopy(raw)
-
-        return _OuterClass(inner=_InnerFormatter().load(raw.pop("inner")), **raw)
+        f = DataclassFormatter[_InnerClass](_InnerClass).with_nested(
+            company=DataclassFormatter[_Company](_Company)
+        )
+        return _OuterClass(inner=f.load(raw.pop("inner")), **raw)
 
     def dump(self, item: _OuterClass) -> dict[str, Any]:
         return asdict(item)
