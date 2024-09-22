@@ -50,9 +50,6 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
 
         return item
 
-    def _pk(self, item):
-        return self._keys[0](item)
-
     def _ensure_does_not_exist(self, new: ItemT) -> None:
         for existing in self:
             error = ExistsError(existing)
@@ -62,6 +59,9 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
                     error.with_duplicate(key)
 
             error.fire()
+
+    def _pk(self, item):
+        return self._keys[0](item)
 
     def read(self, item_id: IdT) -> ItemT:
         for key in self._keys:
