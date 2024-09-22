@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import asdict, dataclass
 from typing import Any
 from uuid import UUID, uuid4
@@ -37,6 +38,8 @@ class _InnerClass:
 @dataclass(frozen=True)
 class _InnerFormatter:
     def load(self, raw: dict[str, Any]) -> _InnerClass:
+        raw = deepcopy(raw)
+
         return _InnerClass(company=_Formatter().load(raw.pop("company")), **raw)
 
     def dump(self, item: _InnerClass) -> dict[str, Any]:
@@ -52,6 +55,8 @@ class _OuterClass:
 @dataclass(frozen=True)
 class _OuterFormatter:
     def load(self, raw: dict[str, Any]) -> _OuterClass:
+        raw = deepcopy(raw)
+
         return _OuterClass(inner=_InnerFormatter().load(raw.pop("inner")), **raw)
 
     def dump(self, item: _OuterClass) -> dict[str, Any]:

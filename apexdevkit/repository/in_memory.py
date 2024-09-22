@@ -1,4 +1,3 @@
-from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable, Iterator, Self
 
@@ -47,7 +46,7 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
 
     def create(self, item: ItemT) -> ItemT:
         self._ensure_does_not_exist(item)
-        self.items[self._pk(item)] = deepcopy(self.formatter.dump(item))
+        self.items[self._pk(item)] = self.formatter.dump(item)
 
         return item
 
@@ -101,7 +100,7 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
         return items
 
     def __iter__(self) -> Iterator[ItemT]:
-        yield from [self.formatter.load(deepcopy(raw)) for raw in self.items.values()]
+        yield from [self.formatter.load(raw) for raw in self.items.values()]
 
     def __len__(self) -> int:
         return len(self.items)
