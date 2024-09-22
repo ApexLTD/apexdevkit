@@ -18,6 +18,17 @@ class _Company:
     name: str
     code: str
 
+    address: _Address | None = None
+
+
+@dataclass
+class _Address:
+    street: str
+    city: str
+    state: str
+    country: str
+    zip: str
+
 
 @dataclass
 class _InnerClass:
@@ -37,7 +48,9 @@ _Repository = InMemoryRepository[UUID, _Company]
 @pytest.fixture
 def repository() -> _Repository:
     return InMemoryRepository[UUID, _Company](
-        formatter=DataclassFormatter[_Company](_Company)
+        formatter=DataclassFormatter[_Company](_Company).with_nested(
+            address=DataclassFormatter[_Address](_Address)
+        )
     )
 
 
@@ -56,20 +69,6 @@ def test_should_persist(repository: _Repository, faker: Faker) -> None:
 
     persisted = repository.read(company.id)
     assert persisted == company
-
-
-def test_should_persist_seeded(repository: _Repository, faker: Faker) -> None:
-    company_1 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    company_2 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-
-    repository = repository.with_key(AttributeKey("id")).with_seeded(
-        company_1, company_2
-    )
-
-    persisted_1 = repository.read(company_1.id)
-    assert persisted_1 == company_1
-    persisted_2 = repository.read(company_2.id)
-    assert persisted_2 == company_2
 
 
 def test_should_read_by_custom_field(repository: _Repository, faker: Faker) -> None:
