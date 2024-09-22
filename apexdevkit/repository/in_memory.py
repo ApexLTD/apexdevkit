@@ -83,6 +83,12 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
 
         raise DoesNotExistError(item_id)
 
+    def __iter__(self) -> Iterator[ItemT]:
+        yield from [self.formatter.load(raw) for raw in self.items.values()]
+
+    def __len__(self) -> int:
+        return len(self.items)
+
     def search(self, **kwargs: Any) -> Iterable[ItemT]:
         items = []
 
@@ -91,9 +97,3 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
                 items.append(self.formatter.load(item))
 
         return items
-
-    def __iter__(self) -> Iterator[ItemT]:
-        yield from [self.formatter.load(raw) for raw in self.items.values()]
-
-    def __len__(self) -> int:
-        return len(self.items)
