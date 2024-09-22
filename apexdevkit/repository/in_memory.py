@@ -33,6 +33,7 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
     def with_seeded(self, *items: ItemT) -> Self:
         for item in items:
             self.create(item)
+
         return self
 
     def bind(self, **kwargs: Any) -> Self:
@@ -76,6 +77,7 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
             del self.items[self._pk(item)]
         except KeyError:
             raise DoesNotExistError(self._pk(item))
+
         self.create(item)
 
     def update_many(self, items: list[ItemT]) -> None:
@@ -88,6 +90,7 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
                 if key(item) == str(item_id):
                     del self.items[self._pk(item)]
                     return
+
         raise DoesNotExistError(item_id)
 
     def search(self, **kwargs: Any) -> Iterable[ItemT]:
