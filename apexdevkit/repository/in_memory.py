@@ -71,13 +71,13 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
 
         raise DoesNotExistError(item_id)
 
-    def update(self, item: ItemT) -> None:
-        self.delete(self._pk(item))
-        self.create(item)
-
     def update_many(self, items: list[ItemT]) -> None:
         for item in items:
             self.update(item)
+
+    def update(self, item: ItemT) -> None:
+        self.delete(self._pk(item))
+        self.create(item)
 
     def delete(self, item_id: IdT) -> None:
         item = self.read(item_id)
