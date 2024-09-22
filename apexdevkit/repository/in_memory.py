@@ -63,6 +63,14 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
     def _pk(self, item):
         return self._keys[0](item)
 
+    def update_many(self, items: list[ItemT]) -> None:
+        for item in items:
+            self.update(item)
+
+    def update(self, item: ItemT) -> None:
+        self.delete(self._pk(item))
+        self.create(item)
+
     def delete(self, item_id: IdT) -> None:
         item = self.read(item_id)
         del self.items[self._pk(item)]
@@ -74,14 +82,6 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
                     return item
 
         raise DoesNotExistError(item_id)
-
-    def update_many(self, items: list[ItemT]) -> None:
-        for item in items:
-            self.update(item)
-
-    def update(self, item: ItemT) -> None:
-        self.delete(self._pk(item))
-        self.create(item)
 
     def search(self, **kwargs: Any) -> Iterable[ItemT]:
         items = []
