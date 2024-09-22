@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from copy import deepcopy
 from dataclasses import asdict, dataclass
 from typing import Any
 from uuid import UUID, uuid4
@@ -40,19 +39,6 @@ class _InnerClass:
 class _OuterClass:
     id: UUID
     inner: _InnerClass
-
-
-@dataclass(frozen=True)
-class _OuterFormatter:
-    def load(self, raw: dict[str, Any]) -> _OuterClass:
-        raw = deepcopy(raw)
-        f = DataclassFormatter[_InnerClass](_InnerClass).with_nested(
-            company=DataclassFormatter[_Company](_Company)
-        )
-        return _OuterClass(inner=f.load(raw.pop("inner")), **raw)
-
-    def dump(self, item: _OuterClass) -> dict[str, Any]:
-        return asdict(item)
 
 
 def test_should_not_read_unknown() -> None:
@@ -223,9 +209,14 @@ def test_should_preserve_nested_object() -> None:
     company = _Company(id=_id, name="company", code="code")
     inner = _InnerClass(id=_id, company=company)
     outer = _OuterClass(id=_id, inner=inner)
-    repository = InMemoryRepository[UUID, _OuterClass](
-        formatter=_OuterFormatter()
-    ).with_key(AttributeKey("id"))
+    f = DataclassFormatter[_OuterClass](_OuterClass).with_nested(
+        inner=DataclassFormatter[_InnerClass](_InnerClass).with_nested(
+            company=DataclassFormatter[_Company](_Company)
+        )
+    )
+    repository = InMemoryRepository[UUID, _OuterClass](formatter=f).with_key(
+        AttributeKey("id")
+    )
     repository.create(outer)
     company.name = "changed"
 
