@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -8,6 +8,7 @@ import pytest
 from faker import Faker
 
 from apexdevkit.error import DoesNotExistError, ExistsError
+from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import InMemoryRepository
 from apexdevkit.repository.in_memory import AttributeKey
 
@@ -17,60 +18,63 @@ class _Company:
     id: UUID
     name: str
     code: str
+    address: _Address
 
+    @classmethod
+    def fake(cls, **kwargs: Any) -> _Company:
+        faker = Faker()
 
-@dataclass(frozen=True)
-class _Formatter:
-    def load(self, raw: dict[str, Any]) -> _Company:
-        return _Company(**raw)
-
-    def dump(self, item: _Company) -> dict[str, Any]:
-        return asdict(item)
-
-
-@dataclass
-class _InnerClass:
-    id: UUID
-    company: _Company
-
-
-@dataclass(frozen=True)
-class _InnerFormatter:
-    def load(self, raw: dict[str, Any]) -> _InnerClass:
-        return _InnerClass(company=_Formatter().load(raw.pop("company")), **raw)
-
-    def dump(self, item: _InnerClass) -> dict[str, Any]:
-        return asdict(item)
+        return cls(
+            id=kwargs.get("id") or uuid4(),
+            name=kwargs.get("name") or faker.company(),
+            code=kwargs.get("code") or faker.ein(),
+            address=kwargs.get("address") or _Address.fake(),
+        )
 
 
 @dataclass
-class _OuterClass:
-    id: UUID
-    inner: _InnerClass
+class _Address:
+    street: str
+    city: str
+    state: str
+    country: str
+    zip: str
+
+    @classmethod
+    def fake(cls) -> _Address:
+        faker = Faker()
+
+        return cls(
+            faker.street_name(),
+            faker.city(),
+            faker.state(),
+            faker.country(),
+            faker.zipcode(),
+        )
 
 
-@dataclass(frozen=True)
-class _OuterFormatter:
-    def load(self, raw: dict[str, Any]) -> _OuterClass:
-        return _OuterClass(inner=_InnerFormatter().load(raw.pop("inner")), **raw)
-
-    def dump(self, item: _OuterClass) -> dict[str, Any]:
-        return asdict(item)
+_Repository = InMemoryRepository[UUID | str, _Company]
 
 
-def test_should_not_read_unknown() -> None:
+@pytest.fixture
+def repository() -> _Repository:
+    return InMemoryRepository[UUID | str, _Company](
+        formatter=DataclassFormatter[_Company](_Company).with_nested(
+            address=DataclassFormatter[_Address](_Address)
+        )
+    )
+
+
+def test_should_not_read_unknown(repository: _Repository) -> None:
     unknown_id = uuid4()
-    repository = InMemoryRepository[UUID, _Company](formatter=_Formatter())
 
     with pytest.raises(DoesNotExistError):
         repository.read(unknown_id)
 
 
-def test_should_persist(faker: Faker) -> None:
-    company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[UUID, _Company](formatter=_Formatter()).with_key(
-        AttributeKey("id")
-    )
+def test_should_persist(repository: _Repository) -> None:
+    company = _Company.fake()
+    repository = repository.with_key(AttributeKey("id"))
 
     repository.create(company)
 
@@ -78,29 +82,9 @@ def test_should_persist(faker: Faker) -> None:
     assert persisted == company
 
 
-def test_should_persist_seeded(faker: Faker) -> None:
-    company_1 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    company_2 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-
-    repository = (
-        InMemoryRepository[UUID, _Company](formatter=_Formatter())
-        .with_key(AttributeKey("id"))
-        .with_seeded(company_1, company_2)
-    )
-
-    persisted_1 = repository.read(company_1.id)
-    assert persisted_1 == company_1
-    persisted_2 = repository.read(company_2.id)
-    assert persisted_2 == company_2
-
-
-def test_should_read_by_custom_field(faker: Faker) -> None:
-    company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = (
-        InMemoryRepository[UUID | str, _Company](formatter=_Formatter())
-        .with_key(AttributeKey("id"))
-        .with_key(AttributeKey("code"))
-    )
+def test_should_read_by_custom_field(repository: _Repository) -> None:
+    company = _Company.fake()
+    repository = repository.with_key(AttributeKey("id")).with_key(AttributeKey("code"))
 
     repository.create(company)
 
@@ -108,14 +92,13 @@ def test_should_read_by_custom_field(faker: Faker) -> None:
     assert persisted == company
 
 
-def test_should_not_duplicate(faker: Faker) -> None:
-    company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[UUID, _Company](formatter=_Formatter()).with_key(
+def test_should_not_duplicate(repository: _Repository) -> None:
+    company = _Company.fake()
+    repository = repository.with_key(
         function=lambda item: f"code<{item.code}>"
-    )
-    repository.create(company)
+    ).with_seeded(company)
 
-    duplicate = _Company(id=uuid4(), name=faker.company(), code=company.code)
+    duplicate = _Company.fake(code=company.code)
     with pytest.raises(ExistsError) as cm:
         repository.create(duplicate)
 
@@ -123,16 +106,15 @@ def test_should_not_duplicate(faker: Faker) -> None:
     assert str(cm.value) == f"code<{company.code}>"
 
 
-def test_should_not_not_duplicate_many_fields(faker: Faker) -> None:
-    company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
+def test_should_not_not_duplicate_many_fields(repository: _Repository) -> None:
+    company = _Company.fake()
     repository = (
-        InMemoryRepository[UUID, _Company](formatter=_Formatter())
-        .with_key(function=lambda item: f"code<{item.code}>")
+        repository.with_key(function=lambda item: f"code<{item.code}>")
         .with_key(function=lambda item: f"name<{item.name}>")
+        .with_seeded(company)
     )
-    repository.create(company)
 
-    duplicate = _Company(id=uuid4(), name=company.name, code=company.code)
+    duplicate = _Company.fake(name=company.name, code=company.code)
     with pytest.raises(ExistsError) as cm:
         repository.create(duplicate)
 
@@ -140,68 +122,50 @@ def test_should_not_not_duplicate_many_fields(faker: Faker) -> None:
     assert str(cm.value) == f"code<{company.code}>,name<{company.name}>"
 
 
-def test_should_list(faker: Faker) -> None:
-    companies = [
-        _Company(id=uuid4(), name=faker.company(), code=faker.ein()),
-        _Company(id=uuid4(), name=faker.company(), code=faker.ein()),
-    ]
+def test_should_list(repository: _Repository) -> None:
+    companies = [_Company.fake() for _ in range(10)]
 
-    repository = InMemoryRepository[UUID, _Company](formatter=_Formatter()).with_key(
-        AttributeKey("id")
-    )
-    for company in companies:
-        repository.create(company)
+    repository = repository.with_key(AttributeKey("id")).with_seeded(*companies)
 
-    assert len(repository) == 2
+    assert len(repository) == len(companies)
     assert list(repository) == companies
 
 
-def test_should_update(faker: Faker) -> None:
-    company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[UUID, _Company](formatter=_Formatter()).with_key(
-        AttributeKey("id")
-    )
-    repository.create(company)
+def test_should_update(repository: _Repository, faker: Faker) -> None:
+    company = _Company.fake()
+    repository = repository.with_key(AttributeKey("id")).with_seeded(company)
 
-    updated = _Company(id=company.id, name=faker.company(), code=faker.ein())
+    updated = _Company.fake(id=company.id)
     repository.update(updated)
 
     persisted = repository.read(company.id)
     assert persisted == updated
 
 
-def test_should_update_many(faker: Faker) -> None:
-    company_1 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    company_2 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[UUID, _Company](formatter=_Formatter()).with_key(
-        AttributeKey("id")
+def test_should_update_many(repository: _Repository) -> None:
+    company_1 = _Company.fake()
+    company_2 = _Company.fake()
+    updated_1 = _Company.fake(id=company_1.id)
+    updated_2 = _Company.fake(id=company_2.id)
+    repository = repository.with_key(AttributeKey("id")).with_seeded(
+        company_1, company_2
     )
-    repository.create_many([company_1, company_2])
 
-    updated_1 = _Company(id=company_1.id, name=faker.company(), code=faker.ein())
-    updated_2 = _Company(id=company_2.id, name=faker.company(), code=faker.ein())
     repository.update_many([updated_1, updated_2])
 
-    persisted_1 = repository.read(company_1.id)
-    persisted_2 = repository.read(company_2.id)
-    assert persisted_1 == updated_1
-    assert persisted_2 == updated_2
+    assert list(repository) == [updated_1, updated_2]
 
 
-def test_should_not_delete_unknown() -> None:
+def test_should_not_delete_unknown(repository: _Repository) -> None:
     unknown_id = uuid4()
-    repository = InMemoryRepository[UUID, _Company](formatter=_Formatter())
 
     with pytest.raises(DoesNotExistError):
         repository.delete(unknown_id)
 
 
-def test_should_delete(faker: Faker) -> None:
-    company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[UUID, _Company](formatter=_Formatter()).with_key(
-        AttributeKey("id")
-    )
-    repository.create(company)
+def test_should_delete(repository: _Repository) -> None:
+    company = _Company.fake()
+    repository = repository.with_key(AttributeKey("id")).with_seeded(company)
 
     repository.delete(company.id)
 
@@ -209,68 +173,41 @@ def test_should_delete(faker: Faker) -> None:
         repository.read(company.id)
 
 
-def test_should_preserve_object() -> None:
-    _id = uuid4()
-    company = _Company(id=_id, name="company", code="code")
-    repository = InMemoryRepository[UUID, _Company](formatter=_Formatter()).with_key(
-        AttributeKey("id")
-    )
-    repository.create(company)
+def test_should_preserve_object(repository: _Repository) -> None:
+    company = _Company.fake(address=_Address.fake())
+    preserved = replace(company, address=replace(company.address))
+    repository = repository.with_key(AttributeKey("id")).with_seeded(company)
     company.name = "changed"
+    company.address.city = "changed"
 
-    assert repository.read(company.id) == _Company(id=_id, name="company", code="code")
-
-
-def test_should_preserve_nested_object() -> None:
-    _id = uuid4()
-    company = _Company(id=_id, name="company", code="code")
-    inner = _InnerClass(id=_id, company=company)
-    outer = _OuterClass(id=_id, inner=inner)
-    repository = InMemoryRepository[UUID, _OuterClass](
-        formatter=_OuterFormatter()
-    ).with_key(AttributeKey("id"))
-    repository.create(outer)
-    company.name = "changed"
-
-    assert repository.read(_id) == repository.read(_id)
+    assert repository.read(company.id) == preserved
 
 
-def test_should_search(faker: Faker) -> None:
-    company = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[UUID, _Company](formatter=_Formatter()).with_key(
-        AttributeKey("id")
-    )
+def test_should_search(repository: _Repository) -> None:
+    company = _Company.fake()
 
-    repository.create(company)
+    repository = repository.with_key(AttributeKey("id")).with_seeded(company)
 
     assert list(repository.search(name=company.name)) == [company]
 
 
-def test_should_search_unique(faker: Faker) -> None:
-    company_1 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    company_2 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    repository = InMemoryRepository[UUID, _Company](formatter=_Formatter()).with_key(
-        AttributeKey("id")
+def test_should_search_unique(repository: _Repository, faker: Faker) -> None:
+    company_1 = _Company.fake()
+    company_2 = _Company.fake()
+    repository = repository.with_key(AttributeKey("id")).with_seeded(
+        company_1, company_2
     )
-
-    repository.create(company_1)
-    repository.create(company_2)
 
     assert list(repository.search(name=company_2.name)) == [company_2]
 
 
-def test_should_search_many(faker: Faker) -> None:
-    company_1 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    company_2 = _Company(id=uuid4(), name=company_1.name, code=faker.ein())
-    company_3 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-
-    repository = InMemoryRepository[UUID, _Company](formatter=_Formatter()).with_key(
-        AttributeKey("id")
+def test_should_search_many(repository: _Repository) -> None:
+    company_1 = _Company.fake()
+    company_2 = _Company.fake(name=company_1.name)
+    company_3 = _Company.fake()
+    repository = repository.with_key(AttributeKey("id")).with_seeded(
+        company_1, company_2, company_3
     )
-
-    repository.create(company_1)
-    repository.create(company_2)
-    repository.create(company_3)
 
     searched = repository.search(name=company_1.name)
 
@@ -278,20 +215,14 @@ def test_should_search_many(faker: Faker) -> None:
     assert all(company in [company_1, company_2] for company in searched)
 
 
-def test_should_search_with_multiple_kwargs(faker: Faker) -> None:
-    company_1 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-    company_2 = _Company(id=uuid4(), name=company_1.name, code=faker.ein())
-    company_3 = _Company(id=uuid4(), name=faker.company(), code=faker.ein())
-
-    repository = InMemoryRepository[UUID, _Company](formatter=_Formatter()).with_key(
-        AttributeKey("id")
+def test_should_search_with_multiple_kwargs(repository: _Repository) -> None:
+    company_1 = _Company.fake()
+    company_2 = _Company.fake(name=company_1.name)
+    company_3 = _Company.fake()
+    repository = repository.with_key(AttributeKey("id")).with_seeded(
+        company_1, company_2, company_3
     )
-
-    repository.create(company_1)
-    repository.create(company_2)
-    repository.create(company_3)
 
     searched = repository.search(name=company_1.name, code=company_1.code)
 
-    assert len(list(searched)) == 1
     assert list(searched) == [company_1]

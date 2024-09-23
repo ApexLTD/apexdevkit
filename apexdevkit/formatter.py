@@ -42,7 +42,7 @@ class DataclassFormatter(Generic[_TargetT]):
         raw = deepcopy(raw)
 
         for key, formatter in self.sub_formatters.items():
-            raw[key] = formatter.load(raw.pop(key))
+            raw[key] = formatter.load(raw.pop(key)) if raw[key] else None
 
         return self.resource(**raw)
 
