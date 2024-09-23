@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -50,24 +50,12 @@ class _Address:
         faker = Faker()
 
         return cls(
-            faker.street(),
+            faker.street_name(),
             faker.city(),
             faker.state(),
             faker.country(),
             faker.zipcode(),
         )
-
-
-@dataclass
-class _InnerClass:
-    id: UUID
-    company: _Company
-
-
-@dataclass
-class _OuterClass:
-    id: UUID
-    inner: _InnerClass
 
 
 _Repository = InMemoryRepository[UUID, _Company]
@@ -191,32 +179,13 @@ def test_should_delete(repository: _Repository) -> None:
 
 
 def test_should_preserve_object(repository: _Repository) -> None:
-    _id = uuid4()
-    company = _Company(id=_id, name="company", code="code")
+    company = _Company.fake(address=_Address.fake())
+    preserved = replace(company, address=replace(company.address))
     repository = repository.with_key(AttributeKey("id")).with_seeded(company)
-
     company.name = "changed"
+    company.address.city = "changed"
 
-    assert repository.read(company.id) == _Company(id=_id, name="company", code="code")
-
-
-def test_should_preserve_nested_object() -> None:
-    _id = uuid4()
-    company = _Company(id=_id, name="company", code="code")
-    inner = _InnerClass(id=_id, company=company)
-    outer = _OuterClass(id=_id, inner=inner)
-    f = DataclassFormatter[_OuterClass](_OuterClass).with_nested(
-        inner=DataclassFormatter[_InnerClass](_InnerClass).with_nested(
-            company=DataclassFormatter[_Company](_Company)
-        )
-    )
-    repository = InMemoryRepository[UUID, _OuterClass](formatter=f).with_key(
-        AttributeKey("id")
-    )
-    repository.create(outer)
-    company.name = "changed"
-
-    assert repository.read(_id) == repository.read(_id)
+    assert repository.read(company.id) == preserved
 
 
 def test_should_search(repository: _Repository) -> None:
