@@ -18,8 +18,7 @@ class _Company:
     id: UUID
     name: str
     code: str
-
-    address: _Address | None = None
+    address: _Address
 
     @classmethod
     def fake(cls, **kwargs: Any) -> _Company:
@@ -29,11 +28,7 @@ class _Company:
             id=kwargs.get("id") or uuid4(),
             name=kwargs.get("name") or faker.company(),
             code=kwargs.get("code") or faker.ein(),
-            address=(
-                kwargs.get("address") or _Address.fake()
-                if kwargs.get("address")
-                else None
-            ),
+            address=kwargs.get("address") or _Address.fake(),
         )
 
 
@@ -58,12 +53,12 @@ class _Address:
         )
 
 
-_Repository = InMemoryRepository[UUID, _Company]
+_Repository = InMemoryRepository[UUID | str, _Company]
 
 
 @pytest.fixture
 def repository() -> _Repository:
-    return InMemoryRepository[UUID, _Company](
+    return InMemoryRepository[UUID | str, _Company](
         formatter=DataclassFormatter[_Company](_Company).with_nested(
             address=DataclassFormatter[_Address](_Address)
         )

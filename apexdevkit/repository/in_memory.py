@@ -60,7 +60,7 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
 
             error.fire()
 
-    def _pk(self, item):
+    def _pk(self, item: ItemT) -> Any:
         return self._keys[0](item)
 
     def update_many(self, items: list[ItemT]) -> None:
