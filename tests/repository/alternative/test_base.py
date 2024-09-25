@@ -115,3 +115,10 @@ def test_should_not_update_nonexistent(repository: NewRepositoryBase) -> None:
 
     with pytest.raises(DoesNotExistError):
         repository.update(fake)
+
+
+def test_should_not_update_many_nonexistent(repository: NewRepositoryBase) -> None:
+    fakes = [fake_crypto() for _ in range(10)]
+
+    with pytest.raises(DoesNotExistError):
+        repository.update_many(fakes)
