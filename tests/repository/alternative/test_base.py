@@ -108,3 +108,10 @@ def test_should_not_create_many_duplicates(repository: NewRepositoryBase) -> Non
 
     with pytest.raises(ExistsError):
         repository.create_many(fakes)
+
+
+def test_should_not_update_nonexistent(repository: NewRepositoryBase) -> None:
+    fake = fake_crypto()
+
+    with pytest.raises(DoesNotExistError):
+        repository.update(fake)
