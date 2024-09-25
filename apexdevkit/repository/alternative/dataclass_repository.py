@@ -9,7 +9,7 @@ _Raw = dict[str, Any]
 
 
 @dataclass
-class DataclassRepository(Generic[ItemT]):
+class FormatterRepository(Generic[ItemT]):
     base: NewRepositoryBase
     formatter: Formatter[_Raw, ItemT]
 
