@@ -27,7 +27,6 @@ def test_should_create(repository: NewRepositoryBase) -> None:
 
 def test_should_create_many(repository: NewRepositoryBase) -> None:
     fakes = [fake_crypto() for _ in range(10)]
-
     repository.create_many(fakes)
 
     for fake in fakes:
@@ -43,7 +42,6 @@ def test_should_read(repository: NewRepositoryBase) -> None:
 
 def test_should_read_many(repository: NewRepositoryBase) -> None:
     fakes = [fake_crypto() for _ in range(10)]
-
     repository.create_many(fakes)
 
     assert fakes == list(repository)
@@ -51,7 +49,6 @@ def test_should_read_many(repository: NewRepositoryBase) -> None:
 
 def test_should_update(repository: NewRepositoryBase) -> None:
     fake = fake_crypto()
-
     repository.create(fake)
 
     fake["name"] = "updated"
@@ -63,7 +60,6 @@ def test_should_update(repository: NewRepositoryBase) -> None:
 
 def test_should_update_many(repository: NewRepositoryBase) -> None:
     fakes = [fake_crypto() for _ in range(10)]
-
     repository.create_many(fakes)
 
     for i, fake in enumerate(fakes):
