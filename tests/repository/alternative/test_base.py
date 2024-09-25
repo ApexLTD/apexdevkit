@@ -1,7 +1,9 @@
 from typing import Any
 
+import pytest
 from _pytest.fixtures import fixture
 
+from apexdevkit.error import DoesNotExistError
 from apexdevkit.repository.alternative import NewRepositoryBase
 from apexdevkit.testing.fake import Fake
 
@@ -68,3 +70,13 @@ def test_should_update_many(repository: NewRepositoryBase) -> None:
     repository.update_many(fakes)
 
     assert fakes == list(repository)
+
+
+def test_should_delete(repository: NewRepositoryBase) -> None:
+    fake = fake_crypto()
+    repository.create(fake)
+
+    repository.delete(fake["id"])
+
+    with pytest.raises(DoesNotExistError):
+        repository.read(fake["id"])
