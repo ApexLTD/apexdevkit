@@ -18,10 +18,12 @@ class FormatterRepository(Generic[ItemT]):
 
     def create_many(self, items: list[ItemT]) -> list[ItemT]:
         return [
-            self.formatter.load(item)
-            for item in self.base.create_many(
-                [self.formatter.dump(item) for item in items]
+            self.formatter.load(
+                self.base.create(
+                    self.formatter.dump(item),
+                ),
             )
+            for item in items
         ]
 
     def read(self, item_id: str) -> ItemT:
@@ -31,7 +33,7 @@ class FormatterRepository(Generic[ItemT]):
         self.base.update(self.formatter.dump(item))
 
     def update_many(self, items: list[ItemT]) -> None:
-        self.base.update_many([self.formatter.dump(item) for item in items])
+        [self.base.update(self.formatter.dump(item)) for item in items]
 
     def delete(self, item_id: str) -> None:
         self.base.delete(item_id)
