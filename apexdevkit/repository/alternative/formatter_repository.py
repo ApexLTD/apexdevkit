@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Generic, Iterator
 
 from apexdevkit.formatter import Formatter
-from apexdevkit.repository.alternative import NewRepositoryBase
+from apexdevkit.repository.alternative import MemoryRepositoryBase
 from apexdevkit.repository.alternative.interface import ItemT
 
 _Raw = dict[str, Any]
@@ -10,7 +10,7 @@ _Raw = dict[str, Any]
 
 @dataclass
 class FormatterRepository(Generic[ItemT]):
-    base: NewRepositoryBase
+    base: MemoryRepositoryBase
     formatter: Formatter[_Raw, ItemT]
 
     def create(self, item: ItemT) -> ItemT:

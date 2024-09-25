@@ -7,7 +7,7 @@ _Raw = dict[str, Any]
 
 
 @dataclass
-class NewRepositoryBase:  # pragma: no cover
+class MemoryRepositoryBase:  # pragma: no cover
     items: dict[str, _Raw] = field(init=False, default_factory=dict)
 
     def create(self, item: _Raw) -> _Raw:
