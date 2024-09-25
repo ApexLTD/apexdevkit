@@ -32,3 +32,10 @@ def test_should_create_many(repository: NewRepositoryBase) -> None:
 
     for fake in fakes:
         assert repository.items[fake["id"]] == fake
+
+
+def test_should_read(repository: NewRepositoryBase) -> None:
+    fake = fake_crypto()
+    repository.create(fake)
+
+    assert repository.read(fake["id"]) == fake
