@@ -14,7 +14,7 @@ def repository() -> NewRepositoryBase:
     return NewRepositoryBase()
 
 
-def fake_crypto() -> dict[str, Any]:
+def fake_person() -> dict[str, Any]:
     return {
         "id": Fake().uuid(),
         "name": Fake().last_name(),
@@ -22,14 +22,14 @@ def fake_crypto() -> dict[str, Any]:
 
 
 def test_should_create(repository: NewRepositoryBase) -> None:
-    fake = fake_crypto()
+    fake = fake_person()
     repository.create(fake)
 
     assert repository.items[fake["id"]] == fake
 
 
 def test_should_create_many(repository: NewRepositoryBase) -> None:
-    fakes = [fake_crypto() for _ in range(10)]
+    fakes = [fake_person() for _ in range(10)]
     repository.create_many(fakes)
 
     for fake in fakes:
@@ -37,21 +37,21 @@ def test_should_create_many(repository: NewRepositoryBase) -> None:
 
 
 def test_should_read(repository: NewRepositoryBase) -> None:
-    fake = fake_crypto()
+    fake = fake_person()
     repository.create(fake)
 
     assert repository.read(fake["id"]) == fake
 
 
 def test_should_read_many(repository: NewRepositoryBase) -> None:
-    fakes = [fake_crypto() for _ in range(10)]
+    fakes = [fake_person() for _ in range(10)]
     repository.create_many(fakes)
 
     assert fakes == list(repository)
 
 
 def test_should_update(repository: NewRepositoryBase) -> None:
-    fake = fake_crypto()
+    fake = fake_person()
     repository.create(fake)
 
     fake["name"] = "updated"
@@ -62,7 +62,7 @@ def test_should_update(repository: NewRepositoryBase) -> None:
 
 
 def test_should_update_many(repository: NewRepositoryBase) -> None:
-    fakes = [fake_crypto() for _ in range(10)]
+    fakes = [fake_person() for _ in range(10)]
     repository.create_many(fakes)
 
     for i, fake in enumerate(fakes):
@@ -74,7 +74,7 @@ def test_should_update_many(repository: NewRepositoryBase) -> None:
 
 
 def test_should_delete(repository: NewRepositoryBase) -> None:
-    fake = fake_crypto()
+    fake = fake_person()
     repository.create(fake)
 
     repository.delete(fake["id"])
@@ -85,7 +85,7 @@ def test_should_delete(repository: NewRepositoryBase) -> None:
 
 def test_correct_length(repository: NewRepositoryBase) -> None:
     random_length = random.randint(1, 10)
-    fakes = [fake_crypto() for _ in range(random_length)]
+    fakes = [fake_person() for _ in range(random_length)]
 
     repository.create_many(fakes)
 
@@ -93,7 +93,7 @@ def test_correct_length(repository: NewRepositoryBase) -> None:
 
 
 def test_should_not_create_duplicate(repository: NewRepositoryBase) -> None:
-    fake = fake_crypto()
+    fake = fake_person()
 
     repository.create(fake)
 
@@ -102,7 +102,7 @@ def test_should_not_create_duplicate(repository: NewRepositoryBase) -> None:
 
 
 def test_should_not_create_many_duplicates(repository: NewRepositoryBase) -> None:
-    fakes = [fake_crypto() for _ in range(10)]
+    fakes = [fake_person() for _ in range(10)]
 
     repository.create_many(fakes)
 
@@ -111,21 +111,21 @@ def test_should_not_create_many_duplicates(repository: NewRepositoryBase) -> Non
 
 
 def test_should_not_update_nonexistent(repository: NewRepositoryBase) -> None:
-    fake = fake_crypto()
+    fake = fake_person()
 
     with pytest.raises(DoesNotExistError):
         repository.update(fake)
 
 
 def test_should_not_update_many_nonexistent(repository: NewRepositoryBase) -> None:
-    fakes = [fake_crypto() for _ in range(10)]
+    fakes = [fake_person() for _ in range(10)]
 
     with pytest.raises(DoesNotExistError):
         repository.update_many(fakes)
 
 
 def test_should_not_delete_nonexistent(repository: NewRepositoryBase) -> None:
-    fake = fake_crypto()
+    fake = fake_person()
 
     with pytest.raises(DoesNotExistError):
         repository.delete(fake["id"])
