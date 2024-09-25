@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterator
+from typing import Any, Iterator
 
 from apexdevkit.repository.base import RepositoryBase
 from apexdevkit.repository.interface import IdT, ItemT, Repository
@@ -26,6 +26,9 @@ class RepositoryDecorator(RepositoryBase[IdT, ItemT]):
 
     def delete(self, item_id: IdT) -> None:
         self.inner.delete(item_id)
+
+    def bind(self, **kwargs: Any) -> Repository[IdT, ItemT]:
+        return self.inner.bind(**kwargs)
 
     def __iter__(self) -> Iterator[ItemT]:
         return self.inner.__iter__()
