@@ -6,7 +6,7 @@ from faker.generator import random
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
-from apexdevkit.repository.alternative import FormatterRepository, MemoryRepositoryBase
+from apexdevkit.repository.alternative import FormatterRepository, MemoryPersistence
 from apexdevkit.testing.fake import Fake
 
 
@@ -19,7 +19,7 @@ class Person:
 @fixture
 def repository() -> FormatterRepository[Person]:
     return FormatterRepository(
-        base=MemoryRepositoryBase(),
+        base=MemoryPersistence(),
         formatter=DataclassFormatter[Person](Person),
     )
 
