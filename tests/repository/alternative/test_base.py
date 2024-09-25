@@ -122,3 +122,10 @@ def test_should_not_update_many_nonexistent(repository: NewRepositoryBase) -> No
 
     with pytest.raises(DoesNotExistError):
         repository.update_many(fakes)
+
+
+def test_should_not_delete_nonexistent(repository: NewRepositoryBase) -> None:
+    fake = fake_crypto()
+
+    with pytest.raises(DoesNotExistError):
+        repository.delete(fake["id"])
