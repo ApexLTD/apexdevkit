@@ -1,4 +1,4 @@
-from dataclasses import field
+from dataclasses import field, dataclass
 from typing import Any, Iterator
 
 from apexdevkit.error import DoesNotExistError, ExistsError
@@ -6,6 +6,7 @@ from apexdevkit.error import DoesNotExistError, ExistsError
 _Raw = dict[str, Any]
 
 
+@dataclass
 class NewRepositoryBase:  # pragma: no cover
     items: dict[str, _Raw] = field(init=False, default_factory=dict)
 
