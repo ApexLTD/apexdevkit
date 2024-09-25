@@ -6,6 +6,7 @@ from faker.generator import random
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
+from apexdevkit.repository import Repository
 from apexdevkit.repository.alternative import FormatterRepository, MemoryPersistence
 from apexdevkit.testing.fake import Fake
 
@@ -17,7 +18,7 @@ class Person:
 
 
 @fixture
-def repository() -> FormatterRepository[Person]:
+def repository() -> Repository[str, Person]:
     return FormatterRepository(
         base=MemoryPersistence(),
         formatter=DataclassFormatter[Person](Person),
@@ -31,14 +32,14 @@ def fake_person() -> Person:
     )
 
 
-def test_should_create(repository: FormatterRepository[Person]) -> None:
+def test_should_create(repository: Repository[str, Person]) -> None:
     fake = fake_person()
     repository.create(fake)
 
     assert repository.read(fake.id) == fake
 
 
-def test_should_create_many(repository: FormatterRepository[Person]) -> None:
+def test_should_create_many(repository: Repository[str, Person]) -> None:
     fakes = [fake_person() for _ in range(10)]
     repository.create_many(fakes)
 
@@ -46,14 +47,14 @@ def test_should_create_many(repository: FormatterRepository[Person]) -> None:
         assert repository.read(fake.id) == fake
 
 
-def test_should_read_many(repository: FormatterRepository[Person]) -> None:
+def test_should_read_many(repository: Repository[str, Person]) -> None:
     fakes = [fake_person() for _ in range(10)]
     repository.create_many(fakes)
 
     assert fakes == list(repository)
 
 
-def test_should_update(repository: FormatterRepository[Person]) -> None:
+def test_should_update(repository: Repository[str, Person]) -> None:
     fake = fake_person()
     repository.create(fake)
 
@@ -64,7 +65,7 @@ def test_should_update(repository: FormatterRepository[Person]) -> None:
     assert fake == repository.read(fake.id)
 
 
-def test_should_update_many(repository: FormatterRepository[Person]) -> None:
+def test_should_update_many(repository: Repository[str, Person]) -> None:
     fakes = [fake_person() for _ in range(10)]
     repository.create_many(fakes)
 
@@ -77,7 +78,7 @@ def test_should_update_many(repository: FormatterRepository[Person]) -> None:
     assert updated_fakes == list(repository)
 
 
-def test_should_delete(repository: FormatterRepository[Person]) -> None:
+def test_should_delete(repository: Repository[str, Person]) -> None:
     fake = fake_person()
     repository.create(fake)
 
@@ -87,7 +88,7 @@ def test_should_delete(repository: FormatterRepository[Person]) -> None:
         repository.read(fake.id)
 
 
-def test_correct_length(repository: FormatterRepository[Person]) -> None:
+def test_correct_length(repository: Repository[str, Person]) -> None:
     random_length = random.randint(1, 10)
     fakes = [fake_person() for _ in range(random_length)]
 
@@ -96,7 +97,7 @@ def test_correct_length(repository: FormatterRepository[Person]) -> None:
     assert random_length == len(repository)
 
 
-def test_should_not_create_duplicate(repository: FormatterRepository[Person]) -> None:
+def test_should_not_create_duplicate(repository: Repository[str, Person]) -> None:
     fake = fake_person()
 
     repository.create(fake)
@@ -105,9 +106,7 @@ def test_should_not_create_duplicate(repository: FormatterRepository[Person]) ->
         repository.create(fake)
 
 
-def test_should_not_create_many_duplicates(
-    repository: FormatterRepository[Person],
-) -> None:
+def test_should_not_create_many_duplicates(repository: Repository[str, Person]) -> None:
     fakes = [fake_person() for _ in range(10)]
 
     repository.create_many(fakes)
@@ -116,7 +115,7 @@ def test_should_not_create_many_duplicates(
         repository.create_many(fakes)
 
 
-def test_should_not_update_nonexistent(repository: FormatterRepository[Person]) -> None:
+def test_should_not_update_nonexistent(repository: Repository[str, Person]) -> None:
     fake = fake_person()
 
     with pytest.raises(DoesNotExistError):
@@ -124,7 +123,7 @@ def test_should_not_update_nonexistent(repository: FormatterRepository[Person]) 
 
 
 def test_should_not_update_many_nonexistent(
-    repository: FormatterRepository[Person],
+    repository: Repository[str, Person],
 ) -> None:
     fakes = [fake_person() for _ in range(10)]
 
@@ -132,7 +131,7 @@ def test_should_not_update_many_nonexistent(
         repository.update_many(fakes)
 
 
-def test_should_not_delete_nonexistent(repository: FormatterRepository[Person]) -> None:
+def test_should_not_delete_nonexistent(repository: Repository[str, Person]) -> None:
     fake = fake_person()
 
     with pytest.raises(DoesNotExistError):

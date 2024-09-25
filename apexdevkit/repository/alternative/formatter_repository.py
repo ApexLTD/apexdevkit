@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from typing import Any, Generic, Iterator
+from typing import Any, Generic, Iterator, Self
 
 from apexdevkit.formatter import Formatter
 from apexdevkit.repository.alternative import MemoryPersistence
-from apexdevkit.repository.alternative.interface import ItemT
+from apexdevkit.repository.interface import ItemT
 
 _Raw = dict[str, Any]
 
@@ -38,6 +38,9 @@ class FormatterRepository(Generic[ItemT]):
 
     def delete(self, item_id: str) -> None:
         self.base.delete(item_id)
+
+    def bind(self, **kwargs: Any) -> Self:
+        return self
 
     def __iter__(self) -> Iterator[ItemT]:
         for raw in self.base:
