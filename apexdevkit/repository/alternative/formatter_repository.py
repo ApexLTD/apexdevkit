@@ -33,7 +33,8 @@ class FormatterRepository(Generic[ItemT]):
         self.base.update(self.formatter.dump(item))
 
     def update_many(self, items: list[ItemT]) -> None:
-        [self.base.update(self.formatter.dump(item)) for item in items]
+        for item in items:
+            self.base.update(self.formatter.dump(item))
 
     def delete(self, item_id: str) -> None:
         self.base.delete(item_id)
