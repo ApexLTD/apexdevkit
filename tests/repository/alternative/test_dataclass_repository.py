@@ -1,5 +1,4 @@
 from dataclasses import dataclass, replace
-from typing import Any
 
 import pytest
 from _pytest.fixtures import fixture
@@ -7,7 +6,7 @@ from faker.generator import random
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
-from apexdevkit.repository.alternative import NewRepositoryBase, DataclassRepository
+from apexdevkit.repository.alternative import DataclassRepository, NewRepositoryBase
 from apexdevkit.testing.fake import Fake
 
 
