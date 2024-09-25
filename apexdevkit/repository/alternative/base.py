@@ -22,12 +22,6 @@ class MemoryRepositoryBase:  # pragma: no cover
             error.with_duplicate(lambda item: f"id<{item['id']}>")
             error.fire()
 
-    def create_many(self, items: list[_Raw]) -> list[_Raw]:
-        for item in items:
-            self.create(item)
-
-        return items
-
     def read(self, item_id: str) -> _Raw:
         self._ensure_exists(item_id)
 
@@ -42,10 +36,6 @@ class MemoryRepositoryBase:  # pragma: no cover
 
         self.delete(item["id"])
         self.create(item)
-
-    def update_many(self, items: list[_Raw]) -> None:
-        for item in items:
-            self.update(item)
 
     def delete(self, item_id: str) -> None:
         self._ensure_exists(item_id)

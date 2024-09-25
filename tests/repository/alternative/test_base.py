@@ -28,9 +28,11 @@ def test_should_create(repository: MemoryRepositoryBase) -> None:
     assert repository.items[fake["id"]] == fake
 
 
-def test_should_create_many(repository: MemoryRepositoryBase) -> None:
+def test_should_persist_many(repository: MemoryRepositoryBase) -> None:
     fakes = [fake_person() for _ in range(10)]
-    repository.create_many(fakes)
+
+    for fake in fakes:
+        repository.create(fake)
 
     for fake in fakes:
         assert repository.items[fake["id"]] == fake
@@ -45,7 +47,8 @@ def test_should_read(repository: MemoryRepositoryBase) -> None:
 
 def test_should_read_many(repository: MemoryRepositoryBase) -> None:
     fakes = [fake_person() for _ in range(10)]
-    repository.create_many(fakes)
+    for fake in fakes:
+        repository.create(fake)
 
     assert fakes == list(repository)
 
@@ -63,12 +66,12 @@ def test_should_update(repository: MemoryRepositoryBase) -> None:
 
 def test_should_update_many(repository: MemoryRepositoryBase) -> None:
     fakes = [fake_person() for _ in range(10)]
-    repository.create_many(fakes)
+    for fake in fakes:
+        repository.create(fake)
 
     for i, fake in enumerate(fakes):
         fake["name"] = f"updated_{i}"
-
-    repository.update_many(fakes)
+        repository.update(fake)
 
     assert fakes == list(repository)
 
@@ -86,8 +89,8 @@ def test_should_delete(repository: MemoryRepositoryBase) -> None:
 def test_correct_length(repository: MemoryRepositoryBase) -> None:
     random_length = random.randint(1, 10)
     fakes = [fake_person() for _ in range(random_length)]
-
-    repository.create_many(fakes)
+    for fake in fakes:
+        repository.create(fake)
 
     assert random_length == len(repository)
 
@@ -101,27 +104,11 @@ def test_should_not_create_duplicate(repository: MemoryRepositoryBase) -> None:
         repository.create(fake)
 
 
-def test_should_not_create_many_duplicates(repository: MemoryRepositoryBase) -> None:
-    fakes = [fake_person() for _ in range(10)]
-
-    repository.create_many(fakes)
-
-    with pytest.raises(ExistsError):
-        repository.create_many(fakes)
-
-
 def test_should_not_update_nonexistent(repository: MemoryRepositoryBase) -> None:
     fake = fake_person()
 
     with pytest.raises(DoesNotExistError):
         repository.update(fake)
-
-
-def test_should_not_update_many_nonexistent(repository: MemoryRepositoryBase) -> None:
-    fakes = [fake_person() for _ in range(10)]
-
-    with pytest.raises(DoesNotExistError):
-        repository.update_many(fakes)
 
 
 def test_should_not_delete_nonexistent(repository: MemoryRepositoryBase) -> None:
