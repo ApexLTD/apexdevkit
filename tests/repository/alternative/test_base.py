@@ -4,7 +4,7 @@ import pytest
 from _pytest.fixtures import fixture
 from faker.generator import random
 
-from apexdevkit.error import DoesNotExistError
+from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.repository.alternative import NewRepositoryBase
 from apexdevkit.testing.fake import Fake
 
@@ -90,3 +90,12 @@ def test_correct_length(repository: NewRepositoryBase) -> None:
     repository.create_many(fakes)
 
     assert random_length == len(repository)
+
+
+def test_should_not_create_duplicate(repository: NewRepositoryBase) -> None:
+    fake = fake_crypto()
+
+    repository.create(fake)
+
+    with pytest.raises(ExistsError):
+        repository.create(fake)
