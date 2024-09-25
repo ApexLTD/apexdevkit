@@ -59,3 +59,16 @@ def test_should_update(repository: NewRepositoryBase) -> None:
     repository.update(fake)
 
     assert fake == repository.read(fake["id"])
+
+
+def test_should_update_many(repository: NewRepositoryBase) -> None:
+    fakes = [fake_crypto() for _ in range(10)]
+
+    repository.create_many(fakes)
+
+    for i, fake in enumerate(fakes):
+        fake["name"] = f"updated_{i}"
+
+    repository.update_many(fakes)
+
+    assert fakes == list(repository)
