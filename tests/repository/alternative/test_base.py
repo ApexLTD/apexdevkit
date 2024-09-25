@@ -2,6 +2,7 @@ from typing import Any
 
 import pytest
 from _pytest.fixtures import fixture
+from faker.generator import random
 
 from apexdevkit.error import DoesNotExistError
 from apexdevkit.repository.alternative import NewRepositoryBase
@@ -80,3 +81,12 @@ def test_should_delete(repository: NewRepositoryBase) -> None:
 
     with pytest.raises(DoesNotExistError):
         repository.read(fake["id"])
+
+
+def test_correct_length(repository: NewRepositoryBase) -> None:
+    random_length = random.randint(1, 10)
+    fakes = [fake_crypto() for _ in range(random_length)]
+
+    repository.create_many(fakes)
+
+    assert random_length == len(repository)
