@@ -52,14 +52,14 @@ ItemT = TypeVar("ItemT")
 @dataclass
 class RestfulRepositoryBuilder(Generic[ItemT]):
     formatter: Formatter[dict[str, Any], ItemT] = field(init=False)
-    repository: Repository[Any, ItemT] = field(init=False)
+    repository: Repository[ItemT] = field(init=False)
 
     def with_formatter(self, formatter: Formatter[dict[str, Any], ItemT]) -> Self:
         self.formatter = formatter
 
         return self
 
-    def with_repository(self, repository: Repository[Any, ItemT]) -> Self:
+    def with_repository(self, repository: Repository[ItemT]) -> Self:
         self.repository = repository
 
         return self
@@ -71,7 +71,7 @@ class RestfulRepositoryBuilder(Generic[ItemT]):
 @dataclass
 class _RestfulRepository(RestfulService, Generic[ItemT]):
     formatter: Formatter[dict[str, Any], ItemT]
-    repository: Repository[Any, ItemT]
+    repository: Repository[ItemT]
 
     def create_one(self, item: RawItem) -> RawItem:
         return self.formatter.dump(self.repository.create(self.formatter.load(item)))

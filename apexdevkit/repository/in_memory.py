@@ -4,7 +4,7 @@ from typing import Any, Callable, Iterable, Iterator, Self
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
 from apexdevkit.repository import RepositoryBase
-from apexdevkit.repository.interface import IdT, ItemT
+from apexdevkit.repository.interface import ItemT
 
 KeyFunction = Callable[[Any], str]
 _Raw = dict[str, Any]
@@ -19,7 +19,7 @@ class AttributeKey:
 
 
 @dataclass
-class InMemoryRepository(RepositoryBase[IdT, ItemT]):
+class InMemoryRepository(RepositoryBase[ItemT]):
     formatter: Formatter[_Raw, ItemT]
     items: dict[str, _Raw] = field(default_factory=dict)
 
@@ -71,11 +71,11 @@ class InMemoryRepository(RepositoryBase[IdT, ItemT]):
         self.delete(self._pk(item))
         self.create(item)
 
-    def delete(self, item_id: IdT) -> None:
+    def delete(self, item_id: str) -> None:
         item = self.read(item_id)
         del self.items[self._pk(item)]
 
-    def read(self, item_id: IdT) -> ItemT:
+    def read(self, item_id: str) -> ItemT:
         for key in self._keys:
             for item in self:
                 if key(item) == str(item_id):

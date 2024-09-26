@@ -6,15 +6,15 @@ from typing import Any, Generic, Iterator
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.repository import Database, DatabaseCommand, RepositoryBase
-from apexdevkit.repository.interface import IdT, ItemT
+from apexdevkit.repository.interface import ItemT
 
 
 @dataclass
-class SqliteRepository(RepositoryBase[IdT, ItemT]):
+class SqliteRepository(RepositoryBase[ItemT]):
     db: Database
     table: SqlTable[ItemT]
 
-    def bind(self, **kwargs: Any) -> SqliteRepository[IdT, ItemT]:
+    def bind(self, **kwargs: Any) -> SqliteRepository[ItemT]:
         return SqliteRepository(self.db, self.table.bind(**kwargs))
 
     def __iter__(self) -> Iterator[ItemT]:
@@ -42,7 +42,7 @@ class SqliteRepository(RepositoryBase[IdT, ItemT]):
     def create_many(self, items: list[ItemT]) -> list[ItemT]:
         return [self.create(item) for item in items]
 
-    def read(self, item_id: IdT) -> ItemT:
+    def read(self, item_id: str) -> ItemT:
         raw = self.db.execute(self.table.select(str(item_id))).fetch_one()
 
         if not raw:
@@ -57,7 +57,7 @@ class SqliteRepository(RepositoryBase[IdT, ItemT]):
         for item in items:
             self.update(item)
 
-    def delete(self, item_id: IdT) -> None:
+    def delete(self, item_id: str) -> None:
         self.db.execute(self.table.delete(str(item_id))).fetch_none()
 
     def delete_all(self) -> None:
