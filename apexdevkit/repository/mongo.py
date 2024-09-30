@@ -49,9 +49,6 @@ class MongoRepository(Generic[ItemT]):
                 self.collection(client).insert_one(self.formatter.dump(item))
                 return item
 
-    def create_many(self, items: list[ItemT]) -> list[ItemT]:
-        return [self.create(item) for item in items]
-
     def read(self, item_id: str) -> ItemT:
         with self.connector.connect() as client:
             raw = self.collection(client).find_one({"id": item_id})
@@ -68,10 +65,6 @@ class MongoRepository(Generic[ItemT]):
                 {"$set": self.formatter.dump(item)},
                 return_document=ReturnDocument.AFTER,
             )
-
-    def update_many(self, items: list[ItemT]) -> None:
-        for item in items:
-            self.update(item)
 
     def delete(self, item_id: str) -> None:
         with self.connector.connect() as client:

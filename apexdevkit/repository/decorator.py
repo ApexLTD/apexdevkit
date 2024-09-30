@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Iterator
+from typing import Any, Iterable, Iterator
 
 from apexdevkit.repository.base import RepositoryBase
 from apexdevkit.repository.interface import ItemT, Repository
@@ -12,17 +12,11 @@ class RepositoryDecorator(RepositoryBase[ItemT]):
     def create(self, item: ItemT) -> ItemT:
         return self.inner.create(item)
 
-    def create_many(self, items: list[ItemT]) -> list[ItemT]:
-        return self.inner.create_many(items)
-
     def read(self, item_id: str) -> ItemT:
         return self.inner.read(item_id)
 
     def update(self, item: ItemT) -> None:
         self.inner.update(item)
-
-    def update_many(self, items: list[ItemT]) -> None:
-        self.inner.update_many(items)
 
     def delete(self, item_id: str) -> None:
         self.inner.delete(item_id)
@@ -35,3 +29,12 @@ class RepositoryDecorator(RepositoryBase[ItemT]):
 
     def __len__(self) -> int:
         return self.inner.__len__()
+
+
+class BatchRepositoryDecorator(RepositoryDecorator[ItemT]):
+    def create_many(self, items: Iterable[ItemT]) -> Iterable[ItemT]:
+        return [self.inner.create(item) for item in items]
+
+    def update_many(self, items: Iterable[ItemT]) -> None:
+        for item in items:
+            self.inner.update(item)

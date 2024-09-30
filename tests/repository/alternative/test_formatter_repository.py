@@ -6,8 +6,9 @@ from faker.generator import random
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
-from apexdevkit.repository import Repository
 from apexdevkit.repository.alternative import FormatterRepository, MemoryPersistence
+from apexdevkit.repository.decorator import BatchRepositoryDecorator
+from apexdevkit.repository.interface import BatchRepository
 from apexdevkit.testing.fake import Fake
 
 
@@ -18,10 +19,12 @@ class Person:
 
 
 @fixture
-def repository() -> Repository[Person]:
-    return FormatterRepository(
-        base=MemoryPersistence(),
-        formatter=DataclassFormatter[Person](Person),
+def repository() -> BatchRepository[Person]:
+    return BatchRepositoryDecorator(
+        FormatterRepository(
+            base=MemoryPersistence(),
+            formatter=DataclassFormatter[Person](Person),
+        )
     )
 
 
@@ -32,14 +35,14 @@ def fake_person() -> Person:
     )
 
 
-def test_should_create(repository: Repository[Person]) -> None:
+def test_should_create(repository: BatchRepository[Person]) -> None:
     fake = fake_person()
     repository.create(fake)
 
     assert repository.read(fake.id) == fake
 
 
-def test_should_create_many(repository: Repository[Person]) -> None:
+def test_should_create_many(repository: BatchRepository[Person]) -> None:
     fakes = [fake_person() for _ in range(10)]
     repository.create_many(fakes)
 
@@ -47,14 +50,14 @@ def test_should_create_many(repository: Repository[Person]) -> None:
         assert repository.read(fake.id) == fake
 
 
-def test_should_read_many(repository: Repository[Person]) -> None:
+def test_should_read_many(repository: BatchRepository[Person]) -> None:
     fakes = [fake_person() for _ in range(10)]
     repository.create_many(fakes)
 
     assert fakes == list(repository)
 
 
-def test_should_update(repository: Repository[Person]) -> None:
+def test_should_update(repository: BatchRepository[Person]) -> None:
     fake = fake_person()
     repository.create(fake)
 
@@ -65,7 +68,7 @@ def test_should_update(repository: Repository[Person]) -> None:
     assert fake == repository.read(fake.id)
 
 
-def test_should_update_many(repository: Repository[Person]) -> None:
+def test_should_update_many(repository: BatchRepository[Person]) -> None:
     fakes = [fake_person() for _ in range(10)]
     repository.create_many(fakes)
 
@@ -78,7 +81,7 @@ def test_should_update_many(repository: Repository[Person]) -> None:
     assert updated_fakes == list(repository)
 
 
-def test_should_delete(repository: Repository[Person]) -> None:
+def test_should_delete(repository: BatchRepository[Person]) -> None:
     fake = fake_person()
     repository.create(fake)
 
@@ -88,7 +91,7 @@ def test_should_delete(repository: Repository[Person]) -> None:
         repository.read(fake.id)
 
 
-def test_correct_length(repository: Repository[Person]) -> None:
+def test_correct_length(repository: BatchRepository[Person]) -> None:
     random_length = random.randint(1, 10)
     fakes = [fake_person() for _ in range(random_length)]
 
@@ -97,7 +100,7 @@ def test_correct_length(repository: Repository[Person]) -> None:
     assert random_length == len(repository)
 
 
-def test_should_not_create_duplicate(repository: Repository[Person]) -> None:
+def test_should_not_create_duplicate(repository: BatchRepository[Person]) -> None:
     fake = fake_person()
 
     repository.create(fake)
@@ -106,7 +109,7 @@ def test_should_not_create_duplicate(repository: Repository[Person]) -> None:
         repository.create(fake)
 
 
-def test_should_not_create_many_duplicates(repository: Repository[Person]) -> None:
+def test_should_not_create_many_duplicates(repository: BatchRepository[Person]) -> None:
     fakes = [fake_person() for _ in range(10)]
 
     repository.create_many(fakes)
@@ -115,7 +118,7 @@ def test_should_not_create_many_duplicates(repository: Repository[Person]) -> No
         repository.create_many(fakes)
 
 
-def test_should_not_update_nonexistent(repository: Repository[Person]) -> None:
+def test_should_not_update_nonexistent(repository: BatchRepository[Person]) -> None:
     fake = fake_person()
 
     with pytest.raises(DoesNotExistError):
@@ -123,7 +126,7 @@ def test_should_not_update_nonexistent(repository: Repository[Person]) -> None:
 
 
 def test_should_not_update_many_nonexistent(
-    repository: Repository[Person],
+    repository: BatchRepository[Person],
 ) -> None:
     fakes = [fake_person() for _ in range(10)]
 
@@ -131,7 +134,7 @@ def test_should_not_update_many_nonexistent(
         repository.update_many(fakes)
 
 
-def test_should_not_delete_nonexistent(repository: Repository[Person]) -> None:
+def test_should_not_delete_nonexistent(repository: BatchRepository[Person]) -> None:
     fake = fake_person()
 
     with pytest.raises(DoesNotExistError):

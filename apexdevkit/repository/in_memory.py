@@ -34,15 +34,10 @@ class InMemoryRepository(RepositoryBase[ItemT]):
         return self
 
     def with_seeded(self, *items: ItemT) -> Self:
-        self.create_many(list(items))
-
-        return self
-
-    def create_many(self, items: list[ItemT]) -> list[ItemT]:
         for item in items:
             self.create(item)
 
-        return items
+        return self
 
     def create(self, item: ItemT) -> ItemT:
         self._ensure_does_not_exist(item)
@@ -62,10 +57,6 @@ class InMemoryRepository(RepositoryBase[ItemT]):
 
     def _pk(self, item: ItemT) -> Any:
         return self._keys[0](item)
-
-    def update_many(self, items: list[ItemT]) -> None:
-        for item in items:
-            self.update(item)
 
     def update(self, item: ItemT) -> None:
         self.delete(self._pk(item))

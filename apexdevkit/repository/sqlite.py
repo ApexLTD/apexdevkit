@@ -39,9 +39,6 @@ class SqliteRepository(RepositoryBase[ItemT]):
             self.table.duplicate(item).fire()
             return item
 
-    def create_many(self, items: list[ItemT]) -> list[ItemT]:
-        return [self.create(item) for item in items]
-
     def read(self, item_id: str) -> ItemT:
         raw = self.db.execute(self.table.select(str(item_id))).fetch_one()
 
@@ -52,10 +49,6 @@ class SqliteRepository(RepositoryBase[ItemT]):
 
     def update(self, item: ItemT) -> None:
         self.db.execute(self.table.update(item)).fetch_none()
-
-    def update_many(self, items: list[ItemT]) -> None:
-        for item in items:
-            self.update(item)
 
     def delete(self, item_id: str) -> None:
         self.db.execute(self.table.delete(str(item_id))).fetch_none()

@@ -1,4 +1,4 @@
-from typing import Any, Generic, Iterator
+from typing import Any, Generic, Iterable, Iterator
 
 from apexdevkit.repository.interface import ItemT, Repository
 
@@ -7,7 +7,7 @@ class RepositoryBase(Generic[ItemT]):  # pragma: no cover
     def create(self, item: ItemT) -> ItemT:
         raise NotImplementedError
 
-    def create_many(self, items: list[ItemT]) -> list[ItemT]:
+    def create_many(self, items: Iterable[ItemT]) -> Iterable[ItemT]:
         raise NotImplementedError
 
     def read(self, item_id: str) -> ItemT:
@@ -16,7 +16,7 @@ class RepositoryBase(Generic[ItemT]):  # pragma: no cover
     def update(self, item: ItemT) -> None:
         raise NotImplementedError
 
-    def update_many(self, items: list[ItemT]) -> None:
+    def update_many(self, items: Iterable[ItemT]) -> None:
         raise NotImplementedError
 
     def delete(self, item_id: str) -> None:
