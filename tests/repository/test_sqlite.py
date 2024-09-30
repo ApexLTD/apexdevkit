@@ -115,7 +115,7 @@ def test_should_create_many(repository: BatchRepository[_Item]) -> None:
 
 
 def test_should_not_duplicate_on_create_many(
-    repository: SqliteRepository[_Item],
+    repository: BatchRepository[_Item],
 ) -> None:
     items = [
         _Item(id=str(uuid4()), external_id=str(uuid4())),
