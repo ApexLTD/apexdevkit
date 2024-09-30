@@ -9,7 +9,9 @@ from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.fastapi.service import RestfulRepositoryBuilder, RestfulService
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import InMemoryRepository
+from apexdevkit.repository.decorator import BatchRepositoryDecorator
 from apexdevkit.repository.in_memory import AttributeKey
+from apexdevkit.repository.interface import BatchRepository
 from apexdevkit.testing.fake import FakeResource
 
 
@@ -37,14 +39,16 @@ class FakeAnimal(FakeResource[Animal]):
 
 
 @pytest.fixture
-def repository() -> InMemoryRepository[Animal]:
-    return InMemoryRepository[Animal](DataclassFormatter(Animal)).with_key(
-        AttributeKey("id")
+def repository() -> BatchRepository[Animal]:
+    return BatchRepositoryDecorator(
+        InMemoryRepository[Animal](DataclassFormatter(Animal)).with_key(
+            AttributeKey("id")
+        )
     )
 
 
 @pytest.fixture
-def service(repository: InMemoryRepository[Animal]) -> RestfulService:
+def service(repository: BatchRepository[Animal]) -> RestfulService:
     return (
         RestfulRepositoryBuilder[Animal]()
         .with_formatter(DataclassFormatter(Animal))
@@ -54,7 +58,8 @@ def service(repository: InMemoryRepository[Animal]) -> RestfulService:
 
 
 def test_should_create_one(
-    repository: InMemoryRepository[Animal], service: RestfulService
+    repository: BatchRepository[Animal],
+    service: RestfulService,
 ) -> None:
     animal = FakeAnimal()
 
@@ -63,7 +68,8 @@ def test_should_create_one(
 
 
 def test_should_not_create_one(
-    repository: InMemoryRepository[Animal], service: RestfulService
+    repository: BatchRepository[Animal],
+    service: RestfulService,
 ) -> None:
     animal = FakeAnimal()
     repository.create(animal.entity())
@@ -73,7 +79,8 @@ def test_should_not_create_one(
 
 
 def test_should_create_many(
-    repository: InMemoryRepository[Animal], service: RestfulService
+    repository: BatchRepository[Animal],
+    service: RestfulService,
 ) -> None:
     animal_1 = FakeAnimal()
     animal_2 = FakeAnimal()
@@ -86,7 +93,8 @@ def test_should_create_many(
 
 
 def test_should_not_create_many(
-    repository: InMemoryRepository[Animal], service: RestfulService
+    repository: BatchRepository[Animal],
+    service: RestfulService,
 ) -> None:
     animal_1 = FakeAnimal()
     animal_2 = FakeAnimal()
@@ -97,7 +105,8 @@ def test_should_not_create_many(
 
 
 def test_should_read_one(
-    repository: InMemoryRepository[Animal], service: RestfulService
+    repository: BatchRepository[Animal],
+    service: RestfulService,
 ) -> None:
     animal = FakeAnimal()
     repository.create(animal.entity())
@@ -113,7 +122,8 @@ def test_should_not_read_unknown(service: RestfulService) -> None:
 
 
 def test_should_read_all(
-    repository: InMemoryRepository[Animal], service: RestfulService
+    repository: BatchRepository[Animal],
+    service: RestfulService,
 ) -> None:
     animal_1 = FakeAnimal()
     animal_2 = FakeAnimal()
@@ -123,7 +133,8 @@ def test_should_read_all(
 
 
 def test_should_update_one(
-    repository: InMemoryRepository[Animal], service: RestfulService
+    repository: BatchRepository[Animal],
+    service: RestfulService,
 ) -> None:
     initial = FakeAnimal().entity()
     updated = FakeAnimal(id=initial.id, name=initial.name)
@@ -137,7 +148,8 @@ def test_should_update_one(
 
 
 def test_should_not_update_unknown(
-    repository: InMemoryRepository[Animal], service: RestfulService
+    repository: BatchRepository[Animal],
+    service: RestfulService,
 ) -> None:
     updated = FakeAnimal()
 
@@ -146,7 +158,8 @@ def test_should_not_update_unknown(
 
 
 def test_should_update_many(
-    repository: InMemoryRepository[Animal], service: RestfulService
+    repository: BatchRepository[Animal],
+    service: RestfulService,
 ) -> None:
     initial_1 = FakeAnimal().entity()
     initial_2 = FakeAnimal().entity()
@@ -161,7 +174,8 @@ def test_should_update_many(
 
 
 def test_should_not_update_unknown_many(
-    repository: InMemoryRepository[Animal], service: RestfulService
+    repository: BatchRepository[Animal],
+    service: RestfulService,
 ) -> None:
     updated_1 = FakeAnimal()
     updated_2 = FakeAnimal()
@@ -173,7 +187,8 @@ def test_should_not_update_unknown_many(
 
 
 def test_should_replace_one(
-    repository: InMemoryRepository[Animal], service: RestfulService
+    repository: BatchRepository[Animal],
+    service: RestfulService,
 ) -> None:
     initial = FakeAnimal().entity()
     replaced = FakeAnimal(id=initial.id)
@@ -184,7 +199,8 @@ def test_should_replace_one(
 
 
 def test_should_not_replace_unknown(
-    repository: InMemoryRepository[Animal], service: RestfulService
+    repository: BatchRepository[Animal],
+    service: RestfulService,
 ) -> None:
     replaced = FakeAnimal()
 
@@ -193,7 +209,8 @@ def test_should_not_replace_unknown(
 
 
 def test_should_replace_many(
-    repository: InMemoryRepository[Animal], service: RestfulService
+    repository: BatchRepository[Animal],
+    service: RestfulService,
 ) -> None:
     initial_1 = FakeAnimal().entity()
     initial_2 = FakeAnimal().entity()
@@ -209,7 +226,8 @@ def test_should_replace_many(
 
 
 def test_should_not_replace_unknown_many(
-    repository: InMemoryRepository[Animal], service: RestfulService
+    repository: BatchRepository[Animal],
+    service: RestfulService,
 ) -> None:
     replaced_1 = FakeAnimal()
     replaced_2 = FakeAnimal()
@@ -219,7 +237,8 @@ def test_should_not_replace_unknown_many(
 
 
 def test_should_delete_one(
-    repository: InMemoryRepository[Animal], service: RestfulService
+    repository: BatchRepository[Animal],
+    service: RestfulService,
 ) -> None:
     animal = FakeAnimal()
     repository.create(animal.entity())
@@ -229,7 +248,8 @@ def test_should_delete_one(
 
 
 def test_should_not_delete_unknown(
-    repository: InMemoryRepository[Animal], service: RestfulService
+    repository: BatchRepository[Animal],
+    service: RestfulService,
 ) -> None:
     animal = FakeAnimal()
 

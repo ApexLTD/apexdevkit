@@ -142,20 +142,6 @@ def test_should_update(repository: _Repository, faker: Faker) -> None:
     assert persisted == updated
 
 
-def test_should_update_many(repository: _Repository) -> None:
-    company_1 = _Company.fake()
-    company_2 = _Company.fake()
-    updated_1 = _Company.fake(id=company_1.id)
-    updated_2 = _Company.fake(id=company_2.id)
-    repository = repository.with_key(AttributeKey("id")).with_seeded(
-        company_1, company_2
-    )
-
-    repository.update_many([updated_1, updated_2])
-
-    assert list(repository) == [updated_1, updated_2]
-
-
 def test_should_not_delete_unknown(repository: _Repository) -> None:
     unknown_id = Fake().uuid()
 

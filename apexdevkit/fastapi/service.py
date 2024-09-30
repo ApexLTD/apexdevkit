@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Generic, Iterable, Self, TypeVar
 
 from apexdevkit.formatter import Formatter
+from apexdevkit.repository.decorator import BatchRepositoryDecorator
 from apexdevkit.repository.interface import Repository
 
 RawItem = dict[str, Any]
@@ -79,7 +80,7 @@ class _RestfulRepository(RestfulService, Generic[ItemT]):
     def create_many(self, items: RawCollection) -> RawCollection:
         return [
             self.formatter.dump(item)
-            for item in self.repository.create_many(
+            for item in BatchRepositoryDecorator(self.repository).create_many(
                 [self.formatter.load(fields) for fields in items]
             )
         ]
@@ -106,7 +107,7 @@ class _RestfulRepository(RestfulService, Generic[ItemT]):
 
             updates.append(self.formatter.load(data))
 
-        self.repository.update_many(updates)
+        BatchRepositoryDecorator(self.repository).update_many(updates)
 
         return [self.formatter.dump(item) for item in updates]
 
@@ -116,7 +117,9 @@ class _RestfulRepository(RestfulService, Generic[ItemT]):
         return item
 
     def replace_many(self, items: RawCollection) -> RawCollection:
-        self.repository.update_many([self.formatter.load(item) for item in items])
+        BatchRepositoryDecorator(self.repository).update_many(
+            [self.formatter.load(item) for item in items]
+        )
 
         return items
 
