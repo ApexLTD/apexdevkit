@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 from functools import cached_property
 from typing import Any, Type
-from uuid import uuid4
 
 import pytest
 
@@ -17,10 +16,9 @@ from apexdevkit.testing.fake import FakeResource
 
 @dataclass
 class Animal:
+    id: str
     name: str
     age: int
-
-    id: str = field(default_factory=lambda: str(uuid4()))
 
 
 @dataclass

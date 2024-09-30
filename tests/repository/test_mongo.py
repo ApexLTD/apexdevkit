@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, ContextManager
 from uuid import uuid4
@@ -17,9 +17,8 @@ from apexdevkit.repository.mongo import MongoRepository
 
 @dataclass
 class _Item:
+    id: str
     external_id: str
-
-    id: str = field(default_factory=lambda: str(uuid4()))
 
 
 @dataclass

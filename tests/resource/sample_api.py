@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any
-from uuid import uuid4
 
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
 from apexdevkit.fastapi.schema import SchemaFields
@@ -112,10 +111,9 @@ class Name:
 
 @dataclass(frozen=True)
 class Apple:
+    id: str
     name: Name
     color: Color
-
-    id: str = field(default_factory=lambda: str(uuid4()))
 
 
 class AppleFields(SchemaFields):
