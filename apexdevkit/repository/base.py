@@ -1,16 +1,16 @@
 from typing import Any, Generic, Iterator
 
-from apexdevkit.repository.interface import IdT, ItemT, Repository
+from apexdevkit.repository.interface import ItemT, Repository
 
 
-class RepositoryBase(Generic[IdT, ItemT]):  # pragma: no cover
+class RepositoryBase(Generic[ItemT]):  # pragma: no cover
     def create(self, item: ItemT) -> ItemT:
         raise NotImplementedError
 
     def create_many(self, items: list[ItemT]) -> list[ItemT]:
         raise NotImplementedError
 
-    def read(self, item_id: IdT) -> ItemT:
+    def read(self, item_id: str) -> ItemT:
         raise NotImplementedError
 
     def update(self, item: ItemT) -> None:
@@ -19,10 +19,10 @@ class RepositoryBase(Generic[IdT, ItemT]):  # pragma: no cover
     def update_many(self, items: list[ItemT]) -> None:
         raise NotImplementedError
 
-    def delete(self, item_id: IdT) -> None:
+    def delete(self, item_id: str) -> None:
         raise NotImplementedError
 
-    def bind(self, **kwargs: Any) -> Repository[IdT, ItemT]:
+    def bind(self, **kwargs: Any) -> Repository[ItemT]:
         raise NotImplementedError
 
     def __iter__(self) -> Iterator[ItemT]:

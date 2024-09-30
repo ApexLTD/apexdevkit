@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from typing import Any
-from uuid import UUID, uuid4
 
 import pytest
 from faker import Faker
@@ -11,11 +10,12 @@ from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import InMemoryRepository
 from apexdevkit.repository.in_memory import AttributeKey
+from apexdevkit.testing.fake import Fake
 
 
 @dataclass
 class _Company:
-    id: UUID
+    id: str
     name: str
     code: str
     address: _Address
@@ -25,7 +25,7 @@ class _Company:
         faker = Faker()
 
         return cls(
-            id=kwargs.get("id") or uuid4(),
+            id=kwargs.get("id") or Fake().uuid(),
             name=kwargs.get("name") or faker.company(),
             code=kwargs.get("code") or faker.ein(),
             address=kwargs.get("address") or _Address.fake(),
@@ -53,12 +53,12 @@ class _Address:
         )
 
 
-_Repository = InMemoryRepository[UUID | str, _Company]
+_Repository = InMemoryRepository[_Company]
 
 
 @pytest.fixture
 def repository() -> _Repository:
-    return InMemoryRepository[UUID | str, _Company](
+    return InMemoryRepository[_Company](
         formatter=DataclassFormatter[_Company](_Company).with_nested(
             address=DataclassFormatter[_Address](_Address)
         )
@@ -66,7 +66,7 @@ def repository() -> _Repository:
 
 
 def test_should_not_read_unknown(repository: _Repository) -> None:
-    unknown_id = uuid4()
+    unknown_id = Fake().uuid()
 
     with pytest.raises(DoesNotExistError):
         repository.read(unknown_id)
@@ -157,7 +157,7 @@ def test_should_update_many(repository: _Repository) -> None:
 
 
 def test_should_not_delete_unknown(repository: _Repository) -> None:
-    unknown_id = uuid4()
+    unknown_id = Fake().uuid()
 
     with pytest.raises(DoesNotExistError):
         repository.delete(unknown_id)
