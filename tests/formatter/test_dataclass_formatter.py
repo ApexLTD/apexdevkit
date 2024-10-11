@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from apexdevkit.formatter import DataclassFormatter
+from apexdevkit.formatter import DataclassFormatter, ListFormatter
 
 
 @dataclass
@@ -23,6 +23,13 @@ class NestedDataclass:
     field: int
     sample: SampleDataclass
     other_sample: SampleDataclass
+
+
+@dataclass
+class NestedListDataclass:
+    name: str
+    field: int
+    samples: list[SampleDataclass]
 
 
 def test_should_dump() -> None:
@@ -151,3 +158,43 @@ def test_should_retain_loaded_integrity() -> None:
         sample=SampleDataclass(name=Name("b", 1), field=2),
         other_sample=SampleDataclass(name=Name("c", 1), field=3),
     )
+
+
+def test_should_retain_nested_empty_list_on_dump() -> None:
+    item = NestedListDataclass("a", field=1, samples=[])
+
+    result = (
+        DataclassFormatter(NestedListDataclass)
+        .with_nested(
+            samples=ListFormatter(
+                DataclassFormatter(SampleDataclass),
+            )
+        )
+        .dump(item)
+    )
+
+    assert result == {
+        "name": "a",
+        "field": 1,
+        "samples": [],
+    }
+
+
+def test_should_retain_nested_empty_list_on_load() -> None:
+    result = (
+        DataclassFormatter(NestedListDataclass)
+        .with_nested(
+            samples=ListFormatter(
+                DataclassFormatter(SampleDataclass),
+            )
+        )
+        .load(
+            {
+                "name": "a",
+                "field": 1,
+                "samples": [],
+            }
+        )
+    )
+
+    assert result == NestedListDataclass(name="a", field=1, samples=[])
