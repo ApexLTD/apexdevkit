@@ -44,8 +44,6 @@ class DataclassFormatter(Generic[_TargetT]):
         for key, formatter in self.sub_formatters.items():
             if key in raw:
                 raw[key] = formatter.load(raw.pop(key)) if raw[key] else raw[key]
-            else:
-                raw[key] = None
 
         return self.resource(**raw)
 

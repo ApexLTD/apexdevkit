@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from apexdevkit.formatter import DataclassFormatter, ListFormatter
 
@@ -35,8 +35,9 @@ class NestedListDataclass:
 @dataclass
 class SampleNoneDataclass:
     name: str
-    field: int | None = None
+    count: int | None = field(default=3)
     sample: SampleDataclass | None = None
+    samples: list[SampleDataclass] | None = field(default_factory=list)
 
 
 def test_should_dump() -> None:
@@ -207,11 +208,14 @@ def test_should_retain_nested_empty_list_on_load() -> None:
     assert result == NestedListDataclass(name="a", field=1, samples=[])
 
 
-def test_should_assign_none_to_nonexistent_key() -> None:
+def test_should_assign_default_to_nonexistent_keys() -> None:
     result = (
         DataclassFormatter(SampleNoneDataclass)
         .with_nested(
             sample=DataclassFormatter(SampleDataclass),
+            samples=ListFormatter(
+                DataclassFormatter(SampleDataclass),
+            ),
         )
         .load(
             {
@@ -222,6 +226,7 @@ def test_should_assign_none_to_nonexistent_key() -> None:
 
     assert result == SampleNoneDataclass(
         name="a",
-        field=None,
+        count=3,
         sample=None,
+        samples=[],
     )
