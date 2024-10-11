@@ -32,6 +32,13 @@ class NestedListDataclass:
     samples: list[SampleDataclass]
 
 
+@dataclass
+class SampleNoneDataclass:
+    name: str
+    field: int | None = None
+    sample: SampleDataclass | None = None
+
+
 def test_should_dump() -> None:
     result = (
         DataclassFormatter(NestedDataclass)
@@ -198,3 +205,23 @@ def test_should_retain_nested_empty_list_on_load() -> None:
     )
 
     assert result == NestedListDataclass(name="a", field=1, samples=[])
+
+
+def test_should_assign_none_to_nonexistent_key() -> None:
+    result = (
+        DataclassFormatter(SampleNoneDataclass)
+        .with_nested(
+            sample=DataclassFormatter(SampleDataclass),
+        )
+        .load(
+            {
+                "name": "a",
+            }
+        )
+    )
+
+    assert result == SampleNoneDataclass(
+        name="a",
+        field=None,
+        sample=None,
+    )
