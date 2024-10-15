@@ -14,32 +14,47 @@ KeyFunction = Callable[[Any], str]
 _Raw = dict[str, Any]
 
 
-@dataclass
+@dataclass(frozen=True)
 class InMemoryRepository(Generic[ItemT]):
     store: KeyValueStore[ItemT] = field(default_factory=lambda: InMemoryByteStore())
     keys: list[KeyFunction] = field(default_factory=list)
     seeds: list[ItemT] = field(default_factory=list)
 
-    def with_store(self, value: KeyValueStore[ItemT]) -> Self:
-        self.store = value
+    def with_namespace(self, value: str) -> InMemoryRepository[ItemT]:
+        return InMemoryRepository[ItemT](
+            store=StoreNamespace(value, self.store),
+            keys=self.keys,
+            seeds=self.seeds,
+        )
 
-        return self
+    def with_store(self, value: KeyValueStore[ItemT]) -> InMemoryRepository[ItemT]:
+        return InMemoryRepository[ItemT](
+            store=value,
+            keys=self.keys,
+            seeds=self.seeds,
+        )
 
-    def and_key(self, function: KeyFunction) -> Self:
+    def and_key(self, function: KeyFunction) -> InMemoryRepository[ItemT]:
         return self.with_key(function)
 
-    def with_key(self, function: KeyFunction) -> Self:
-        self.keys.append(function)
+    def with_key(self, function: KeyFunction) -> InMemoryRepository[ItemT]:
+        return InMemoryRepository[ItemT](
+            store=self.store,
+            keys=[*self.keys, function],
+            seeds=self.seeds,
+        )
 
-        return self
-
-    def and_seeded(self, *items: ItemT) -> Self:
+    def and_seeded(self, *items: ItemT) -> InMemoryRepository[ItemT]:
         return self.with_seeded(*items)
 
-    def with_seeded(self, *items: ItemT) -> Self:
+    def with_seeded(self, *items: ItemT) -> InMemoryRepository[ItemT]:
         self.seeds.extend(items)
 
-        return self
+        return InMemoryRepository(
+            store=self.store,
+            keys=self.keys,
+            seeds=[*self.seeds, *items],
+        )
 
     def build(self) -> Repository[ItemT]:
         return self._seed(self._create())
@@ -99,6 +114,30 @@ class InMemoryByteStore(Generic[ItemT]):
     def values(self) -> Iterable[ItemT]:
         for raw in self.items.values():
             yield self.formatter.load(raw)
+
+
+@dataclass
+class StoreNamespace(Generic[ItemT]):
+    name: str
+    inner: KeyValueStore[ItemT]
+
+    def count(self) -> int:
+        return self.inner.count()
+
+    def values(self) -> Iterable[ItemT]:
+        return self.inner.values()
+
+    def set(self, key: str, value: ItemT) -> None:
+        self.inner.set(self._expand(key), value)
+
+    def get(self, key: str) -> ItemT:
+        return self.inner.get(self._expand(key))
+
+    def drop(self, key: str) -> None:
+        self.inner.drop(self._expand(key))
+
+    def _expand(self, key: str) -> ItemT:
+        return ":".join([self.name, key])
 
 
 @dataclass
