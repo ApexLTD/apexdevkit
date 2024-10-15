@@ -54,7 +54,7 @@ class _Address:
 def test_should_not_read_unknown() -> None:
     unknown_id = Fake().uuid()
 
-    repository = InMemoryRepository().build()
+    repository = InMemoryRepository[_Company]().build()
 
     with pytest.raises(DoesNotExistError):
         repository.read(unknown_id)
@@ -62,7 +62,7 @@ def test_should_not_read_unknown() -> None:
 
 def test_should_persist() -> None:
     company = _Company.fake()
-    repository = InMemoryRepository().build()
+    repository = InMemoryRepository[_Company]().build()
 
     repository.create(company)
 
@@ -72,7 +72,7 @@ def test_should_persist() -> None:
 def test_should_read_by_custom_field() -> None:
     company = _Company.fake()
     repository = (
-        InMemoryRepository()
+        InMemoryRepository[_Company]()
         .with_key(AttributeKey("id"))
         .with_key(AttributeKey("code"))
         .build()
@@ -86,7 +86,7 @@ def test_should_read_by_custom_field() -> None:
 def test_should_not_duplicate() -> None:
     company = _Company.fake()
     repository = (
-        InMemoryRepository()
+        InMemoryRepository[_Company]()
         .with_key(function=lambda item: f"code<{item.code}>")
         .and_seeded(company)
         .build()
@@ -103,7 +103,7 @@ def test_should_not_duplicate() -> None:
 def test_should_not_not_duplicate_many_fields() -> None:
     company = _Company.fake()
     repository = (
-        InMemoryRepository()
+        InMemoryRepository[_Company]()
         .with_key(function=lambda item: f"code<{item.code}>")
         .and_key(function=lambda item: f"name<{item.name}>")
         .and_seeded(company)
@@ -120,7 +120,7 @@ def test_should_not_not_duplicate_many_fields() -> None:
 
 def test_should_list() -> None:
     companies = [_Company.fake() for _ in range(10)]
-    repository = InMemoryRepository().with_seeded(*companies).build()
+    repository = InMemoryRepository[_Company]().with_seeded(*companies).build()
 
     assert len(repository) == len(companies)
     assert list(repository) == companies
@@ -128,7 +128,7 @@ def test_should_list() -> None:
 
 def test_should_update() -> None:
     company = _Company.fake()
-    repository = InMemoryRepository().with_seeded(company).build()
+    repository = InMemoryRepository[_Company]().with_seeded(company).build()
 
     updated = _Company.fake(id=company.id)
     repository.update(updated)
@@ -140,12 +140,12 @@ def test_should_not_delete_unknown() -> None:
     unknown_id = Fake().uuid()
 
     with pytest.raises(DoesNotExistError):
-        InMemoryRepository().build().delete(unknown_id)
+        InMemoryRepository[_Company]().build().delete(unknown_id)
 
 
 def test_should_delete() -> None:
     company = _Company.fake()
-    repository = InMemoryRepository().with_seeded(company).build()
+    repository = InMemoryRepository[_Company]().with_seeded(company).build()
 
     repository.delete(company.id)
 
