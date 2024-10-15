@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable, Iterator, Self, Generic
+from typing import Any, Callable, Iterable, Iterator, Self, Generic, Protocol
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
@@ -81,6 +81,24 @@ class InMemoryRepository(RepositoryBase[ItemT]):
 
     def __len__(self) -> int:
         return self.store.count()
+
+
+@dataclass
+class KeyValueStore(Protocol[ItemT]):
+    def count(self) -> int:
+        pass
+
+    def set(self, key: str, value: ItemT) -> None:
+        pass
+
+    def get(self, key: str) -> ItemT:
+        pass
+
+    def drop(self, key: str) -> None:
+        pass
+
+    def values(self) -> Iterable[ItemT]:
+        pass
 
 
 @dataclass
