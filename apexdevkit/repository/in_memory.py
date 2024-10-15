@@ -16,7 +16,7 @@ _Raw = dict[str, Any]
 
 @dataclass
 class InMemoryRepository(Generic[ItemT]):
-    store: KeyValueStore[ItemT] = field(default_factory=lambda: InMemoryKeyValueStore())
+    store: KeyValueStore[ItemT] = field(default_factory=lambda: InMemoryByteStore())
     keys: list[KeyFunction] = field(default_factory=list)
     seeds: list[ItemT] = field(default_factory=list)
 
@@ -79,7 +79,7 @@ class KeyValueStore(Protocol[ItemT]):  # pragma: no cover
 
 
 @dataclass
-class InMemoryKeyValueStore(Generic[ItemT]):
+class InMemoryByteStore(Generic[ItemT]):
     formatter: Formatter[bytes, ItemT] = field(default_factory=PickleFormatter)
 
     items: dict[str, bytes] = field(default_factory=dict)
