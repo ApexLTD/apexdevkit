@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Generic, Iterable, Iterator, Protocol, Self
 
 from apexdevkit.error import DoesNotExistError, ExistsError
-from apexdevkit.formatter import Formatter, NoFormatter
+from apexdevkit.formatter import Formatter, PickleFormatter
 from apexdevkit.key_fn import AttributeKey
 from apexdevkit.repository import RepositoryBase
 from apexdevkit.repository.interface import ItemT, Repository
@@ -19,9 +19,6 @@ class InMemoryRepository(Generic[ItemT]):
     store: KeyValueStore[ItemT] = field(default_factory=lambda: InMemoryKeyValueStore())
     keys: list[KeyFunction] = field(default_factory=list)
     seeds: list[ItemT] = field(default_factory=list)
-
-    def with_formatter(self, value: Formatter[_Raw, ItemT]) -> Self:
-        return self.with_store(InMemoryKeyValueStore(value))
 
     def with_store(self, value: KeyValueStore[ItemT]) -> Self:
         self.store = value
@@ -83,8 +80,9 @@ class KeyValueStore(Protocol[ItemT]):  # pragma: no cover
 
 @dataclass
 class InMemoryKeyValueStore(Generic[ItemT]):
-    formatter: Formatter[_Raw, ItemT] = field(default_factory=NoFormatter)
-    items: dict[str, _Raw] = field(default_factory=dict)
+    formatter: Formatter[bytes, ItemT] = field(default_factory=PickleFormatter)
+
+    items: dict[str, bytes] = field(default_factory=dict)
 
     def count(self) -> int:
         return len(self.items)
