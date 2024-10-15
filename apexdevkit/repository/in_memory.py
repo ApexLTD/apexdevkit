@@ -10,13 +10,13 @@ from apexdevkit.key_fn import AttributeKey
 from apexdevkit.repository import RepositoryBase
 from apexdevkit.repository.interface import ItemT, Repository
 
-_KeyFunction = Callable[[Any], str]
+_KeyFunction = Callable[[ItemT], str]
 
 
 @dataclass(frozen=True)
 class InMemoryRepository(Generic[ItemT]):
     store: KeyValueStore[ItemT] = field(default_factory=lambda: InMemoryByteStore())
-    keys: list[_KeyFunction] = field(default_factory=list)
+    keys: list[_KeyFunction[ItemT]] = field(default_factory=list)
     seeds: list[ItemT] = field(default_factory=list)
 
     def with_namespace(self, value: str) -> InMemoryRepository[ItemT]:
@@ -33,10 +33,10 @@ class InMemoryRepository(Generic[ItemT]):
             seeds=self.seeds,
         )
 
-    def and_key(self, function: _KeyFunction) -> InMemoryRepository[ItemT]:
+    def and_key(self, function: _KeyFunction[ItemT]) -> InMemoryRepository[ItemT]:
         return self.with_key(function)
 
-    def with_key(self, function: _KeyFunction) -> InMemoryRepository[ItemT]:
+    def with_key(self, function: _KeyFunction[ItemT]) -> InMemoryRepository[ItemT]:
         return InMemoryRepository[ItemT](
             store=self.store,
             keys=[*self.keys, function],
@@ -133,14 +133,14 @@ class StoreNamespace(Generic[ItemT]):
     def drop(self, key: str) -> None:
         self.inner.drop(self._expand(key))
 
-    def _expand(self, key: str) -> ItemT:
+    def _expand(self, key: str) -> str:
         return ":".join([self.name, key])
 
 
 @dataclass
 class _SingleKeyRepository(RepositoryBase[ItemT]):
     store: KeyValueStore[ItemT]
-    pk: _KeyFunction
+    pk: _KeyFunction[ItemT]
 
     def bind(self, **kwargs: Any) -> Self:  # pragma: no cover
         return self
@@ -186,7 +186,7 @@ class _SingleKeyRepository(RepositoryBase[ItemT]):
 class _ManyKeyRepository(RepositoryBase[ItemT]):
     store: KeyValueStore[ItemT]
 
-    keys: list[_KeyFunction] = field(default_factory=list)
+    keys: list[_KeyFunction[ItemT]] = field(default_factory=list)
 
     def bind(self, **kwargs: Any) -> Self:  # pragma: no cover
         return self
@@ -207,7 +207,7 @@ class _ManyKeyRepository(RepositoryBase[ItemT]):
 
             error.fire()
 
-    def _pk(self, item: ItemT) -> Any:
+    def _pk(self, item: ItemT) -> str:
         return self.keys[0](item)
 
     def update(self, item: ItemT) -> None:
