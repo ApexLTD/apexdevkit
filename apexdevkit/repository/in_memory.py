@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import suppress
 from dataclasses import dataclass, field
 from typing import Any, Callable, Generic, Iterable, Iterator, Protocol, Self
 
@@ -48,7 +49,8 @@ class InMemoryRepository(Generic[ItemT]):
 
     def _seed(self, repository: Repository[ItemT]) -> Repository[ItemT]:
         for seed in self.seeds:
-            repository.create(seed)
+            with suppress(ExistsError):
+                repository.create(seed)
 
         return repository
 
