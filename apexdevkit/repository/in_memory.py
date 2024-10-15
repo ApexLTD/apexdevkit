@@ -62,7 +62,7 @@ class InMemoryRepository(Generic[ItemT]):
                 return _ManyKeyRepository(self.store, keys=self.keys)
 
 
-class KeyValueStore(Protocol[ItemT]):
+class KeyValueStore(Protocol[ItemT]):  # pragma: no cover
     def count(self) -> int:
         pass
 
