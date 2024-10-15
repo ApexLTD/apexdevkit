@@ -10,14 +10,13 @@ from apexdevkit.key_fn import AttributeKey
 from apexdevkit.repository import RepositoryBase
 from apexdevkit.repository.interface import ItemT, Repository
 
-KeyFunction = Callable[[Any], str]
-_Raw = dict[str, Any]
+_KeyFunction = Callable[[Any], str]
 
 
 @dataclass(frozen=True)
 class InMemoryRepository(Generic[ItemT]):
     store: KeyValueStore[ItemT] = field(default_factory=lambda: InMemoryByteStore())
-    keys: list[KeyFunction] = field(default_factory=list)
+    keys: list[_KeyFunction] = field(default_factory=list)
     seeds: list[ItemT] = field(default_factory=list)
 
     def with_namespace(self, value: str) -> InMemoryRepository[ItemT]:
@@ -34,10 +33,10 @@ class InMemoryRepository(Generic[ItemT]):
             seeds=self.seeds,
         )
 
-    def and_key(self, function: KeyFunction) -> InMemoryRepository[ItemT]:
+    def and_key(self, function: _KeyFunction) -> InMemoryRepository[ItemT]:
         return self.with_key(function)
 
-    def with_key(self, function: KeyFunction) -> InMemoryRepository[ItemT]:
+    def with_key(self, function: _KeyFunction) -> InMemoryRepository[ItemT]:
         return InMemoryRepository[ItemT](
             store=self.store,
             keys=[*self.keys, function],
@@ -141,7 +140,7 @@ class StoreNamespace(Generic[ItemT]):
 @dataclass
 class _SingleKeyRepository(RepositoryBase[ItemT]):
     store: KeyValueStore[ItemT]
-    pk: KeyFunction
+    pk: _KeyFunction
 
     def bind(self, **kwargs: Any) -> Self:  # pragma: no cover
         return self
@@ -187,7 +186,7 @@ class _SingleKeyRepository(RepositoryBase[ItemT]):
 class _ManyKeyRepository(RepositoryBase[ItemT]):
     store: KeyValueStore[ItemT]
 
-    keys: list[KeyFunction] = field(default_factory=list)
+    keys: list[_KeyFunction] = field(default_factory=list)
 
     def bind(self, **kwargs: Any) -> Self:  # pragma: no cover
         return self
