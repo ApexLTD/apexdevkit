@@ -6,7 +6,11 @@ from apexdevkit.repository.database import (
     Database,
     DatabaseCommand,
 )
-from apexdevkit.repository.in_memory import InMemoryRepository
+from apexdevkit.repository.in_memory import (
+    InMemoryKeyValueStore,
+    InMemoryRepository,
+    KeyValueStore,
+)
 from apexdevkit.repository.interface import Repository
 
 __all__ = [
@@ -16,6 +20,8 @@ __all__ = [
     "Database",
     "DatabaseCommand",
     "InMemoryRepository",
+    "InMemoryKeyValueStore",
+    "KeyValueStore",
     "Repository",
     "RepositoryBase",
 ]

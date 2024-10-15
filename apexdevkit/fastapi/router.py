@@ -281,7 +281,6 @@ class RestfulRouter:
 
     def with_sub_resource(self, **names: APIRouter) -> Self:
         for name, router in names.items():
-            print(self.item_path)
             self.router.include_router(router, prefix=f"{self.item_path}/{name}")
 
         return self

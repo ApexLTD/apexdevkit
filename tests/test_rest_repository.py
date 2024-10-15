@@ -9,7 +9,6 @@ from apexdevkit.fastapi.service import RestfulRepositoryBuilder, RestfulService
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import InMemoryRepository
 from apexdevkit.repository.decorator import BatchRepositoryDecorator
-from apexdevkit.repository.in_memory import AttributeKey
 from apexdevkit.repository.interface import BatchRepository
 from apexdevkit.testing.fake import FakeResource
 
@@ -39,9 +38,7 @@ class FakeAnimal(FakeResource[Animal]):
 @pytest.fixture
 def repository() -> BatchRepository[Animal]:
     return BatchRepositoryDecorator(
-        InMemoryRepository[Animal](DataclassFormatter(Animal)).with_key(
-            AttributeKey("id")
-        )
+        InMemoryRepository[Animal]().with_formatter(DataclassFormatter(Animal)).build()
     )
 
 
