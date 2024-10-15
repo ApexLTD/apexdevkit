@@ -109,12 +109,6 @@ class _SingleKeyRepository(RepositoryBase[ItemT]):
     def bind(self, **kwargs: Any) -> Self:
         return self
 
-    def with_seeded(self, *items: ItemT) -> Self:
-        for item in items:
-            self.create(item)
-
-        return self
-
     def create(self, item: ItemT) -> ItemT:
         self._ensure_does_not_exist(item)
         self.store.set(self.pk(item), item)
@@ -159,17 +153,6 @@ class _ManyKeyRepository(RepositoryBase[ItemT]):
     keys: list[KeyFunction] = field(default_factory=list)
 
     def bind(self, **kwargs: Any) -> Self:
-        return self
-
-    def with_key(self, function: KeyFunction) -> Self:
-        self.keys.append(function)
-
-        return self
-
-    def with_seeded(self, *items: ItemT) -> Self:
-        for item in items:
-            self.create(item)
-
         return self
 
     def create(self, item: ItemT) -> ItemT:
