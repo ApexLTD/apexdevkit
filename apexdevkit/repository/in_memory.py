@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable, Iterator, Self, Generic, Protocol
+from typing import Any, Callable, Generic, Iterable, Iterator, Protocol, Self
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
@@ -21,8 +21,8 @@ class AttributeKey:
 
 
 @dataclass
-class InMemoryRepository(RepositoryBase[ItemT]):
-    store: KeyValueStore
+class ManyKeyRepository(RepositoryBase[ItemT]):
+    store: KeyValueStore[ItemT]
 
     _keys: list[KeyFunction] = field(init=False, default_factory=list)
 
@@ -84,7 +84,7 @@ class InMemoryRepository(RepositoryBase[ItemT]):
 
 @dataclass
 class SingleKeyRepository(RepositoryBase[ItemT]):
-    store: KeyValueStore
+    store: KeyValueStore[ItemT]
 
     pk: KeyFunction = field(default_factory=lambda: AttributeKey("id"))
 
@@ -134,7 +134,6 @@ class SingleKeyRepository(RepositoryBase[ItemT]):
         return self.store.count()
 
 
-@dataclass
 class KeyValueStore(Protocol[ItemT]):
     def count(self) -> int:
         pass
