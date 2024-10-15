@@ -12,7 +12,7 @@ from apexdevkit.repository.in_memory import InMemoryRepository
 from apexdevkit.testing.fake import Fake
 
 
-@dataclass
+@dataclass(frozen=True)
 class _Company:
     id: str
     name: str
@@ -31,7 +31,7 @@ class _Company:
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class _Address:
     street: str
     city: str
