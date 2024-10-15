@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable, Iterator, Self
+from typing import Any, Callable, Iterable, Iterator, Self, Generic
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
@@ -21,9 +21,11 @@ class AttributeKey:
 @dataclass
 class InMemoryRepository(RepositoryBase[ItemT]):
     formatter: Formatter[_Raw, ItemT]
-    items: dict[str, _Raw] = field(default_factory=dict)
 
     _keys: list[KeyFunction] = field(init=False, default_factory=list)
+
+    def __post_init__(self) -> None:
+        self.store = KeyValueStore(self.formatter)
 
     def bind(self, **kwargs: Any) -> Self:
         return self
@@ -41,7 +43,7 @@ class InMemoryRepository(RepositoryBase[ItemT]):
 
     def create(self, item: ItemT) -> ItemT:
         self._ensure_does_not_exist(item)
-        self.items[self._pk(item)] = self.formatter.dump(item)
+        self.store.set(self._pk(item), item)
 
         return item
 
@@ -64,7 +66,7 @@ class InMemoryRepository(RepositoryBase[ItemT]):
 
     def delete(self, item_id: str) -> None:
         item = self.read(item_id)
-        del self.items[self._pk(item)]
+        self.store.drop(self._pk(item))
 
     def read(self, item_id: str) -> ItemT:
         for key in self._keys:
@@ -75,16 +77,30 @@ class InMemoryRepository(RepositoryBase[ItemT]):
         raise DoesNotExistError(item_id)
 
     def __iter__(self) -> Iterator[ItemT]:
-        yield from [self.formatter.load(raw) for raw in self.items.values()]
+        return iter(self.store.values())
 
     def __len__(self) -> int:
+        return self.store.count()
+
+
+@dataclass
+class KeyValueStore(Generic[ItemT]):
+    formatter: Formatter[_Raw, ItemT]
+
+    items: dict[str, _Raw] = field(default_factory=dict)
+
+    def count(self) -> int:
         return len(self.items)
 
-    def search(self, **kwargs: Any) -> Iterable[ItemT]:
-        items = []
+    def set(self, key: str, value: ItemT) -> None:
+        self.items[key] = self.formatter.dump(value)
 
-        for item in self.items.values():
-            if kwargs.items() <= item.items():
-                items.append(self.formatter.load(item))
+    def get(self, key: str) -> ItemT:
+        return self.formatter.load(self.items[key])
 
-        return items
+    def drop(self, key: str) -> None:
+        del self.items[key]
+
+    def values(self) -> Iterable[ItemT]:
+        for raw in self.items.values():
+            yield self.formatter.load(raw)
