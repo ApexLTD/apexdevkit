@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Generic, Iterable, Iterator, Protocol, Self
 
 from apexdevkit.error import DoesNotExistError, ExistsError
-from apexdevkit.formatter import Formatter
+from apexdevkit.formatter import Formatter, NoFormatter
 from apexdevkit.repository import RepositoryBase
 from apexdevkit.repository.interface import ItemT
 
@@ -153,8 +153,7 @@ class KeyValueStore(Protocol[ItemT]):
 
 @dataclass
 class InMemoryKeyValueStore(Generic[ItemT]):
-    formatter: Formatter[_Raw, ItemT]
-
+    formatter: Formatter[_Raw, ItemT] = field(default_factory=NoFormatter)
     items: dict[str, _Raw] = field(default_factory=dict)
 
     def count(self) -> int:

@@ -7,7 +7,6 @@ import pytest
 from faker import Faker
 
 from apexdevkit.error import DoesNotExistError, ExistsError
-from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import ManyKeyRepository
 from apexdevkit.repository.in_memory import AttributeKey, InMemoryKeyValueStore
 from apexdevkit.testing.fake import Fake
@@ -58,11 +57,7 @@ _Repository = ManyKeyRepository[_Company]
 
 @pytest.fixture
 def repository() -> _Repository:
-    formatter = DataclassFormatter[_Company](_Company).with_nested(
-        address=DataclassFormatter[_Address](_Address)
-    )
-
-    return ManyKeyRepository[_Company](InMemoryKeyValueStore(formatter))
+    return ManyKeyRepository[_Company](InMemoryKeyValueStore())
 
 
 def test_should_not_read_unknown(repository: _Repository) -> None:
