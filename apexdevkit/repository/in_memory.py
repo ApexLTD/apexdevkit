@@ -6,7 +6,7 @@ from typing import Any, Callable, Generic, Iterable, Iterator, Protocol, Self
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter, NoFormatter
 from apexdevkit.repository import RepositoryBase
-from apexdevkit.repository.interface import ItemT
+from apexdevkit.repository.interface import ItemT, Repository
 
 KeyFunction = Callable[[Any], str]
 _Raw = dict[str, Any]
@@ -171,3 +171,52 @@ class InMemoryKeyValueStore(Generic[ItemT]):
     def values(self) -> Iterable[ItemT]:
         for raw in self.items.values():
             yield self.formatter.load(raw)
+
+
+@dataclass
+class InMemoryRepository(Generic[ItemT]):
+    store: KeyValueStore[ItemT] = field(default_factory=InMemoryKeyValueStore)
+    keys: list[KeyFunction] = field(default_factory=list)
+    seeds: list[ItemT] = field(default_factory=list)
+
+    def with_formatter(self, value: Formatter[_Raw, ItemT]) -> Self:
+        return self.with_store(InMemoryKeyValueStore(value))
+
+    def with_store(self, value: KeyValueStore[ItemT]) -> Self:
+        self.store = value
+
+        return self
+
+    def and_key(self, function: KeyFunction) -> Self:
+        return self.with_key(function)
+
+    def with_key(self, function: KeyFunction) -> Self:
+        self.keys.append(function)
+
+        return self
+
+    def and_seeded(self, *items: ItemT) -> Self:
+        return self.with_seeded(*items)
+
+    def with_seeded(self, *items: ItemT) -> Self:
+        self.seeds.extend(items)
+
+        return self
+
+    def build(self) -> Repository[ItemT]:
+        return self._seed(self._create())
+
+    def _seed(self, repository: Repository[ItemT]) -> Repository[ItemT]:
+        for seed in self.seeds:
+            repository.create(seed)
+
+        return repository
+
+    def _create(self) -> Repository[ItemT]:
+        match len(self.keys):
+            case 0:
+                return SingleKeyRepository(self.store)
+            case 1:
+                return SingleKeyRepository(self.store, pk=self.keys[0])
+            case _:
+                return ManyKeyRepository(self.store, keys=self.keys)
