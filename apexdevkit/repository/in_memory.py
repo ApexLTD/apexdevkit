@@ -22,13 +22,9 @@ class AttributeKey:
 
 @dataclass
 class InMemoryRepository(RepositoryBase[ItemT]):
-    formatter: Formatter[_Raw, ItemT] | None = None
-    store: KeyValueStore | None = None
-    _keys: list[KeyFunction] = field(init=False, default_factory=list)
+    store: KeyValueStore
 
-    def __post_init__(self) -> None:
-        if self.store is None:
-            self.store = InMemoryKeyValueStore(self.formatter)
+    _keys: list[KeyFunction] = field(init=False, default_factory=list)
 
     def bind(self, **kwargs: Any) -> Self:
         return self

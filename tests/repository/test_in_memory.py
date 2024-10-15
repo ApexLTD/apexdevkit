@@ -62,7 +62,7 @@ def repository() -> _Repository:
         address=DataclassFormatter[_Address](_Address)
     )
 
-    return InMemoryRepository[_Company](store=InMemoryKeyValueStore(formatter))
+    return InMemoryRepository[_Company](InMemoryKeyValueStore(formatter))
 
 
 def test_should_not_read_unknown(repository: _Repository) -> None:
