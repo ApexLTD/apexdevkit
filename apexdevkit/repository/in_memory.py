@@ -106,7 +106,7 @@ class _SingleKeyRepository(RepositoryBase[ItemT]):
     store: KeyValueStore[ItemT]
     pk: KeyFunction
 
-    def bind(self, **kwargs: Any) -> Self:
+    def bind(self, **kwargs: Any) -> Self:  # pragma: no cover
         return self
 
     def create(self, item: ItemT) -> ItemT:
@@ -152,7 +152,7 @@ class _ManyKeyRepository(RepositoryBase[ItemT]):
 
     keys: list[KeyFunction] = field(default_factory=list)
 
-    def bind(self, **kwargs: Any) -> Self:
+    def bind(self, **kwargs: Any) -> Self:  # pragma: no cover
         return self
 
     def create(self, item: ItemT) -> ItemT:
