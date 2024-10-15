@@ -104,28 +104,28 @@ class SingleKeyRepository(RepositoryBase[ItemT]):
         return item
 
     def _ensure_does_not_exist(self, new: ItemT) -> None:
-        for existing in self:
-            error = ExistsError(existing)
+        try:
+            existing = self.store.get(self.pk(new))
+        except KeyError:
+            return
 
-            if self.pk(new) == self.pk(existing):
-                error.with_duplicate(self.pk)
-
-            error.fire()
+        ExistsError(existing).with_duplicate(self.pk).fire()
 
     def update(self, item: ItemT) -> None:
         self.delete(self.pk(item))
         self.create(item)
 
     def delete(self, item_id: str) -> None:
-        item = self.read(item_id)
-        self.store.drop(self.pk(item))
+        try:
+            self.store.drop(item_id)
+        except KeyError:
+            raise DoesNotExistError(item_id)
 
     def read(self, item_id: str) -> ItemT:
-        for item in self:
-            if self.pk(item) == str(item_id):
-                return item
-
-        raise DoesNotExistError(item_id)
+        try:
+            return self.store.get(item_id)
+        except KeyError:
+            raise DoesNotExistError(item_id)
 
     def __iter__(self) -> Iterator[ItemT]:
         return iter(self.store.values())
