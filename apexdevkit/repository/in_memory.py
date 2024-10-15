@@ -17,7 +17,7 @@ _KeyFunction = Callable[[ItemT], str]
 class InMemoryRepository(Generic[ItemT]):
     store: KeyValueStore[ItemT] = field(default_factory=lambda: InMemoryByteStore())
     keys: list[_KeyFunction[ItemT]] = field(default_factory=list)
-    seeds: list[ItemT] = field(default_factory=list)
+    seeds: frozenset[ItemT] = field(default_factory=frozenset)
 
     def with_namespace(self, value: str) -> InMemoryRepository[ItemT]:
         return InMemoryRepository[ItemT](
@@ -50,7 +50,7 @@ class InMemoryRepository(Generic[ItemT]):
         return InMemoryRepository(
             store=self.store,
             keys=self.keys,
-            seeds=[*self.seeds, *items],
+            seeds=self.seeds.union(set(items)),
         )
 
     def build(self) -> Repository[ItemT]:

@@ -124,7 +124,7 @@ def test_should_list() -> None:
     repository = InMemoryRepository[_Company]().with_seeded(*companies).build()
 
     assert len(repository) == len(companies)
-    assert list(repository) == companies
+    assert all(company in companies for company in repository)
 
 
 def test_should_update() -> None:
