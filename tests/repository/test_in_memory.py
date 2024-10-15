@@ -7,7 +7,8 @@ import pytest
 from faker import Faker
 
 from apexdevkit.error import DoesNotExistError, ExistsError
-from apexdevkit.repository.in_memory import AttributeKey, InMemoryRepository
+from apexdevkit.key_fn import AttributeKey
+from apexdevkit.repository.in_memory import InMemoryRepository
 from apexdevkit.testing.fake import Fake
 
 

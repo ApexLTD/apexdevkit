@@ -5,6 +5,7 @@ from typing import Any, Callable, Generic, Iterable, Iterator, Protocol, Self
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter, NoFormatter
+from apexdevkit.key_fn import AttributeKey
 from apexdevkit.repository import RepositoryBase
 from apexdevkit.repository.interface import ItemT, Repository
 
@@ -149,14 +150,6 @@ class _SingleKeyRepository(RepositoryBase[ItemT]):
 
     def __len__(self) -> int:
         return self.store.count()
-
-
-@dataclass
-class AttributeKey:
-    name: str
-
-    def __call__(self, item: Any) -> str:
-        return str(getattr(item, self.name))
 
 
 @dataclass
