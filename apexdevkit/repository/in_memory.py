@@ -25,7 +25,7 @@ class InMemoryRepository(RepositoryBase[ItemT]):
     _keys: list[KeyFunction] = field(init=False, default_factory=list)
 
     def __post_init__(self) -> None:
-        self.store = KeyValueStore(self.formatter)
+        self.store = InMemoryKeyValueStore(self.formatter)
 
     def bind(self, **kwargs: Any) -> Self:
         return self
@@ -84,7 +84,7 @@ class InMemoryRepository(RepositoryBase[ItemT]):
 
 
 @dataclass
-class KeyValueStore(Generic[ItemT]):
+class InMemoryKeyValueStore(Generic[ItemT]):
     formatter: Formatter[_Raw, ItemT]
 
     items: dict[str, _Raw] = field(default_factory=dict)
