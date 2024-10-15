@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable, Iterator, Self, Generic, Protocol
 
@@ -20,12 +22,13 @@ class AttributeKey:
 
 @dataclass
 class InMemoryRepository(RepositoryBase[ItemT]):
-    formatter: Formatter[_Raw, ItemT]
-
+    formatter: Formatter[_Raw, ItemT] | None = None
+    store: KeyValueStore | None = None
     _keys: list[KeyFunction] = field(init=False, default_factory=list)
 
     def __post_init__(self) -> None:
-        self.store = InMemoryKeyValueStore(self.formatter)
+        if self.store is None:
+            self.store = InMemoryKeyValueStore(self.formatter)
 
     def bind(self, **kwargs: Any) -> Self:
         return self
