@@ -54,7 +54,7 @@ class InMemoryRepository(Generic[ItemT]):
     def _create(self) -> Repository[ItemT]:
         match len(self.keys):
             case 0:
-                return _SingleKeyRepository(self.store)
+                return _SingleKeyRepository(self.store, pk=AttributeKey("id"))
             case 1:
                 return _SingleKeyRepository(self.store, pk=self.keys[0])
             case _:
@@ -103,8 +103,7 @@ class InMemoryKeyValueStore(Generic[ItemT]):
 @dataclass
 class _SingleKeyRepository(RepositoryBase[ItemT]):
     store: KeyValueStore[ItemT]
-
-    pk: KeyFunction = field(default_factory=lambda: AttributeKey("id"))
+    pk: KeyFunction
 
     def bind(self, **kwargs: Any) -> Self:
         return self
