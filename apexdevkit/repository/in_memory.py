@@ -24,13 +24,13 @@ class AttributeKey:
 class ManyKeyRepository(RepositoryBase[ItemT]):
     store: KeyValueStore[ItemT]
 
-    _keys: list[KeyFunction] = field(init=False, default_factory=list)
+    keys: list[KeyFunction] = field(default_factory=list)
 
     def bind(self, **kwargs: Any) -> Self:
         return self
 
     def with_key(self, function: KeyFunction) -> Self:
-        self._keys.append(function)
+        self.keys.append(function)
 
         return self
 
@@ -50,14 +50,14 @@ class ManyKeyRepository(RepositoryBase[ItemT]):
         for existing in self:
             error = ExistsError(existing)
 
-            for key in self._keys:
+            for key in self.keys:
                 if key(new) == key(existing):
                     error.with_duplicate(key)
 
             error.fire()
 
     def _pk(self, item: ItemT) -> Any:
-        return self._keys[0](item)
+        return self.keys[0](item)
 
     def update(self, item: ItemT) -> None:
         self.delete(self._pk(item))
@@ -68,7 +68,7 @@ class ManyKeyRepository(RepositoryBase[ItemT]):
         self.store.drop(self._pk(item))
 
     def read(self, item_id: str) -> ItemT:
-        for key in self._keys:
+        for key in self.keys:
             for item in self:
                 if key(item) == str(item_id):
                     return item
