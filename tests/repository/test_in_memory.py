@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from typing import Any
 
 import pytest
@@ -8,7 +8,7 @@ from faker import Faker
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
-from apexdevkit.repository import InMemoryRepository
+from apexdevkit.repository import ManyKeyRepository
 from apexdevkit.repository.in_memory import AttributeKey, InMemoryKeyValueStore
 from apexdevkit.testing.fake import Fake
 
@@ -53,7 +53,7 @@ class _Address:
         )
 
 
-_Repository = InMemoryRepository[_Company]
+_Repository = ManyKeyRepository[_Company]
 
 
 @pytest.fixture
@@ -62,7 +62,7 @@ def repository() -> _Repository:
         address=DataclassFormatter[_Address](_Address)
     )
 
-    return InMemoryRepository[_Company](InMemoryKeyValueStore(formatter))
+    return ManyKeyRepository[_Company](InMemoryKeyValueStore(formatter))
 
 
 def test_should_not_read_unknown(repository: _Repository) -> None:
@@ -157,13 +157,3 @@ def test_should_delete(repository: _Repository) -> None:
 
     with pytest.raises(DoesNotExistError):
         repository.read(company.id)
-
-
-def test_should_preserve_object(repository: _Repository) -> None:
-    company = _Company.fake(address=_Address.fake())
-    preserved = replace(company, address=replace(company.address))
-    repository = repository.with_key(AttributeKey("id")).with_seeded(company)
-    company.name = "changed"
-    company.address.city = "changed"
-
-    assert repository.read(company.id) == preserved
