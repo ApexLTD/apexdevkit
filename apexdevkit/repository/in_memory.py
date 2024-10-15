@@ -48,8 +48,6 @@ class InMemoryRepository(Generic[ItemT]):
         return self.with_seeded(*items)
 
     def with_seeded(self, *items: ItemT) -> InMemoryRepository[ItemT]:
-        self.seeds.extend(items)
-
         return InMemoryRepository(
             store=self.store,
             keys=self.keys,
