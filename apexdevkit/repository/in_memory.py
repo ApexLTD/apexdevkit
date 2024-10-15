@@ -134,7 +134,7 @@ class StoreNamespace(Generic[ItemT]):
         self.inner.drop(self._expand(key))
 
     def _expand(self, key: str) -> str:
-        return ":".join([self.name, key])
+        return "-".join([self.name, key])
 
 
 @dataclass
