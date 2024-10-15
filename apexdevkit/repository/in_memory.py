@@ -1,54 +1,65 @@
 from __future__ import annotations
 
+from contextlib import suppress
 from dataclasses import dataclass, field
 from typing import Any, Callable, Generic, Iterable, Iterator, Protocol, Self
 
 from apexdevkit.error import DoesNotExistError, ExistsError
-from apexdevkit.formatter import Formatter, NoFormatter
+from apexdevkit.formatter import Formatter, PickleFormatter
 from apexdevkit.key_fn import AttributeKey
 from apexdevkit.repository import RepositoryBase
 from apexdevkit.repository.interface import ItemT, Repository
 
-KeyFunction = Callable[[Any], str]
-_Raw = dict[str, Any]
+_KeyFunction = Callable[[ItemT], str]
 
 
-@dataclass
+@dataclass(frozen=True)
 class InMemoryRepository(Generic[ItemT]):
-    store: KeyValueStore[ItemT] = field(default_factory=lambda: InMemoryKeyValueStore())
-    keys: list[KeyFunction] = field(default_factory=list)
-    seeds: list[ItemT] = field(default_factory=list)
+    store: KeyValueStore[ItemT] = field(default_factory=lambda: InMemoryByteStore())
+    keys: list[_KeyFunction[ItemT]] = field(default_factory=list)
+    seeds: frozenset[ItemT] = field(default_factory=frozenset)
 
-    def with_formatter(self, value: Formatter[_Raw, ItemT]) -> Self:
-        return self.with_store(InMemoryKeyValueStore(value))
+    def with_namespace(self, value: str) -> InMemoryRepository[ItemT]:
+        return InMemoryRepository[ItemT](
+            store=StoreNamespace(value, self.store),
+            keys=self.keys,
+            seeds=self.seeds,
+        )
 
-    def with_store(self, value: KeyValueStore[ItemT]) -> Self:
-        self.store = value
+    def with_store(self, value: KeyValueStore[ItemT]) -> InMemoryRepository[ItemT]:
+        return InMemoryRepository[ItemT](
+            store=value,
+            keys=self.keys,
+            seeds=self.seeds,
+        )
 
-        return self
-
-    def and_key(self, function: KeyFunction) -> Self:
+    def and_key(self, function: _KeyFunction[ItemT]) -> InMemoryRepository[ItemT]:
         return self.with_key(function)
 
-    def with_key(self, function: KeyFunction) -> Self:
-        self.keys.append(function)
+    def with_key(self, function: _KeyFunction[ItemT]) -> InMemoryRepository[ItemT]:
+        return InMemoryRepository[ItemT](
+            store=self.store,
+            keys=[*self.keys, function],
+            seeds=self.seeds,
+        )
 
-        return self
-
-    def and_seeded(self, *items: ItemT) -> Self:
+    def and_seeded(self, *items: ItemT) -> InMemoryRepository[ItemT]:
         return self.with_seeded(*items)
 
-    def with_seeded(self, *items: ItemT) -> Self:
-        self.seeds.extend(items)
-
-        return self
+    def with_seeded(self, *items: ItemT) -> InMemoryRepository[ItemT]:
+        return InMemoryRepository(
+            store=self.store,
+            keys=self.keys,
+            seeds=self.seeds.union(set(items)),
+        )
 
     def build(self) -> Repository[ItemT]:
         return self._seed(self._create())
 
     def _seed(self, repository: Repository[ItemT]) -> Repository[ItemT]:
         for seed in self.seeds:
-            repository.create(seed)
+            with suppress(ExistsError):
+                repository.create(seed)
 
         return repository
 
@@ -80,9 +91,10 @@ class KeyValueStore(Protocol[ItemT]):  # pragma: no cover
 
 
 @dataclass
-class InMemoryKeyValueStore(Generic[ItemT]):
-    formatter: Formatter[_Raw, ItemT] = field(default_factory=NoFormatter)
-    items: dict[str, _Raw] = field(default_factory=dict)
+class InMemoryByteStore(Generic[ItemT]):
+    formatter: Formatter[bytes, ItemT] = field(default_factory=PickleFormatter)
+
+    items: dict[str, bytes] = field(default_factory=dict)
 
     def count(self) -> int:
         return len(self.items)
@@ -102,9 +114,33 @@ class InMemoryKeyValueStore(Generic[ItemT]):
 
 
 @dataclass
+class StoreNamespace(Generic[ItemT]):
+    name: str
+    inner: KeyValueStore[ItemT]
+
+    def count(self) -> int:
+        return self.inner.count()
+
+    def values(self) -> Iterable[ItemT]:
+        return self.inner.values()
+
+    def set(self, key: str, value: ItemT) -> None:
+        self.inner.set(self._expand(key), value)
+
+    def get(self, key: str) -> ItemT:
+        return self.inner.get(self._expand(key))
+
+    def drop(self, key: str) -> None:
+        self.inner.drop(self._expand(key))
+
+    def _expand(self, key: str) -> str:
+        return "-".join([self.name, key])
+
+
+@dataclass
 class _SingleKeyRepository(RepositoryBase[ItemT]):
     store: KeyValueStore[ItemT]
-    pk: KeyFunction
+    pk: _KeyFunction[ItemT]
 
     def bind(self, **kwargs: Any) -> Self:  # pragma: no cover
         return self
@@ -150,7 +186,7 @@ class _SingleKeyRepository(RepositoryBase[ItemT]):
 class _ManyKeyRepository(RepositoryBase[ItemT]):
     store: KeyValueStore[ItemT]
 
-    keys: list[KeyFunction] = field(default_factory=list)
+    keys: list[_KeyFunction[ItemT]] = field(default_factory=list)
 
     def bind(self, **kwargs: Any) -> Self:  # pragma: no cover
         return self
@@ -171,7 +207,7 @@ class _ManyKeyRepository(RepositoryBase[ItemT]):
 
             error.fire()
 
-    def _pk(self, item: ItemT) -> Any:
+    def _pk(self, item: ItemT) -> str:
         return self.keys[0](item)
 
     def update(self, item: ItemT) -> None:

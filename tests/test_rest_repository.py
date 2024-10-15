@@ -37,9 +37,7 @@ class FakeAnimal(FakeResource[Animal]):
 
 @pytest.fixture
 def repository() -> BatchRepository[Animal]:
-    return BatchRepositoryDecorator(
-        InMemoryRepository[Animal]().with_formatter(DataclassFormatter(Animal)).build()
-    )
+    return BatchRepositoryDecorator(InMemoryRepository[Animal]().build())
 
 
 @pytest.fixture

@@ -1,9 +1,11 @@
+import pickle
 from copy import deepcopy
 from dataclasses import asdict, dataclass, field
 from typing import Any, Generic, Protocol, Self, TypeVar
 
 _SourceT = TypeVar("_SourceT")
 _TargetT = TypeVar("_TargetT")
+_ItemT = TypeVar("_ItemT")
 
 
 class Formatter(Protocol[_SourceT, _TargetT]):  # pragma: no cover
@@ -14,13 +16,12 @@ class Formatter(Protocol[_SourceT, _TargetT]):  # pragma: no cover
         pass
 
 
-@dataclass
-class NoFormatter(Formatter[Any, Any]):
-    def load(self, source: Any) -> Any:
-        return source
+class PickleFormatter(Generic[_ItemT]):
+    def dump(self, item: _ItemT) -> bytes:
+        return pickle.dumps(item)
 
-    def dump(self, target: Any) -> Any:
-        return target
+    def load(self, raw: bytes) -> _ItemT:
+        return pickle.loads(raw)  # type: ignore
 
 
 @dataclass
