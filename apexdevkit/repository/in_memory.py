@@ -83,6 +83,58 @@ class InMemoryRepository(RepositoryBase[ItemT]):
 
 
 @dataclass
+class SingleKeyRepository(RepositoryBase[ItemT]):
+    store: KeyValueStore
+
+    pk: KeyFunction = field(default_factory=lambda: AttributeKey("id"))
+
+    def bind(self, **kwargs: Any) -> Self:
+        return self
+
+    def with_seeded(self, *items: ItemT) -> Self:
+        for item in items:
+            self.create(item)
+
+        return self
+
+    def create(self, item: ItemT) -> ItemT:
+        self._ensure_does_not_exist(item)
+        self.store.set(self.pk(item), item)
+
+        return item
+
+    def _ensure_does_not_exist(self, new: ItemT) -> None:
+        for existing in self:
+            error = ExistsError(existing)
+
+            if self.pk(new) == self.pk(existing):
+                error.with_duplicate(self.pk)
+
+            error.fire()
+
+    def update(self, item: ItemT) -> None:
+        self.delete(self.pk(item))
+        self.create(item)
+
+    def delete(self, item_id: str) -> None:
+        item = self.read(item_id)
+        self.store.drop(self.pk(item))
+
+    def read(self, item_id: str) -> ItemT:
+        for item in self:
+            if self.pk(item) == str(item_id):
+                return item
+
+        raise DoesNotExistError(item_id)
+
+    def __iter__(self) -> Iterator[ItemT]:
+        return iter(self.store.values())
+
+    def __len__(self) -> int:
+        return self.store.count()
+
+
+@dataclass
 class KeyValueStore(Protocol[ItemT]):
     def count(self) -> int:
         pass
