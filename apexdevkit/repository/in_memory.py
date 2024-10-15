@@ -21,7 +21,7 @@ class AttributeKey:
 
 
 @dataclass
-class ManyKeyRepository(RepositoryBase[ItemT]):
+class _ManyKeyRepository(RepositoryBase[ItemT]):
     store: KeyValueStore[ItemT]
 
     keys: list[KeyFunction] = field(default_factory=list)
@@ -83,7 +83,7 @@ class ManyKeyRepository(RepositoryBase[ItemT]):
 
 
 @dataclass
-class SingleKeyRepository(RepositoryBase[ItemT]):
+class _SingleKeyRepository(RepositoryBase[ItemT]):
     store: KeyValueStore[ItemT]
 
     pk: KeyFunction = field(default_factory=lambda: AttributeKey("id"))
@@ -215,8 +215,8 @@ class InMemoryRepository(Generic[ItemT]):
     def _create(self) -> Repository[ItemT]:
         match len(self.keys):
             case 0:
-                return SingleKeyRepository(self.store)
+                return _SingleKeyRepository(self.store)
             case 1:
-                return SingleKeyRepository(self.store, pk=self.keys[0])
+                return _SingleKeyRepository(self.store, pk=self.keys[0])
             case _:
-                return ManyKeyRepository(self.store, keys=self.keys)
+                return _ManyKeyRepository(self.store, keys=self.keys)
