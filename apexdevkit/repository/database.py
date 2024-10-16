@@ -6,40 +6,41 @@ from typing import Any, ContextManager, Iterable, Protocol, Self
 _RawData = dict[str, Any]
 
 
-@dataclass
+@dataclass(frozen=True)
 class Database:
     connector: Connector
 
-    command: DatabaseCommand = field(init=False)
+    def execute(self, command: DatabaseCommand) -> _CommandExecutor:
+        return Database._CommandExecutor(self.connector, command)
 
-    def execute(self, command: DatabaseCommand) -> Self:
-        self.command = command
+    @dataclass(frozen=True)
+    class _CommandExecutor:
+        connector: Connector
+        command: DatabaseCommand
 
-        return self
+        def fetch_none(self) -> None:
+            with self.connector.connect() as connection:
+                cursor: Cursor = connection.cursor()
+                cursor.execute(self.command.value, self.command.payload)
+                cursor.close()
 
-    def fetch_none(self) -> None:
-        with self.connector.connect() as connection:
-            cursor: Cursor = connection.cursor()
-            cursor.execute(self.command.value, self.command.payload)
-            cursor.close()
+        def fetch_one(self) -> _RawData:
+            with self.connector.connect() as connection:
+                cursor: Cursor = connection.cursor()
+                cursor.execute(self.command.value, self.command.payload)
+                raw = cursor.fetchone()
+                cursor.close()
 
-    def fetch_one(self) -> _RawData:
-        with self.connector.connect() as connection:
-            cursor: Cursor = connection.cursor()
-            cursor.execute(self.command.value, self.command.payload)
-            raw = cursor.fetchone()
-            cursor.close()
+            return dict(raw or {})
 
-        return dict(raw or {})
+        def fetch_all(self) -> Iterable[_RawData]:
+            with self.connector.connect() as connection:
+                cursor: Cursor = connection.cursor()
+                cursor.execute(self.command.value, self.command.payload)
+                raw = cursor.fetchall()
+                cursor.close()
 
-    def fetch_all(self) -> Iterable[_RawData]:
-        with self.connector.connect() as connection:
-            cursor: Cursor = connection.cursor()
-            cursor.execute(self.command.value, self.command.payload)
-            raw = cursor.fetchall()
-            cursor.close()
-
-        return [dict(raw or {}) for raw in raw]
+            return [dict(raw or {}) for raw in raw]
 
 
 class Connector(Protocol):  # pragma: no cover
