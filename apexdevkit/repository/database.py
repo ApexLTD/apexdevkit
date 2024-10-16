@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, ContextManager, Iterable, Protocol, Self
+from typing import Any, ContextManager, Iterable, Protocol
 
 _RawData = dict[str, Any]
 
@@ -70,22 +71,24 @@ class Cursor(Protocol):  # pragma: no cover
         pass
 
 
-@dataclass
+@dataclass(frozen=True)
 class DatabaseCommand:
-    value: str
-    payload: _RawData | list[_RawData] = field(init=False, default_factory=dict)
+    value: str = field(default_factory=str)
+    payload: _RawData | list[_RawData] = field(default_factory=dict)
 
-    def with_data(self, value: _RawData | None = None, **fields: Any) -> Self:
+    def with_data(
+        self, value: _RawData | None = None, **fields: Any
+    ) -> DatabaseCommand:
         assert isinstance(self.payload, dict)
-        self.payload.update(value or {})
-        self.payload.update(fields)
 
-        return self
+        payload = deepcopy(self.payload)
+        payload.update(value or {})
+        payload.update(fields)
 
-    def with_collection(self, value: list[_RawData]) -> Self:
-        self.payload = value
+        return DatabaseCommand(self.value, payload)
 
-        return self
+    def with_collection(self, value: list[_RawData]) -> DatabaseCommand:
+        return DatabaseCommand(self.value, value)
 
     def __str__(self) -> str:  # pragma: no cover
         return self.value
