@@ -24,7 +24,7 @@ class SchemaFields(ABC):
         pass
 
 
-@dataclass
+@dataclass(frozen=True)
 class RestfulSchema:
     name: RestfulName
     fields: SchemaFields
