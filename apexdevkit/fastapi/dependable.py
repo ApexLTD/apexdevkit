@@ -1,5 +1,5 @@
-from dataclasses import dataclass, field
-from typing import Annotated, Any, Callable, Protocol, Self
+from dataclasses import dataclass
+from typing import Annotated, Any, Callable, Protocol
 
 from fastapi import Depends, Path
 from fastapi.requests import Request
@@ -82,26 +82,24 @@ class InfraDependency:
         return Annotated[RestfulServiceBuilder, Depends(_)]
 
 
-@dataclass
+@dataclass(frozen=True)
 class DependableBuilder:
-    dependency: _Dependency = field(init=False)
+    dependency: _Dependency | None = None
 
-    def from_infra(self, value: RestfulServiceBuilder) -> Self:
-        self.dependency = InfraDependency(value)
+    def from_infra(self, value: RestfulServiceBuilder) -> "DependableBuilder":
+        return DependableBuilder(InfraDependency(value))
 
-        return self
+    def with_parent(self, value: RestfulName) -> "DependableBuilder":
+        if self.dependency is None:
+            raise RuntimeError("RestfulServiceBuilder type not set")
+        return DependableBuilder(ParentDependency(value, self.dependency))
 
-    def with_parent(self, value: RestfulName) -> Self:
-        dependable = DependableBuilder()
-        dependable.dependency = ParentDependency(value, self.dependency)
-
-        return dependable
-
-    def with_user(self, extract_user: Callable[..., Any]) -> Self:
-        dependable = DependableBuilder()
-        dependable.dependency = UserDependency(extract_user, self.dependency)
-
-        return dependable
+    def with_user(self, extract_user: Callable[..., Any]) -> "DependableBuilder":
+        if self.dependency is None:
+            raise RuntimeError("RestfulServiceBuilder type not set")
+        return DependableBuilder(UserDependency(extract_user, self.dependency))
 
     def as_dependable(self) -> type[RestfulService]:
+        if self.dependency is None:
+            raise RuntimeError("RestfulServiceBuilder type not set")
         return ServiceDependency(self.dependency).as_dependable()
