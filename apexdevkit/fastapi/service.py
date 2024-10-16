@@ -69,7 +69,7 @@ class RestfulRepositoryBuilder(Generic[ItemT]):
         return _RestfulRepository(self.formatter, self.repository)
 
 
-@dataclass
+@dataclass(frozen=True)
 class _RestfulRepository(RestfulService, Generic[ItemT]):
     formatter: Formatter[dict[str, Any], ItemT]
     repository: Repository[ItemT]
