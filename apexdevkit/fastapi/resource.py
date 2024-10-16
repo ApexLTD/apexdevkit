@@ -10,7 +10,7 @@ _Response = JSONResponse | dict[str, Any]
 _Endpoint = Callable[..., _Response]
 
 
-@dataclass
+@dataclass(frozen=True)
 class RestfulResource:
     response: RestfulResponse
 
