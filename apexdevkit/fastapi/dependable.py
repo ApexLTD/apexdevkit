@@ -23,7 +23,7 @@ class _Dependency(Protocol):
         pass
 
 
-@dataclass
+@dataclass(frozen=True)
 class ServiceDependency:
     dependency: _Dependency
 
@@ -36,7 +36,7 @@ class ServiceDependency:
         return Annotated[RestfulService, Depends(_)]
 
 
-@dataclass
+@dataclass(frozen=True)
 class ParentDependency:
     parent: RestfulName
     dependency: _Dependency
@@ -56,7 +56,7 @@ class ParentDependency:
         return Annotated[RestfulServiceBuilder, Depends(_)]
 
 
-@dataclass
+@dataclass(frozen=True)
 class UserDependency:
     extract_user: Callable[..., Any]
     dependency: _Dependency
@@ -71,7 +71,7 @@ class UserDependency:
         return Annotated[RestfulServiceBuilder, Depends(_)]
 
 
-@dataclass
+@dataclass(frozen=True)
 class InfraDependency:
     infra: RestfulServiceBuilder
 
