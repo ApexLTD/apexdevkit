@@ -8,7 +8,7 @@ from apexdevkit.http import Http, HttpUrl, JsonDict
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
 
 
-@dataclass
+@dataclass(frozen=True)
 class RestResource:
     http: Http
     name: RestfulName
@@ -95,13 +95,13 @@ class RestResource:
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class RestCollection(RestResource):
     def sub_resource(self, name: str) -> RestItem:
         return RestItem(self.http.with_endpoint(self.name.plural), RestfulName(name))
 
 
-@dataclass
+@dataclass(frozen=True)
 class RestItem(RestResource):
     def sub_resource(self, name: str) -> RestItem:
         return RestItem(self.http.with_endpoint(self.name.singular), RestfulName(name))
