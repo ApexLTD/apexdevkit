@@ -19,7 +19,7 @@ class _Item(Protocol):  # pragma: no cover
 ItemT = TypeVar("ItemT", bound=_Item)
 
 
-@dataclass
+@dataclass(frozen=True)
 class MongoRepository(Generic[ItemT]):
     connector: MongoConnector
     database_name: str
