@@ -8,7 +8,7 @@ from pymongo import MongoClient
 from apexdevkit.repository import Connection
 
 
-@dataclass
+@dataclass(frozen=True)
 class SqliteFileConnector:
     dsn: str
 
@@ -19,7 +19,7 @@ class SqliteFileConnector:
         return connection
 
 
-@dataclass
+@dataclass(frozen=True)
 class SqliteInMemoryConnector:
     dsn: str = ":memory:"
 
@@ -34,7 +34,7 @@ class SqliteInMemoryConnector:
         return connection
 
 
-@dataclass
+@dataclass(frozen=True)
 class PyMongoConnector:
     dsn: str
 
