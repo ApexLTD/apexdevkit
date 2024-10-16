@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, Self
@@ -53,12 +55,12 @@ class RestfulServiceBuilder(ABC):
     parent_id: str = field(init=False)
     user: Any = field(init=False)
 
-    def with_user(self, user: Any) -> "RestfulServiceBuilder":
+    def with_user(self, user: Any) -> RestfulServiceBuilder:
         self.user = user
 
         return self
 
-    def with_parent(self, identity: str) -> "RestfulServiceBuilder":
+    def with_parent(self, identity: str) -> RestfulServiceBuilder:
         self.parent_id = identity
 
         return self

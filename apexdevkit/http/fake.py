@@ -7,7 +7,7 @@ from apexdevkit.http.fluent import HttpMethod, HttpResponse
 from apexdevkit.http.json import JsonDict
 
 
-@dataclass
+@dataclass(frozen=True)
 class FakeResponse:
     content: Any = field(default_factory=dict)
     status_code: int = 200

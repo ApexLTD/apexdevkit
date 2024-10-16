@@ -20,7 +20,7 @@ class Animal:
     age: int
 
 
-@dataclass
+@dataclass(frozen=True)
 class FakeAnimal(FakeResource[Animal]):
     id: str | None = None
     name: str | None = None

@@ -9,7 +9,7 @@ from apexdevkit.repository import Database, DatabaseCommand, RepositoryBase
 from apexdevkit.repository.interface import ItemT
 
 
-@dataclass
+@dataclass(frozen=True)
 class SqliteRepository(RepositoryBase[ItemT]):
     db: Database
     table: SqlTable[ItemT]

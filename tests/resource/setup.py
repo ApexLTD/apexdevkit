@@ -49,7 +49,7 @@ def setup(infra: RestfulServiceBuilder) -> FastAPI:
     )
 
 
-@dataclass
+@dataclass(frozen=True)
 class FakeApple(FakeResource[Apple]):
     id: str | None = None
     name: Name | None = None

@@ -1,45 +1,47 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, ContextManager, Iterable, Protocol, Self
+from typing import Any, ContextManager, Iterable, Protocol
 
 _RawData = dict[str, Any]
 
 
-@dataclass
+@dataclass(frozen=True)
 class Database:
     connector: Connector
 
-    command: DatabaseCommand = field(init=False)
+    def execute(self, command: DatabaseCommand) -> _CommandExecutor:
+        return Database._CommandExecutor(self.connector, command)
 
-    def execute(self, command: DatabaseCommand) -> Self:
-        self.command = command
+    @dataclass(frozen=True)
+    class _CommandExecutor:
+        connector: Connector
+        command: DatabaseCommand
 
-        return self
+        def fetch_none(self) -> None:
+            with self.connector.connect() as connection:
+                cursor: Cursor = connection.cursor()
+                cursor.execute(self.command.value, self.command.payload)
+                cursor.close()
 
-    def fetch_none(self) -> None:
-        with self.connector.connect() as connection:
-            cursor: Cursor = connection.cursor()
-            cursor.execute(self.command.value, self.command.payload)
-            cursor.close()
+        def fetch_one(self) -> _RawData:
+            with self.connector.connect() as connection:
+                cursor: Cursor = connection.cursor()
+                cursor.execute(self.command.value, self.command.payload)
+                raw = cursor.fetchone()
+                cursor.close()
 
-    def fetch_one(self) -> _RawData:
-        with self.connector.connect() as connection:
-            cursor: Cursor = connection.cursor()
-            cursor.execute(self.command.value, self.command.payload)
-            raw = cursor.fetchone()
-            cursor.close()
+            return dict(raw or {})
 
-        return dict(raw or {})
+        def fetch_all(self) -> Iterable[_RawData]:
+            with self.connector.connect() as connection:
+                cursor: Cursor = connection.cursor()
+                cursor.execute(self.command.value, self.command.payload)
+                raw = cursor.fetchall()
+                cursor.close()
 
-    def fetch_all(self) -> Iterable[_RawData]:
-        with self.connector.connect() as connection:
-            cursor: Cursor = connection.cursor()
-            cursor.execute(self.command.value, self.command.payload)
-            raw = cursor.fetchall()
-            cursor.close()
-
-        return [dict(raw or {}) for raw in raw]
+            return [dict(raw or {}) for raw in raw]
 
 
 class Connector(Protocol):  # pragma: no cover
@@ -69,22 +71,24 @@ class Cursor(Protocol):  # pragma: no cover
         pass
 
 
-@dataclass
+@dataclass(frozen=True)
 class DatabaseCommand:
-    value: str
-    payload: _RawData | list[_RawData] = field(init=False, default_factory=dict)
+    value: str = field(default_factory=str)
+    payload: _RawData | list[_RawData] = field(default_factory=dict)
 
-    def with_data(self, value: _RawData | None = None, **fields: Any) -> Self:
+    def with_data(
+        self, value: _RawData | None = None, **fields: Any
+    ) -> DatabaseCommand:
         assert isinstance(self.payload, dict)
-        self.payload.update(value or {})
-        self.payload.update(fields)
 
-        return self
+        payload = deepcopy(self.payload)
+        payload.update(value or {})
+        payload.update(fields)
 
-    def with_collection(self, value: list[_RawData]) -> Self:
-        self.payload = value
+        return DatabaseCommand(self.value, payload)
 
-        return self
+    def with_collection(self, value: list[_RawData]) -> DatabaseCommand:
+        return DatabaseCommand(self.value, value)
 
     def __str__(self) -> str:  # pragma: no cover
         return self.value

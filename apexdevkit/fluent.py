@@ -26,7 +26,7 @@ class FluentDict(dict[str, ItemT]):
         return FluentDict[ItemT]({k: v for k, v in self.items() if k in keys})
 
 
-@dataclass
+@dataclass(frozen=True)
 class FluentElement(Generic[ItemT]):
     value: ItemT
 

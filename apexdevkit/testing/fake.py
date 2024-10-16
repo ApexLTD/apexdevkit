@@ -9,7 +9,7 @@ from apexdevkit.http import JsonDict
 ItemT = TypeVar("ItemT")
 
 
-@dataclass
+@dataclass(frozen=True)
 class Fake:
     faker: Faker = field(default_factory=Faker)
 
@@ -50,7 +50,7 @@ class Fake:
         return bool(self.faker.boolean())
 
 
-@dataclass
+@dataclass(frozen=True)
 class FakeResource(Generic[ItemT]):
     item_type: Type[ItemT] = field()
     fake: Fake = field(default_factory=Fake)

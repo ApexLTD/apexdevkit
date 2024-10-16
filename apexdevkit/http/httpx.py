@@ -46,7 +46,7 @@ class Httpx:
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class _HttpxResponse:
     inner: httpx.Response
 

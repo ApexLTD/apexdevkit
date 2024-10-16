@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from contextlib import nullcontext
 from dataclasses import dataclass, field
 from typing import Any, ContextManager, Self
@@ -5,15 +7,13 @@ from typing import Any, ContextManager, Self
 from apexdevkit.repository import DatabaseCommand
 
 
-@dataclass
+@dataclass(frozen=True)
 class FakeConnector:
     commands: list[tuple[str, Any]] = field(default_factory=list)
-    results: list[Any] = field(init=False, default_factory=list)
+    results: list[Any] = field(default_factory=list)
 
-    def with_result(self, values: Any) -> Self:
-        self.results = [values, *self.results]
-
-        return self
+    def with_result(self, values: Any) -> FakeConnector:
+        return FakeConnector(self.commands, [values, *self.results])
 
     def execute(self, command: str, data: Any) -> None:
         self.commands.append((command, data))

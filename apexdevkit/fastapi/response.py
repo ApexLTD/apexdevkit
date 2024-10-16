@@ -7,7 +7,7 @@ from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
 from apexdevkit.testing import RestfulName
 
 
-@dataclass
+@dataclass(frozen=True)
 class RestfulResponse:
     name: RestfulName
 
