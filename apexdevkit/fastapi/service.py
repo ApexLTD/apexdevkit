@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from abc import ABC
-from dataclasses import dataclass, field
-from typing import Any, Dict, Generic, Iterable, Self, TypeVar
+from dataclasses import dataclass
+from typing import Any, Dict, Generic, Iterable, TypeVar
 
 from apexdevkit.formatter import Formatter
 from apexdevkit.repository.decorator import BatchRepositoryDecorator
@@ -50,22 +52,24 @@ class RestfulService(ABC):  # pragma: no cover
 ItemT = TypeVar("ItemT")
 
 
-@dataclass
+@dataclass(frozen=True)
 class RestfulRepositoryBuilder(Generic[ItemT]):
-    formatter: Formatter[dict[str, Any], ItemT] = field(init=False)
-    repository: Repository[ItemT] = field(init=False)
+    formatter: Formatter[dict[str, Any], ItemT] | None = None
+    repository: Repository[ItemT] | None = None
 
-    def with_formatter(self, formatter: Formatter[dict[str, Any], ItemT]) -> Self:
-        self.formatter = formatter
+    def with_formatter(
+        self, formatter: Formatter[dict[str, Any], ItemT]
+    ) -> RestfulRepositoryBuilder[ItemT]:
+        return RestfulRepositoryBuilder[ItemT](formatter, self.repository)
 
-        return self
-
-    def with_repository(self, repository: Repository[ItemT]) -> Self:
-        self.repository = repository
-
-        return self
+    def with_repository(
+        self, repository: Repository[ItemT]
+    ) -> RestfulRepositoryBuilder[ItemT]:
+        return RestfulRepositoryBuilder[ItemT](self.formatter, repository)
 
     def build(self) -> RestfulService:
+        if self.formatter is None or self.repository is None:
+            raise RuntimeError("Formatter or repository not provided.")
         return _RestfulRepository(self.formatter, self.repository)
 
 
