@@ -27,3 +27,21 @@ class _Target(Protocol[ItemT]):
 
     def update_many(self, items: Iterable[ItemT]) -> None:
         pass
+
+
+@dataclass(frozen=True)
+class FullSync(Generic[ItemT]):
+    source: Iterable[ItemT]
+    target: _FullTarget[ItemT]
+
+    def sync(self) -> None:
+        items = list(self.source)
+        self.target.update_many(items)
+
+
+ItemR = TypeVar("ItemR", contravariant=True)
+
+
+class _FullTarget(Protocol[ItemR]):
+    def update_many(self, items: Iterable[ItemR]) -> None:
+        pass
