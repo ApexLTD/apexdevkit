@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "apexdevkit"
-version = "1.14.4"
+version = "1.15.0"
 description = "Apex Development Tools for python."
 authors = ["Apex Dev <dev@apex.ge>"]
 readme = "README.md"
@@ -10,6 +10,9 @@ python = "^3.11"
 httpx = "*"
 fastapi = "*"
 pymongo = "*"
+uvicorn = "*"
+sentry-sdk = {extras = ["fastapi"], version = "*"}
+python-dotenv = "*"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
@@ -30,6 +33,7 @@ strict = true
 exclude = [
     "apexdevkit/fastapi/schema.py",
     "apexdevkit/fastapi/dependable.py",
+    "apexdevkit/server.py",
 ]
 
 [tool.ruff]
