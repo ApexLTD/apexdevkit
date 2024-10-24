@@ -10,6 +10,9 @@ python = "^3.11"
 httpx = "*"
 fastapi = "*"
 pymongo = "*"
+uvicorn = "*"
+sentry-sdk = {extras = ["fastapi"], version = "*"}
+python-dotenv = "*"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
