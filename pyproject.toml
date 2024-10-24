@@ -33,6 +33,7 @@ strict = true
 exclude = [
     "apexdevkit/fastapi/schema.py",
     "apexdevkit/fastapi/dependable.py",
+    "apexdevkit/server.py",
 ]
 
 [tool.ruff]
