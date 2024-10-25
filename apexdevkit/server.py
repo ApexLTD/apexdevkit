@@ -24,7 +24,7 @@ class UvicornServer:
     port: int = 8000
     path: str = ""
 
-    on_startup: Callable[[], None] = field(init=False, default=_do_nothing)
+    startup_handlers: list[Callable[[], None]] = field(default_factory=list)
 
     @classmethod
     def from_env(cls, path: str = ".env") -> UvicornServer:
@@ -49,7 +49,7 @@ class UvicornServer:
         return self
 
     def before_run(self, execute: Callable[[], None]) -> UvicornServer:
-        self.on_startup = execute
+        self.startup_handlers.append(execute)
 
         return self
 
@@ -63,6 +63,10 @@ class UvicornServer:
             root_path=self.path,
             log_config=self.logging_config,
         )
+
+    def on_startup(self) -> None:
+        for handler in self.startup_handlers:
+            handler()
 
 
 @dataclass
