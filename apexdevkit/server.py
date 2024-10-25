@@ -12,6 +12,10 @@ from fastapi import FastAPI
 from apexdevkit.environment import environment_variable
 
 
+def _do_nothing() -> None:
+    pass
+
+
 @dataclass
 class UvicornServer:
     logging_config: dict[str, Any]
@@ -20,11 +24,11 @@ class UvicornServer:
     port: int = 8000
     path: str = ""
 
-    on_startup: Callable[[], None] = field(init=False, default_factory=lambda: None)
+    on_startup: Callable[[], None] = field(init=False, default=_do_nothing)
 
     @classmethod
-    def from_env(cls, env_path: str = ".env") -> UvicornServer:
-        load_dotenv(env_path)
+    def from_env(cls, path: str = ".env") -> UvicornServer:
+        load_dotenv(path)
         Sentry().setup()
 
         return cls(LoggingConfig().setup().as_dict())
@@ -44,8 +48,10 @@ class UvicornServer:
 
         return self
 
-    def before_run(self, execute: Callable[[], None]):
+    def before_run(self, execute: Callable[[], None]) -> UvicornServer:
         self.on_startup = execute
+
+        return self
 
     def run(self, api: FastAPI) -> None:
         self.on_startup()
