@@ -12,7 +12,7 @@ from fastapi import FastAPI
 from apexdevkit.environment import environment_variable
 
 
-def do_nothing() -> None:
+def _do_nothing() -> None:
     pass
 
 
@@ -24,7 +24,7 @@ class UvicornServer:
     port: int = 8000
     path: str = ""
 
-    on_startup: Callable[[], None] = field(init=False, default=do_nothing)
+    on_startup: Callable[[], None] = field(init=False, default=_do_nothing)
 
     @classmethod
     def from_env(cls, path: str = ".env") -> UvicornServer:
