@@ -44,8 +44,10 @@ class UvicornServer:
 
         return self
 
-    def before_run(self, execute: Callable[[], None]):
+    def before_run(self, execute: Callable[[], None]) -> UvicornServer:
         self.on_startup = execute
+
+        return self
 
     def run(self, api: FastAPI) -> None:
         self.on_startup()
