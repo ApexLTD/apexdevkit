@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import logging.config
-from dataclasses import dataclass
-from typing import Any
+from dataclasses import dataclass, field
+from typing import Any, Callable
 
 import sentry_sdk
 import uvicorn
@@ -19,6 +19,8 @@ class UvicornServer:
     host: str = "0.0.0.0"
     port: int = 8000
     path: str = ""
+
+    on_startup: Callable[[], None] = field(init=False, default_factory=lambda: None)
 
     @classmethod
     def from_env(cls) -> UvicornServer:
@@ -42,7 +44,12 @@ class UvicornServer:
 
         return self
 
+    def before_run(self, execute: Callable[[], None]):
+        self.on_startup = execute
+
     def run(self, api: FastAPI) -> None:
+        self.on_startup()
+
         uvicorn.run(
             api,
             host=self.host,
