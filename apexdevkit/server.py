@@ -12,6 +12,10 @@ from fastapi import FastAPI
 from apexdevkit.environment import environment_variable
 
 
+def do_nothing() -> None:
+    pass
+
+
 @dataclass
 class UvicornServer:
     logging_config: dict[str, Any]
@@ -20,7 +24,7 @@ class UvicornServer:
     port: int = 8000
     path: str = ""
 
-    on_startup: Callable[[], None] = field(init=False, default_factory=lambda: None)
+    on_startup: Callable[[], None] = field(init=False, default=do_nothing)
 
     @classmethod
     def from_env(cls, path: str = ".env") -> UvicornServer:
