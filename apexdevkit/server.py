@@ -23,8 +23,8 @@ class UvicornServer:
     on_startup: Callable[[], None] = field(init=False, default_factory=lambda: None)
 
     @classmethod
-    def from_env(cls) -> UvicornServer:
-        load_dotenv()
+    def from_env(cls, env_path: str = ".env") -> UvicornServer:
+        load_dotenv(env_path)
         Sentry().setup()
 
         return cls(LoggingConfig().setup().as_dict())
