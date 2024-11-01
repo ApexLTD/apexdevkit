@@ -8,8 +8,8 @@ from typing import Any, ContextManager
 
 import pymssql
 from pymongo import MongoClient
-from pymssql import Cursor
 from pymssql import Connection as _Connection
+from pymssql import Cursor
 
 from apexdevkit.repository import Connection
 

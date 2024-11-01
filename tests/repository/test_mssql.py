@@ -7,8 +7,8 @@ import pytest
 from pymssql.exceptions import DatabaseError
 from pytest import fixture
 
-from apexdevkit.error import ExistsError, DoesNotExistError
-from apexdevkit.repository import DatabaseCommand, Database, MsSqlRepository
+from apexdevkit.error import DoesNotExistError, ExistsError
+from apexdevkit.repository import Database, DatabaseCommand, MsSqlRepository
 from apexdevkit.repository.mssql import SqlTable, UnknownError
 
 
@@ -17,6 +17,7 @@ class Apple:
     color: str
 
     id: str = field(default_factory=lambda: str(uuid4()))
+
 
 class AppleTable(SqlTable[Apple]):
     def count_all(self) -> DatabaseCommand:

@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TypeVar, Iterator, Protocol, Any
+from typing import Any, Iterator, Protocol, TypeVar
 
 from pymssql.exceptions import DatabaseError
 
 from apexdevkit.error import DoesNotExistError, ExistsError
-from apexdevkit.repository import RepositoryBase, Database, DatabaseCommand
-
+from apexdevkit.repository import Database, DatabaseCommand, RepositoryBase
 
 ItemT = TypeVar("ItemT")
 
@@ -37,9 +36,7 @@ class MsSqlRepository(RepositoryBase[ItemT]):
 
     def create(self, item: ItemT) -> ItemT:
         try:
-            return self.table.load(
-                self.db.execute(self.table.insert(item)).fetch_one()
-            )
+            return self.table.load(self.db.execute(self.table.insert(item)).fetch_one())
         except DatabaseError as e:
             e = MssqlException(e)
 
@@ -60,7 +57,7 @@ class MsSqlRepository(RepositoryBase[ItemT]):
         self.db.execute(self.table.update(item)).fetch_none()
 
 
-class SqlTable(Protocol[ItemT]):
+class SqlTable(Protocol[ItemT]):  # pragma: no cover
     def count_all(self) -> DatabaseCommand:
         pass
 
