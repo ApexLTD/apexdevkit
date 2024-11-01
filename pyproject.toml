@@ -13,6 +13,7 @@ pymongo = "*"
 uvicorn = "*"
 sentry-sdk = {extras = ["fastapi"], version = "*"}
 python-dotenv = "*"
+pymssql = "^2.3.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
