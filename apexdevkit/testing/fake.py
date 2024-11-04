@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import random
 from dataclasses import dataclass, field
 from functools import cached_property
 from typing import Any, Generic, Type, TypeVar
@@ -5,6 +8,7 @@ from typing import Any, Generic, Type, TypeVar
 from faker import Faker
 
 from apexdevkit.http import JsonDict
+from apexdevkit.value import Value
 
 ItemT = TypeVar("ItemT")
 
@@ -67,3 +71,15 @@ class FakeResource(Generic[ItemT]):
 
     def entity(self, **fields: Any) -> ItemT:
         return self.item_type(**self.json().merge(JsonDict(fields)))
+
+
+@dataclass(frozen=True)
+class FakeValue(FakeResource[Value]):
+    item_type: Type[Value] = field(default=Value)
+
+    @cached_property
+    def _raw(self) -> dict[str, Any]:
+        return {
+            "value": self.fake.number(),
+            "exponent": random.choice([10, 100, 1000]),
+        }
