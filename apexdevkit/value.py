@@ -1,13 +1,7 @@
 from __future__ import annotations
 
-import random
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from decimal import Decimal
-from functools import cached_property
-from typing import Any, Type
-
-from apexdevkit.formatter import DataclassFormatter
-from apexdevkit.testing.fake import FakeResource
 
 
 @dataclass(frozen=True)
@@ -33,23 +27,3 @@ class Value:
 
     def _adjusted(self, other: Value) -> int:
         return int(Decimal(other.value) / Decimal(other.exponent) * self.exponent)
-
-
-@dataclass(frozen=True)
-class FakeValue(FakeResource[Value]):
-    item_type: Type[Value] = field(default=Value)
-
-    @cached_property
-    def _raw(self) -> dict[str, Any]:
-        return {
-            "value": self.fake.number(),
-            "exponent": random.choice([10, 100, 1000]),
-        }
-
-
-class ValueFormatter:
-    def load(self, raw: dict[str, Any]) -> Value:
-        return DataclassFormatter(Value).load(raw)
-
-    def dump(self, value: Value) -> dict[str, Any]:
-        return DataclassFormatter(Value).dump(value)

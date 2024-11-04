@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 import pickle
 from copy import deepcopy
 from dataclasses import asdict, dataclass, field
 from typing import Any, Generic, Protocol, Self, TypeVar
+
+from apexdevkit.value import Value
 
 _SourceT = TypeVar("_SourceT")
 _TargetT = TypeVar("_TargetT")
@@ -59,3 +63,11 @@ class DataclassFormatter(Generic[_TargetT]):
 
     def dump(self, item: _TargetT) -> dict[str, Any]:
         return asdict(item)  # type: ignore
+
+
+class ValueFormatter:
+    def load(self, raw: dict[str, Any]) -> Value:
+        return DataclassFormatter(Value).load(raw)
+
+    def dump(self, value: Value) -> dict[str, Any]:
+        return DataclassFormatter(Value).dump(value)

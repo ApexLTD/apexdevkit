@@ -1,4 +1,5 @@
 from apexdevkit.testing.database import FakeConnector
+from apexdevkit.testing.fake import FakeValue
 from apexdevkit.testing.rest import RestCollection, RestfulName, RestResource
 
 __all__ = [
@@ -6,4 +7,5 @@ __all__ = [
     "RestCollection",
     "RestfulName",
     "RestResource",
+    "FakeValue",
 ]
