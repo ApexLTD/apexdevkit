@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, Generic, TypeVar
+from typing import Any, Callable, Generic, TypeVar
 
 ItemT = TypeVar("ItemT")
 
@@ -32,6 +32,9 @@ class FluentElement(Generic[ItemT]):
 
     def to(self, a_type: Callable[[ItemT], ConvertedT]) -> ConvertedT:
         return a_type(self.value)
+
+    def as_dict(self) -> dict[str, Any]:
+        return dict(self.value)  # type: ignore
 
     def __str__(self) -> str:
         return str(self.value)

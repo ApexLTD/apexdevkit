@@ -3,8 +3,8 @@ from uuid import uuid4
 import pytest
 
 from apexdevkit.error import DoesNotExistError
-from apexdevkit.fastapi.rest import RestResource
 from apexdevkit.http import JsonDict
+from apexdevkit.testing.rest import RestCollection
 from tests.resource.sample_api import FailingService
 from tests.resource.setup import FakeApple
 
@@ -19,7 +19,7 @@ def service() -> FailingService:
     return FailingService(DoesNotExistError)
 
 
-def test_should_not_read_unknown(resource: RestResource) -> None:
+def test_should_not_read_unknown(resource: RestCollection) -> None:
     (
         resource.read_one()
         .with_id(uuid4())
@@ -30,7 +30,7 @@ def test_should_not_read_unknown(resource: RestResource) -> None:
     )
 
 
-def test_should_not_update_unknown(apple: JsonDict, resource: RestResource) -> None:
+def test_should_not_update_unknown(apple: JsonDict, resource: RestCollection) -> None:
     (
         resource.update_one()
         .with_id(apple["id"])
@@ -43,7 +43,7 @@ def test_should_not_update_unknown(apple: JsonDict, resource: RestResource) -> N
 
 
 def test_should_not_update_many_unknown(
-    apple: JsonDict, resource: RestResource
+    apple: JsonDict, resource: RestCollection
 ) -> None:
     (
         resource.update_many()
@@ -55,7 +55,7 @@ def test_should_not_update_many_unknown(
     )
 
 
-def test_should_not_replace_unknown(apple: JsonDict, resource: RestResource) -> None:
+def test_should_not_replace_unknown(apple: JsonDict, resource: RestCollection) -> None:
     (
         resource.replace_one()
         .from_data(apple)
@@ -67,7 +67,7 @@ def test_should_not_replace_unknown(apple: JsonDict, resource: RestResource) -> 
 
 
 def test_should_not_replace_many_unknown(
-    apple: JsonDict, resource: RestResource
+    apple: JsonDict, resource: RestCollection
 ) -> None:
     (
         resource.replace_many()
@@ -79,7 +79,7 @@ def test_should_not_replace_many_unknown(
     )
 
 
-def test_should_not_delete_unknown(apple: JsonDict, resource: RestResource) -> None:
+def test_should_not_delete_unknown(apple: JsonDict, resource: RestCollection) -> None:
     (
         resource.delete_one()
         .with_id(apple["id"])
