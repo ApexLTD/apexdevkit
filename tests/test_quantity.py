@@ -1,10 +1,10 @@
 from decimal import Decimal
 
-from apexdevkit.value import Quantity
+from apexdevkit.value import Value
 
 
 def test_should_cast_to_decimal() -> None:
-    quantity = Quantity(1516, 100)
+    quantity = Value(1516, 100)
 
     decimal = quantity.as_decimal()
 
@@ -14,24 +14,24 @@ def test_should_cast_to_decimal() -> None:
 def test_should_cast_from_string() -> None:
     decimal = "15.16"
 
-    quantity = Quantity.from_string(decimal)
+    quantity = Value.from_string(decimal)
 
-    assert quantity == Quantity(1516, 100)
+    assert quantity == Value(1516, 100)
 
 
 def test_should_add() -> None:
-    quantity = Quantity(1515, 100)
-    operand = Quantity(10, 1000)
+    quantity = Value(1515, 100)
+    operand = Value(10, 1000)
 
     result = quantity.add(operand)
 
-    assert result == Quantity(1516, 100)
+    assert result == Value(1516, 100)
 
 
 def test_should_subtract() -> None:
-    quantity = Quantity(1517, 100)
-    operand = Quantity(10, 1000)
+    quantity = Value(1517, 100)
+    operand = Value(10, 1000)
 
     result = quantity.subtract(operand)
 
-    assert result == Quantity(1516, 100)
+    assert result == Value(1516, 100)
