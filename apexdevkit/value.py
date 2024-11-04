@@ -63,3 +63,28 @@ class Value:
             self.exponent,
             self.unit,
         )
+
+
+@dataclass(frozen=True)
+class FakeQuantity(FakeResource[Quantity]):
+    item_type: Type[Quantity] = field(default=Quantity)
+
+    @cached_property
+    def _raw(self) -> dict[str, Any]:
+        return {
+            "value": self.fake.number(),
+            "exponent": random.choice([10, 100, 1000]),
+        }
+
+
+@dataclass(frozen=True)
+class FakeValue(FakeResource[Value]):
+    item_type: Type[Value] = field(default=Value)
+
+    @cached_property
+    def _raw(self) -> dict[str, Any]:
+        return {
+            "value": self.fake.number(),
+            "exponent": random.choice([10, 100, 1000]),
+            "unit": random.choice(["GEL", "EUR", "KG"]),
+        }
