@@ -11,7 +11,7 @@ from apexdevkit.http.fluent import HttpResponse
 
 
 @dataclass(frozen=True)
-class RestResource:
+class _RestResource:
     http: Http
     name: RestfulName
 
@@ -215,12 +215,12 @@ class _Response:
 
 
 @dataclass(frozen=True)
-class RestCollection(RestResource):
+class RestCollection(_RestResource):
     def sub_resource(self, name: str) -> RestItem:
         return RestItem(self.http.with_endpoint(self.name.plural), RestfulName(name))
 
 
 @dataclass(frozen=True)
-class RestItem(RestResource):
+class RestItem(_RestResource):
     def sub_resource(self, name: str) -> RestItem:
         return RestItem(self.http.with_endpoint(self.name.singular), RestfulName(name))

@@ -4,7 +4,7 @@ import pytest
 
 from apexdevkit.error import ForbiddenError
 from apexdevkit.http import JsonDict
-from apexdevkit.testing.rest import RestResource
+from apexdevkit.testing.rest import RestCollection
 from tests.resource.sample_api import FailingService
 from tests.resource.setup import FakeApple
 
@@ -19,7 +19,7 @@ def service() -> FailingService:
     return FailingService(ForbiddenError)
 
 
-def test_should_not_create_forbidden(apple: JsonDict, resource: RestResource) -> None:
+def test_should_not_create_forbidden(apple: JsonDict, resource: RestCollection) -> None:
     (
         resource.create_one()
         .from_data(apple)
@@ -31,7 +31,7 @@ def test_should_not_create_forbidden(apple: JsonDict, resource: RestResource) ->
 
 
 def test_should_not_create_many_forbidden(
-    apple: JsonDict, resource: RestResource
+    apple: JsonDict, resource: RestCollection
 ) -> None:
     (
         resource.create_many()
@@ -43,7 +43,7 @@ def test_should_not_create_many_forbidden(
     )
 
 
-def test_should_not_read_forbidden(resource: RestResource) -> None:
+def test_should_not_read_forbidden(resource: RestCollection) -> None:
     (
         resource.read_one()
         .with_id(uuid4())
@@ -54,11 +54,11 @@ def test_should_not_read_forbidden(resource: RestResource) -> None:
     )
 
 
-def test_should_not_read_all_forbidden(resource: RestResource) -> None:
+def test_should_not_read_all_forbidden(resource: RestCollection) -> None:
     resource.read_all().ensure().fail().with_code(403).and_message("Forbidden")
 
 
-def test_should_not_update_forbidden(apple: JsonDict, resource: RestResource) -> None:
+def test_should_not_update_forbidden(apple: JsonDict, resource: RestCollection) -> None:
     (
         resource.update_one()
         .with_id(apple["id"])
@@ -71,7 +71,7 @@ def test_should_not_update_forbidden(apple: JsonDict, resource: RestResource) ->
 
 
 def test_should_not_update_many_forbidden(
-    apple: JsonDict, resource: RestResource
+    apple: JsonDict, resource: RestCollection
 ) -> None:
     (
         resource.update_many()
@@ -83,7 +83,9 @@ def test_should_not_update_many_forbidden(
     )
 
 
-def test_should_not_replace_forbidden(apple: JsonDict, resource: RestResource) -> None:
+def test_should_not_replace_forbidden(
+    apple: JsonDict, resource: RestCollection
+) -> None:
     (
         resource.replace_one()
         .from_data(apple)
@@ -95,7 +97,7 @@ def test_should_not_replace_forbidden(apple: JsonDict, resource: RestResource) -
 
 
 def test_should_not_replace_many_forbidden(
-    apple: JsonDict, resource: RestResource
+    apple: JsonDict, resource: RestCollection
 ) -> None:
     (
         resource.replace_many()
@@ -107,7 +109,7 @@ def test_should_not_replace_many_forbidden(
     )
 
 
-def test_should_not_delete_forbidden(apple: JsonDict, resource: RestResource) -> None:
+def test_should_not_delete_forbidden(apple: JsonDict, resource: RestCollection) -> None:
     (
         resource.delete_one()
         .with_id(apple["id"])

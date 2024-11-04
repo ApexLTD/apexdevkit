@@ -2,7 +2,7 @@ import pytest
 
 from apexdevkit.error import ExistsError
 from apexdevkit.http import JsonDict
-from apexdevkit.testing.rest import RestResource
+from apexdevkit.testing.rest import RestCollection
 from tests.resource.sample_api import FailingService
 from tests.resource.setup import FakeApple
 
@@ -17,7 +17,7 @@ def service() -> FailingService:
     return FailingService(ExistsError)
 
 
-def test_should_not_create_existing(apple: JsonDict, resource: RestResource) -> None:
+def test_should_not_create_existing(apple: JsonDict, resource: RestCollection) -> None:
     (
         resource.create_one()
         .from_data(apple)
@@ -29,7 +29,7 @@ def test_should_not_create_existing(apple: JsonDict, resource: RestResource) -> 
 
 
 def test_should_not_create_many_existing(
-    apple: JsonDict, resource: RestResource
+    apple: JsonDict, resource: RestCollection
 ) -> None:
     (
         resource.create_many()

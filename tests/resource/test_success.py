@@ -6,7 +6,6 @@ import pytest
 
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestCollection
-from apexdevkit.testing.rest import RestResource
 from tests.resource.sample_api import SuccessfulService
 from tests.resource.setup import FakeApple
 
@@ -24,7 +23,7 @@ def service(apple: JsonDict) -> SuccessfulService:
 def test_should_create(
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestResource,
+    resource: RestCollection,
 ) -> None:
     (
         resource.create_one()
@@ -41,7 +40,7 @@ def test_should_create(
 def test_should_create_many(
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestResource,
+    resource: RestCollection,
 ) -> None:
     (
         resource.create_many()
@@ -58,7 +57,7 @@ def test_should_create_many(
 def test_should_read_one(
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestResource,
+    resource: RestCollection,
 ) -> None:
     (
         resource.read_one()
@@ -75,7 +74,7 @@ def test_should_read_one(
 def test_should_read_all(
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestResource,
+    resource: RestCollection,
 ) -> None:
     resource.read_all().ensure().success().with_code(200).and_collection([apple])
 
@@ -85,7 +84,7 @@ def test_should_read_all(
 def test_should_update_one(
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestResource,
+    resource: RestCollection,
 ) -> None:
     (
         resource.update_one()
@@ -102,7 +101,7 @@ def test_should_update_one(
 def test_should_update_many(
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestResource,
+    resource: RestCollection,
 ) -> None:
     resource.update_many().from_collection([apple]).ensure().success().with_code(200)
 
@@ -112,7 +111,7 @@ def test_should_update_many(
 def test_should_replace_one(
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestResource,
+    resource: RestCollection,
 ) -> None:
     resource.replace_one().from_data(apple).ensure().success().with_code(200)
 
@@ -122,7 +121,7 @@ def test_should_replace_one(
 def test_should_replace_many(
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestResource,
+    resource: RestCollection,
 ) -> None:
     resource.replace_many().from_collection([apple]).ensure().success().with_code(200)
 
@@ -132,7 +131,7 @@ def test_should_replace_many(
 def test_should_delete_one(
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestResource,
+    resource: RestCollection,
 ) -> None:
     resource.delete_one().with_id(apple["id"]).ensure().success().with_code(200)
 

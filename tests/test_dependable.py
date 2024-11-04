@@ -19,11 +19,10 @@ from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.http import Httpx
 from apexdevkit.testing import RestCollection
-from apexdevkit.testing.rest import RestResource
 from tests.resource.sample_api import AppleFields, PriceFields
 
 
-def resource_with_dependency(dependency: ServiceDependency) -> RestResource:
+def resource_with_dependency(dependency: ServiceDependency) -> RestCollection:
     return RestCollection(
         name=RestfulName("apple"),
         http=Httpx(

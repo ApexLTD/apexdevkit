@@ -13,7 +13,6 @@ from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.http import Httpx
 from apexdevkit.testing import RestCollection
-from apexdevkit.testing.rest import RestResource
 from tests.resource.sample_api import AppleFields, SuccessfulService
 from tests.resource.setup import FakeApple
 
@@ -29,7 +28,7 @@ def fake_user() -> FakeUser:
 
 
 @pytest.fixture
-def resource(infra: RestfulServiceBuilder, fake_user: FakeUser) -> RestResource:
+def resource(infra: RestfulServiceBuilder, fake_user: FakeUser) -> RestCollection:
     return RestCollection(
         name=RestfulName("apple"),
         http=Httpx(TestClient(setup(infra, fake_user))),
@@ -72,7 +71,7 @@ def setup(infra: RestfulServiceBuilder, fake_user: FakeUser) -> FastAPI:
 
 
 def test_should_call_extract_user_for_create_one(
-    resource: RestResource, fake_user: FakeUser
+    resource: RestCollection, fake_user: FakeUser
 ) -> None:
     resource.create_one().from_data(FakeApple().json()).ensure()
 
@@ -80,7 +79,7 @@ def test_should_call_extract_user_for_create_one(
 
 
 def test_should_persist_user_for_create_one(
-    resource: RestResource,
+    resource: RestCollection,
     infra: RestfulServiceBuilder,
 ) -> None:
     resource.create_one().from_data(FakeApple().json()).ensure()
@@ -89,7 +88,7 @@ def test_should_persist_user_for_create_one(
 
 
 def test_should_call_extract_user_for_create_many(
-    resource: RestResource, fake_user: FakeUser
+    resource: RestCollection, fake_user: FakeUser
 ) -> None:
     (
         resource.create_many()
@@ -106,7 +105,7 @@ def test_should_call_extract_user_for_create_many(
 
 
 def test_should_persist_user_for_create_many(
-    resource: RestResource,
+    resource: RestCollection,
     infra: RestfulServiceBuilder,
 ) -> None:
     (
@@ -124,7 +123,7 @@ def test_should_persist_user_for_create_many(
 
 
 def test_should_call_extract_user_for_read_one(
-    resource: RestResource, fake_user: FakeUser
+    resource: RestCollection, fake_user: FakeUser
 ) -> None:
     resource.read_one().with_id(str(FakeApple().json().get("id"))).ensure()
 
@@ -132,7 +131,7 @@ def test_should_call_extract_user_for_read_one(
 
 
 def test_should_persist_user_for_read_one(
-    resource: RestResource,
+    resource: RestCollection,
     infra: RestfulServiceBuilder,
 ) -> None:
     resource.read_one().with_id(str(FakeApple().json().get("id"))).ensure()
@@ -141,7 +140,7 @@ def test_should_persist_user_for_read_one(
 
 
 def test_should_call_extract_user_for_read_all(
-    resource: RestResource, fake_user: FakeUser
+    resource: RestCollection, fake_user: FakeUser
 ) -> None:
     resource.read_all().ensure()
 
@@ -149,7 +148,7 @@ def test_should_call_extract_user_for_read_all(
 
 
 def test_should_persist_user_for_read_all(
-    resource: RestResource,
+    resource: RestCollection,
     infra: RestfulServiceBuilder,
 ) -> None:
     resource.read_all().ensure()
@@ -158,7 +157,7 @@ def test_should_persist_user_for_read_all(
 
 
 def test_should_call_extract_user_for_update_one(
-    resource: RestResource, fake_user: FakeUser
+    resource: RestCollection, fake_user: FakeUser
 ) -> None:
     (
         resource.update_one()
@@ -171,7 +170,7 @@ def test_should_call_extract_user_for_update_one(
 
 
 def test_should_persist_user_for_update_one(
-    resource: RestResource,
+    resource: RestCollection,
     infra: RestfulServiceBuilder,
 ) -> None:
     (
@@ -185,7 +184,7 @@ def test_should_persist_user_for_update_one(
 
 
 def test_should_call_extract_user_for_update_many(
-    resource: RestResource, fake_user: FakeUser
+    resource: RestCollection, fake_user: FakeUser
 ) -> None:
     (
         resource.update_many()
@@ -202,7 +201,7 @@ def test_should_call_extract_user_for_update_many(
 
 
 def test_should_persist_user_for_update_many(
-    resource: RestResource,
+    resource: RestCollection,
     infra: RestfulServiceBuilder,
 ) -> None:
     (
@@ -220,7 +219,7 @@ def test_should_persist_user_for_update_many(
 
 
 def test_should_call_extract_user_for_replace_one(
-    resource: RestResource, fake_user: FakeUser
+    resource: RestCollection, fake_user: FakeUser
 ) -> None:
     resource.replace_one().from_data(FakeApple().json()).ensure()
 
@@ -228,7 +227,7 @@ def test_should_call_extract_user_for_replace_one(
 
 
 def test_should_persist_user_for_replace_one(
-    resource: RestResource,
+    resource: RestCollection,
     infra: RestfulServiceBuilder,
 ) -> None:
     resource.replace_one().from_data(FakeApple().json()).ensure()
@@ -237,7 +236,7 @@ def test_should_persist_user_for_replace_one(
 
 
 def test_should_call_extract_user_for_replace_many(
-    resource: RestResource, fake_user: FakeUser
+    resource: RestCollection, fake_user: FakeUser
 ) -> None:
     (
         resource.replace_many()
@@ -254,7 +253,7 @@ def test_should_call_extract_user_for_replace_many(
 
 
 def test_should_persist_user_for_replace_many(
-    resource: RestResource,
+    resource: RestCollection,
     infra: RestfulServiceBuilder,
 ) -> None:
     (
@@ -272,7 +271,7 @@ def test_should_persist_user_for_replace_many(
 
 
 def test_should_call_extract_user_for_delete_one(
-    resource: RestResource, fake_user: FakeUser
+    resource: RestCollection, fake_user: FakeUser
 ) -> None:
     resource.delete_one().with_id(str(FakeApple().json().get("id"))).ensure()
 
@@ -280,7 +279,7 @@ def test_should_call_extract_user_for_delete_one(
 
 
 def test_should_persist_user_for_delete_one(
-    resource: RestResource,
+    resource: RestCollection,
     infra: RestfulServiceBuilder,
 ) -> None:
     resource.delete_one().with_id(str(FakeApple().json().get("id"))).ensure()
