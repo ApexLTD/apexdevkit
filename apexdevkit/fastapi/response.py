@@ -1,11 +1,8 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
-from typing import Any, Iterable, Self
+from typing import Any, Iterable
 
 from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.http import JsonDict
 
 
 @dataclass(frozen=True)
@@ -68,66 +65,3 @@ class RestfulResponse:
                 content["data"] = {self.name.singular: data}
 
         return content
-
-
-@dataclass
-class RestResponse:
-    resource: RestfulName
-    json: JsonDict
-    http_code: int
-
-    def fail(self) -> Self:
-        if self.http_code == 422:
-            return self
-
-        return self.with_status("fail")
-
-    def success(self) -> Self:
-        return self.with_status("success")
-
-    def with_status(self, value: str) -> Self:
-        assert self.json.value_of("status").to(str) == value
-
-        return self
-
-    def with_code(self, value: int) -> Self:
-        assert self.http_code == value
-
-        if self.http_code != 422:
-            assert self.json.value_of("code").to(int) == value
-
-        return self
-
-    def message(self, value: str) -> Self:
-        return self.with_message(value)
-
-    def and_message(self, value: str) -> Self:
-        return self.with_message(value)
-
-    def with_message(self, value: str) -> Self:
-        assert self.json.value_of("error").to(dict) == {"message": value}, self.json
-
-        return self
-
-    def and_item(self, value: Any) -> Self:
-        return self.with_item(value)
-
-    def with_item(self, value: Any) -> Self:
-        return self.with_data(**{self.resource.singular: value})
-
-    def and_collection(self, value: list[Any]) -> Self:
-        return self.with_collection(value)
-
-    def with_collection(self, values: list[Any]) -> Self:
-        return self.with_data(**{self.resource.plural: values}, count=len(values))
-
-    def and_no_data(self) -> Self:
-        return self.no_data()
-
-    def no_data(self) -> Self:
-        return self.with_data()
-
-    def with_data(self, **kwargs: Any) -> Self:
-        assert self.json.value_of("data").to(dict) == {**kwargs}, self.json
-
-        return self
