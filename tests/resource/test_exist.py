@@ -1,8 +1,8 @@
 import pytest
 
 from apexdevkit.error import ExistsError
-from apexdevkit.testing.rest import RestResource
 from apexdevkit.http import JsonDict
+from apexdevkit.testing.rest import RestResource
 from tests.resource.sample_api import FailingService
 from tests.resource.setup import FakeApple
 

@@ -4,9 +4,9 @@ from uuid import uuid4
 
 import pytest
 
-from apexdevkit.testing.rest import RestResource
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestCollection
+from apexdevkit.testing.rest import RestResource
 from tests.resource.sample_api import SuccessfulService
 from tests.resource.setup import FakeApple
 

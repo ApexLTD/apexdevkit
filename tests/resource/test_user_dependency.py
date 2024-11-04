@@ -10,10 +10,10 @@ from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.testing.rest import RestResource
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.http import Httpx
 from apexdevkit.testing import RestCollection
+from apexdevkit.testing.rest import RestResource
 from tests.resource.sample_api import AppleFields, SuccessfulService
 from tests.resource.setup import FakeApple
 
