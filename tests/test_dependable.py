@@ -16,7 +16,7 @@ from apexdevkit.fastapi.dependable import (
     UserDependency,
 )
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.fastapi.rest import RestResource
+from apexdevkit.testing.rest import RestResource
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.http import Httpx
 from apexdevkit.testing import RestCollection
