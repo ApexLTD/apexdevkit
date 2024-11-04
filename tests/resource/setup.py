@@ -10,8 +10,8 @@ from fastapi import FastAPI
 from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
 from apexdevkit.fastapi.dependable import DependableBuilder
+from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.router import RestfulRouter
-from apexdevkit.testing import RestfulName
 from apexdevkit.testing.fake import FakeResource
 from tests.resource.sample_api import Apple, AppleFields, Color, Name, PriceFields
 
