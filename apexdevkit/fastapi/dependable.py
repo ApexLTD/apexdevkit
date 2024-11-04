@@ -6,9 +6,9 @@ from fastapi.requests import Request
 
 from apexdevkit.error import ApiError, DoesNotExistError
 from apexdevkit.fastapi import RestfulServiceBuilder
+from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.service import RestfulService
-from apexdevkit.testing import RestfulName
 
 
 def inject(dependency: str) -> Any:  # pragma: no cover

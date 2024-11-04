@@ -5,8 +5,8 @@ from typing import Any, Callable, Iterable, List
 
 from pydantic import BaseModel, create_model
 
+from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fluent import FluentDict
-from apexdevkit.testing import RestfulName
 
 
 class SchemaFields(ABC):

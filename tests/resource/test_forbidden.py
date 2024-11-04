@@ -3,8 +3,8 @@ from uuid import uuid4
 import pytest
 
 from apexdevkit.error import ForbiddenError
+from apexdevkit.fastapi.rest import RestResource
 from apexdevkit.http import JsonDict
-from apexdevkit.testing import RestResource
 from tests.resource.sample_api import FailingService
 from tests.resource.setup import FakeApple
 

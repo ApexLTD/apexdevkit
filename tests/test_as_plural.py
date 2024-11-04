@@ -1,4 +1,4 @@
-from apexdevkit.testing.rest import as_plural
+from apexdevkit.fastapi.name import as_plural
 
 
 def test_ending_with_s() -> None:
