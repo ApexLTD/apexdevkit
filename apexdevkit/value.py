@@ -6,6 +6,7 @@ from decimal import Decimal
 from functools import cached_property
 from typing import Any, Type
 
+from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.testing.fake import FakeResource
 
 
@@ -88,3 +89,19 @@ class FakeValue(FakeResource[Value]):
             "exponent": random.choice([10, 100, 1000]),
             "unit": random.choice(["GEL", "EUR", "KG"]),
         }
+
+
+class QuantityFormatter:
+    def load(self, raw: dict[str, Any]) -> Quantity:
+        return DataclassFormatter(Quantity).load(raw)
+
+    def dump(self, quantity: Quantity) -> dict[str, Any]:
+        return DataclassFormatter(Quantity).dump(quantity)
+
+
+class ValueFormatter:
+    def load(self, raw: dict[str, Any]) -> Value:
+        return DataclassFormatter(Value).load(raw)
+
+    def dump(self, value: Value) -> dict[str, Any]:
+        return DataclassFormatter(Value).dump(value)
