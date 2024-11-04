@@ -1,7 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import random
+from dataclasses import dataclass, field
 from decimal import Decimal
+from functools import cached_property
+from typing import Any, Type
+
+from apexdevkit.testing.fake import FakeResource
 
 
 @dataclass(frozen=True)
@@ -30,16 +35,31 @@ class Quantity:
 
 
 @dataclass(frozen=True)
-class Value(Quantity):
+class Value:
+    value: int = 0
+    exponent: int = 1
+
     unit: str = "unknown"
+
+    def as_decimal(self) -> Decimal:
+        return Decimal(self.value) / Decimal(self.exponent)
+
+    def as_quantity(self) -> Quantity:
+        return Quantity(self.value, self.exponent)
 
     @classmethod
     def from_string(cls, decimal_str: str) -> Value:
-        quantity = super().from_string(decimal_str)
+        quantity = Quantity.from_string(decimal_str)
         return cls(quantity.value, quantity.exponent)
 
     def add(self, other: Value) -> Value:
-        return Value(super().add(other).value, self.exponent, self.unit)
+        return Value(
+            self.as_quantity().add(other.as_quantity()).value, self.exponent, self.unit
+        )
 
     def subtract(self, other: Value) -> Value:
-        return Value(super().subtract(other).value, self.exponent, self.unit)
+        return Value(
+            self.as_quantity().subtract(other.as_quantity()).value,
+            self.exponent,
+            self.unit,
+        )
