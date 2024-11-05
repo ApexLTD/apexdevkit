@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Iterator, Protocol, TypeVar
+from typing import Any, Generic, Iterator, TypeVar
 
 from pymssql.exceptions import DatabaseError
 
@@ -57,33 +57,33 @@ class MsSqlRepository(RepositoryBase[ItemT]):
         self.db.execute(self.table.update(item)).fetch_none()
 
 
-class SqlTable(Protocol[ItemT]):  # pragma: no cover
+class SqlTable(Generic[ItemT]):  # pragma: no cover
     def count_all(self) -> DatabaseCommand:
-        pass
+        raise NotImplementedError
 
     def insert(self, item: ItemT) -> DatabaseCommand:
-        pass
+        raise NotImplementedError
 
     def select(self, item_id: str) -> DatabaseCommand:
-        pass
+        raise NotImplementedError
 
     def select_all(self) -> DatabaseCommand:
-        pass
+        raise NotImplementedError
 
     def delete(self, item_id: str) -> DatabaseCommand:
-        pass
+        raise NotImplementedError
 
     def delete_all(self) -> DatabaseCommand:
-        pass
+        raise NotImplementedError
 
     def update(self, item: ItemT) -> DatabaseCommand:
-        pass
+        raise NotImplementedError
 
     def load(self, data: dict[str, Any]) -> ItemT:
-        pass
+        raise NotImplementedError
 
     def exists(self, duplicate: ItemT) -> ExistsError:
-        pass
+        raise NotImplementedError
 
 
 @dataclass
