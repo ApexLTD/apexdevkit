@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Callable, Iterable, List
+from typing import Any, Callable, Iterable, List, Optional
 
+from fastapi import Query
 from pydantic import BaseModel, create_model
 
 from apexdevkit.fastapi.name import RestfulName
@@ -46,13 +47,7 @@ class RestfulSchema:
 
     def _schema_for(self, action: str, fields: dict[str, Any]) -> type[BaseModel]:
         if action not in self.schemas:
-            self.schemas[action] = create_model(
-                self.name.singular.capitalize() + action,
-                **{
-                    field_name: (field_type, ...)
-                    for field_name, field_type in fields.items()
-                },
-            )
+            self.schemas[action] = Schema(self.name).schema_for(action, fields)
 
         return self.schemas[action]
 
@@ -132,5 +127,37 @@ class RestfulSchema:
 
         def _(request: schema) -> Iterable[dict[str, Any]]:
             return [dict(item) for item in request.model_dump()[self.name.plural]]
+
+        return _
+
+
+@dataclass(frozen=True)
+class Schema:
+    name: RestfulName
+
+    def schema_for(self, action: str, fields: dict[str, Any]) -> type[BaseModel]:
+        return create_model(
+            self.name.singular.capitalize() + action,
+            **{
+                field_name: (field_type, ...)
+                for field_name, field_type in fields.items()
+            },
+        )
+
+    def for_query(self, action: str, fields: dict[str, Any]) -> Callable[[BaseModel], dict[str, Any]]:
+        field_definitions = {
+            field_name: (Optional[field_type], None)
+            for field_name, field_type in fields.items()
+        }
+
+        name = self.name.singular.capitalize().replace("-", "")
+
+        schema = create_model(
+            f"{name}{action}",
+            **field_definitions
+        )
+
+        def _(params: schema) -> dict[str, Any]:
+            return params.model_dump()
 
         return _
