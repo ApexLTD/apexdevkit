@@ -71,21 +71,20 @@ def test_should_read_one(
     assert service.called_with == apple["id"]
 
 
-@pytest.mark.skip
 def test_should_read_many(
     apple: JsonDict,
     service: SuccessfulService,
     read_many_resource: RestCollection,
 ) -> None:
     (
-        read_many_resource.read_many(params={"color": 0})
+        read_many_resource.read_many(color="red")
         .ensure()
         .success()
         .with_code(200)
         .with_collection([apple])
     )
 
-    assert service.called_with == {"color": 0}
+    assert service.called_with == {"color": "red"}
 
 
 def test_should_read_all(
