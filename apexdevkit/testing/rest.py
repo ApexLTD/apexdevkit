@@ -42,6 +42,13 @@ class _RestResource:
             ),
         )
 
+    def read_many(self, **params: Any) -> _TestRequest:
+        http = self.http
+        for p, v in params.items():
+            http = http.with_param(p, v)
+
+        return _TestRequest(self.name, HttpRequest(HttpMethod.get, http))
+
     def read_all(self) -> _TestRequest:
         return _TestRequest(
             self.name,
