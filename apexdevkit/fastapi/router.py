@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from typing import Annotated, Any, Protocol, Self, TypeVar
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, Query
 from fastapi.responses import JSONResponse
 
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
@@ -146,7 +146,10 @@ class RestfulRouter:
             "",
             self.resource.read_many(
                 Service=dependency.as_dependable(),
-                QueryParams=Schema(self.name).for_query("ReadMany", query),
+                QueryParams=Annotated[
+                    Schema(self.name).schema_for("ReadMany", query),
+                    Query()
+                ],
             ),
             methods=["GET"],
             status_code=200,

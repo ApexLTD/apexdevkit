@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import Any, Callable
 
 from starlette.responses import JSONResponse
@@ -52,7 +52,7 @@ class RestfulResource:
     def read_many(self, Service, QueryParams) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, params: QueryParams) -> _Response:
             try:
-                return self.response.found_many(list(service.read_many(**params)))
+                return self.response.found_many(list(service.read_many(**dict(params))))
             except ForbiddenError as e:
                 return JSONResponse(self.response.forbidden(e), 403)
 
