@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Callable, Iterable, List, Optional
+from typing import Any, Callable, Iterable, List
 
 from pydantic import BaseModel, create_model
 
@@ -142,20 +142,3 @@ class Schema:
                 for field_name, field_type in fields.items()
             },
         )
-
-    def for_query(
-        self, action: str, fields: dict[str, Any]
-    ) -> Callable[[BaseModel], dict[str, Any]]:
-        field_definitions = {
-            field_name: (Optional[field_type], None)
-            for field_name, field_type in fields.items()
-        }
-
-        name = self.name.singular.capitalize().replace("-", "")
-
-        schema = create_model(f"{name}{action}", **field_definitions)
-
-        def _(params: schema) -> dict[str, Any]:
-            return params.model_dump()
-
-        return _
