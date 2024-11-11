@@ -30,6 +30,9 @@ class RestfulService(ABC):  # pragma: no cover
     def read_one(self, item_id: str) -> RawItem:
         raise NotImplementedError(self.read_one.__name__)
 
+    def read_many(self, **params: Any) -> RawCollection:
+        raise NotImplementedError(self.read_many.__name__)
+
     def read_all(self) -> RawCollection:
         raise NotImplementedError(self.read_all.__name__)
 
