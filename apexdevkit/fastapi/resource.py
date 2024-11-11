@@ -49,6 +49,12 @@ class RestfulResource:
 
         return endpoint
 
+    def read_many(self, Service, QueryParams) -> _Endpoint:  # type: ignore
+        def endpoint(service: Service, params: QueryParams) -> _Response:
+            raise NotImplementedError
+
+        return endpoint
+
     def read_all(self, Service) -> _Endpoint:  # type: ignore
         def endpoint(service: Service) -> _Response:
             try:

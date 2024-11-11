@@ -11,6 +11,7 @@ from apexdevkit.fastapi.resource import RestfulResource
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.schema import RestfulSchema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
+from apexdevkit.fluent import FluentDict
 
 _Response = JSONResponse | dict[str, Any]
 
@@ -131,6 +132,24 @@ class RestfulRouter:
             response_model=self.schema.for_item(),
             include_in_schema=is_documented,
             summary="Read One",
+        )
+
+        return self
+
+    def with_read_many(
+        self,
+        dependency: Dependency,
+        query: FluentDict[Any],
+        is_documented: bool = True,
+    ) -> Self:
+        # TODO: stub implementation
+
+        self.resource.read_many(
+            Service=dependency.as_dependable(),
+            QueryParams=self.schema._schema_for("ReadMany", query),
+            # Note (MadViper):
+            # this generates pydantic model from dict, but breaks encapsulation.
+            # I believe this functionality should be separated from RestfulSchema.
         )
 
         return self
