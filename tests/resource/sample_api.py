@@ -31,6 +31,9 @@ class FailingService(RestfulServiceBuilder, RestfulService):
     def read_one(self, item_id: str) -> RawItem:
         raise self.error
 
+    def read_many(self, **params: Any) -> RawCollection:
+        raise self.error
+
     def read_all(self) -> RawCollection:
         raise self.error
 
@@ -69,6 +72,10 @@ class SuccessfulService(RestfulServiceBuilder, RestfulService):
     def read_one(self, item_id: str) -> RawItem:
         self.called_with = item_id
         return self.always_return
+
+    def read_many(self, **params: Any) -> RawCollection:
+        self.called_with = params
+        return [self.always_return]
 
     def read_all(self) -> RawCollection:
         self.called_with = None
