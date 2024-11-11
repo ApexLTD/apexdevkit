@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Callable, Iterable, List
+from typing import Any, Callable, Iterable, List, Optional
 
 from pydantic import BaseModel, create_model
 
@@ -139,6 +139,15 @@ class Schema:
             self.name.singular.capitalize() + action,
             **{
                 field_name: (field_type, ...)
+                for field_name, field_type in fields.items()
+            },
+        )
+
+    def optional_schema_for(self, action: str, fields: dict[str, Any]) -> type[BaseModel]:
+        return create_model(
+            self.name.singular.capitalize() + action,
+            **{
+                field_name: (field_type | None, None)
                 for field_name, field_type in fields.items()
             },
         )
