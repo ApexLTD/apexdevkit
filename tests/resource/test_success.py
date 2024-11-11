@@ -75,17 +75,17 @@ def test_should_read_one(
 def test_should_read_many(
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestCollection,
+    read_many_resource: RestCollection,
 ) -> None:
     (
-        resource.read_many(color=apple["color"])
+        read_many_resource.read_many(params={"color": 0})
         .ensure()
         .success()
         .with_code(200)
         .with_collection([apple])
     )
 
-    assert service.called_with == {"color": apple["color"]}
+    assert service.called_with == {"color": 0}
 
 
 def test_should_read_all(

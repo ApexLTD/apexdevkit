@@ -43,9 +43,15 @@ def setup(infra: RestfulServiceBuilder) -> FastAPI:
                 .default(dependable)
                 .with_replace_one_endpoint(dependable)
                 .with_replace_many_endpoint(dependable)
-                .with_read_many_endpoint(dependable, JsonDict().with_a(color=int))
                 .build()
             }
+        )
+        .with_route(
+            apples=RestfulRouter()
+            .with_name(RestfulName("apple"))
+            .with_fields(AppleFields())
+            .with_read_many_endpoint(dependable, JsonDict().with_a(color=int))
+            .build()
         )
         .build()
     )

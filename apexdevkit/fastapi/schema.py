@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, Callable, Iterable, List, Optional
 
-from fastapi import Query
 from pydantic import BaseModel, create_model
 
 from apexdevkit.fastapi.name import RestfulName
@@ -144,7 +143,9 @@ class Schema:
             },
         )
 
-    def for_query(self, action: str, fields: dict[str, Any]) -> Callable[[BaseModel], dict[str, Any]]:
+    def for_query(
+        self, action: str, fields: dict[str, Any]
+    ) -> Callable[[BaseModel], dict[str, Any]]:
         field_definitions = {
             field_name: (Optional[field_type], None)
             for field_name, field_type in fields.items()
@@ -152,10 +153,7 @@ class Schema:
 
         name = self.name.singular.capitalize().replace("-", "")
 
-        schema = create_model(
-            f"{name}{action}",
-            **field_definitions
-        )
+        schema = create_model(f"{name}{action}", **field_definitions)
 
         def _(params: schema) -> dict[str, Any]:
             return params.model_dump()

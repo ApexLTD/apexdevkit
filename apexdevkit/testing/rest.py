@@ -43,7 +43,7 @@ class _RestResource:
         )
 
     def read_many(self, **params: Any) -> _TestRequest:
-        http = self.http
+        http = self.http.with_endpoint(self.name.plural)
         for p, v in params.items():
             http = http.with_param(p, v)
 
