@@ -12,6 +12,7 @@ from apexdevkit.fastapi.builder import RestfulServiceBuilder
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.router import RestfulRouter
+from apexdevkit.http import JsonDict
 from apexdevkit.testing.fake import FakeResource
 from tests.resource.sample_api import Apple, AppleFields, Color, Name, PriceFields
 
@@ -44,6 +45,13 @@ def setup(infra: RestfulServiceBuilder) -> FastAPI:
                 .with_replace_many_endpoint(dependable)
                 .build()
             }
+        )
+        .with_route(
+            apples=RestfulRouter()
+            .with_name(RestfulName("apple"))
+            .with_fields(AppleFields())
+            .with_read_many_endpoint(dependable, JsonDict().with_a(color=str))
+            .build()
         )
         .build()
     )

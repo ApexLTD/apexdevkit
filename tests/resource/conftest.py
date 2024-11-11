@@ -14,3 +14,11 @@ def resource(service: RestfulServiceBuilder) -> RestCollection:
         name=RestfulName("market-apple"),
         http=Httpx(TestClient(setup(service))),
     )
+
+
+@pytest.fixture
+def read_many_resource(service: RestfulServiceBuilder) -> RestCollection:
+    return RestCollection(
+        name=RestfulName("apple"),
+        http=Httpx(TestClient(setup(service))),
+    )

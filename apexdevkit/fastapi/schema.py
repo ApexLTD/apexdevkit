@@ -46,13 +46,7 @@ class RestfulSchema:
 
     def _schema_for(self, action: str, fields: dict[str, Any]) -> type[BaseModel]:
         if action not in self.schemas:
-            self.schemas[action] = create_model(
-                self.name.singular.capitalize() + action,
-                **{
-                    field_name: (field_type, ...)
-                    for field_name, field_type in fields.items()
-                },
-            )
+            self.schemas[action] = Schema(self.name).schema_for(action, fields)
 
         return self.schemas[action]
 
@@ -134,3 +128,17 @@ class RestfulSchema:
             return [dict(item) for item in request.model_dump()[self.name.plural]]
 
         return _
+
+
+@dataclass(frozen=True)
+class Schema:
+    name: RestfulName
+
+    def schema_for(self, action: str, fields: dict[str, Any]) -> type[BaseModel]:
+        return create_model(
+            self.name.singular.capitalize() + action,
+            **{
+                field_name: (field_type, ...)
+                for field_name, field_type in fields.items()
+            },
+        )

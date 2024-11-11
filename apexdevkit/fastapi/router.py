@@ -2,15 +2,16 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from typing import Annotated, Any, Protocol, Self, TypeVar
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, Query
 from fastapi.responses import JSONResponse
 
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.resource import RestfulResource
 from apexdevkit.fastapi.response import RestfulResponse
-from apexdevkit.fastapi.schema import RestfulSchema, SchemaFields
+from apexdevkit.fastapi.schema import RestfulSchema, Schema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
+from apexdevkit.fluent import FluentDict
 
 _Response = JSONResponse | dict[str, Any]
 
@@ -131,6 +132,30 @@ class RestfulRouter:
             response_model=self.schema.for_item(),
             include_in_schema=is_documented,
             summary="Read One",
+        )
+
+        return self
+
+    def with_read_many_endpoint(
+        self,
+        dependency: Dependency,
+        query: FluentDict[Any],
+        is_documented: bool = True,
+    ) -> Self:
+        self.router.add_api_route(
+            "",
+            self.resource.read_many(
+                Service=dependency.as_dependable(),
+                QueryParams=Annotated[
+                    Schema(self.name).schema_for("ReadMany", query), Query()
+                ],
+            ),
+            methods=["GET"],
+            status_code=200,
+            responses={},
+            response_model=self.schema.for_collection(),
+            include_in_schema=is_documented,
+            summary="Read Many",
         )
 
         return self

@@ -49,6 +49,15 @@ class RestfulResource:
 
         return endpoint
 
+    def read_many(self, Service, QueryParams) -> _Endpoint:  # type: ignore
+        def endpoint(service: Service, params: QueryParams) -> _Response:
+            try:
+                return self.response.found_many(list(service.read_many(**dict(params))))
+            except ForbiddenError as e:
+                return JSONResponse(self.response.forbidden(e), 403)
+
+        return endpoint
+
     def read_all(self, Service) -> _Endpoint:  # type: ignore
         def endpoint(service: Service) -> _Response:
             try:
