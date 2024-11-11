@@ -147,7 +147,7 @@ class RestfulRouter:
             self.resource.read_many(
                 Service=dependency.as_dependable(),
                 QueryParams=Annotated[
-                    Schema(self.name).schema_for("ReadMany", query), Query()
+                    Schema(self.name).optional_schema_for("ReadMany", query), Query()
                 ],
             ),
             methods=["GET"],

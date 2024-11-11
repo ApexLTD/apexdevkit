@@ -142,3 +142,14 @@ class Schema:
                 for field_name, field_type in fields.items()
             },
         )
+
+    def optional_schema_for(
+        self, action: str, fields: dict[str, Any]
+    ) -> type[BaseModel]:
+        return create_model(
+            self.name.singular.capitalize() + action,
+            **{
+                field_name: (field_type | None, None)
+                for field_name, field_type in fields.items()
+            },
+        )
