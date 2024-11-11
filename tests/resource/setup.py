@@ -43,7 +43,7 @@ def setup(infra: RestfulServiceBuilder) -> FastAPI:
                 .default(dependable)
                 .with_replace_one_endpoint(dependable)
                 .with_replace_many_endpoint(dependable)
-                .with_read_many(dependable, JsonDict().with_a(color=int))
+                .with_read_many_endpoint(dependable, JsonDict().with_a(color=int))
                 .build()
             }
         )
