@@ -9,7 +9,7 @@ from apexdevkit.fastapi.builder import RestfulServiceBuilder
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.resource import RestfulResource
 from apexdevkit.fastapi.response import RestfulResponse
-from apexdevkit.fastapi.schema import RestfulSchema, SchemaFields
+from apexdevkit.fastapi.schema import RestfulSchema, Schema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
 from apexdevkit.fluent import FluentDict
 
@@ -136,20 +136,24 @@ class RestfulRouter:
 
         return self
 
-    def with_read_many(
+    def with_read_many_endpoint(
         self,
         dependency: Dependency,
         query: FluentDict[Any],
         is_documented: bool = True,
     ) -> Self:
-        # TODO: stub implementation
-
-        self.resource.read_many(
-            Service=dependency.as_dependable(),
-            QueryParams=self.schema._schema_for("ReadMany", query),
-            # Note (MadViper):
-            # this generates pydantic model from dict, but breaks encapsulation.
-            # I believe this functionality should be separated from RestfulSchema.
+        self.router.add_api_route(
+            "",
+            self.resource.read_many(
+                Service=dependency.as_dependable(),
+                QueryParams=Schema(self.name).for_query("ReadMany", query),
+            ),
+            methods=["GET"],
+            status_code=200,
+            responses={},
+            response_model=self.schema.for_collection(),
+            include_in_schema=is_documented,
+            summary="Read Many",
         )
 
         return self
