@@ -116,7 +116,7 @@ class SqliteTableBuilder(Generic[ItemT]):
         return SqliteTableBuilder[ItemT](
             self.table_name,
             self.formatter,
-            [SqliteField(field, False, False) for field in list(fields)],
+            [SqliteField(field, field == "id", False) for field in list(fields)],
         )
 
     def with_id(self, identifier: str) -> SqliteTableBuilder[ItemT]:
@@ -253,7 +253,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
         raw = self.formatter.dump(item)
         return ExistsError(item).with_duplicate(
             lambda i: ",".join(
-                [f"{key}:<{raw[key]}>" for key in raw if key in self._composite]
+                [f"{key}<{raw[key]}>" for key in raw if key in self._composite]
             )
         )
 
