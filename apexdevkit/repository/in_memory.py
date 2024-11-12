@@ -199,13 +199,9 @@ class _ManyKeyRepository(RepositoryBase[ItemT]):
 
     def _ensure_does_not_exist(self, new: ItemT) -> None:
         for existing in self:
-            error = ExistsError(existing)
-
             for key in self.keys:
                 if key(new) == key(existing):
-                    error.with_duplicate(key)
-
-            error.fire()
+                    ExistsError(existing).with_duplicate(key).fire()
 
     def _pk(self, item: ItemT) -> str:
         return self.keys[0](item)
