@@ -98,13 +98,6 @@ class UnknownError(Exception):
     raw: dict[str, Any]
 
 
-@dataclass
-class SqliteField:
-    name: str
-    is_id: bool
-    is_composite: bool
-
-
 @dataclass(frozen=True)
 class _DefaultSqlTable(SqlTable[ItemT]):
     table_name: str
@@ -213,3 +206,10 @@ class _DefaultSqlTable(SqlTable[ItemT]):
     @property
     def _composite(self) -> list[str]:
         return [field.name for field in self.fields if field.is_composite]
+
+
+@dataclass(frozen=True)
+class SqliteField:
+    name: str
+    is_id: bool
+    is_composite: bool
