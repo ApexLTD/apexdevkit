@@ -8,8 +8,6 @@ from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Database, DatabaseCommand
 from apexdevkit.repository.connector import SqliteInMemoryConnector
-from apexdevkit.repository.decorator import BatchRepositoryDecorator
-from apexdevkit.repository.interface import BatchRepository
 from apexdevkit.repository.sqlite import SqliteRepository, SqliteTableBuilder
 
 
@@ -44,15 +42,15 @@ def repository() -> SqliteRepository[_Item]:
     db.execute(setup()).fetch_none()
 
     return SqliteRepository[_Item](
-            table=SqliteTableBuilder[_Item]()
-            .with_name("item")
-            .with_formatter(DataclassFormatter(_Item))
-            .with_fields(["id", "name", "count"])
-            .with_id("id")
-            .with_composite_key(["id"])
-            .build(),
-            db=db,
-        )
+        table=SqliteTableBuilder[_Item]()
+        .with_name("item")
+        .with_formatter(DataclassFormatter(_Item))
+        .with_fields(["id", "name", "count"])
+        .with_id("id")
+        .with_composite_key(["id"])
+        .build(),
+        db=db,
+    )
 
 
 def test_should_list_nothing_when_empty(repository: SqliteRepository[_Item]) -> None:
@@ -69,7 +67,9 @@ def test_should_create(repository: SqliteRepository[_Item], item: _Item) -> None
     assert repository.create(item) == item
 
 
-def test_should_not_duplicate_on_create(repository: SqliteRepository[_Item], item: _Item) -> None:
+def test_should_not_duplicate_on_create(
+    repository: SqliteRepository[_Item], item: _Item
+) -> None:
     repository.create(item)
 
     with raises(ExistsError, match=f"id<{item.id}>"):
@@ -83,7 +83,9 @@ def test_should_persist(repository: SqliteRepository[_Item], item: _Item) -> Non
     assert repository.read(item.id) == item
 
 
-def test_should_persist_update(repository: SqliteRepository[_Item], item: _Item) -> None:
+def test_should_persist_update(
+    repository: SqliteRepository[_Item], item: _Item
+) -> None:
     old_item = _Item(id=item.id, name="new", count=0)
     repository.create(old_item)
 
@@ -92,7 +94,9 @@ def test_should_persist_update(repository: SqliteRepository[_Item], item: _Item)
     assert repository.read(item.id) == item
 
 
-def test_should_persist_delete(repository: SqliteRepository[_Item], item: _Item) -> None:
+def test_should_persist_delete(
+    repository: SqliteRepository[_Item], item: _Item
+) -> None:
     repository.create(item)
 
     repository.delete(item.id)
@@ -100,7 +104,9 @@ def test_should_persist_delete(repository: SqliteRepository[_Item], item: _Item)
     assert list(repository) == []
 
 
-def test_should_persist_delete_all(repository: SqliteRepository[_Item], item: _Item) -> None:
+def test_should_persist_delete_all(
+    repository: SqliteRepository[_Item], item: _Item
+) -> None:
     repository.create(item)
 
     repository.delete_all()
