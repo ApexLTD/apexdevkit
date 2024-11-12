@@ -5,6 +5,7 @@ from sqlite3 import IntegrityError
 from typing import Any, Generic, Iterator
 
 from apexdevkit.error import DoesNotExistError, ExistsError
+from apexdevkit.formatter import Formatter
 from apexdevkit.repository import Database, DatabaseCommand, RepositoryBase
 from apexdevkit.repository.interface import ItemT
 
@@ -95,3 +96,120 @@ class SqlTable(Generic[ItemT]):  # pragma: no cover
 @dataclass
 class UnknownError(Exception):
     raw: dict[str, Any]
+
+
+@dataclass
+class SqliteField:
+    name: str
+    is_id: bool
+    is_composite: bool
+
+
+@dataclass(frozen=True)
+class _DefaultSqlTable(SqlTable[ItemT]):
+    table_name: str
+    formatter: Formatter[dict[str, Any], ItemT]
+    fields: list[SqliteField]
+
+    def count_all(self) -> DatabaseCommand:
+        return DatabaseCommand(f"""
+            SELECT count(*) as n_items
+            FROM {self.table_name.capitalize()};
+        """)
+
+    def insert(self, item: ItemT) -> DatabaseCommand:
+        columns = ", ".join([field.name for field in self.fields])
+        placeholders = ", ".join([f":{key.name}" for key in self.fields])
+
+        return DatabaseCommand(f"""
+            INSERT INTO {self.table_name.capitalize()} (
+                {columns}
+            ) VALUES (
+                {placeholders}
+            )
+            RETURNING {columns};
+        """).with_data(self.formatter.dump(item))
+
+    def select(self, item_id: str) -> DatabaseCommand:
+        columns = ", ".join([field.name for field in self.fields])
+
+        return DatabaseCommand(f"""
+            SELECT
+                {columns} 
+            FROM {self.table_name.capitalize()}
+            WHERE {self._id} = :{self._id};
+        """).with_data({self._id: item_id})
+
+    def select_duplicate(self, item: ItemT) -> DatabaseCommand:
+        raw = self.formatter.dump(item)
+        columns = ", ".join([field.name for field in self.fields])
+
+        duplicates = " AND ".join([f"{field} = :{field}" for field in self._composite])
+
+        return DatabaseCommand(f"""
+            SELECT
+                {columns} 
+            FROM {self.table_name.capitalize()}
+            WHERE {duplicates};
+        """).with_data({key: raw[key] for key in raw if key in self._composite})
+
+    def select_all(self) -> DatabaseCommand:
+        columns = ", ".join([field.name for field in self.fields])
+
+        return DatabaseCommand(f"""
+            SELECT
+                {columns}
+            FROM {self.table_name.capitalize()};
+        """)
+
+    def update(self, item: ItemT) -> DatabaseCommand:
+        updates = ", ".join(
+            [
+                f"{field.name} = :{field.name}"
+                for field in self.fields
+                if not field.is_id
+            ]
+        )
+
+        return DatabaseCommand(f"""
+            UPDATE {self.table_name.capitalize()}
+            SET
+                {updates}
+            WHERE
+                {self._id} = :{self._id};
+        """).with_data(self.formatter.dump(item))
+
+    def delete(self, item_id: str) -> DatabaseCommand:
+        return DatabaseCommand(f"""
+            DELETE
+            FROM {self.table_name.capitalize()}
+            WHERE
+                {self._id} = :{self._id};
+        """).with_data({self._id: item_id})
+
+    def delete_all(self) -> DatabaseCommand:
+        return DatabaseCommand(f"""
+            DELETE
+            FROM {self.table_name.capitalize()};
+        """)
+
+    def load(self, data: dict[str, Any]) -> ItemT:
+        return self.formatter.load(data)
+
+    def duplicate(self, item: ItemT) -> ExistsError:
+        raw = self.formatter.dump(item)
+        return ExistsError(item).with_duplicate(
+            lambda i: ",".join(
+                [f"{key}:<{raw[key]}>" for key in raw if key in self._composite]
+            )
+        )
+
+    @property
+    def _id(self) -> str:
+        result = next((field for field in self.fields if field.is_id), None)
+        assert result is not None
+        return result.name
+
+    @property
+    def _composite(self) -> list[str]:
+        return [field.name for field in self.fields if field.is_composite]
