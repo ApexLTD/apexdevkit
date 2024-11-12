@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pickle
 from copy import deepcopy
-from dataclasses import asdict, dataclass, field
-from typing import Any, Generic, Protocol, Self, TypeVar
+from dataclasses import asdict, dataclass, field, fields, is_dataclass
+from typing import Any, Generic, Protocol, Self, TypeVar, get_args
 
 from apexdevkit.value import Value
 
@@ -44,6 +44,9 @@ class DataclassFormatter(Generic[_TargetT]):
     resource: type[_TargetT]
     sub_formatters: dict[str, Formatter[Any, Any]] = field(default_factory=dict)
 
+    def __post_init__(self) -> None:
+        assert is_dataclass(self.resource)
+
     def and_nested(self, **formatters: Formatter[Any, Any]) -> Self:
         return self.with_nested(**formatters)
 
@@ -55,9 +58,23 @@ class DataclassFormatter(Generic[_TargetT]):
     def load(self, raw: dict[str, Any]) -> _TargetT:
         raw = deepcopy(raw)
 
-        for key, formatter in self.sub_formatters.items():
-            if key in raw:
-                raw[key] = formatter.load(raw.pop(key)) if raw[key] else raw[key]
+        for key in fields(self.resource):  # type: ignore
+            if key.name not in raw:
+                continue
+            elif key.name in self.sub_formatters.keys():
+                raw[key.name] = (
+                    self.sub_formatters[key.name].load(raw.pop(key.name))
+                    if raw[key.name]
+                    else raw[key.name]
+                )
+            elif is_dataclass(key.type):
+                raw[key.name] = DataclassFormatter(key.type).load(raw[key.name])  # type: ignore
+            elif isinstance(key.type, list):
+                args = get_args(key.type)
+                if args and is_dataclass(args[0]):
+                    raw[key.name] = ListFormatter(DataclassFormatter(args[0])).load(  # type: ignore
+                        raw[key.name]
+                    )
 
         return self.resource(**raw)
 
