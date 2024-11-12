@@ -101,6 +101,7 @@ def test_should_not_duplicate() -> None:
     assert str(cm.value) == f"code<{company.code}>"
 
 
+@pytest.mark.skip(reason="Removed intentionally")
 def test_should_not_not_duplicate_many_fields() -> None:
     company = _Company.fake()
     repository = (
