@@ -5,6 +5,7 @@ from copy import deepcopy
 from dataclasses import asdict, dataclass, field, fields, is_dataclass
 from typing import Any, Generic, Protocol, Self, TypeVar, get_args
 
+from apexdevkit.fluent import FluentDict
 from apexdevkit.value import Value
 
 _SourceT = TypeVar("_SourceT")
@@ -44,9 +45,6 @@ class DataclassFormatter(Generic[_TargetT]):
     resource: type[_TargetT]
     sub_formatters: dict[str, Formatter[Any, Any]] = field(default_factory=dict)
 
-    def __post_init__(self) -> None:
-        assert is_dataclass(self.resource)
-
     def and_nested(self, **formatters: Formatter[Any, Any]) -> Self:
         return self.with_nested(**formatters)
 
@@ -56,7 +54,9 @@ class DataclassFormatter(Generic[_TargetT]):
         return self
 
     def load(self, raw: dict[str, Any]) -> _TargetT:
-        raw = deepcopy(raw)
+        raw = FluentDict[Any](deepcopy(raw)).select(
+            *self.resource.__annotations__.keys()
+        )
 
         for key in fields(self.resource):  # type: ignore
             if key.name not in raw:

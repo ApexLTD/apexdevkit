@@ -8,7 +8,6 @@ import pytest
 from pymongo import MongoClient
 
 from apexdevkit.error import DoesNotExistError, ExistsError
-from apexdevkit.fluent import FluentDict
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository.decorator import BatchRepositoryDecorator
 from apexdevkit.repository.interface import BatchRepository
@@ -34,15 +33,11 @@ class MongoMockConnector:
 @pytest.fixture
 def repository() -> BatchRepository[_Item]:
     return BatchRepositoryDecorator(
-        MongoRepository(
+        MongoRepository(  # type: ignore
             MongoMockConnector(),
             "test_database",
             "test_collection",
-            DataclassFormatter(
-                resource=lambda **raw: _Item(  # type: ignore
-                    **FluentDict[Any](raw).select(*_Item.__annotations__.keys())
-                )
-            ),
+            DataclassFormatter(resource=_Item),
         )
     )
 

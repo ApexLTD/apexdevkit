@@ -41,25 +41,12 @@ class SampleNoneDataclass:
 
 
 def test_should_dump() -> None:
-    result = (
-        DataclassFormatter(NestedDataclass)
-        .with_nested(
-            sample=DataclassFormatter(SampleDataclass).with_nested(
-                name=DataclassFormatter(Name)
-            )
-        )
-        .and_nested(
-            other_sample=DataclassFormatter(SampleDataclass).with_nested(
-                name=DataclassFormatter(Name)
-            )
-        )
-        .dump(
-            NestedDataclass(
-                name="a",
-                field=1,
-                sample=SampleDataclass(name=Name("b", 1), field=2),
-                other_sample=SampleDataclass(name=Name("c", 1), field=3),
-            )
+    result = DataclassFormatter(NestedDataclass).dump(
+        NestedDataclass(
+            name="a",
+            field=1,
+            sample=SampleDataclass(name=Name("b", 1), field=2),
+            other_sample=SampleDataclass(name=Name("c", 1), field=3),
         )
     )
 
@@ -72,26 +59,13 @@ def test_should_dump() -> None:
 
 
 def test_should_load() -> None:
-    result = (
-        DataclassFormatter(NestedDataclass)
-        .with_nested(
-            sample=DataclassFormatter(SampleDataclass).with_nested(
-                name=DataclassFormatter(Name)
-            )
-        )
-        .and_nested(
-            other_sample=DataclassFormatter(SampleDataclass).with_nested(
-                name=DataclassFormatter(Name)
-            )
-        )
-        .load(
-            {
-                "name": "a",
-                "field": 1,
-                "sample": {"name": {"name": "b", "ordering": 1}, "field": 2},
-                "other_sample": {"name": {"name": "c", "ordering": 1}, "field": 3},
-            }
-        )
+    result = DataclassFormatter(NestedDataclass).load(
+        {
+            "name": "a",
+            "field": 1,
+            "sample": {"name": {"name": "b", "ordering": 1}, "field": 2},
+            "other_sample": {"name": {"name": "c", "ordering": 1}, "field": 3},
+        }
     )
 
     assert result == NestedDataclass(
@@ -138,16 +112,6 @@ def test_should_retain_dumped_integrity() -> None:
 def test_should_retain_loaded_integrity() -> None:
     formatter = (
         DataclassFormatter(NestedDataclass)
-        .with_nested(
-            sample=DataclassFormatter(SampleDataclass).with_nested(
-                name=DataclassFormatter(Name)
-            )
-        )
-        .and_nested(
-            other_sample=DataclassFormatter(SampleDataclass).with_nested(
-                name=DataclassFormatter(Name)
-            )
-        )
     )
 
     loaded = formatter.load(
@@ -173,11 +137,6 @@ def test_should_retain_nested_empty_list_on_dump() -> None:
 
     result = (
         DataclassFormatter(NestedListDataclass)
-        .with_nested(
-            samples=ListFormatter(
-                DataclassFormatter(SampleDataclass),
-            )
-        )
         .dump(item)
     )
 
@@ -191,11 +150,6 @@ def test_should_retain_nested_empty_list_on_dump() -> None:
 def test_should_retain_nested_empty_list_on_load() -> None:
     result = (
         DataclassFormatter(NestedListDataclass)
-        .with_nested(
-            samples=ListFormatter(
-                DataclassFormatter(SampleDataclass),
-            )
-        )
         .load(
             {
                 "name": "a",
@@ -211,12 +165,6 @@ def test_should_retain_nested_empty_list_on_load() -> None:
 def test_should_assign_default_to_nonexistent_keys() -> None:
     result = (
         DataclassFormatter(SampleNoneDataclass)
-        .with_nested(
-            sample=DataclassFormatter(SampleDataclass),
-            samples=ListFormatter(
-                DataclassFormatter(SampleDataclass),
-            ),
-        )
         .load(
             {
                 "name": "a",
