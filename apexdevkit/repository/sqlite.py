@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from sqlite3 import IntegrityError
-from typing import Any, Generic, Iterator
+from typing import Any, Generic, Iterable, Iterator
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
@@ -96,6 +96,66 @@ class SqlTable(Generic[ItemT]):  # pragma: no cover
 @dataclass
 class UnknownError(Exception):
     raw: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class SqliteTableBuilder(Generic[ItemT]):
+    table_name: str | None = None
+    formatter: Formatter[dict[str, Any], ItemT] | None = None
+    fields: list[SqliteField] | None = None
+
+    def with_name(self, value: str) -> SqliteTableBuilder[ItemT]:
+        return SqliteTableBuilder[ItemT](value, self.formatter, self.fields)
+
+    def with_formatter(
+        self, value: Formatter[dict[str, Any], ItemT]
+    ) -> SqliteTableBuilder[ItemT]:
+        return SqliteTableBuilder[ItemT](self.table_name, value, self.fields)
+
+    def with_fields(self, fields: Iterable[str]) -> SqliteTableBuilder[ItemT]:
+        return SqliteTableBuilder[ItemT](
+            self.table_name,
+            self.formatter,
+            [SqliteField(field, False, False) for field in list(fields)],
+        )
+
+    def with_id(self, identifier: str) -> SqliteTableBuilder[ItemT]:
+        assert self.fields is not None, "Set fields first."
+        if identifier not in [field.name for field in self.fields]:
+            raise ValueError("Missing fields in the table.")
+
+        return SqliteTableBuilder[ItemT](
+            self.table_name,
+            self.formatter,
+            [
+                SqliteField(field.name, field.name == identifier, field.is_composite)
+                for field in self.fields
+            ],
+        )
+
+    def with_composite_key(
+        self, composites: Iterable[str]
+    ) -> SqliteTableBuilder[ItemT]:
+        assert self.fields is not None, "Set fields first."
+
+        names = [field.name for field in self.fields]
+        if not all(field in names for field in list(composites)):
+            raise ValueError("Missing fields in the table.")
+
+        return SqliteTableBuilder[ItemT](
+            self.table_name,
+            self.formatter,
+            [
+                SqliteField(field.name, field.is_id, field.name in list(composites))
+                for field in self.fields
+            ],
+        )
+
+    def build(self) -> SqlTable[ItemT]:
+        if not self.table_name or not self.formatter or not self.fields:
+            raise ValueError("Cannot build sql table.")
+
+        return _DefaultSqlTable(self.table_name, self.formatter, self.fields)
 
 
 @dataclass(frozen=True)
@@ -200,12 +260,14 @@ class _DefaultSqlTable(SqlTable[ItemT]):
     @property
     def _id(self) -> str:
         result = next((field for field in self.fields if field.is_id), None)
-        assert result is not None
+        if result is None:
+            raise ValueError("Id field is required.")
         return result.name
 
     @property
     def _composite(self) -> list[str]:
-        return [field.name for field in self.fields if field.is_composite]
+        names = [field.name for field in self.fields if field.is_composite]
+        return [self._id] if len(names) == 0 else names
 
 
 @dataclass(frozen=True)
