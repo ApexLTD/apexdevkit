@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from apexdevkit.formatter import DataclassFormatter
+from apexdevkit.formatter import DataclassFormatter, ListFormatter
 
 
 @dataclass
@@ -171,6 +171,30 @@ def test_should_load_with_list() -> None:
             "primitives": [1],
             "map": {"0": "0"},
         }
+    )
+
+    assert result == NestedListDataclass(
+        name="a",
+        field=1,
+        samples=[SampleDataclass(name=Name("b", 1), field=1)],
+        primitives=[1],
+        map={"0": "0"},
+    )
+
+
+def test_should_load_nested_formatter_with_list() -> None:
+    result = (
+        DataclassFormatter(NestedListDataclass)
+        .with_nested(samples=ListFormatter(DataclassFormatter(SampleDataclass)))
+        .load(
+            {
+                "name": "a",
+                "field": 1,
+                "samples": [{"name": {"name": "b", "ordering": 1}, "field": 1}],
+                "primitives": [1],
+                "map": {"0": "0"},
+            }
+        )
     )
 
     assert result == NestedListDataclass(
