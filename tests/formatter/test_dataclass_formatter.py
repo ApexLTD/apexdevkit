@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from apexdevkit.formatter import DataclassFormatter, ListFormatter
+from apexdevkit.formatter import DataclassFormatter
 
 
 @dataclass
@@ -30,6 +30,8 @@ class NestedListDataclass:
     name: str
     field: int
     samples: list[SampleDataclass]
+    primitives: list[int]
+    map: dict[str, str]
 
 
 @dataclass
@@ -110,9 +112,7 @@ def test_should_retain_dumped_integrity() -> None:
 
 
 def test_should_retain_loaded_integrity() -> None:
-    formatter = (
-        DataclassFormatter(NestedDataclass)
-    )
+    formatter = DataclassFormatter(NestedDataclass)
 
     loaded = formatter.load(
         {
@@ -133,43 +133,60 @@ def test_should_retain_loaded_integrity() -> None:
 
 
 def test_should_retain_nested_empty_list_on_dump() -> None:
-    item = NestedListDataclass("a", field=1, samples=[])
+    item = NestedListDataclass("a", field=1, samples=[], primitives=[1], map={"0": "0"})
 
-    result = (
-        DataclassFormatter(NestedListDataclass)
-        .dump(item)
-    )
+    result = DataclassFormatter(NestedListDataclass).dump(item)
 
     assert result == {
         "name": "a",
         "field": 1,
         "samples": [],
+        "primitives": [1],
+        "map": {"0": "0"},
     }
 
 
 def test_should_retain_nested_empty_list_on_load() -> None:
-    result = (
-        DataclassFormatter(NestedListDataclass)
-        .load(
-            {
-                "name": "a",
-                "field": 1,
-                "samples": [],
-            }
-        )
+    result = DataclassFormatter(NestedListDataclass).load(
+        {
+            "name": "a",
+            "field": 1,
+            "samples": [],
+            "primitives": [1],
+            "map": {"0": "0"},
+        }
     )
 
-    assert result == NestedListDataclass(name="a", field=1, samples=[])
+    assert result == NestedListDataclass(
+        name="a", field=1, samples=[], primitives=[1], map={"0": "0"}
+    )
+
+
+def test_should_load_with_list() -> None:
+    result = DataclassFormatter(NestedListDataclass).load(
+        {
+            "name": "a",
+            "field": 1,
+            "samples": [{"name": {"name": "b", "ordering": 1}, "field": 1}],
+            "primitives": [1],
+            "map": {"0": "0"},
+        }
+    )
+
+    assert result == NestedListDataclass(
+        name="a",
+        field=1,
+        samples=[SampleDataclass(name=Name("b", 1), field=1)],
+        primitives=[1],
+        map={"0": "0"},
+    )
 
 
 def test_should_assign_default_to_nonexistent_keys() -> None:
-    result = (
-        DataclassFormatter(SampleNoneDataclass)
-        .load(
-            {
-                "name": "a",
-            }
-        )
+    result = DataclassFormatter(SampleNoneDataclass).load(
+        {
+            "name": "a",
+        }
     )
 
     assert result == SampleNoneDataclass(

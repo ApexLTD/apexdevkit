@@ -5,6 +5,8 @@ from copy import deepcopy
 from dataclasses import asdict, dataclass, field, fields, is_dataclass
 from typing import Any, Generic, Protocol, Self, TypeVar, get_args
 
+from typing_extensions import get_type_hints
+
 from apexdevkit.fluent import FluentDict
 from apexdevkit.value import Value
 
@@ -59,6 +61,8 @@ class DataclassFormatter(Generic[_TargetT]):
         )
 
         for key in fields(self.resource):  # type: ignore
+            types = get_type_hints(self.resource)
+            key_type = types[key.name]
             if key.name not in raw:
                 continue
             elif key.name in self.sub_formatters.keys():
@@ -67,11 +71,11 @@ class DataclassFormatter(Generic[_TargetT]):
                     if raw[key.name]
                     else raw[key.name]
                 )
-            elif is_dataclass(key.type):
-                raw[key.name] = DataclassFormatter(key.type).load(raw[key.name])  # type: ignore
-            elif isinstance(key.type, list):
-                args = get_args(key.type)
-                if args and is_dataclass(args[0]):
+            elif is_dataclass(key_type):
+                raw[key.name] = DataclassFormatter(key_type).load(raw[key.name])  # type: ignore
+            else:
+                args = get_args(key_type)
+                if len(args) == 1 and is_dataclass(args[0]):
                     raw[key.name] = ListFormatter(DataclassFormatter(args[0])).load(  # type: ignore
                         raw[key.name]
                     )
