@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import pickle
 from copy import deepcopy
-from dataclasses import asdict, dataclass, field
-from typing import Any, Generic, Protocol, Self, TypeVar
+from dataclasses import asdict, dataclass, field, fields, is_dataclass
+from typing import Any, Generic, Protocol, Self, TypeVar, get_args
 
+from typing_extensions import get_type_hints
+
+from apexdevkit.fluent import FluentDict
 from apexdevkit.value import Value
 
 _SourceT = TypeVar("_SourceT")
@@ -53,11 +56,29 @@ class DataclassFormatter(Generic[_TargetT]):
         return self
 
     def load(self, raw: dict[str, Any]) -> _TargetT:
-        raw = deepcopy(raw)
+        raw = FluentDict[Any](deepcopy(raw)).select(
+            *self.resource.__annotations__.keys()
+        )
 
-        for key, formatter in self.sub_formatters.items():
-            if key in raw:
-                raw[key] = formatter.load(raw.pop(key)) if raw[key] else raw[key]
+        for key in fields(self.resource):  # type: ignore
+            types = get_type_hints(self.resource)
+            key_type = types[key.name]
+            if key.name not in raw:
+                continue
+            elif key.name in self.sub_formatters.keys():
+                raw[key.name] = (
+                    self.sub_formatters[key.name].load(raw.pop(key.name))
+                    if raw[key.name]
+                    else raw[key.name]
+                )
+            elif is_dataclass(key_type):
+                raw[key.name] = DataclassFormatter(key_type).load(raw[key.name])  # type: ignore
+            else:
+                args = get_args(key_type)
+                if len(args) == 1 and is_dataclass(args[0]):
+                    raw[key.name] = ListFormatter(DataclassFormatter(args[0])).load(  # type: ignore
+                        raw[key.name]
+                    )
 
         return self.resource(**raw)
 
