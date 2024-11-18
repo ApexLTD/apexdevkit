@@ -5,7 +5,7 @@ from uuid import uuid4
 from pytest import fixture
 
 from apexdevkit.repository import DatabaseCommand
-from apexdevkit.repository.mssql import MsSqlTableBuilder, SqlTable
+from apexdevkit.repository.mssql import MsSqlField, MsSqlTableBuilder, SqlTable
 
 
 @dataclass
@@ -32,10 +32,14 @@ def table() -> SqlTable[Apple]:
         .with_username("test")
         .with_schema("test")
         .with_table("apples")
-        .with_fields(["apid", "clr", "pid"])
-        .with_id("apid")
-        .with_order_fields(["apid"])
         .with_formatter(AppleFormatter())  # type: ignore
+        .with_fields(
+            [
+                MsSqlField("apid", is_id=True, is_ordered=True),
+                MsSqlField("clr"),
+                MsSqlField("pid"),
+            ]
+        )
         .build()
     )
 
@@ -47,11 +51,14 @@ def table_with_parent() -> SqlTable[Apple]:
         .with_username("test")
         .with_schema("test")
         .with_table("apples")
-        .with_fields(["apid", "clr", "pid"])
-        .with_id("apid")
-        .with_order_fields(["apid"])
-        .with_parent("pid", "test")
         .with_formatter(AppleFormatter())  # type: ignore
+        .with_fields(
+            [
+                MsSqlField("apid", is_id=True, is_ordered=True),
+                MsSqlField("clr"),
+                MsSqlField("pid", is_parent=True, fixed_value="test"),
+            ]
+        )
         .build()
     )
 
@@ -173,10 +180,10 @@ def test_should_count_with_parent(table_with_parent: SqlTable[Apple]) -> None:
             EXECUTE AS USER = 'test'
             SELECT count(*) AS n_items
             FROM [test].[apples]
-            WHERE [pid] = 'test'
+            WHERE [pid] = %(pid)s
             REVERT
         """
-    )
+    ).with_data(pid="test")
 
 
 def test_should_insert_with_parent(
@@ -211,7 +218,7 @@ def test_should_select_with_parent(
             SELECT
                 [apid], [clr], [pid] 
             FROM [test].[apples]
-            WHERE [apid] = %(apid)s AND [pid] = %(pid)s
+            WHERE [pid] = %(pid)s AND [apid] = %(apid)s
             REVERT
         """
     ).with_data(apid=apple.id, pid="test")
@@ -219,20 +226,17 @@ def test_should_select_with_parent(
 
 def test_should_select_all_with_parent(table_with_parent: SqlTable[Apple]) -> None:
     command = table_with_parent.select_all()
-    assert (
-        command
-        == DatabaseCommand(
-            """
+    assert command == DatabaseCommand(
+        """
             EXECUTE AS USER = 'test'
             SELECT
                 [apid], [clr], [pid]
             FROM [test].[apples]
-            WHERE [pid] = 'test'
+            WHERE [pid] = %(pid)s
             ORDER BY apid
             REVERT
         """
-        ).with_data()
-    )
+    ).with_data(pid="test")
 
 
 def test_should_update_with_parent(
@@ -248,7 +252,7 @@ def test_should_update_with_parent(
             UPDATE [test].[apples]
             SET
                 clr = %(clr)s
-            WHERE [apid] = %(apid)s AND [pid] = %(pid)s
+            WHERE [pid] = %(pid)s AND [apid] = %(apid)s
             REVERT
         """
     ).with_data(dumped)
@@ -264,7 +268,7 @@ def test_should_delete_with_parent(
             EXECUTE AS USER = 'test'
             DELETE
             FROM [test].[apples]
-            WHERE [apid] = %(apid)s AND [pid] = %(pid)s
+            WHERE [pid] = %(pid)s AND [apid] = %(apid)s
             REVERT
         """
     ).with_data(apid=apple.id, pid="test")
@@ -273,15 +277,12 @@ def test_should_delete_with_parent(
 def test_should_delete_all_with_parent(table_with_parent: SqlTable[Apple]) -> None:
     command = table_with_parent.delete_all()
 
-    assert (
-        command
-        == DatabaseCommand(
-            """
+    assert command == DatabaseCommand(
+        """
             EXECUTE AS USER = 'test'
             DELETE
             FROM [test].[apples]
-            WHERE [pid] = 'test'
+            WHERE [pid] = %(pid)s
             REVERT
         """
-        ).with_data()
-    )
+    ).with_data(pid="test")

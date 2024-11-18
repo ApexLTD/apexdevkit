@@ -8,7 +8,11 @@ from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Database, DatabaseCommand
 from apexdevkit.repository.connector import SqliteInMemoryConnector
-from apexdevkit.repository.sqlite import SqliteRepository, SqliteTableBuilder
+from apexdevkit.repository.sqlite import (
+    SqliteField,
+    SqliteRepository,
+    SqliteTableBuilder,
+)
 
 
 @dataclass(frozen=True)
@@ -53,10 +57,14 @@ def repository() -> SqliteRepository[_Item]:
         table=SqliteTableBuilder[_Item]()
         .with_name("item")
         .with_formatter(DataclassFormatter(_Item))
-        .with_fields(["id", "name", "count", "parent"])
-        .with_id("id")
-        .with_composite_key(["id"])
-        .with_parent("parent", 0)
+        .with_fields(
+            [
+                SqliteField("id", is_id=True, is_composite=True),
+                SqliteField("name"),
+                SqliteField("count"),
+                SqliteField("parent", is_parent=True, fixed_value=0),
+            ]
+        )
         .build(),
         db=db,
     )
