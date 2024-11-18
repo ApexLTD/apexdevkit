@@ -88,6 +88,38 @@ class SqlTable(Generic[ItemT]):  # pragma: no cover
 
 
 @dataclass
+class SqlTableDecorator(Generic[ItemT]):
+    table: SqlTable[ItemT]
+
+    def count_all(self) -> DatabaseCommand:
+        return self.table.count_all()
+
+    def insert(self, item: ItemT) -> DatabaseCommand:
+        return self.table.insert(item)
+
+    def select(self, item_id: str) -> DatabaseCommand:
+        return self.table.select(item_id)
+
+    def select_all(self) -> DatabaseCommand:
+        return self.table.select_all()
+
+    def delete(self, item_id: str) -> DatabaseCommand:
+        return self.table.delete(item_id)
+
+    def delete_all(self) -> DatabaseCommand:
+        return self.table.delete_all()
+
+    def update(self, item: ItemT) -> DatabaseCommand:
+        return self.table.update(item)
+
+    def load(self, data: dict[str, Any]) -> ItemT:
+        return self.table.load(data)
+
+    def exists(self, duplicate: ItemT) -> ExistsError:
+        return self.table.exists(duplicate)
+
+
+@dataclass
 class MssqlException:
     code: int
     message: str
