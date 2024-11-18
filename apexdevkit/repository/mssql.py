@@ -209,7 +209,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
 
     def insert(self, item: ItemT) -> DatabaseCommand:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
-        placeholders = ", ".join([f":{key.name}" for key in self.fields])
+        placeholders = ", ".join([f"%({key.name})s" for key in self.fields])
         output = ", ".join(["INSERTED." + field.name for field in self.fields])
 
         return DatabaseCommand(f"""
@@ -232,7 +232,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             SELECT
                 {columns} 
             FROM [{self.schema}].[{self.table}]
-            WHERE [{self._id}] = :{self._id}
+            WHERE [{self._id}] = %({self._id})s
             REVERT
         """).with_data({self._id: item_id})
 
@@ -251,7 +251,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
     def update(self, item: ItemT) -> DatabaseCommand:
         updates = ", ".join(
             [
-                f"{field.name} = :{field.name}"
+                f"{field.name} = %({field.name})s"
                 for field in self.fields
                 if not field.is_id
             ]
@@ -263,7 +263,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             SET
                 {updates}
             WHERE
-                [{self._id}] = :{self._id}
+                [{self._id}] = %({self._id})s
             REVERT
         """).with_data(self.formatter.dump(item))
 
@@ -273,7 +273,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             DELETE
             FROM [{self.schema}].[{self.table}]
             WHERE
-                [{self._id}] = :{self._id}
+                [{self._id}] = %({self._id})s
             REVERT
         """).with_data({self._id: item_id})
 
