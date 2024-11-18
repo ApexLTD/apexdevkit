@@ -211,7 +211,7 @@ def test_should_select_with_parent(
             SELECT
                 [apid], [clr], [pid] 
             FROM [test].[apples]
-            WHERE [apid] = %(apid)s, [pid] = %(pid)s
+            WHERE [apid] = %(apid)s AND [pid] = %(pid)s
             REVERT
         """
     ).with_data(apid=apple.id, pid="test")
@@ -248,7 +248,7 @@ def test_should_update_with_parent(
             UPDATE [test].[apples]
             SET
                 clr = %(clr)s
-            WHERE [apid] = %(apid)s, [pid] = %(pid)s
+            WHERE [apid] = %(apid)s AND [pid] = %(pid)s
             REVERT
         """
     ).with_data(dumped)
@@ -264,7 +264,7 @@ def test_should_delete_with_parent(
             EXECUTE AS USER = 'test'
             DELETE
             FROM [test].[apples]
-            WHERE [apid] = %(apid)s, [pid] = %(pid)s
+            WHERE [apid] = %(apid)s AND [pid] = %(pid)s
             REVERT
         """
     ).with_data(apid=apple.id, pid="test")
