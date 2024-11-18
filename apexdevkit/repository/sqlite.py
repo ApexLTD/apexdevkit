@@ -174,8 +174,8 @@ class SqliteTableBuilder(Generic[ItemT]):
             self.table_name,
             self.formatter,
             self.fields,
-            self.parent_field,
-            self.parent_value,
+            parent_field,
+            parent_value,
         )
 
     def build(self) -> SqlTable[ItemT]:
@@ -234,7 +234,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
         where_statement = f"WHERE {self._id} = :{self._id}"
         if self.parent_key is not None:
             raw[self.parent_key] = self.parent_value
-            where_statement += ", " + self.parent_key + " = :" + self.parent_key
+            where_statement += " AND " + self.parent_key + " = :" + self.parent_key
 
         columns = ", ".join([field.name for field in self.fields])
 
@@ -281,7 +281,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
 
         where_statement = f"WHERE {self._id} = :{self._id}"
         if self.parent_key is not None:
-            where_statement += ", " + self.parent_key + " = :" + self.parent_key
+            where_statement += " AND " + self.parent_key + " = :" + self.parent_key
 
         updates = ", ".join(
             [
@@ -303,7 +303,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
         where_statement = f"WHERE {self._id} = :{self._id}"
         if self.parent_key is not None:
             raw[self.parent_key] = self.parent_value
-            where_statement += ", " + self.parent_key + " = :" + self.parent_key
+            where_statement += " AND " + self.parent_key + " = :" + self.parent_key
 
         return DatabaseCommand(f"""
             DELETE
