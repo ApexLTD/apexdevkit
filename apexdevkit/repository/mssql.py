@@ -89,7 +89,7 @@ class SqlTable(Generic[ItemT]):  # pragma: no cover
 
 @dataclass
 class SqlTableDecorator(Generic[ItemT]):
-    table: SqlTable[ItemT]
+    table: DefaultSqlTable[ItemT]
 
     def count_all(self) -> DatabaseCommand:
         return self.table.count_all()
@@ -266,7 +266,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
         if not self.schema or not self.table or not self.formatter or not self.fields:
             raise ValueError("Cannot build sql table.")
 
-        return _DefaultSqlTable(
+        return DefaultSqlTable(
             self.username,
             self.schema,
             self.table,
@@ -279,7 +279,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
 
 
 @dataclass(frozen=True)
-class _DefaultSqlTable(SqlTable[ItemT]):
+class DefaultSqlTable(SqlTable[ItemT]):
     username: str | None
     schema: str
     table: str
