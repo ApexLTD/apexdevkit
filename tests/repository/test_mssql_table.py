@@ -51,6 +51,7 @@ def test_should_count(table: SqlTable[Apple]) -> None:
             EXECUTE AS USER = 'test'
             SELECT count(*) AS n_items
             FROM [test].[apples]
+            
             REVERT
         """
     )
@@ -97,6 +98,7 @@ def test_should_select_all(table: SqlTable[Apple]) -> None:
             SELECT
                 [apid], [clr]
             FROM [test].[apples]
+            
             ORDER BY apid
             REVERT
         """
@@ -112,8 +114,7 @@ def test_should_update(table: SqlTable[Apple], apple: Apple) -> None:
             UPDATE [test].[apples]
             SET
                 clr = %(clr)s
-            WHERE
-                [apid] = %(apid)s
+            WHERE [apid] = %(apid)s
             REVERT
         """
     ).with_data(AppleFormatter().dump(apple))
@@ -126,8 +127,7 @@ def test_should_delete(table: SqlTable[Apple], apple: Apple) -> None:
             EXECUTE AS USER = 'test'
             DELETE
             FROM [test].[apples]
-            WHERE
-                [apid] = %(apid)s
+            WHERE [apid] = %(apid)s
             REVERT
         """
     ).with_data(apid=apple.id)
@@ -142,6 +142,7 @@ def test_should_delete_all(table: SqlTable[Apple]) -> None:
             EXECUTE AS USER = 'test'
             DELETE
             FROM [test].[apples]
+            
             REVERT
         """
         ).with_data()

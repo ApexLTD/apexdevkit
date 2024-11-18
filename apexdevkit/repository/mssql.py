@@ -113,15 +113,31 @@ class MsSqlTableBuilder(Generic[ItemT]):
     formatter: Formatter[dict[str, Any], ItemT] | None = None
     fields: list[MsSqlField] | None = None
     ordering: list[str] | None = None
+    parent_field: str | None = None
+    parent_value: Any | None = None
 
     def with_username(self, value: str) -> MsSqlTableBuilder[ItemT]:
         return MsSqlTableBuilder[ItemT](
-            value, self.schema, self.table, self.formatter, self.fields, self.ordering
+            value,
+            self.schema,
+            self.table,
+            self.formatter,
+            self.fields,
+            self.ordering,
+            self.parent_field,
+            self.parent_value,
         )
 
     def with_schema(self, value: str) -> MsSqlTableBuilder[ItemT]:
         return MsSqlTableBuilder[ItemT](
-            self.username, value, self.table, self.formatter, self.fields, self.ordering
+            self.username,
+            value,
+            self.table,
+            self.formatter,
+            self.fields,
+            self.ordering,
+            self.parent_field,
+            self.parent_value,
         )
 
     def with_table(self, value: str) -> MsSqlTableBuilder[ItemT]:
@@ -132,13 +148,22 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.formatter,
             self.fields,
             self.ordering,
+            self.parent_field,
+            self.parent_value,
         )
 
     def with_formatter(
         self, value: Formatter[dict[str, Any], ItemT]
     ) -> MsSqlTableBuilder[ItemT]:
         return MsSqlTableBuilder[ItemT](
-            self.username, self.schema, self.table, value, self.fields, self.ordering
+            self.username,
+            self.schema,
+            self.table,
+            value,
+            self.fields,
+            self.ordering,
+            self.parent_field,
+            self.parent_value,
         )
 
     def with_fields(self, fields: Iterable[str]) -> MsSqlTableBuilder[ItemT]:
@@ -149,6 +174,8 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.formatter,
             [MsSqlField(field, field == "id") for field in list(fields)],
             self.ordering,
+            self.parent_field,
+            self.parent_value,
         )
 
     def with_order_fields(self, ordering: Iterable[str]) -> MsSqlTableBuilder[ItemT]:
@@ -159,7 +186,14 @@ class MsSqlTableBuilder(Generic[ItemT]):
             if key not in [field.name for field in self.fields]:
                 raise ValueError("Missing fields in the table.")
         return MsSqlTableBuilder[ItemT](
-            self.username, self.schema, self.table, self.formatter, self.fields, ordered
+            self.username,
+            self.schema,
+            self.table,
+            self.formatter,
+            self.fields,
+            ordered,
+            self.parent_field,
+            self.parent_value,
         )
 
     def with_id(self, identifier: str) -> MsSqlTableBuilder[ItemT]:
@@ -174,6 +208,26 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.formatter,
             [MsSqlField(field.name, field.name == identifier) for field in self.fields],
             self.ordering,
+            self.parent_field,
+            self.parent_value,
+        )
+
+    def with_parent(
+        self, parent_field: str, parent_value: Any
+    ) -> MsSqlTableBuilder[ItemT]:
+        assert self.fields is not None, "Set fields first."
+        if parent_field not in [field.name for field in self.fields]:
+            raise ValueError("Missing fields in the table.")
+
+        return MsSqlTableBuilder[ItemT](
+            self.username,
+            self.schema,
+            self.table,
+            self.formatter,
+            self.fields,
+            self.ordering,
+            parent_field,
+            parent_value,
         )
 
     def build(self) -> SqlTable[ItemT]:
@@ -187,6 +241,8 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.formatter,
             self.fields,
             self.ordering,
+            self.parent_field,
+            self.parent_value,
         )
 
 
@@ -198,16 +254,29 @@ class _DefaultSqlTable(SqlTable[ItemT]):
     formatter: Formatter[dict[str, Any], ItemT]
     fields: list[MsSqlField]
     ordering: list[str] | None
+    parent_key: str | None
+    parent_value: Any | None
 
     def count_all(self) -> DatabaseCommand:
+        where_statement = ""
+        if self.parent_key is not None:
+            where_statement += (
+                "WHERE [" + self.parent_key + "] = " + self._parent_value_sql
+            )
+
         return DatabaseCommand(f"""
             {self._user_check}
             SELECT count(*) AS n_items
             FROM [{self.schema}].[{self.table}]
+            {where_statement}
             REVERT
         """)
 
     def insert(self, item: ItemT) -> DatabaseCommand:
+        dumped = self.formatter.dump(item)
+        if self.parent_key is not None:
+            dumped[self.parent_key] = self.parent_value
+
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
         placeholders = ", ".join([f"%({key.name})s" for key in self.fields])
         output = ", ".join(["INSERTED." + field.name for field in self.fields])
@@ -222,9 +291,17 @@ class _DefaultSqlTable(SqlTable[ItemT]):
                 {placeholders}
             )
             REVERT
-        """).with_data(self.formatter.dump(item))
+        """).with_data(dumped)
 
     def select(self, item_id: str) -> DatabaseCommand:
+        raw: dict[str, Any] = {self._id: item_id}
+        where_statement = f"WHERE [{self._id}] = %({self._id})s"
+        if self.parent_key is not None:
+            raw[self.parent_key] = self.parent_value
+            where_statement += (
+                ", [" + self.parent_key + "] = %(" + self.parent_key + ")s"
+            )
+
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
 
         return DatabaseCommand(f"""
@@ -232,28 +309,44 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             SELECT
                 {columns} 
             FROM [{self.schema}].[{self.table}]
-            WHERE [{self._id}] = %({self._id})s
+            {where_statement}
             REVERT
-        """).with_data({self._id: item_id})
+        """).with_data(raw)
 
     def select_all(self) -> DatabaseCommand:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
+        where_statement = ""
+        if self.parent_key is not None:
+            where_statement += (
+                "WHERE [" + self.parent_key + "] = " + self._parent_value_sql
+            )
 
         return DatabaseCommand(f"""
             {self._user_check}
             SELECT
                 {columns}
             FROM [{self.schema}].[{self.table}]
+            {where_statement}
             {self._order}
             REVERT
         """)
 
     def update(self, item: ItemT) -> DatabaseCommand:
+        dumped = self.formatter.dump(item)
+        if self.parent_key is not None:
+            dumped[self.parent_key] = self.parent_value
+
+        where_statement = f"WHERE [{self._id}] = %({self._id})s"
+        if self.parent_key is not None:
+            where_statement += (
+                ", [" + self.parent_key + "] = %(" + self.parent_key + ")s"
+            )
+
         updates = ", ".join(
             [
                 f"{field.name} = %({field.name})s"
                 for field in self.fields
-                if not field.is_id
+                if not field.is_id and field.name != self.parent_key
             ]
         )
 
@@ -262,26 +355,39 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             UPDATE [{self.schema}].[{self.table}]
             SET
                 {updates}
-            WHERE
-                [{self._id}] = %({self._id})s
+            {where_statement}
             REVERT
-        """).with_data(self.formatter.dump(item))
+        """).with_data(dumped)
 
     def delete(self, item_id: str) -> DatabaseCommand:
+        raw: dict[str, Any] = {self._id: item_id}
+        where_statement = f"WHERE [{self._id}] = %({self._id})s"
+        if self.parent_key is not None:
+            raw[self.parent_key] = self.parent_value
+            where_statement += (
+                ", [" + self.parent_key + "] = %(" + self.parent_key + ")s"
+            )
+
         return DatabaseCommand(f"""
             {self._user_check}
             DELETE
             FROM [{self.schema}].[{self.table}]
-            WHERE
-                [{self._id}] = %({self._id})s
+            {where_statement}
             REVERT
-        """).with_data({self._id: item_id})
+        """).with_data(raw)
 
     def delete_all(self) -> DatabaseCommand:
+        where_statement = ""
+        if self.parent_key is not None:
+            where_statement += (
+                "WHERE [" + self.parent_key + "] = " + self._parent_value_sql
+            )
+
         return DatabaseCommand(f"""
             {self._user_check}
             DELETE
             FROM [{self.schema}].[{self.table}]
+            {where_statement}
             REVERT
         """)
 
@@ -314,6 +420,13 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             return "ORDER BY " + ", ".join(self.ordering)
         else:
             return ""
+
+    @property
+    def _parent_value_sql(self) -> str:
+        if isinstance(self.parent_value, str):
+            return "'" + self.parent_value + "'"
+        else:
+            return str(self.parent_value)
 
 
 @dataclass(frozen=True)
