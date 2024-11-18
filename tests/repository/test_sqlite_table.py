@@ -18,6 +18,8 @@ class _Item:
     name: str
     count: int
 
+    parent: int | None = None
+
 
 def setup() -> DatabaseCommand:
     return DatabaseCommand("""
@@ -25,6 +27,7 @@ def setup() -> DatabaseCommand:
             id              TEXT        NOT NULL    PRIMARY KEY,
             name            TEXT        NOT NULL,
             count           INT         NOT NULL,
+            parent          INT         NOT NULL,
 
             UNIQUE(id)
         );
@@ -37,6 +40,11 @@ def item() -> _Item:
 
 
 @fixture
+def item_with_parent(item: _Item) -> _Item:
+    return _Item(item.id, "item", 1, 0)
+
+
+@fixture
 def repository() -> SqliteRepository[_Item]:
     db = Database(SqliteInMemoryConnector())
     db.execute(setup()).fetch_none()
@@ -45,9 +53,10 @@ def repository() -> SqliteRepository[_Item]:
         table=SqliteTableBuilder[_Item]()
         .with_name("item")
         .with_formatter(DataclassFormatter(_Item))
-        .with_fields(["id", "name", "count"])
+        .with_fields(["id", "name", "count", "parent"])
         .with_id("id")
         .with_composite_key(["id"])
+        .with_parent("parent", 0)
         .build(),
         db=db,
     )
@@ -63,8 +72,10 @@ def test_should_not_read_unknown(repository: SqliteRepository[_Item]) -> None:
         repository.read(str(uuid4()))
 
 
-def test_should_create(repository: SqliteRepository[_Item], item: _Item) -> None:
-    assert repository.create(item) == item
+def test_should_create(
+    repository: SqliteRepository[_Item], item: _Item, item_with_parent: _Item
+) -> None:
+    assert repository.create(item) == item_with_parent
 
 
 def test_should_not_duplicate_on_create(
@@ -76,22 +87,24 @@ def test_should_not_duplicate_on_create(
         repository.create(item)
 
 
-def test_should_persist(repository: SqliteRepository[_Item], item: _Item) -> None:
+def test_should_persist(
+    repository: SqliteRepository[_Item], item: _Item, item_with_parent: _Item
+) -> None:
     repository.create(item)
 
     assert len(repository) == 1
-    assert repository.read(item.id) == item
+    assert repository.read(item.id) == item_with_parent
 
 
 def test_should_persist_update(
-    repository: SqliteRepository[_Item], item: _Item
+    repository: SqliteRepository[_Item], item: _Item, item_with_parent: _Item
 ) -> None:
     old_item = _Item(id=item.id, name="new", count=0)
     repository.create(old_item)
 
     repository.update(item)
 
-    assert repository.read(item.id) == item
+    assert repository.read(item.id) == item_with_parent
 
 
 def test_should_persist_delete(

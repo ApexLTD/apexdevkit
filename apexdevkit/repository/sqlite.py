@@ -103,20 +103,28 @@ class SqliteTableBuilder(Generic[ItemT]):
     table_name: str | None = None
     formatter: Formatter[dict[str, Any], ItemT] | None = None
     fields: list[SqliteField] | None = None
+    parent_field: str | None = None
+    parent_value: Any | None = None
 
     def with_name(self, value: str) -> SqliteTableBuilder[ItemT]:
-        return SqliteTableBuilder[ItemT](value, self.formatter, self.fields)
+        return SqliteTableBuilder[ItemT](
+            value, self.formatter, self.fields, self.parent_field, self.parent_value
+        )
 
     def with_formatter(
         self, value: Formatter[dict[str, Any], ItemT]
     ) -> SqliteTableBuilder[ItemT]:
-        return SqliteTableBuilder[ItemT](self.table_name, value, self.fields)
+        return SqliteTableBuilder[ItemT](
+            self.table_name, value, self.fields, self.parent_field, self.parent_value
+        )
 
     def with_fields(self, fields: Iterable[str]) -> SqliteTableBuilder[ItemT]:
         return SqliteTableBuilder[ItemT](
             self.table_name,
             self.formatter,
             [SqliteField(field, field == "id", False) for field in list(fields)],
+            self.parent_field,
+            self.parent_value,
         )
 
     def with_id(self, identifier: str) -> SqliteTableBuilder[ItemT]:
@@ -131,6 +139,8 @@ class SqliteTableBuilder(Generic[ItemT]):
                 SqliteField(field.name, field.name == identifier, field.is_composite)
                 for field in self.fields
             ],
+            self.parent_field,
+            self.parent_value,
         )
 
     def with_composite_key(
@@ -149,13 +159,36 @@ class SqliteTableBuilder(Generic[ItemT]):
                 SqliteField(field.name, field.is_id, field.name in list(composites))
                 for field in self.fields
             ],
+            self.parent_field,
+            self.parent_value,
+        )
+
+    def with_parent(
+        self, parent_field: str, parent_value: Any
+    ) -> SqliteTableBuilder[ItemT]:
+        assert self.fields is not None, "Set fields first."
+        if parent_field not in [field.name for field in self.fields]:
+            raise ValueError("Missing fields in the table.")
+
+        return SqliteTableBuilder[ItemT](
+            self.table_name,
+            self.formatter,
+            self.fields,
+            parent_field,
+            parent_value,
         )
 
     def build(self) -> SqlTable[ItemT]:
         if not self.table_name or not self.formatter or not self.fields:
             raise ValueError("Cannot build sql table.")
 
-        return _DefaultSqlTable(self.table_name, self.formatter, self.fields)
+        return _DefaultSqlTable(
+            self.table_name,
+            self.formatter,
+            self.fields,
+            self.parent_field,
+            self.parent_value,
+        )
 
 
 @dataclass(frozen=True)
@@ -163,14 +196,27 @@ class _DefaultSqlTable(SqlTable[ItemT]):
     table_name: str
     formatter: Formatter[dict[str, Any], ItemT]
     fields: list[SqliteField]
+    parent_key: str | None
+    parent_value: Any | None
 
     def count_all(self) -> DatabaseCommand:
+        where_statement = ""
+        if self.parent_key is not None:
+            where_statement += (
+                "WHERE " + self.parent_key + " = " + self._parent_value_sql
+            )
+
         return DatabaseCommand(f"""
             SELECT count(*) as n_items
-            FROM {self.table_name.capitalize()};
+            FROM {self.table_name.capitalize()}
+            {where_statement};
         """)
 
     def insert(self, item: ItemT) -> DatabaseCommand:
+        dumped = self.formatter.dump(item)
+        if self.parent_key is not None:
+            dumped[self.parent_key] = self.parent_value
+
         columns = ", ".join([field.name for field in self.fields])
         placeholders = ", ".join([f":{key.name}" for key in self.fields])
 
@@ -181,17 +227,23 @@ class _DefaultSqlTable(SqlTable[ItemT]):
                 {placeholders}
             )
             RETURNING {columns};
-        """).with_data(self.formatter.dump(item))
+        """).with_data(dumped)
 
     def select(self, item_id: str) -> DatabaseCommand:
+        raw: dict[str, Any] = {self._id: item_id}
+        where_statement = f"WHERE {self._id} = :{self._id}"
+        if self.parent_key is not None:
+            raw[self.parent_key] = self.parent_value
+            where_statement += " AND " + self.parent_key + " = :" + self.parent_key
+
         columns = ", ".join([field.name for field in self.fields])
 
         return DatabaseCommand(f"""
             SELECT
                 {columns} 
             FROM {self.table_name.capitalize()}
-            WHERE {self._id} = :{self._id};
-        """).with_data({self._id: item_id})
+            {where_statement};
+        """).with_data(raw)
 
     def select_duplicate(self, item: ItemT) -> DatabaseCommand:
         raw = self.formatter.dump(item)
@@ -207,20 +259,35 @@ class _DefaultSqlTable(SqlTable[ItemT]):
         """).with_data({key: raw[key] for key in raw if key in self._composite})
 
     def select_all(self) -> DatabaseCommand:
+        where_statement = ""
+        if self.parent_key is not None:
+            where_statement += (
+                "WHERE " + self.parent_key + " = " + self._parent_value_sql
+            )
+
         columns = ", ".join([field.name for field in self.fields])
 
         return DatabaseCommand(f"""
             SELECT
                 {columns}
-            FROM {self.table_name.capitalize()};
+            FROM {self.table_name.capitalize()}
+            {where_statement};
         """)
 
     def update(self, item: ItemT) -> DatabaseCommand:
+        dumped = self.formatter.dump(item)
+        if self.parent_key is not None:
+            dumped[self.parent_key] = self.parent_value
+
+        where_statement = f"WHERE {self._id} = :{self._id}"
+        if self.parent_key is not None:
+            where_statement += " AND " + self.parent_key + " = :" + self.parent_key
+
         updates = ", ".join(
             [
                 f"{field.name} = :{field.name}"
                 for field in self.fields
-                if not field.is_id
+                if not field.is_id and field.name != self.parent_key
             ]
         )
 
@@ -228,22 +295,33 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             UPDATE {self.table_name.capitalize()}
             SET
                 {updates}
-            WHERE
-                {self._id} = :{self._id};
-        """).with_data(self.formatter.dump(item))
+            {where_statement};
+        """).with_data(dumped)
 
     def delete(self, item_id: str) -> DatabaseCommand:
+        raw: dict[str, Any] = {self._id: item_id}
+        where_statement = f"WHERE {self._id} = :{self._id}"
+        if self.parent_key is not None:
+            raw[self.parent_key] = self.parent_value
+            where_statement += " AND " + self.parent_key + " = :" + self.parent_key
+
         return DatabaseCommand(f"""
             DELETE
             FROM {self.table_name.capitalize()}
-            WHERE
-                {self._id} = :{self._id};
-        """).with_data({self._id: item_id})
+            {where_statement};
+        """).with_data(raw)
 
     def delete_all(self) -> DatabaseCommand:
+        where_statement = ""
+        if self.parent_key is not None:
+            where_statement += (
+                "WHERE " + self.parent_key + " = " + self._parent_value_sql
+            )
+
         return DatabaseCommand(f"""
             DELETE
-            FROM {self.table_name.capitalize()};
+            FROM {self.table_name.capitalize()}
+            {where_statement};
         """)
 
     def load(self, data: dict[str, Any]) -> ItemT:
@@ -268,6 +346,13 @@ class _DefaultSqlTable(SqlTable[ItemT]):
     def _composite(self) -> list[str]:
         names = [field.name for field in self.fields if field.is_composite]
         return [self._id] if len(names) == 0 else names
+
+    @property
+    def _parent_value_sql(self) -> str:
+        if isinstance(self.parent_value, str):
+            return "'" + self.parent_value + "'"
+        else:
+            return str(self.parent_value)
 
 
 @dataclass(frozen=True)

@@ -331,7 +331,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
         if self.parent_key is not None:
             raw[self.parent_key] = self.parent_value
             where_statement += (
-                ", [" + self.parent_key + "] = %(" + self.parent_key + ")s"
+                " AND [" + self.parent_key + "] = %(" + self.parent_key + ")s"
             )
 
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
@@ -371,7 +371,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
         where_statement = f"WHERE [{self._id}] = %({self._id})s"
         if self.parent_key is not None:
             where_statement += (
-                ", [" + self.parent_key + "] = %(" + self.parent_key + ")s"
+                " AND [" + self.parent_key + "] = %(" + self.parent_key + ")s"
             )
 
         updates = ", ".join(
@@ -397,7 +397,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
         if self.parent_key is not None:
             raw[self.parent_key] = self.parent_value
             where_statement += (
-                ", [" + self.parent_key + "] = %(" + self.parent_key + ")s"
+                " AND [" + self.parent_key + "] = %(" + self.parent_key + ")s"
             )
 
         return DatabaseCommand(f"""
