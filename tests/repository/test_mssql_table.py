@@ -5,7 +5,12 @@ from uuid import uuid4
 from pytest import fixture
 
 from apexdevkit.repository import DatabaseCommand
-from apexdevkit.repository.mssql import MsSqlField, MsSqlTableBuilder, NotNone, SqlTable
+from apexdevkit.repository.mssql import (
+    MsSqlFieldBuilder,
+    MsSqlTableBuilder,
+    NotNone,
+    SqlTable,
+)
 
 
 @dataclass
@@ -35,17 +40,15 @@ def table() -> SqlTable[Apple]:
         .with_formatter(AppleFormatter())  # type: ignore
         .with_fields(
             [
-                MsSqlField("apid", is_id=True, is_ordered=True),
-                MsSqlField("clr"),
-                MsSqlField("pid"),
-                MsSqlField("kingdom", is_fixed=True, fixed_value="fruits"),
-                MsSqlField(
-                    "manager",
-                    is_fixed=True,
-                    fixed_value=None,
-                    is_filter=True,
-                    filter_value=NotNone(),
-                ),
+                MsSqlFieldBuilder().with_name("apid").as_id().in_ordering().build(),
+                MsSqlFieldBuilder().with_name("clr").build(),
+                MsSqlFieldBuilder().with_name("pid").build(),
+                MsSqlFieldBuilder().with_name("kingdom").as_fixed("fruits").build(),
+                MsSqlFieldBuilder()
+                .with_name("manager")
+                .as_fixed(None)
+                .as_filter(NotNone())
+                .build(),
             ]
         )
         .build()
@@ -62,9 +65,9 @@ def table_with_parent() -> SqlTable[Apple]:
         .with_formatter(AppleFormatter())  # type: ignore
         .with_fields(
             [
-                MsSqlField("apid", is_id=True, is_ordered=True),
-                MsSqlField("clr"),
-                MsSqlField("pid", is_parent=True, parent_value="test"),
+                MsSqlFieldBuilder().with_name("apid").as_id().in_ordering().build(),
+                MsSqlFieldBuilder().with_name("clr").build(),
+                MsSqlFieldBuilder().with_name("pid").as_parent("test").build(),
             ]
         )
         .build()

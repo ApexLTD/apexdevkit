@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Generic, Iterable, Iterator, TypeVar
 
 from pymssql.exceptions import DatabaseError
@@ -143,7 +143,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
     schema: str | None = None
     table: str | None = None
     formatter: Formatter[dict[str, Any], ItemT] | None = None
-    fields: list[MsSqlField] | None = None
+    fields: list[_MsSqlField] | None = None
 
     def with_username(self, value: str) -> MsSqlTableBuilder[ItemT]:
         return MsSqlTableBuilder[ItemT](
@@ -183,7 +183,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.fields,
         )
 
-    def with_fields(self, value: Iterable[MsSqlField]) -> MsSqlTableBuilder[ItemT]:
+    def with_fields(self, value: Iterable[_MsSqlField]) -> MsSqlTableBuilder[ItemT]:
         field_list = list(value)
         if len([field for field in field_list if field.is_id]) != 1:
             raise ValueError("Pass only one identifier field.")
@@ -226,7 +226,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
     schema: str
     table: str
     formatter: Formatter[dict[str, Any], ItemT]
-    fields: list[MsSqlField]
+    fields: list[_MsSqlField]
     username: str | None = None
 
     def count_all(self) -> DatabaseCommand:
@@ -359,28 +359,28 @@ class DefaultSqlTable(SqlTable[ItemT]):
 
     def _general_filters(self) -> str:
         statements: list[str] = []
-        for field in self.fields:
-            if field.is_filter:
-                if field.filter_value is None:
-                    statements.append("[" + field.name + "] IS NULL")
-                elif isinstance(field.filter_value, NotNone):
-                    statements.append("[" + field.name + "] IS NOT NULL")
+        for key in self.fields:
+            if key.is_filter:
+                if key.filter_value is None:
+                    statements.append("[" + key.name + "] IS NULL")
+                elif isinstance(key.filter_value, NotNone):
+                    statements.append("[" + key.name + "] IS NOT NULL")
                 else:
-                    statements.append("[" + field.name + "] = %(" + field.name + ")s")
+                    statements.append("[" + key.name + "] = %(" + key.name + ")s")
 
         return " AND ".join(statements)
 
     def _data_with_fixed(self, data: dict[str, Any]) -> dict[str, Any]:
-        for field in self.fields:
-            if field.is_parent:
-                data[field.name] = field.parent_value
-            if field.is_fixed:
-                data[field.name] = field.fixed_value
+        for key in self.fields:
+            if key.is_parent:
+                data[key.name] = key.parent_value
+            if key.is_fixed:
+                data[key.name] = key.fixed_value
         return data
 
     @property
     def _id(self) -> str:
-        result = next((field for field in self.fields if field.is_id), None)
+        result = next((key for key in self.fields if key.is_id), None)
         if result is None:
             raise ValueError("Id field is required.")
         return result.name
@@ -394,7 +394,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
 
     @property
     def _order(self) -> str:
-        ordering = [field.name for field in self.fields if field.is_ordered]
+        ordering = [key.name for key in self.fields if key.is_ordered]
         if len(ordering) > 0:
             return "ORDER BY " + ", ".join(ordering)
         else:
@@ -407,7 +407,7 @@ class NotNone:
 
 
 @dataclass(frozen=True)
-class MsSqlField:
+class _MsSqlField:
     name: str
     is_id: bool = False
     is_ordered: bool = False
@@ -423,3 +423,72 @@ class MsSqlField:
         False  # generally fixed field (fixed values are passed when inserting)
     )
     fixed_value: Any | None = None
+
+
+@dataclass
+class MsSqlFieldBuilder:
+    _name: str = field(init=False)
+    _is_id: bool = False
+    _is_ordered: bool = False
+    _include_in_insert: bool = True
+
+    _is_parent: bool = False
+    _parent_value: Any | None = None
+
+    _is_filter: bool = False
+    _filter_value: Any | None | NotNone = None
+
+    _is_fixed: bool = False
+    _fixed_value: Any | None = None
+
+    def with_name(self, value: str) -> MsSqlFieldBuilder:
+        self._name = value
+
+        return self
+
+    def as_id(self) -> MsSqlFieldBuilder:
+        self._is_id = True
+
+        return self
+
+    def in_ordering(self) -> MsSqlFieldBuilder:
+        self._is_ordered = True
+
+        return self
+
+    def derive_on_insert(self) -> MsSqlFieldBuilder:
+        self._include_in_insert = False
+
+        return self
+
+    def as_parent(self, value: Any | None) -> MsSqlFieldBuilder:
+        self._is_parent = True
+        self._parent_value = value
+
+        return self
+
+    def as_filter(self, value: Any | None | NotNone) -> MsSqlFieldBuilder:
+        self._is_filter = True
+        self._filter_value = value
+
+        return self
+
+    def as_fixed(self, value: Any | None) -> MsSqlFieldBuilder:
+        self._is_fixed = True
+        self._fixed_value = value
+
+        return self
+
+    def build(self) -> _MsSqlField:
+        return _MsSqlField(
+            self._name,
+            self._is_id,
+            self._is_ordered,
+            self._include_in_insert,
+            self._is_parent,
+            self._parent_value,
+            self._is_filter,
+            self._filter_value,
+            self._is_fixed,
+            self._fixed_value,
+        )
