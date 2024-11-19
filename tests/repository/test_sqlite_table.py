@@ -32,6 +32,7 @@ def setup() -> DatabaseCommand:
             name            TEXT        NOT NULL,
             count           INT         NOT NULL,
             parent          INT         NOT NULL,
+            fixed           INT         NOT NULL,
 
             UNIQUE(id)
         );
@@ -63,6 +64,7 @@ def repository() -> SqliteRepository[_Item]:
                 SqliteField("name"),
                 SqliteField("count"),
                 SqliteField("parent", is_parent=True, fixed_value=0),
+                SqliteField("fixed", is_fixed=True, fixed_value=1),
             ]
         )
         .build(),

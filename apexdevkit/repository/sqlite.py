@@ -146,20 +146,25 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             SELECT count(*) as n_items
             FROM {self.table_name.upper()}
             {self._where_statement(include_id=False)};
-        """).with_data(self._data_with_replaced_parent({}))
+        """).with_data(self._data_with_fixed({}))
 
     def insert(self, item: ItemT) -> DatabaseCommand:
-        columns = ", ".join([field.name for field in self.fields])
-        placeholders = ", ".join([f":{key.name}" for key in self.fields])
+        insert_columns = ", ".join(
+            [field.name for field in self.fields if field.include_in_insert]
+        )
+        return_columns = ", ".join([field.name for field in self.fields])
+        placeholders = ", ".join(
+            [f":{key.name}" for key in self.fields if key.include_in_insert]
+        )
 
         return DatabaseCommand(f"""
             INSERT INTO {self.table_name.upper()} (
-                {columns}
+                {insert_columns}
             ) VALUES (
                 {placeholders}
             )
-            RETURNING {columns};
-        """).with_data(self._data_with_replaced_parent(self.formatter.dump(item)))
+            RETURNING {return_columns};
+        """).with_data(self._data_with_fixed(self.formatter.dump(item)))
 
     def select(self, item_id: str) -> DatabaseCommand:
         columns = ", ".join([field.name for field in self.fields])
@@ -169,7 +174,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
                 {columns} 
             FROM {self.table_name.upper()}
             {self._where_statement(include_id=True)};
-        """).with_data(self._data_with_replaced_parent({self._id: item_id}))
+        """).with_data(self._data_with_fixed({self._id: item_id}))
 
     def select_duplicate(self, item: ItemT) -> DatabaseCommand:
         raw = self.formatter.dump(item)
@@ -192,7 +197,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
                 {columns}
             FROM {self.table_name.capitalize()}
             {self._where_statement(include_id=False)};
-        """).with_data(self._data_with_replaced_parent({}))
+        """).with_data(self._data_with_fixed({}))
 
     def update(self, item: ItemT) -> DatabaseCommand:
         updates = ", ".join(
@@ -208,21 +213,21 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             SET
                 {updates}
             {self._where_statement(include_id=True)};
-        """).with_data(self._data_with_replaced_parent(self.formatter.dump(item)))
+        """).with_data(self._data_with_fixed(self.formatter.dump(item)))
 
     def delete(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand(f"""
             DELETE
             FROM {self.table_name.upper()}
             {self._where_statement(include_id=True)};
-        """).with_data(self._data_with_replaced_parent({self._id: item_id}))
+        """).with_data(self._data_with_fixed({self._id: item_id}))
 
     def delete_all(self) -> DatabaseCommand:
         return DatabaseCommand(f"""
             DELETE
             FROM {self.table_name.upper()}
             {self._where_statement(include_id=False)};
-        """).with_data(self._data_with_replaced_parent({}))
+        """).with_data(self._data_with_fixed({}))
 
     def load(self, data: dict[str, Any]) -> ItemT:
         return self.formatter.load(data)
@@ -245,10 +250,10 @@ class _DefaultSqlTable(SqlTable[ItemT]):
                 statement += f" AND {self._id} = :{self._id}"
             return statement
 
-    def _data_with_replaced_parent(self, data: dict[str, Any]) -> dict[str, Any]:
-        result = next((field for field in self.fields if field.is_parent), None)
-        if result is not None:
-            data[result.name] = result.fixed_value
+    def _data_with_fixed(self, data: dict[str, Any]) -> dict[str, Any]:
+        for field in self.fields:
+            if field.is_parent or field.is_fixed:
+                data[field.name] = field.fixed_value
         return data
 
     @property
@@ -269,6 +274,9 @@ class SqliteField:
     name: str
     is_id: bool = False
     is_composite: bool = False
+    include_in_insert: bool = True
 
     is_parent: bool = False
+
+    is_fixed: bool = False
     fixed_value: Any | None = None
