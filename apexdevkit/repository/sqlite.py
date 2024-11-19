@@ -8,6 +8,7 @@ from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
 from apexdevkit.repository import Database, DatabaseCommand, RepositoryBase
 from apexdevkit.repository.interface import ItemT
+from apexdevkit.repository.sql import NotNone, SqlFieldManager, _SqlField
 
 
 @dataclass(frozen=True)
@@ -102,7 +103,7 @@ class UnknownError(Exception):
 class SqliteTableBuilder(Generic[ItemT]):
     table_name: str | None = None
     formatter: Formatter[dict[str, Any], ItemT] | None = None
-    fields: list[SqliteField] | None = None
+    fields: list[_SqlField] | None = None
 
     def with_name(self, value: str) -> SqliteTableBuilder[ItemT]:
         return SqliteTableBuilder[ItemT](value, self.formatter, self.fields)
@@ -112,16 +113,27 @@ class SqliteTableBuilder(Generic[ItemT]):
     ) -> SqliteTableBuilder[ItemT]:
         return SqliteTableBuilder[ItemT](self.table_name, value, self.fields)
 
-    def with_fields(self, value: Iterable[SqliteField]) -> SqliteTableBuilder[ItemT]:
-        field_list = list(value)
-        if len([field for field in field_list if field.is_id]) != 1:
-            raise ValueError("Pass only one identifier field.")
-        if len([field for field in field_list if field.is_parent]) > 1:
-            raise ValueError("Pass only one parent field.")
+    def with_fields(self, value: Iterable[_SqlField]) -> SqliteTableBuilder[ItemT]:
+        key_list = list(value)
+        if len([key for key in key_list if key.is_id]) != 1:
+            raise ValueError("Pass only one identifier key.")
+        if len([key for key in key_list if key.is_parent]) > 1:
+            raise ValueError("Pass only one parent key.")
+        if (
+            len(
+                [
+                    key
+                    for key in key_list
+                    if not key.is_filter and isinstance(key.fixed_value, NotNone)
+                ]
+            )
+            > 0
+        ):
+            raise ValueError("Only filter fields can be 'not null'.")
         return SqliteTableBuilder[ItemT](
             self.table_name,
             self.formatter,
-            field_list,
+            key_list,
         )
 
     def build(self) -> SqlTable[ItemT]:
@@ -131,7 +143,7 @@ class SqliteTableBuilder(Generic[ItemT]):
         return _DefaultSqlTable(
             self.table_name,
             self.formatter,
-            self.fields,
+            SqlFieldManager.Builder().with_fields(self.fields).for_sqlite().build(),
         )
 
 
@@ -139,14 +151,14 @@ class SqliteTableBuilder(Generic[ItemT]):
 class _DefaultSqlTable(SqlTable[ItemT]):
     table_name: str
     formatter: Formatter[dict[str, Any], ItemT]
-    fields: list[SqliteField]
+    fields: SqlFieldManager
 
     def count_all(self) -> DatabaseCommand:
         return DatabaseCommand(f"""
             SELECT count(*) as n_items
             FROM {self.table_name.upper()}
-            {self._where_statement(include_id=False)};
-        """).with_data(self._data_with_fixed({}))
+            {self.fields.where_statement(include_id=False)};
+        """).with_data(self.fields.with_fixed({}))
 
     def insert(self, item: ItemT) -> DatabaseCommand:
         insert_columns = ", ".join(
@@ -164,7 +176,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
                 {placeholders}
             )
             RETURNING {return_columns};
-        """).with_data(self._data_with_fixed(self.formatter.dump(item)))
+        """).with_data(self.fields.with_fixed(self.formatter.dump(item)))
 
     def select(self, item_id: str) -> DatabaseCommand:
         columns = ", ".join([field.name for field in self.fields])
@@ -173,21 +185,23 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             SELECT
                 {columns} 
             FROM {self.table_name.upper()}
-            {self._where_statement(include_id=True)};
-        """).with_data(self._data_with_fixed({self._id: item_id}))
+            {self.fields.where_statement(include_id=True)};
+        """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
 
     def select_duplicate(self, item: ItemT) -> DatabaseCommand:
         raw = self.formatter.dump(item)
         columns = ", ".join([field.name for field in self.fields])
 
-        duplicates = " AND ".join([f"{field} = :{field}" for field in self._composite])
+        duplicates = " AND ".join(
+            [f"{field} = :{field}" for field in self.fields.composite]
+        )
 
         return DatabaseCommand(f"""
             SELECT
                 {columns} 
             FROM {self.table_name.upper()}
             WHERE {duplicates};
-        """).with_data({key: raw[key] for key in raw if key in self._composite})
+        """).with_data({key: raw[key] for key in raw if key in self.fields.composite})
 
     def select_all(self) -> DatabaseCommand:
         columns = ", ".join([field.name for field in self.fields])
@@ -196,8 +210,9 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             SELECT
                 {columns}
             FROM {self.table_name.capitalize()}
-            {self._where_statement(include_id=False)};
-        """).with_data(self._data_with_fixed({}))
+            {self.fields.where_statement(include_id=False)}
+            {self.fields.order}
+        """).with_data(self.fields.with_fixed({}))
 
     def update(self, item: ItemT) -> DatabaseCommand:
         updates = ", ".join(
@@ -212,22 +227,22 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             UPDATE {self.table_name.upper()}
             SET
                 {updates}
-            {self._where_statement(include_id=True)};
-        """).with_data(self._data_with_fixed(self.formatter.dump(item)))
+            {self.fields.where_statement(include_id=True)};
+        """).with_data(self.fields.with_fixed(self.formatter.dump(item)))
 
     def delete(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand(f"""
             DELETE
             FROM {self.table_name.upper()}
-            {self._where_statement(include_id=True)};
-        """).with_data(self._data_with_fixed({self._id: item_id}))
+            {self.fields.where_statement(include_id=True)};
+        """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
 
     def delete_all(self) -> DatabaseCommand:
         return DatabaseCommand(f"""
             DELETE
             FROM {self.table_name.upper()}
-            {self._where_statement(include_id=False)};
-        """).with_data(self._data_with_fixed({}))
+            {self.fields.where_statement(include_id=False)};
+        """).with_data(self.fields.with_fixed({}))
 
     def load(self, data: dict[str, Any]) -> ItemT:
         return self.formatter.load(data)
@@ -236,47 +251,6 @@ class _DefaultSqlTable(SqlTable[ItemT]):
         raw = self.formatter.dump(item)
         return ExistsError(item).with_duplicate(
             lambda i: ",".join(
-                [f"{key}<{raw[key]}>" for key in raw if key in self._composite]
+                [f"{key}<{raw[key]}>" for key in raw if key in self.fields.composite]
             )
         )
-
-    def _where_statement(self, include_id: bool = False) -> str:
-        result = next((field for field in self.fields if field.is_parent), None)
-        if result is None:
-            return f"WHERE {self._id} = :{self._id}" if include_id else ""
-        else:
-            statement = "WHERE " + result.name + " = :" + result.name
-            if include_id:
-                statement += f" AND {self._id} = :{self._id}"
-            return statement
-
-    def _data_with_fixed(self, data: dict[str, Any]) -> dict[str, Any]:
-        for field in self.fields:
-            if field.is_parent or field.is_fixed:
-                data[field.name] = field.fixed_value
-        return data
-
-    @property
-    def _id(self) -> str:
-        result = next((field for field in self.fields if field.is_id), None)
-        if result is None:
-            raise ValueError("Id field is required.")
-        return result.name
-
-    @property
-    def _composite(self) -> list[str]:
-        names = [field.name for field in self.fields if field.is_composite]
-        return [self._id] if len(names) == 0 else names
-
-
-@dataclass(frozen=True)
-class SqliteField:
-    name: str
-    is_id: bool = False
-    is_composite: bool = False
-    include_in_insert: bool = True
-
-    is_parent: bool = False
-
-    is_fixed: bool = False
-    fixed_value: Any | None = None

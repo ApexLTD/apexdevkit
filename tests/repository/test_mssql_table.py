@@ -5,7 +5,11 @@ from uuid import uuid4
 from pytest import fixture
 
 from apexdevkit.repository import DatabaseCommand
-from apexdevkit.repository.mssql import MsSqlField, MsSqlTableBuilder, SqlTable
+from apexdevkit.repository.mssql import (
+    MsSqlTableBuilder,
+    SqlTable,
+)
+from apexdevkit.repository.sql import NotNone, SqlFieldBuilder
 
 
 @dataclass
@@ -35,10 +39,15 @@ def table() -> SqlTable[Apple]:
         .with_formatter(AppleFormatter())  # type: ignore
         .with_fields(
             [
-                MsSqlField("apid", is_id=True, is_ordered=True),
-                MsSqlField("clr"),
-                MsSqlField("pid"),
-                MsSqlField("kingdom", is_fixed=True, fixed_value="fruits"),
+                SqlFieldBuilder().with_name("apid").as_id().in_ordering().build(),
+                SqlFieldBuilder().with_name("clr").build(),
+                SqlFieldBuilder().with_name("pid").build(),
+                SqlFieldBuilder().with_name("kingdom").as_fixed("fruits").build(),
+                SqlFieldBuilder()
+                .with_name("manager")
+                .as_fixed(None)
+                .as_filter(NotNone())
+                .build(),
             ]
         )
         .build()
@@ -55,9 +64,9 @@ def table_with_parent() -> SqlTable[Apple]:
         .with_formatter(AppleFormatter())  # type: ignore
         .with_fields(
             [
-                MsSqlField("apid", is_id=True, is_ordered=True),
-                MsSqlField("clr"),
-                MsSqlField("pid", is_parent=True, fixed_value="test"),
+                SqlFieldBuilder().with_name("apid").as_id().in_ordering().build(),
+                SqlFieldBuilder().with_name("clr").build(),
+                SqlFieldBuilder().with_name("pid").as_parent("test").build(),
             ]
         )
         .build()
@@ -76,10 +85,10 @@ def test_should_count(table: SqlTable[Apple]) -> None:
             EXECUTE AS USER = 'test'
             SELECT count(*) AS n_items
             FROM [test].[apples]
-            
+            WHERE [manager] IS NOT NULL
             REVERT
         """
-    ).with_data(kingdom="fruits")
+    ).with_data(kingdom="fruits", manager=None)
 
 
 def test_should_insert(table: SqlTable[Apple], apple: Apple) -> None:
@@ -88,15 +97,16 @@ def test_should_insert(table: SqlTable[Apple], apple: Apple) -> None:
         """
             EXECUTE AS USER = 'test'
             INSERT INTO [test].[apples] (
-                [apid], [clr], [pid], [kingdom]
+                [apid], [clr], [pid], [kingdom], [manager]
             ) OUTPUT
-                INSERTED.apid, INSERTED.clr, INSERTED.pid, INSERTED.kingdom
+                INSERTED.apid, INSERTED.clr, INSERTED.pid, """
+        + """INSERTED.kingdom, INSERTED.manager
             VALUES (
-                %(apid)s, %(clr)s, %(pid)s, %(kingdom)s
+                %(apid)s, %(clr)s, %(pid)s, %(kingdom)s, %(manager)s
             )
             REVERT
         """
-    ).with_data(kingdom="fruits", **AppleFormatter().dump(apple))
+    ).with_data(kingdom="fruits", manager=None, **AppleFormatter().dump(apple))
 
 
 def test_should_select(table: SqlTable[Apple], apple: Apple) -> None:
@@ -105,12 +115,12 @@ def test_should_select(table: SqlTable[Apple], apple: Apple) -> None:
         """
             EXECUTE AS USER = 'test'
             SELECT
-                [apid], [clr], [pid], [kingdom] 
+                [apid], [clr], [pid], [kingdom], [manager] 
             FROM [test].[apples]
-            WHERE [apid] = %(apid)s
+            WHERE [apid] = %(apid)s AND [manager] IS NOT NULL
             REVERT
         """
-    ).with_data(apid=apple.id, kingdom="fruits")
+    ).with_data(apid=apple.id, manager=None, kingdom="fruits")
 
 
 def test_should_select_all(table: SqlTable[Apple]) -> None:
@@ -119,13 +129,13 @@ def test_should_select_all(table: SqlTable[Apple]) -> None:
         """
             EXECUTE AS USER = 'test'
             SELECT
-                [apid], [clr], [pid], [kingdom]
+                [apid], [clr], [pid], [kingdom], [manager]
             FROM [test].[apples]
-            
+            WHERE [manager] IS NOT NULL
             ORDER BY apid
             REVERT
         """
-    ).with_data(kingdom="fruits")
+    ).with_data(kingdom="fruits", manager=None)
 
 
 def test_should_update(table: SqlTable[Apple], apple: Apple) -> None:
@@ -135,11 +145,12 @@ def test_should_update(table: SqlTable[Apple], apple: Apple) -> None:
             EXECUTE AS USER = 'test'
             UPDATE [test].[apples]
             SET
-                clr = %(clr)s, pid = %(pid)s, kingdom = %(kingdom)s
-            WHERE [apid] = %(apid)s
+                clr = %(clr)s, pid = %(pid)s, """
+        + """kingdom = %(kingdom)s, manager = %(manager)s
+            WHERE [apid] = %(apid)s AND [manager] IS NOT NULL
             REVERT
         """
-    ).with_data(kingdom="fruits", **AppleFormatter().dump(apple))
+    ).with_data(kingdom="fruits", manager=None, **AppleFormatter().dump(apple))
 
 
 def test_should_delete(table: SqlTable[Apple], apple: Apple) -> None:
@@ -149,10 +160,10 @@ def test_should_delete(table: SqlTable[Apple], apple: Apple) -> None:
             EXECUTE AS USER = 'test'
             DELETE
             FROM [test].[apples]
-            WHERE [apid] = %(apid)s
+            WHERE [apid] = %(apid)s AND [manager] IS NOT NULL
             REVERT
         """
-    ).with_data(apid=apple.id, kingdom="fruits")
+    ).with_data(apid=apple.id, kingdom="fruits", manager=None)
 
 
 def test_should_delete_all(table: SqlTable[Apple]) -> None:
@@ -162,10 +173,10 @@ def test_should_delete_all(table: SqlTable[Apple]) -> None:
             EXECUTE AS USER = 'test'
             DELETE
             FROM [test].[apples]
-            
+            WHERE [manager] IS NOT NULL
             REVERT
         """
-    ).with_data(kingdom="fruits")
+    ).with_data(kingdom="fruits", manager=None)
 
 
 def test_should_count_with_parent(table_with_parent: SqlTable[Apple]) -> None:

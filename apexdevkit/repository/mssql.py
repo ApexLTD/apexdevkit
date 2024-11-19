@@ -8,6 +8,7 @@ from pymssql.exceptions import DatabaseError
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
 from apexdevkit.repository import Database, DatabaseCommand, RepositoryBase
+from apexdevkit.repository.sql import NotNone, SqlFieldManager, _SqlField
 
 ItemT = TypeVar("ItemT")
 
@@ -143,7 +144,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
     schema: str | None = None
     table: str | None = None
     formatter: Formatter[dict[str, Any], ItemT] | None = None
-    fields: list[MsSqlField] | None = None
+    fields: list[_SqlField] | None = None
 
     def with_username(self, value: str) -> MsSqlTableBuilder[ItemT]:
         return MsSqlTableBuilder[ItemT](
@@ -183,18 +184,29 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.fields,
         )
 
-    def with_fields(self, value: Iterable[MsSqlField]) -> MsSqlTableBuilder[ItemT]:
-        field_list = list(value)
-        if len([field for field in field_list if field.is_id]) != 1:
-            raise ValueError("Pass only one identifier field.")
-        if len([field for field in field_list if field.is_parent]) > 1:
-            raise ValueError("Pass only one parent field.")
+    def with_fields(self, value: Iterable[_SqlField]) -> MsSqlTableBuilder[ItemT]:
+        key_list = list(value)
+        if len([key for key in key_list if key.is_id]) != 1:
+            raise ValueError("Pass only one identifier key.")
+        if len([key for key in key_list if key.is_parent]) > 1:
+            raise ValueError("Pass only one parent key.")
+        if (
+            len(
+                [
+                    key
+                    for key in key_list
+                    if not key.is_filter and isinstance(key.fixed_value, NotNone)
+                ]
+            )
+            > 0
+        ):
+            raise ValueError("Only filter fields can be 'not null'.")
         return MsSqlTableBuilder[ItemT](
             self.username,
             self.schema,
             self.table,
             self.formatter,
-            field_list,
+            key_list,
         )
 
     def build(self) -> SqlTable[ItemT]:
@@ -205,7 +217,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.schema,
             self.table,
             self.formatter,
-            self.fields,
+            SqlFieldManager.Builder().with_fields(self.fields).for_mssql().build(),
             self.username,
         )
 
@@ -215,7 +227,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
     schema: str
     table: str
     formatter: Formatter[dict[str, Any], ItemT]
-    fields: list[MsSqlField]
+    fields: SqlFieldManager
     username: str | None = None
 
     def count_all(self) -> DatabaseCommand:
@@ -223,9 +235,9 @@ class DefaultSqlTable(SqlTable[ItemT]):
             {self._user_check}
             SELECT count(*) AS n_items
             FROM [{self.schema}].[{self.table}]
-            {self._where_statement(include_id=False)}
+            {self.fields.where_statement(include_id=False)}
             REVERT
-        """).with_data(self._data_with_fixed({}))
+        """).with_data(self.fields.with_fixed({}))
 
     def insert(self, item: ItemT) -> DatabaseCommand:
         columns = ", ".join(
@@ -246,7 +258,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
                 {placeholders}
             )
             REVERT
-        """).with_data(self._data_with_fixed(self.formatter.dump(item)))
+        """).with_data(self.fields.with_fixed(self.formatter.dump(item)))
 
     def select(self, item_id: str) -> DatabaseCommand:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
@@ -256,9 +268,9 @@ class DefaultSqlTable(SqlTable[ItemT]):
             SELECT
                 {columns} 
             FROM [{self.schema}].[{self.table}]
-            {self._where_statement(include_id=True)}
+            {self.fields.where_statement(include_id=True)}
             REVERT
-        """).with_data(self._data_with_fixed({self._id: item_id}))
+        """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
 
     def select_all(self) -> DatabaseCommand:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
@@ -268,10 +280,10 @@ class DefaultSqlTable(SqlTable[ItemT]):
             SELECT
                 {columns}
             FROM [{self.schema}].[{self.table}]
-            {self._where_statement(include_id=False)}
-            {self._order}
+            {self.fields.where_statement(include_id=False)}
+            {self.fields.order}
             REVERT
-        """).with_data(self._data_with_fixed({}))
+        """).with_data(self.fields.with_fixed({}))
 
     def update(self, item: ItemT) -> DatabaseCommand:
         updates = ", ".join(
@@ -287,27 +299,27 @@ class DefaultSqlTable(SqlTable[ItemT]):
             UPDATE [{self.schema}].[{self.table}]
             SET
                 {updates}
-            {self._where_statement(include_id=True)}
+            {self.fields.where_statement(include_id=True)}
             REVERT
-        """).with_data(self._data_with_fixed(self.formatter.dump(item)))
+        """).with_data(self.fields.with_fixed(self.formatter.dump(item)))
 
     def delete(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand(f"""
             {self._user_check}
             DELETE
             FROM [{self.schema}].[{self.table}]
-            {self._where_statement(include_id=True)}
+            {self.fields.where_statement(include_id=True)}
             REVERT
-        """).with_data(self._data_with_fixed({self._id: item_id}))
+        """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
 
     def delete_all(self) -> DatabaseCommand:
         return DatabaseCommand(f"""
             {self._user_check}
             DELETE
             FROM [{self.schema}].[{self.table}]
-            {self._where_statement(include_id=False)}
+            {self.fields.where_statement(include_id=False)}
             REVERT
-        """).with_data(self._data_with_fixed({}))
+        """).with_data(self.fields.with_fixed({}))
 
     def load(self, data: dict[str, Any]) -> ItemT:
         return self.formatter.load(data)
@@ -315,31 +327,8 @@ class DefaultSqlTable(SqlTable[ItemT]):
     def exists(self, duplicate: ItemT) -> ExistsError:
         raw = self.formatter.dump(duplicate)
         return ExistsError(duplicate).with_duplicate(
-            lambda i: f"{self._id}<{raw[self._id]}>"
+            lambda i: f"{self.fields.id}<{raw[self.fields.id]}>"
         )
-
-    def _where_statement(self, include_id: bool = False) -> str:
-        result = next((field for field in self.fields if field.is_parent), None)
-        if result is None:
-            return f"WHERE [{self._id}] = %({self._id})s" if include_id else ""
-        else:
-            statement = "WHERE [" + result.name + "] = %(" + result.name + ")s"
-            if include_id:
-                statement += f" AND [{self._id}] = %({self._id})s"
-            return statement
-
-    def _data_with_fixed(self, data: dict[str, Any]) -> dict[str, Any]:
-        for field in self.fields:
-            if field.is_parent or field.is_fixed:
-                data[field.name] = field.fixed_value
-        return data
-
-    @property
-    def _id(self) -> str:
-        result = next((field for field in self.fields if field.is_id), None)
-        if result is None:
-            raise ValueError("Id field is required.")
-        return result.name
 
     @property
     def _user_check(self) -> str:
@@ -347,24 +336,3 @@ class DefaultSqlTable(SqlTable[ItemT]):
             return f"EXECUTE AS USER = '{self.username}'"
         else:
             return ""
-
-    @property
-    def _order(self) -> str:
-        ordering = [field.name for field in self.fields if field.is_ordered]
-        if len(ordering) > 0:
-            return "ORDER BY " + ", ".join(ordering)
-        else:
-            return ""
-
-
-@dataclass(frozen=True)
-class MsSqlField:
-    name: str
-    is_id: bool = False
-    is_ordered: bool = False
-    include_in_insert: bool = True
-
-    is_parent: bool = False
-
-    is_fixed: bool = False
-    fixed_value: Any | None = None
