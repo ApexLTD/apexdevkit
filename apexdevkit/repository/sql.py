@@ -16,6 +16,7 @@ class _SqlField:
     is_ordered: bool = False
     is_composite: bool = False
     include_in_insert: bool = True
+    include_in_update: bool = True
 
     is_parent: bool = False
     parent_value: Any | None = None
@@ -34,6 +35,7 @@ class SqlFieldBuilder:
     _is_ordered: bool = False
     _is_composite: bool = False
     _include_in_insert: bool = True
+    _include_in_update: bool = True
 
     _is_parent: bool = False
     _parent_value: Any | None = None
@@ -69,6 +71,11 @@ class SqlFieldBuilder:
 
         return self
 
+    def as_not_editable(self) -> SqlFieldBuilder:
+        self._include_in_update = False
+
+        return self
+
     def as_parent(self, value: Any | None) -> SqlFieldBuilder:
         self._is_parent = True
         self._parent_value = value
@@ -94,6 +101,7 @@ class SqlFieldBuilder:
             self._is_ordered,
             self._is_composite,
             self._include_in_insert,
+            self._include_in_update,
             self._is_parent,
             self._parent_value,
             self._is_filter,
