@@ -225,11 +225,15 @@ class DefaultSqlTable(SqlTable[ItemT]):
             FROM [{self.schema}].[{self.table}]
             {self._where_statement(include_id=False)}
             REVERT
-        """).with_data(self._data_with_replaced_parent({}))
+        """).with_data(self._data_with_fixed({}))
 
     def insert(self, item: ItemT) -> DatabaseCommand:
-        columns = ", ".join(["[" + field.name + "]" for field in self.fields])
-        placeholders = ", ".join([f"%({key.name})s" for key in self.fields])
+        columns = ", ".join(
+            ["[" + field.name + "]" for field in self.fields if field.include_in_insert]
+        )
+        placeholders = ", ".join(
+            [f"%({key.name})s" for key in self.fields if key.include_in_insert]
+        )
         output = ", ".join(["INSERTED." + field.name for field in self.fields])
 
         return DatabaseCommand(f"""
@@ -242,7 +246,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
                 {placeholders}
             )
             REVERT
-        """).with_data(self._data_with_replaced_parent(self.formatter.dump(item)))
+        """).with_data(self._data_with_fixed(self.formatter.dump(item)))
 
     def select(self, item_id: str) -> DatabaseCommand:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
@@ -254,7 +258,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
             FROM [{self.schema}].[{self.table}]
             {self._where_statement(include_id=True)}
             REVERT
-        """).with_data(self._data_with_replaced_parent({self._id: item_id}))
+        """).with_data(self._data_with_fixed({self._id: item_id}))
 
     def select_all(self) -> DatabaseCommand:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
@@ -267,7 +271,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
             {self._where_statement(include_id=False)}
             {self._order}
             REVERT
-        """).with_data(self._data_with_replaced_parent({}))
+        """).with_data(self._data_with_fixed({}))
 
     def update(self, item: ItemT) -> DatabaseCommand:
         updates = ", ".join(
@@ -285,7 +289,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
                 {updates}
             {self._where_statement(include_id=True)}
             REVERT
-        """).with_data(self._data_with_replaced_parent(self.formatter.dump(item)))
+        """).with_data(self._data_with_fixed(self.formatter.dump(item)))
 
     def delete(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand(f"""
@@ -294,7 +298,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
             FROM [{self.schema}].[{self.table}]
             {self._where_statement(include_id=True)}
             REVERT
-        """).with_data(self._data_with_replaced_parent({self._id: item_id}))
+        """).with_data(self._data_with_fixed({self._id: item_id}))
 
     def delete_all(self) -> DatabaseCommand:
         return DatabaseCommand(f"""
@@ -303,7 +307,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
             FROM [{self.schema}].[{self.table}]
             {self._where_statement(include_id=False)}
             REVERT
-        """).with_data(self._data_with_replaced_parent({}))
+        """).with_data(self._data_with_fixed({}))
 
     def load(self, data: dict[str, Any]) -> ItemT:
         return self.formatter.load(data)
@@ -324,10 +328,10 @@ class DefaultSqlTable(SqlTable[ItemT]):
                 statement += f" AND [{self._id}] = %({self._id})s"
             return statement
 
-    def _data_with_replaced_parent(self, data: dict[str, Any]) -> dict[str, Any]:
-        result = next((field for field in self.fields if field.is_parent), None)
-        if result is not None:
-            data[result.name] = result.fixed_value
+    def _data_with_fixed(self, data: dict[str, Any]) -> dict[str, Any]:
+        for field in self.fields:
+            if field.is_parent or field.is_fixed:
+                data[field.name] = field.fixed_value
         return data
 
     @property
@@ -358,6 +362,9 @@ class MsSqlField:
     name: str
     is_id: bool = False
     is_ordered: bool = False
+    include_in_insert: bool = True
 
     is_parent: bool = False
+
+    is_fixed: bool = False
     fixed_value: Any | None = None
