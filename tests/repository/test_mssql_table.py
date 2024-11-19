@@ -99,8 +99,8 @@ def test_should_insert(table: SqlTable[Apple], apple: Apple) -> None:
             INSERT INTO [test].[apples] (
                 [apid], [clr], [pid], [kingdom], [manager]
             ) OUTPUT
-                INSERTED.apid, INSERTED.clr, INSERTED.pid, """
-        + """INSERTED.kingdom, INSERTED.manager
+                INSERTED.apid AS apid, INSERTED.clr AS clr, INSERTED.pid AS pid, """
+        + """INSERTED.kingdom AS kingdom, INSERTED.manager AS manager
             VALUES (
                 %(apid)s, %(clr)s, %(pid)s, %(kingdom)s, %(manager)s
             )
@@ -205,7 +205,7 @@ def test_should_insert_with_parent(
             INSERT INTO [test].[apples] (
                 [apid], [clr], [pid]
             ) OUTPUT
-                INSERTED.apid, INSERTED.clr, INSERTED.pid
+                INSERTED.apid AS apid, INSERTED.clr AS clr, INSERTED.pid AS pid
             VALUES (
                 %(apid)s, %(clr)s, %(pid)s
             )
