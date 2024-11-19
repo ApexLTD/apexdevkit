@@ -208,7 +208,8 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             SELECT
                 {columns}
             FROM {self.table_name.capitalize()}
-            {self._where_statement(include_id=False)};
+            {self._where_statement(include_id=False)}
+            {self._order}
         """).with_data(self._data_with_fixed({}))
 
     def update(self, item: ItemT) -> DatabaseCommand:
@@ -312,3 +313,11 @@ class _DefaultSqlTable(SqlTable[ItemT]):
     def _composite(self) -> list[str]:
         names = [field.name for field in self.fields if field.is_composite]
         return [self._id] if len(names) == 0 else names
+
+    @property
+    def _order(self) -> str:
+        ordering = [key.name for key in self.fields if key.is_ordered]
+        if len(ordering) > 0:
+            return "ORDER BY " + ", ".join(ordering)
+        else:
+            return ""
