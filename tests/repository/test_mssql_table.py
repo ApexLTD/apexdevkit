@@ -38,6 +38,7 @@ def table() -> SqlTable[Apple]:
                 MsSqlField("apid", is_id=True, is_ordered=True),
                 MsSqlField("clr"),
                 MsSqlField("pid"),
+                MsSqlField("kingdom", is_fixed=True, fixed_value="fruits"),
             ]
         )
         .build()
@@ -78,7 +79,7 @@ def test_should_count(table: SqlTable[Apple]) -> None:
             
             REVERT
         """
-    )
+    ).with_data(kingdom="fruits")
 
 
 def test_should_insert(table: SqlTable[Apple], apple: Apple) -> None:
@@ -87,15 +88,15 @@ def test_should_insert(table: SqlTable[Apple], apple: Apple) -> None:
         """
             EXECUTE AS USER = 'test'
             INSERT INTO [test].[apples] (
-                [apid], [clr], [pid]
+                [apid], [clr], [pid], [kingdom]
             ) OUTPUT
-                INSERTED.apid, INSERTED.clr, INSERTED.pid
+                INSERTED.apid, INSERTED.clr, INSERTED.pid, INSERTED.kingdom
             VALUES (
-                %(apid)s, %(clr)s, %(pid)s
+                %(apid)s, %(clr)s, %(pid)s, %(kingdom)s
             )
             REVERT
         """
-    ).with_data(AppleFormatter().dump(apple))
+    ).with_data(kingdom="fruits", **AppleFormatter().dump(apple))
 
 
 def test_should_select(table: SqlTable[Apple], apple: Apple) -> None:
@@ -104,30 +105,27 @@ def test_should_select(table: SqlTable[Apple], apple: Apple) -> None:
         """
             EXECUTE AS USER = 'test'
             SELECT
-                [apid], [clr], [pid] 
+                [apid], [clr], [pid], [kingdom] 
             FROM [test].[apples]
             WHERE [apid] = %(apid)s
             REVERT
         """
-    ).with_data(apid=apple.id)
+    ).with_data(apid=apple.id, kingdom="fruits")
 
 
 def test_should_select_all(table: SqlTable[Apple]) -> None:
     command = table.select_all()
-    assert (
-        command
-        == DatabaseCommand(
-            """
+    assert command == DatabaseCommand(
+        """
             EXECUTE AS USER = 'test'
             SELECT
-                [apid], [clr], [pid]
+                [apid], [clr], [pid], [kingdom]
             FROM [test].[apples]
             
             ORDER BY apid
             REVERT
         """
-        ).with_data()
-    )
+    ).with_data(kingdom="fruits")
 
 
 def test_should_update(table: SqlTable[Apple], apple: Apple) -> None:
@@ -137,11 +135,11 @@ def test_should_update(table: SqlTable[Apple], apple: Apple) -> None:
             EXECUTE AS USER = 'test'
             UPDATE [test].[apples]
             SET
-                clr = %(clr)s, pid = %(pid)s
+                clr = %(clr)s, pid = %(pid)s, kingdom = %(kingdom)s
             WHERE [apid] = %(apid)s
             REVERT
         """
-    ).with_data(AppleFormatter().dump(apple))
+    ).with_data(kingdom="fruits", **AppleFormatter().dump(apple))
 
 
 def test_should_delete(table: SqlTable[Apple], apple: Apple) -> None:
@@ -154,23 +152,20 @@ def test_should_delete(table: SqlTable[Apple], apple: Apple) -> None:
             WHERE [apid] = %(apid)s
             REVERT
         """
-    ).with_data(apid=apple.id)
+    ).with_data(apid=apple.id, kingdom="fruits")
 
 
 def test_should_delete_all(table: SqlTable[Apple]) -> None:
     command = table.delete_all()
-    assert (
-        command
-        == DatabaseCommand(
-            """
+    assert command == DatabaseCommand(
+        """
             EXECUTE AS USER = 'test'
             DELETE
             FROM [test].[apples]
             
             REVERT
         """
-        ).with_data()
-    )
+    ).with_data(kingdom="fruits")
 
 
 def test_should_count_with_parent(table_with_parent: SqlTable[Apple]) -> None:
