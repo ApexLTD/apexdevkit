@@ -347,7 +347,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
     def _parent_filter(self) -> str:
         result = next((field for field in self.fields if field.is_parent), None)
         if result is not None:
-            if result.fixed_value is None:
+            if result.parent_value is None:
                 return "[" + result.name + "] IS NULL"
             else:
                 return "[" + result.name + "] = %(" + result.name + ")s"
@@ -361,9 +361,9 @@ class DefaultSqlTable(SqlTable[ItemT]):
         statements: list[str] = []
         for field in self.fields:
             if field.is_filter:
-                if field.fixed_value is None:
+                if field.filter_value is None:
                     statements.append("[" + field.name + "] IS NULL")
-                elif isinstance(field.fixed_value, NotNone):
+                elif isinstance(field.filter_value, NotNone):
                     statements.append("[" + field.name + "] IS NOT NULL")
                 else:
                     statements.append("[" + field.name + "] = %(" + field.name + ")s")
@@ -372,7 +372,9 @@ class DefaultSqlTable(SqlTable[ItemT]):
 
     def _data_with_fixed(self, data: dict[str, Any]) -> dict[str, Any]:
         for field in self.fields:
-            if field.is_parent or field.is_fixed:
+            if field.is_parent:
+                data[field.name] = field.parent_value
+            if field.is_fixed:
                 data[field.name] = field.fixed_value
         return data
 
@@ -411,8 +413,13 @@ class MsSqlField:
     is_ordered: bool = False
     include_in_insert: bool = True
 
-    is_parent: bool = False  # fixed as a parent
-    is_filter: bool = False  # general filter
-    is_fixed: bool = False  # generally fixed field
+    is_parent: bool = False  # fixed as a parent (taken into account in WHERE & fixed)
+    parent_value: Any | None = None
 
-    fixed_value: Any | None | NotNone = None
+    is_filter: bool = False  # general filter (taken into account in WHERE statement)
+    filter_value: Any | None | NotNone = None
+
+    is_fixed: bool = (
+        False  # generally fixed field (fixed values are passed when inserting)
+    )
+    fixed_value: Any | None = None
