@@ -219,7 +219,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             [
                 f"{field.name} = :{field.name}"
                 for field in self.fields
-                if not field.is_id and not field.is_parent
+                if not field.is_id and not field.is_parent and field.include_in_update
             ]
         )
 
