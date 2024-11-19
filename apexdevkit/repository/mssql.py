@@ -246,7 +246,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
         placeholders = ", ".join(
             [f"%({key.name})s" for key in self.fields if key.include_in_insert]
         )
-        output = ", ".join(["INSERTED." + field.name for field in self.fields])
+        output = ", ".join(["INSERTED." + field.name + " AS " + field.name for field in self.fields])
 
         return DatabaseCommand(f"""
             {self._user_check}
