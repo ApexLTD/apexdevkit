@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Iterator
 
 
 @dataclass(frozen=True)
@@ -101,3 +101,128 @@ class SqlFieldBuilder:
             self._is_fixed,
             self._fixed_value,
         )
+
+
+@dataclass
+class SqlFieldManager:
+    fields: list[_SqlField]
+    key_formatter: str
+    value_formatter: str
+
+    @property
+    def id(self) -> str:
+        result = next((key for key in self.fields if key.is_id), None)
+        if result is None:
+            raise ValueError("Id field is required.")
+        return result.name
+
+    @property
+    def composite(self) -> list[str]:
+        names = [key.name for key in self.fields if key.is_composite]
+        return [self.id] if len(names) == 0 else names
+
+    @property
+    def order(self) -> str:
+        ordering = [key.name for key in self.fields if key.is_ordered]
+        if len(ordering) > 0:
+            return "ORDER BY " + ", ".join(ordering)
+        else:
+            return ""
+
+    def __iter__(self) -> Iterator[_SqlField]:
+        yield from self.fields
+
+    def where_statement(self, include_id: bool = False) -> str:
+        statements = [
+            statement
+            for statement in [
+                self._parent_filter(),
+                self._id_filter(include_id),
+                self._general_filters(),
+            ]
+            if statement != ""
+        ]
+        if len(statements) > 0:
+            return "WHERE " + " AND ".join(statements)
+        else:
+            return ""
+
+    def with_fixed(self, data: dict[str, Any]) -> dict[str, Any]:
+        for key in self.fields:
+            if key.is_parent:
+                data[key.name] = key.parent_value
+            if key.is_fixed:
+                data[key.name] = key.fixed_value
+        return data
+
+    def _parent_filter(self) -> str:
+        result = next((key for key in self.fields if key.is_parent), None)
+        if result is not None:
+            if result.parent_value is None:
+                return self.key_formatter.replace("x", result.name) + " IS NULL"
+            else:
+                return (
+                    self.key_formatter.replace("x", result.name)
+                    + " = "
+                    + self.value_formatter.replace("x", result.name)
+                )
+        else:
+            return ""
+
+    def _id_filter(self, include_id: bool = False) -> str:
+        return (
+            self.key_formatter.replace("x", self.id)
+            + " = "
+            + self.value_formatter.replace("x", self.id)
+            if include_id
+            else ""
+        )
+
+    def _general_filters(self) -> str:
+        statements: list[str] = []
+        for key in self.fields:
+            if key.is_filter:
+                if key.filter_value is None:
+                    statements.append(
+                        self.key_formatter.replace("x", key.name) + " IS NULL"
+                    )
+                elif isinstance(key.filter_value, NotNone):
+                    statements.append(
+                        self.key_formatter.replace("x", key.name) + " IS NOT NULL"
+                    )
+                else:
+                    statements.append(
+                        self.key_formatter.replace("x", key.name)
+                        + " = "
+                        + self.value_formatter.replace("x", key.name)
+                    )
+
+        return " AND ".join(statements)
+
+    @dataclass
+    class Builder:
+        fields: list[_SqlField] = field(init=False)
+        key_formatter: str = field(init=False)
+        value_formatter: str = field(init=False)
+
+        def with_fields(self, fields: list[_SqlField]) -> SqlFieldManager.Builder:
+            self.fields = fields
+
+            return self
+
+        def for_sqlite(self) -> SqlFieldManager.Builder:
+            self.key_formatter = "x"
+            self.value_formatter = ":x"
+
+            return self
+
+        def for_mssql(self) -> SqlFieldManager.Builder:
+            self.key_formatter = "[x]"
+            self.value_formatter = "%(x)s"
+
+            return self
+
+        def build(self) -> SqlFieldManager:
+            return SqlFieldManager(
+                self.fields, self.key_formatter, self.value_formatter
+            )

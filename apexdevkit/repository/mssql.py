@@ -8,7 +8,7 @@ from pymssql.exceptions import DatabaseError
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
 from apexdevkit.repository import Database, DatabaseCommand, RepositoryBase
-from apexdevkit.repository.sql import NotNone, _SqlField
+from apexdevkit.repository.sql import NotNone, SqlFieldManager, _SqlField
 
 ItemT = TypeVar("ItemT")
 
@@ -217,7 +217,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.schema,
             self.table,
             self.formatter,
-            self.fields,
+            SqlFieldManager.Builder().with_fields(self.fields).for_mssql().build(),
             self.username,
         )
 
@@ -227,7 +227,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
     schema: str
     table: str
     formatter: Formatter[dict[str, Any], ItemT]
-    fields: list[_SqlField]
+    fields: SqlFieldManager
     username: str | None = None
 
     def count_all(self) -> DatabaseCommand:
@@ -235,9 +235,9 @@ class DefaultSqlTable(SqlTable[ItemT]):
             {self._user_check}
             SELECT count(*) AS n_items
             FROM [{self.schema}].[{self.table}]
-            {self._where_statement(include_id=False)}
+            {self.fields.where_statement(include_id=False)}
             REVERT
-        """).with_data(self._data_with_fixed({}))
+        """).with_data(self.fields.with_fixed({}))
 
     def insert(self, item: ItemT) -> DatabaseCommand:
         columns = ", ".join(
@@ -258,7 +258,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
                 {placeholders}
             )
             REVERT
-        """).with_data(self._data_with_fixed(self.formatter.dump(item)))
+        """).with_data(self.fields.with_fixed(self.formatter.dump(item)))
 
     def select(self, item_id: str) -> DatabaseCommand:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
@@ -268,9 +268,9 @@ class DefaultSqlTable(SqlTable[ItemT]):
             SELECT
                 {columns} 
             FROM [{self.schema}].[{self.table}]
-            {self._where_statement(include_id=True)}
+            {self.fields.where_statement(include_id=True)}
             REVERT
-        """).with_data(self._data_with_fixed({self._id: item_id}))
+        """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
 
     def select_all(self) -> DatabaseCommand:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
@@ -280,10 +280,10 @@ class DefaultSqlTable(SqlTable[ItemT]):
             SELECT
                 {columns}
             FROM [{self.schema}].[{self.table}]
-            {self._where_statement(include_id=False)}
-            {self._order}
+            {self.fields.where_statement(include_id=False)}
+            {self.fields.order}
             REVERT
-        """).with_data(self._data_with_fixed({}))
+        """).with_data(self.fields.with_fixed({}))
 
     def update(self, item: ItemT) -> DatabaseCommand:
         updates = ", ".join(
@@ -299,27 +299,27 @@ class DefaultSqlTable(SqlTable[ItemT]):
             UPDATE [{self.schema}].[{self.table}]
             SET
                 {updates}
-            {self._where_statement(include_id=True)}
+            {self.fields.where_statement(include_id=True)}
             REVERT
-        """).with_data(self._data_with_fixed(self.formatter.dump(item)))
+        """).with_data(self.fields.with_fixed(self.formatter.dump(item)))
 
     def delete(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand(f"""
             {self._user_check}
             DELETE
             FROM [{self.schema}].[{self.table}]
-            {self._where_statement(include_id=True)}
+            {self.fields.where_statement(include_id=True)}
             REVERT
-        """).with_data(self._data_with_fixed({self._id: item_id}))
+        """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
 
     def delete_all(self) -> DatabaseCommand:
         return DatabaseCommand(f"""
             {self._user_check}
             DELETE
             FROM [{self.schema}].[{self.table}]
-            {self._where_statement(include_id=False)}
+            {self.fields.where_statement(include_id=False)}
             REVERT
-        """).with_data(self._data_with_fixed({}))
+        """).with_data(self.fields.with_fixed({}))
 
     def load(self, data: dict[str, Any]) -> ItemT:
         return self.formatter.load(data)
@@ -327,76 +327,12 @@ class DefaultSqlTable(SqlTable[ItemT]):
     def exists(self, duplicate: ItemT) -> ExistsError:
         raw = self.formatter.dump(duplicate)
         return ExistsError(duplicate).with_duplicate(
-            lambda i: f"{self._id}<{raw[self._id]}>"
+            lambda i: f"{self.fields.id}<{raw[self.fields.id]}>"
         )
-
-    def _where_statement(self, include_id: bool = False) -> str:
-        statements = [
-            statement
-            for statement in [
-                self._parent_filter(),
-                self._id_filter(include_id),
-                self._general_filters(),
-            ]
-            if statement != ""
-        ]
-        if len(statements) > 0:
-            return "WHERE " + " AND ".join(statements)
-        else:
-            return ""
-
-    def _parent_filter(self) -> str:
-        result = next((key for key in self.fields if key.is_parent), None)
-        if result is not None:
-            if result.parent_value is None:
-                return "[" + result.name + "] IS NULL"
-            else:
-                return "[" + result.name + "] = %(" + result.name + ")s"
-        else:
-            return ""
-
-    def _id_filter(self, include_id: bool = False) -> str:
-        return f"[{self._id}] = %({self._id})s" if include_id else ""
-
-    def _general_filters(self) -> str:
-        statements: list[str] = []
-        for key in self.fields:
-            if key.is_filter:
-                if key.filter_value is None:
-                    statements.append("[" + key.name + "] IS NULL")
-                elif isinstance(key.filter_value, NotNone):
-                    statements.append("[" + key.name + "] IS NOT NULL")
-                else:
-                    statements.append("[" + key.name + "] = %(" + key.name + ")s")
-
-        return " AND ".join(statements)
-
-    def _data_with_fixed(self, data: dict[str, Any]) -> dict[str, Any]:
-        for key in self.fields:
-            if key.is_parent:
-                data[key.name] = key.parent_value
-            if key.is_fixed:
-                data[key.name] = key.fixed_value
-        return data
-
-    @property
-    def _id(self) -> str:
-        result = next((key for key in self.fields if key.is_id), None)
-        if result is None:
-            raise ValueError("Id field is required.")
-        return result.name
 
     @property
     def _user_check(self) -> str:
         if self.username is not None:
             return f"EXECUTE AS USER = '{self.username}'"
-        else:
-            return ""
-
-    @property
-    def _order(self) -> str:
-        ordering = [key.name for key in self.fields if key.is_ordered]
-        if len(ordering) > 0:
-            return "ORDER BY " + ", ".join(ordering)
         else:
             return ""
