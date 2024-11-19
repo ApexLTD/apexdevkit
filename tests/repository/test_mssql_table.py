@@ -6,11 +6,10 @@ from pytest import fixture
 
 from apexdevkit.repository import DatabaseCommand
 from apexdevkit.repository.mssql import (
-    MsSqlFieldBuilder,
     MsSqlTableBuilder,
-    NotNone,
     SqlTable,
 )
+from apexdevkit.repository.sql import NotNone, SqlFieldBuilder
 
 
 @dataclass
@@ -40,11 +39,11 @@ def table() -> SqlTable[Apple]:
         .with_formatter(AppleFormatter())  # type: ignore
         .with_fields(
             [
-                MsSqlFieldBuilder().with_name("apid").as_id().in_ordering().build(),
-                MsSqlFieldBuilder().with_name("clr").build(),
-                MsSqlFieldBuilder().with_name("pid").build(),
-                MsSqlFieldBuilder().with_name("kingdom").as_fixed("fruits").build(),
-                MsSqlFieldBuilder()
+                SqlFieldBuilder().with_name("apid").as_id().in_ordering().build(),
+                SqlFieldBuilder().with_name("clr").build(),
+                SqlFieldBuilder().with_name("pid").build(),
+                SqlFieldBuilder().with_name("kingdom").as_fixed("fruits").build(),
+                SqlFieldBuilder()
                 .with_name("manager")
                 .as_fixed(None)
                 .as_filter(NotNone())
@@ -65,9 +64,9 @@ def table_with_parent() -> SqlTable[Apple]:
         .with_formatter(AppleFormatter())  # type: ignore
         .with_fields(
             [
-                MsSqlFieldBuilder().with_name("apid").as_id().in_ordering().build(),
-                MsSqlFieldBuilder().with_name("clr").build(),
-                MsSqlFieldBuilder().with_name("pid").as_parent("test").build(),
+                SqlFieldBuilder().with_name("apid").as_id().in_ordering().build(),
+                SqlFieldBuilder().with_name("clr").build(),
+                SqlFieldBuilder().with_name("pid").as_parent("test").build(),
             ]
         )
         .build()

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Generic, Iterable, Iterator, TypeVar
 
 from pymssql.exceptions import DatabaseError
@@ -8,6 +8,7 @@ from pymssql.exceptions import DatabaseError
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
 from apexdevkit.repository import Database, DatabaseCommand, RepositoryBase
+from apexdevkit.repository.sql import NotNone, _SqlField
 
 ItemT = TypeVar("ItemT")
 
@@ -143,7 +144,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
     schema: str | None = None
     table: str | None = None
     formatter: Formatter[dict[str, Any], ItemT] | None = None
-    fields: list[_MsSqlField] | None = None
+    fields: list[_SqlField] | None = None
 
     def with_username(self, value: str) -> MsSqlTableBuilder[ItemT]:
         return MsSqlTableBuilder[ItemT](
@@ -183,18 +184,18 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.fields,
         )
 
-    def with_fields(self, value: Iterable[_MsSqlField]) -> MsSqlTableBuilder[ItemT]:
-        field_list = list(value)
-        if len([field for field in field_list if field.is_id]) != 1:
-            raise ValueError("Pass only one identifier field.")
-        if len([field for field in field_list if field.is_parent]) > 1:
-            raise ValueError("Pass only one parent field.")
+    def with_fields(self, value: Iterable[_SqlField]) -> MsSqlTableBuilder[ItemT]:
+        key_list = list(value)
+        if len([key for key in key_list if key.is_id]) != 1:
+            raise ValueError("Pass only one identifier key.")
+        if len([key for key in key_list if key.is_parent]) > 1:
+            raise ValueError("Pass only one parent key.")
         if (
             len(
                 [
-                    field
-                    for field in field_list
-                    if not field.is_filter and isinstance(field.fixed_value, NotNone)
+                    key
+                    for key in key_list
+                    if not key.is_filter and isinstance(key.fixed_value, NotNone)
                 ]
             )
             > 0
@@ -205,7 +206,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.schema,
             self.table,
             self.formatter,
-            field_list,
+            key_list,
         )
 
     def build(self) -> SqlTable[ItemT]:
@@ -226,7 +227,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
     schema: str
     table: str
     formatter: Formatter[dict[str, Any], ItemT]
-    fields: list[_MsSqlField]
+    fields: list[_SqlField]
     username: str | None = None
 
     def count_all(self) -> DatabaseCommand:
@@ -345,7 +346,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
             return ""
 
     def _parent_filter(self) -> str:
-        result = next((field for field in self.fields if field.is_parent), None)
+        result = next((key for key in self.fields if key.is_parent), None)
         if result is not None:
             if result.parent_value is None:
                 return "[" + result.name + "] IS NULL"
@@ -399,96 +400,3 @@ class DefaultSqlTable(SqlTable[ItemT]):
             return "ORDER BY " + ", ".join(ordering)
         else:
             return ""
-
-
-@dataclass(frozen=True)
-class NotNone:
-    pass
-
-
-@dataclass(frozen=True)
-class _MsSqlField:
-    name: str
-    is_id: bool = False
-    is_ordered: bool = False
-    include_in_insert: bool = True
-
-    is_parent: bool = False  # fixed as a parent (taken into account in WHERE & fixed)
-    parent_value: Any | None = None
-
-    is_filter: bool = False  # general filter (taken into account in WHERE statement)
-    filter_value: Any | None | NotNone = None
-
-    is_fixed: bool = (
-        False  # generally fixed field (fixed values are passed when inserting)
-    )
-    fixed_value: Any | None = None
-
-
-@dataclass
-class MsSqlFieldBuilder:
-    _name: str = field(init=False)
-    _is_id: bool = False
-    _is_ordered: bool = False
-    _include_in_insert: bool = True
-
-    _is_parent: bool = False
-    _parent_value: Any | None = None
-
-    _is_filter: bool = False
-    _filter_value: Any | None | NotNone = None
-
-    _is_fixed: bool = False
-    _fixed_value: Any | None = None
-
-    def with_name(self, value: str) -> MsSqlFieldBuilder:
-        self._name = value
-
-        return self
-
-    def as_id(self) -> MsSqlFieldBuilder:
-        self._is_id = True
-
-        return self
-
-    def in_ordering(self) -> MsSqlFieldBuilder:
-        self._is_ordered = True
-
-        return self
-
-    def derive_on_insert(self) -> MsSqlFieldBuilder:
-        self._include_in_insert = False
-
-        return self
-
-    def as_parent(self, value: Any | None) -> MsSqlFieldBuilder:
-        self._is_parent = True
-        self._parent_value = value
-
-        return self
-
-    def as_filter(self, value: Any | None | NotNone) -> MsSqlFieldBuilder:
-        self._is_filter = True
-        self._filter_value = value
-
-        return self
-
-    def as_fixed(self, value: Any | None) -> MsSqlFieldBuilder:
-        self._is_fixed = True
-        self._fixed_value = value
-
-        return self
-
-    def build(self) -> _MsSqlField:
-        return _MsSqlField(
-            self._name,
-            self._is_id,
-            self._is_ordered,
-            self._include_in_insert,
-            self._is_parent,
-            self._parent_value,
-            self._is_filter,
-            self._filter_value,
-            self._is_fixed,
-            self._fixed_value,
-        )

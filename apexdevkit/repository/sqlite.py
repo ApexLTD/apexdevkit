@@ -8,6 +8,7 @@ from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
 from apexdevkit.repository import Database, DatabaseCommand, RepositoryBase
 from apexdevkit.repository.interface import ItemT
+from apexdevkit.repository.sql import NotNone, _SqlField
 
 
 @dataclass(frozen=True)
@@ -102,7 +103,7 @@ class UnknownError(Exception):
 class SqliteTableBuilder(Generic[ItemT]):
     table_name: str | None = None
     formatter: Formatter[dict[str, Any], ItemT] | None = None
-    fields: list[SqliteField] | None = None
+    fields: list[_SqlField] | None = None
 
     def with_name(self, value: str) -> SqliteTableBuilder[ItemT]:
         return SqliteTableBuilder[ItemT](value, self.formatter, self.fields)
@@ -112,16 +113,27 @@ class SqliteTableBuilder(Generic[ItemT]):
     ) -> SqliteTableBuilder[ItemT]:
         return SqliteTableBuilder[ItemT](self.table_name, value, self.fields)
 
-    def with_fields(self, value: Iterable[SqliteField]) -> SqliteTableBuilder[ItemT]:
-        field_list = list(value)
-        if len([field for field in field_list if field.is_id]) != 1:
-            raise ValueError("Pass only one identifier field.")
-        if len([field for field in field_list if field.is_parent]) > 1:
-            raise ValueError("Pass only one parent field.")
+    def with_fields(self, value: Iterable[_SqlField]) -> SqliteTableBuilder[ItemT]:
+        key_list = list(value)
+        if len([key for key in key_list if key.is_id]) != 1:
+            raise ValueError("Pass only one identifier key.")
+        if len([key for key in key_list if key.is_parent]) > 1:
+            raise ValueError("Pass only one parent key.")
+        if (
+            len(
+                [
+                    key
+                    for key in key_list
+                    if not key.is_filter and isinstance(key.fixed_value, NotNone)
+                ]
+            )
+            > 0
+        ):
+            raise ValueError("Only filter fields can be 'not null'.")
         return SqliteTableBuilder[ItemT](
             self.table_name,
             self.formatter,
-            field_list,
+            key_list,
         )
 
     def build(self) -> SqlTable[ItemT]:
@@ -139,7 +151,7 @@ class SqliteTableBuilder(Generic[ItemT]):
 class _DefaultSqlTable(SqlTable[ItemT]):
     table_name: str
     formatter: Formatter[dict[str, Any], ItemT]
-    fields: list[SqliteField]
+    fields: list[_SqlField]
 
     def count_all(self) -> DatabaseCommand:
         return DatabaseCommand(f"""
@@ -241,24 +253,57 @@ class _DefaultSqlTable(SqlTable[ItemT]):
         )
 
     def _where_statement(self, include_id: bool = False) -> str:
-        result = next((field for field in self.fields if field.is_parent), None)
-        if result is None:
-            return f"WHERE {self._id} = :{self._id}" if include_id else ""
+        statements = [
+            statement
+            for statement in [
+                self._parent_filter(),
+                self._id_filter(include_id),
+                self._general_filters(),
+            ]
+            if statement != ""
+        ]
+        if len(statements) > 0:
+            return "WHERE " + " AND ".join(statements)
         else:
-            statement = "WHERE " + result.name + " = :" + result.name
-            if include_id:
-                statement += f" AND {self._id} = :{self._id}"
-            return statement
+            return ""
+
+    def _parent_filter(self) -> str:
+        result = next((key for key in self.fields if key.is_parent), None)
+        if result is not None:
+            if result.parent_value is None:
+                return result.name + " IS NULL"
+            else:
+                return result.name + " = :" + result.name
+        else:
+            return ""
+
+    def _id_filter(self, include_id: bool = False) -> str:
+        return f"{self._id} = :{self._id}" if include_id else ""
+
+    def _general_filters(self) -> str:
+        statements: list[str] = []
+        for key in self.fields:
+            if key.is_filter:
+                if key.filter_value is None:
+                    statements.append(key.name + " IS NULL")
+                elif isinstance(key.filter_value, NotNone):
+                    statements.append(key.name + " IS NOT NULL")
+                else:
+                    statements.append(key.name + " = :" + key.name)
+
+        return " AND ".join(statements)
 
     def _data_with_fixed(self, data: dict[str, Any]) -> dict[str, Any]:
-        for field in self.fields:
-            if field.is_parent or field.is_fixed:
-                data[field.name] = field.fixed_value
+        for key in self.fields:
+            if key.is_parent:
+                data[key.name] = key.parent_value
+            if key.is_fixed:
+                data[key.name] = key.fixed_value
         return data
 
     @property
     def _id(self) -> str:
-        result = next((field for field in self.fields if field.is_id), None)
+        result = next((key for key in self.fields if key.is_id), None)
         if result is None:
             raise ValueError("Id field is required.")
         return result.name
@@ -267,16 +312,3 @@ class _DefaultSqlTable(SqlTable[ItemT]):
     def _composite(self) -> list[str]:
         names = [field.name for field in self.fields if field.is_composite]
         return [self._id] if len(names) == 0 else names
-
-
-@dataclass(frozen=True)
-class SqliteField:
-    name: str
-    is_id: bool = False
-    is_composite: bool = False
-    include_in_insert: bool = True
-
-    is_parent: bool = False
-
-    is_fixed: bool = False
-    fixed_value: Any | None = None
