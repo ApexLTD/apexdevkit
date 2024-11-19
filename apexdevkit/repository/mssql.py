@@ -189,6 +189,17 @@ class MsSqlTableBuilder(Generic[ItemT]):
             raise ValueError("Pass only one identifier field.")
         if len([field for field in field_list if field.is_parent]) > 1:
             raise ValueError("Pass only one parent field.")
+        if (
+            len(
+                [
+                    field
+                    for field in field_list
+                    if not field.is_filter and isinstance(field.fixed_value, NotNone)
+                ]
+            )
+            > 0
+        ):
+            raise ValueError("Only filter fields can be 'not null'.")
         return MsSqlTableBuilder[ItemT](
             self.username,
             self.schema,
@@ -319,14 +330,45 @@ class DefaultSqlTable(SqlTable[ItemT]):
         )
 
     def _where_statement(self, include_id: bool = False) -> str:
-        result = next((field for field in self.fields if field.is_parent), None)
-        if result is None:
-            return f"WHERE [{self._id}] = %({self._id})s" if include_id else ""
+        statements = [
+            statement
+            for statement in [
+                self._parent_filter(),
+                self._id_filter(include_id),
+                self._general_filters(),
+            ]
+            if statement != ""
+        ]
+        if len(statements) > 0:
+            return "WHERE " + " AND ".join(statements)
         else:
-            statement = "WHERE [" + result.name + "] = %(" + result.name + ")s"
-            if include_id:
-                statement += f" AND [{self._id}] = %({self._id})s"
-            return statement
+            return ""
+
+    def _parent_filter(self) -> str:
+        result = next((field for field in self.fields if field.is_parent), None)
+        if result is not None:
+            if result.fixed_value is None:
+                return "[" + result.name + "] IS NULL"
+            else:
+                return "[" + result.name + "] = %(" + result.name + ")s"
+        else:
+            return ""
+
+    def _id_filter(self, include_id: bool = False) -> str:
+        return f"[{self._id}] = %({self._id})s" if include_id else ""
+
+    def _general_filters(self) -> str:
+        statements: list[str] = []
+        for field in self.fields:
+            if field.is_filter:
+                if field.fixed_value is None:
+                    statements.append("[" + field.name + "] IS NULL")
+                elif isinstance(field.fixed_value, NotNone):
+                    statements.append("[" + field.name + "] IS NOT NULL")
+                else:
+                    statements.append("[" + field.name + "] = %(" + field.name + ")s")
+
+        return " AND ".join(statements)
 
     def _data_with_fixed(self, data: dict[str, Any]) -> dict[str, Any]:
         for field in self.fields:
@@ -358,13 +400,19 @@ class DefaultSqlTable(SqlTable[ItemT]):
 
 
 @dataclass(frozen=True)
+class NotNone:
+    pass
+
+
+@dataclass(frozen=True)
 class MsSqlField:
     name: str
     is_id: bool = False
     is_ordered: bool = False
     include_in_insert: bool = True
 
-    is_parent: bool = False
+    is_parent: bool = False  # fixed as a parent
+    is_filter: bool = False  # general filter
+    is_fixed: bool = False  # generally fixed field
 
-    is_fixed: bool = False
-    fixed_value: Any | None = None
+    fixed_value: Any | None | NotNone = None
