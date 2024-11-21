@@ -45,7 +45,9 @@ class FastApiBuilder:
 
     def with_route(self, **values: APIRouter) -> Self:
         for key, value in values.items():
-            self.app.include_router(value, prefix=f"/{key}", tags=[key.title()])
+            self.app.include_router(
+                value, prefix=f"/{key}", tags=value.tags or [key.title()]
+            )
 
         return self
 
