@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from enum import Enum
 from functools import cached_property
 from typing import Annotated, Any, Protocol, Self, TypeVar
 
@@ -61,6 +62,11 @@ class RestfulRouter:
 
     def with_fields(self, value: SchemaFields) -> Self:
         self.fields = value
+
+        return self
+
+    def with_tag(self, value: list[str | Enum]) -> Self:
+        self.router.tags = value
 
         return self
 
