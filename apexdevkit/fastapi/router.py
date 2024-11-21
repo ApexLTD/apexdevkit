@@ -37,7 +37,6 @@ class RestfulRouter:
 
     name: RestfulName = field(init=False)
     fields: SchemaFields = field(init=False)
-    tags: list[str] = field(default_factory=list)
 
     @cached_property
     def schema(self) -> RestfulSchema:
