@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
+from typing import Any, Iterable
 
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
+from apexdevkit.fastapi.query import FooterOptions, QueryOptions, Summary
 from apexdevkit.fastapi.schema import SchemaFields
 from apexdevkit.fastapi.service import (
     RawCollection,
@@ -77,9 +78,17 @@ class SuccessfulService(RestfulServiceBuilder, RestfulService):
         self.called_with = params
         return [self.always_return]
 
+    def filter_with(self, options: QueryOptions) -> RawCollection:
+        self.called_with = options
+        return [self.always_return]
+
     def read_all(self) -> RawCollection:
         self.called_with = None
         return [self.always_return]
+
+    def aggregate_with(self, options: FooterOptions) -> Iterable[Summary]:
+        self.called_with = options
+        return []
 
     def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
         self.called_with = (item_id, with_fields)
