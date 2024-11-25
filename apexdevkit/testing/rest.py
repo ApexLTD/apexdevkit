@@ -49,12 +49,30 @@ class _RestResource:
 
         return _TestRequest(self.name, HttpRequest(HttpMethod.get, http))
 
+    def filter_with(self) -> _TestRequest:
+        return _TestRequest(
+            self.name,
+            HttpRequest(
+                HttpMethod.post,
+                self.http.with_endpoint(self.name.plural).with_endpoint("filter"),
+            ),
+        )
+
     def read_all(self) -> _TestRequest:
         return _TestRequest(
             self.name,
             HttpRequest(
                 HttpMethod.get,
                 self.http.with_endpoint(self.name.plural),
+            ),
+        )
+
+    def aggregate_with(self) -> _TestRequest:
+        return _TestRequest(
+            RestfulName("summary"),
+            HttpRequest(
+                HttpMethod.post,
+                self.http.with_endpoint(self.name.plural).with_endpoint("aggregate"),
             ),
         )
 

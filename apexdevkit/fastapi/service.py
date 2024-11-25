@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Generic, Iterable, TypeVar
 
 from apexdevkit.formatter import Formatter
+from apexdevkit.query.query import FooterOptions, QueryOptions, Summary
 from apexdevkit.repository.decorator import BatchRepositoryDecorator
 from apexdevkit.repository.interface import Repository
 
@@ -33,8 +34,14 @@ class RestfulService(ABC):  # pragma: no cover
     def read_many(self, **params: Any) -> RawCollection:
         raise NotImplementedError(self.read_many.__name__)
 
+    def filter_with(self, options: QueryOptions) -> RawCollection:
+        raise NotImplementedError(self.filter_with.__name__)
+
     def read_all(self) -> RawCollection:
         raise NotImplementedError(self.read_all.__name__)
+
+    def aggregate_with(self, options: FooterOptions) -> Iterable[Summary]:
+        raise NotImplementedError(self.aggregate_with.__name__)
 
     def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
         raise NotImplementedError(self.update_one.__name__)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
+from typing import Any, Iterable
 
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
 from apexdevkit.fastapi.schema import SchemaFields
@@ -13,6 +13,7 @@ from apexdevkit.fastapi.service import (
     RestfulService,
 )
 from apexdevkit.http import JsonDict
+from apexdevkit.query.query import FooterOptions, QueryOptions, Summary
 
 
 @dataclass
@@ -31,7 +32,13 @@ class FailingService(RestfulServiceBuilder, RestfulService):
     def read_one(self, item_id: str) -> RawItem:
         raise self.error
 
+    def filter_with(self, options: QueryOptions) -> RawCollection:
+        raise self.error
+
     def read_many(self, **params: Any) -> RawCollection:
+        raise self.error
+
+    def aggregate_with(self, options: FooterOptions) -> Iterable[Summary]:
         raise self.error
 
     def read_all(self) -> RawCollection:
@@ -77,9 +84,17 @@ class SuccessfulService(RestfulServiceBuilder, RestfulService):
         self.called_with = params
         return [self.always_return]
 
+    def filter_with(self, options: QueryOptions) -> RawCollection:
+        self.called_with = options
+        return [self.always_return]
+
     def read_all(self) -> RawCollection:
         self.called_with = None
         return [self.always_return]
+
+    def aggregate_with(self, options: FooterOptions) -> Iterable[Summary]:
+        self.called_with = options
+        return []
 
     def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
         self.called_with = (item_id, with_fields)

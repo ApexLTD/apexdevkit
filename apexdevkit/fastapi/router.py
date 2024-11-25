@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.fastapi.resource import RestfulResource
+from apexdevkit.fastapi.resource import RestfulResource, SummaryResponse
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.schema import RestfulSchema, Schema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
@@ -166,6 +166,22 @@ class RestfulRouter:
 
         return self
 
+    def with_filter_endpoint(
+        self, dependency: Dependency, is_documented: bool = True
+    ) -> Self:
+        self.router.add_api_route(
+            "/filter",
+            self.resource.filter_with(Service=dependency.as_dependable()),
+            methods=["POST"],
+            status_code=200,
+            responses={},
+            response_model=self.schema.for_collection(),
+            include_in_schema=is_documented,
+            summary="Read Filtered",
+        )
+
+        return self
+
     def with_read_all_endpoint(
         self,
         dependency: Dependency,
@@ -182,6 +198,22 @@ class RestfulRouter:
             response_model=self.schema.for_collection(),
             include_in_schema=is_documented,
             summary="Read All",
+        )
+
+        return self
+
+    def with_aggregate_endpoint(
+        self, dependency: Dependency, is_documented: bool = True
+    ) -> Self:
+        self.router.add_api_route(
+            "/aggregate",
+            self.resource.aggregate_with(Service=dependency.as_dependable()),
+            methods=["POST"],
+            status_code=200,
+            responses={},
+            response_model=SummaryResponse,
+            include_in_schema=is_documented,
+            summary="Read Aggregated",
         )
 
         return self
