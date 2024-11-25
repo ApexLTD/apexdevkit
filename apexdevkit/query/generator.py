@@ -68,24 +68,22 @@ class DefaultMsSqlFilter(Generic[ItemT]):
 
 
 @dataclass
-class DefaultMsSqlAggregate(Generic[ItemT]):
+class DefaultMsSqlAggregate:
     _database: Database = field(init=False)
     _query_builder: MsSqlQueryBuilder = field(init=False)
     _options: FooterOptions = field(init=False)
 
-    def with_database(self, value: Database) -> DefaultMsSqlAggregate[ItemT]:
+    def with_database(self, value: Database) -> DefaultMsSqlAggregate:
         self._database = value
 
         return self
 
-    def with_query_builder(
-        self, value: MsSqlQueryBuilder
-    ) -> DefaultMsSqlAggregate[ItemT]:
+    def with_query_builder(self, value: MsSqlQueryBuilder) -> DefaultMsSqlAggregate:
         self._query_builder = value
 
         return self
 
-    def with_options(self, value: FooterOptions) -> DefaultMsSqlAggregate[ItemT]:
+    def with_options(self, value: FooterOptions) -> DefaultMsSqlAggregate:
         self._options = value
 
         return self
