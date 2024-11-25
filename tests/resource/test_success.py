@@ -4,7 +4,8 @@ from uuid import uuid4
 
 import pytest
 
-from apexdevkit.fastapi.query import (
+from apexdevkit.http import JsonDict
+from apexdevkit.query.query import (
     Aggregation,
     AggregationOption,
     DateValue,
@@ -17,7 +18,6 @@ from apexdevkit.fastapi.query import (
     QueryOptions,
     Sort,
 )
-from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestCollection
 from tests.resource.sample_api import SuccessfulService
 from tests.resource.setup import FakeApple

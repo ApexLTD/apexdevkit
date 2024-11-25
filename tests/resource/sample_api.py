@@ -5,7 +5,6 @@ from enum import Enum
 from typing import Any, Iterable
 
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
-from apexdevkit.fastapi.query import FooterOptions, QueryOptions, Summary
 from apexdevkit.fastapi.schema import SchemaFields
 from apexdevkit.fastapi.service import (
     RawCollection,
@@ -14,6 +13,7 @@ from apexdevkit.fastapi.service import (
     RestfulService,
 )
 from apexdevkit.http import JsonDict
+from apexdevkit.query.query import FooterOptions, QueryOptions, Summary
 
 
 @dataclass

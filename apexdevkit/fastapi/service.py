@@ -4,8 +4,8 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import Any, Dict, Generic, Iterable, TypeVar
 
-from apexdevkit.fastapi.query import FooterOptions, QueryOptions, Summary
 from apexdevkit.formatter import Formatter
+from apexdevkit.query.query import FooterOptions, QueryOptions, Summary
 from apexdevkit.repository.decorator import BatchRepositoryDecorator
 from apexdevkit.repository.interface import Repository
 

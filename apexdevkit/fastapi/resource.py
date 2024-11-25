@@ -7,7 +7,8 @@ from starlette.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.fastapi.query import (
+from apexdevkit.fastapi.response import RestfulResponse
+from apexdevkit.query.query import (
     Aggregation,
     AggregationOption,
     DateValue,
@@ -24,7 +25,6 @@ from apexdevkit.fastapi.query import (
     Sort,
     StringValue,
 )
-from apexdevkit.fastapi.response import RestfulResponse
 
 _Response = JSONResponse | dict[str, Any]
 _Endpoint = Callable[..., _Response]
