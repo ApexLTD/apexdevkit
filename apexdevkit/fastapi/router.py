@@ -213,7 +213,7 @@ class RestfulRouter:
             responses={},
             response_model=SummaryResponse,
             include_in_schema=is_documented,
-            summary="Read Filtered",
+            summary="Read Aggregated",
         )
 
         return self
