@@ -211,12 +211,7 @@ class RestfulRouter:
             methods=["POST"],
             status_code=200,
             responses={},
-            response_model=(
-                FluentDict[type]()
-                .with_a(status=str)
-                .and_a(code=int)
-                .and_a(data=SummaryResponse)
-            ),
+            response_model=SummaryResponse,
             include_in_schema=is_documented,
             summary="Read Filtered",
         )
