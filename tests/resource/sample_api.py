@@ -32,7 +32,13 @@ class FailingService(RestfulServiceBuilder, RestfulService):
     def read_one(self, item_id: str) -> RawItem:
         raise self.error
 
+    def filter_with(self, options: QueryOptions) -> RawCollection:
+        raise self.error
+
     def read_many(self, **params: Any) -> RawCollection:
+        raise self.error
+
+    def aggregate_with(self, options: FooterOptions) -> Iterable[Summary]:
         raise self.error
 
     def read_all(self) -> RawCollection:

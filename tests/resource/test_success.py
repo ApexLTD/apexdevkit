@@ -7,9 +7,15 @@ import pytest
 from apexdevkit.fastapi.query import (
     Aggregation,
     AggregationOption,
+    DateValue,
+    Filter,
     FooterOptions,
+    Leaf,
+    Operation,
+    Operator,
     Page,
     QueryOptions,
+    Sort,
 )
 from apexdevkit.http import JsonDict
 from apexdevkit.testing import RestCollection
@@ -103,9 +109,13 @@ def test_should_read_filtered(
         resource.filter_with()
         .from_data(
             JsonDict()
-            .with_a(filter=None)
-            .and_a(condition=None)
-            .and_a(ordering=[])
+            .with_a(filter=JsonDict().with_a(args=[JsonDict().with_a(date="20221212")]))
+            .and_a(
+                condition=JsonDict()
+                .with_a(operation="NOT")
+                .and_a(operands=[JsonDict().with_a(name="test").and_a(values=[])])
+            )
+            .and_a(ordering=[JsonDict().with_a(name="test").and_a(is_descending=False)])
             .and_a(
                 paging=JsonDict()
                 .with_a(page=None)
@@ -119,7 +129,12 @@ def test_should_read_filtered(
         .with_collection([apple])
     )
 
-    assert service.called_with == QueryOptions(None, None, [], Page(None, None, None))
+    assert service.called_with == QueryOptions(
+        Filter(args=[DateValue("20221212")]),
+        Operator(Operation.NOT, [Leaf("test", [])]),
+        [Sort("test", False)],
+        Page(None, None, None),
+    )
 
 
 def test_should_read_all(
@@ -141,8 +156,12 @@ def test_should_read_aggregated(
         resource.aggregate_with()
         .from_data(
             JsonDict()
-            .with_a(filter=None)
-            .and_a(condition=None)
+            .with_a(filter=JsonDict().with_a(args=[JsonDict().with_a(date="20221212")]))
+            .and_a(
+                condition=JsonDict()
+                .with_a(operation="NOT")
+                .and_a(operands=[JsonDict().with_a(name="test").and_a(values=[])])
+            )
             .and_a(
                 aggregations=[JsonDict().with_a(name=None).and_a(aggregation="COUNT")]
             )
@@ -154,7 +173,9 @@ def test_should_read_aggregated(
     )
 
     assert service.called_with == FooterOptions(
-        None, None, [AggregationOption(None, Aggregation.COUNT)]
+        Filter(args=[DateValue("20221212")]),
+        Operator(Operation.NOT, [Leaf("test", [])]),
+        [AggregationOption(None, Aggregation.COUNT)],
     )
 
 

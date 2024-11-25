@@ -78,7 +78,7 @@ class RestfulResource:
 
         return endpoint
 
-    def filter_with(self, Service) -> _Endpoint:
+    def filter_with(self, Service) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, options: _QueryOptions) -> _Response:
             try:
                 return self.response.found_many(
@@ -98,7 +98,7 @@ class RestfulResource:
 
         return endpoint
 
-    def aggregate_with(self, Service) -> _Endpoint:
+    def aggregate_with(self, Service) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, options: _FooterOptions) -> _Response:
             try:
                 return RestfulResponse(RestfulName("summary")).found_many(

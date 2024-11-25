@@ -54,10 +54,52 @@ def test_should_not_read_forbidden(resource: RestCollection) -> None:
     )
 
 
+def test_should_not_filter_forbidden(resource: RestCollection) -> None:
+    (
+        resource.filter_with()
+        .from_data(
+            JsonDict()
+            .with_a(filter=None)
+            .and_a(condition=None)
+            .and_a(ordering=[])
+            .and_a(
+                paging=JsonDict()
+                .with_a(page=None)
+                .and_a(length=None)
+                .and_a(offset=None)
+            )
+        )
+        .ensure()
+        .fail()
+        .with_code(403)
+        .and_message("Forbidden")
+    )
+
+
 def test_should_not_read_many_forbidden(read_many_resource: RestCollection) -> None:
     read_many_resource.read_many(color="red").ensure().fail().with_code(
         403
     ).and_message("Forbidden")
+
+
+def test_should_not_read_aggregated_forbidden(
+    resource: RestCollection,
+) -> None:
+    (
+        resource.aggregate_with()
+        .from_data(
+            JsonDict()
+            .with_a(filter=None)
+            .and_a(condition=None)
+            .and_a(
+                aggregations=[JsonDict().with_a(name=None).and_a(aggregation="COUNT")]
+            )
+        )
+        .ensure()
+        .fail()
+        .with_code(403)
+        .and_message("Forbidden")
+    )
 
 
 def test_should_not_read_all_forbidden(resource: RestCollection) -> None:
