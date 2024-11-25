@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import ClassVar, Protocol
+from typing import Any, ClassVar, Generic, Iterable, Protocol, TypeVar
 
 from apexdevkit.error import ForbiddenError
 from apexdevkit.query.query import (
@@ -16,8 +16,95 @@ from apexdevkit.query.query import (
     QueryOptions,
     Sort,
     StringValue,
+    Summary,
+    SummaryExtractor,
 )
-from apexdevkit.repository import DatabaseCommand
+from apexdevkit.repository import Database, DatabaseCommand
+
+ItemT = TypeVar("ItemT", covariant=True)
+
+
+class _Loader(Protocol[ItemT]):
+    def load(self, raw: dict[str, Any]) -> ItemT:
+        pass
+
+
+@dataclass
+class DefaultMsSqlFilter(Generic[ItemT]):
+    _database: Database = field(init=False)
+    _query_builder: MsSqlQueryBuilder = field(init=False)
+    _options: QueryOptions = field(init=False)
+    _formatter: _Loader[ItemT] = field(init=False)
+
+    def with_database(self, value: Database) -> DefaultMsSqlFilter[ItemT]:
+        self._database = value
+
+        return self
+
+    def with_query_builder(self, value: MsSqlQueryBuilder) -> DefaultMsSqlFilter[ItemT]:
+        self._query_builder = value
+
+        return self
+
+    def with_options(self, value: QueryOptions) -> DefaultMsSqlFilter[ItemT]:
+        self._options = value
+
+        return self
+
+    def with_formatter(self, value: _Loader[ItemT]) -> DefaultMsSqlFilter[ItemT]:
+        self._formatter = value
+
+        return self
+
+    def retrieve(self) -> Iterable[ItemT]:
+        if not any(sort.name == "id" for sort in self._options.ordering):
+            self._options.ordering.append(Sort("id", False))
+
+        result = self._database.execute(
+            self._query_builder.filter(self._options)
+        ).fetch_all()
+
+        yield from [self._formatter.load(raw) for raw in result]
+
+
+@dataclass
+class DefaultMsSqlAggregate(Generic[ItemT]):
+    _database: Database = field(init=False)
+    _query_builder: MsSqlQueryBuilder = field(init=False)
+    _options: FooterOptions = field(init=False)
+
+    def with_database(self, value: Database) -> DefaultMsSqlAggregate[ItemT]:
+        self._database = value
+
+        return self
+
+    def with_query_builder(
+        self, value: MsSqlQueryBuilder
+    ) -> DefaultMsSqlAggregate[ItemT]:
+        self._query_builder = value
+
+        return self
+
+    def with_options(self, value: FooterOptions) -> DefaultMsSqlAggregate[ItemT]:
+        self._options = value
+
+        return self
+
+    def retrieve(self) -> Iterable[Summary]:
+        result = self._database.execute(
+            self._query_builder.aggregate(self._options)
+        ).fetch_one()
+
+        return [
+            SummaryExtractor(aggregation).with_value(value)
+            for aggregation in self._options.aggregations
+            for value in [
+                result[
+                    f"{aggregation.name if aggregation.name else 'general'}"
+                    f"_{aggregation.aggregation.value.lower()}"
+                ]
+            ]
+        ]
 
 
 class SqlGenerator(Protocol):
