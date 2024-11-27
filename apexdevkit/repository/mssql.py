@@ -246,19 +246,32 @@ class DefaultSqlTable(SqlTable[ItemT]):
         placeholders = ", ".join(
             [f"%({key.name})s" for key in self.fields if key.include_in_insert]
         )
-        output = ", ".join(
-            ["INSERTED." + field.name + " AS " + field.name for field in self.fields]
-        )
+        try:
+            self.fields.id
+            output = ", ".join(
+                ["[" + field.name + "] AS " + field.name for field in self.fields]
+            )
+            where_statement = f"""
+                FROM [{self.schema}].[{self.table}]
+                {self.fields.where_statement(include_id=True, read_id=True)}
+            """
+        except ValueError:
+            output = ", ".join(
+                ["%(" + field.name + ")s AS " + field.name for field in self.fields]
+            )
+            where_statement = ""
 
         return DatabaseCommand(f"""
             {self._user_check}
             INSERT INTO [{self.schema}].[{self.table}] (
                 {columns}
-            ) OUTPUT
-                {output}
+            )
             VALUES (
                 {placeholders}
-            )
+            );
+            SELECT
+                {output}
+            {where_statement}
             REVERT
         """).with_data(self.fields.with_fixed(self.formatter.dump(item)))
 

@@ -98,12 +98,17 @@ def test_should_insert(table: SqlTable[Apple], apple: Apple) -> None:
             EXECUTE AS USER = 'test'
             INSERT INTO [test].[apples] (
                 [apid], [clr], [pid], [kingdom], [manager]
-            ) OUTPUT
-                INSERTED.apid AS apid, INSERTED.clr AS clr, INSERTED.pid AS pid, """
-        + """INSERTED.kingdom AS kingdom, INSERTED.manager AS manager
+            )
             VALUES (
                 %(apid)s, %(clr)s, %(pid)s, %(kingdom)s, %(manager)s
-            )
+            );
+            SELECT
+                [apid] AS apid, [clr] AS clr, [pid] AS pid, [kingdom] AS kingdom,"""
+        + """ [manager] AS manager
+            
+                FROM [test].[apples]
+                WHERE [apid] = SCOPE_IDENTITY() AND [manager] IS NOT NULL
+            
             REVERT
         """
     ).with_data(kingdom="fruits", manager=None, **AppleFormatter().dump(apple))
@@ -204,11 +209,16 @@ def test_should_insert_with_parent(
             EXECUTE AS USER = 'test'
             INSERT INTO [test].[apples] (
                 [apid], [clr], [pid]
-            ) OUTPUT
-                INSERTED.apid AS apid, INSERTED.clr AS clr, INSERTED.pid AS pid
+            )
             VALUES (
                 %(apid)s, %(clr)s, %(pid)s
-            )
+            );
+            SELECT
+                [apid] AS apid, [clr] AS clr, [pid] AS pid
+            
+                FROM [test].[apples]
+                WHERE [pid] = %(pid)s AND [apid] = SCOPE_IDENTITY()
+            
             REVERT
         """
     ).with_data(dumped)
