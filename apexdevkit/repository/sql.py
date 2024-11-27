@@ -140,12 +140,12 @@ class SqlFieldManager:
     def __iter__(self) -> Iterator[_SqlField]:
         yield from self.fields
 
-    def where_statement(self, include_id: bool = False) -> str:
+    def where_statement(self, include_id: bool = False, read_id: bool = False) -> str:
         statements = [
             statement
             for statement in [
                 self._parent_filter(),
-                self._id_filter(include_id),
+                self._id_filter(include_id, read_id),
                 self._general_filters(),
             ]
             if statement != ""
@@ -177,11 +177,15 @@ class SqlFieldManager:
         else:
             return ""
 
-    def _id_filter(self, include_id: bool = False) -> str:
+    def _id_filter(self, include_id: bool, read_id: bool) -> str:
         return (
             self.key_formatter.replace("x", self.id)
             + " = "
-            + self.value_formatter.replace("x", self.id)
+            + (
+                self.value_formatter.replace("x", self.id)
+                if not read_id
+                else "SCOPE_IDENTITY()"
+            )
             if include_id
             else ""
         )
