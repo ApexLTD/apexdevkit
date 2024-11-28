@@ -39,6 +39,8 @@ class RestfulRouter:
     name: RestfulName = field(init=False)
     fields: SchemaFields = field(init=False)
 
+    dependency: Dependency | None = None
+
     @cached_property
     def schema(self) -> RestfulSchema:
         return RestfulSchema(name=self.name, fields=self.fields)
@@ -70,15 +72,20 @@ class RestfulRouter:
 
         return self
 
+    def with_dependency(self, value: Dependency) -> Self:
+        self.dependency = value
+
+        return self
+
     def with_create_one_endpoint(
         self,
-        dependency: Dependency,
+        dependency: Dependency | None = None,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "",
             self.resource.create_one(
-                Service=dependency.as_dependable(),
+                Service=self._resolve(dependency),
                 Item=Annotated[
                     RawItem,
                     Depends(self.schema.for_create_one()),
@@ -96,13 +103,13 @@ class RestfulRouter:
 
     def with_create_many_endpoint(
         self,
-        dependency: Dependency,
+        dependency: Dependency | None = None,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "/batch",
             self.resource.create_many(
-                Service=dependency.as_dependable(),
+                Service=self._resolve(dependency),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_create_many()),
@@ -120,13 +127,13 @@ class RestfulRouter:
 
     def with_read_one_endpoint(
         self,
-        dependency: Dependency,
+        dependency: Dependency | None = None,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
             self.resource.read_one(
-                Service=dependency.as_dependable(),
+                Service=self._resolve(dependency),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -144,14 +151,14 @@ class RestfulRouter:
 
     def with_read_many_endpoint(
         self,
-        dependency: Dependency,
         query: FluentDict[Any],
+        dependency: Dependency | None = None,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "",
             self.resource.read_many(
-                Service=dependency.as_dependable(),
+                Service=self._resolve(dependency),
                 QueryParams=Annotated[
                     Schema(self.name).optional_schema_for("ReadMany", query), Query()
                 ],
@@ -167,11 +174,13 @@ class RestfulRouter:
         return self
 
     def with_filter_endpoint(
-        self, dependency: Dependency, is_documented: bool = True
+        self,
+        dependency: Dependency | None = None,
+        is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "/filter",
-            self.resource.filter_with(Service=dependency.as_dependable()),
+            self.resource.filter_with(Service=self._resolve(dependency)),
             methods=["POST"],
             status_code=200,
             responses={},
@@ -184,14 +193,12 @@ class RestfulRouter:
 
     def with_read_all_endpoint(
         self,
-        dependency: Dependency,
+        dependency: Dependency | None = None,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "",
-            self.resource.read_all(
-                Service=dependency.as_dependable(),
-            ),
+            self.resource.read_all(Service=self._resolve(dependency)),
             methods=["GET"],
             status_code=200,
             responses={},
@@ -203,11 +210,13 @@ class RestfulRouter:
         return self
 
     def with_aggregate_endpoint(
-        self, dependency: Dependency, is_documented: bool = True
+        self,
+        dependency: Dependency | None = None,
+        is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "/aggregate",
-            self.resource.aggregate_with(Service=dependency.as_dependable()),
+            self.resource.aggregate_with(Service=self._resolve(dependency)),
             methods=["POST"],
             status_code=200,
             responses={},
@@ -220,13 +229,13 @@ class RestfulRouter:
 
     def with_update_one_endpoint(
         self,
-        dependency: Dependency,
+        dependency: Dependency | None = None,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
             self.resource.update_one(
-                Service=dependency.as_dependable(),
+                Service=self._resolve(dependency),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -248,13 +257,13 @@ class RestfulRouter:
 
     def with_update_many_endpoint(
         self,
-        dependency: Dependency,
+        dependency: Dependency | None = None,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "",
             self.resource.update_many(
-                Service=dependency.as_dependable(),
+                Service=self._resolve(dependency),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_update_many()),
@@ -272,13 +281,13 @@ class RestfulRouter:
 
     def with_replace_one_endpoint(
         self,
-        dependency: Dependency,
+        dependency: Dependency | None = None,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "",
             self.resource.replace_one(
-                Service=dependency.as_dependable(),
+                Service=self._resolve(dependency),
                 Item=Annotated[
                     RawItem,
                     Depends(self.schema.for_replace_one()),
@@ -296,13 +305,13 @@ class RestfulRouter:
 
     def with_replace_many_endpoint(
         self,
-        dependency: Dependency,
+        dependency: Dependency | None = None,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "/batch",
             self.resource.replace_many(
-                Service=dependency.as_dependable(),
+                Service=self._resolve(dependency),
                 Collection=Annotated[
                     RawCollection,
                     Depends(self.schema.for_replace_many()),
@@ -320,13 +329,13 @@ class RestfulRouter:
 
     def with_delete_one_endpoint(
         self,
-        dependency: Dependency,
+        dependency: Dependency | None = None,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
             self.resource.delete_one(
-                Service=dependency.as_dependable(),
+                Service=self._resolve(dependency),
                 ItemId=Annotated[
                     str,
                     Path(alias=self.id_alias),
@@ -348,16 +357,22 @@ class RestfulRouter:
 
         return self
 
-    def default(self, dependency: Dependency) -> Self:
+    def default(self) -> Self:
         return (
-            self.with_create_one_endpoint(dependency)
-            .with_create_many_endpoint(dependency)
-            .with_read_one_endpoint(dependency)
-            .with_read_all_endpoint(dependency)
-            .with_update_one_endpoint(dependency)
-            .with_update_many_endpoint(dependency)
-            .with_delete_one_endpoint(dependency)
+            self.with_create_one_endpoint()
+            .with_create_many_endpoint()
+            .with_read_one_endpoint()
+            .with_read_all_endpoint()
+            .with_update_one_endpoint()
+            .with_update_many_endpoint()
+            .with_delete_one_endpoint()
         )
 
     def build(self) -> APIRouter:
         return self.router
+
+    def _resolve(self, dependency: Dependency | None) -> type[RestfulService]:
+        resolved = dependency or self.dependency
+        assert resolved, "One of default or endpoint dependency must be specified"
+
+        return resolved.as_dependable()
