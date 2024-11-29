@@ -107,7 +107,7 @@ def test_should_insert(table: SqlTable[Apple], apple: Apple) -> None:
         + """ [manager] AS manager
             
                 FROM [test].[apples]
-                WHERE [apid] = SCOPE_IDENTITY() AND [manager] IS NOT NULL
+                WHERE [apid] = %(apid)s AND [manager] IS NOT NULL
             
             REVERT
         """
@@ -217,7 +217,7 @@ def test_should_insert_with_parent(
                 [apid] AS apid, [clr] AS clr, [pid] AS pid
             
                 FROM [test].[apples]
-                WHERE [pid] = %(pid)s AND [apid] = SCOPE_IDENTITY()
+                WHERE [pid] = %(pid)s AND [apid] = %(apid)s
             
             REVERT
         """
