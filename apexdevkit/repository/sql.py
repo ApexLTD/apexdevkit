@@ -184,6 +184,9 @@ class SqlFieldManager:
             + (
                 self.value_formatter.replace("x", self.id)
                 if not read_id
+                or next(  # type: ignore
+                    (key for key in self.fields if key.is_id), None
+                ).include_in_insert
                 else "SCOPE_IDENTITY()"
             )
             if include_id
