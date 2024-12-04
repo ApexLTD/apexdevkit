@@ -19,7 +19,7 @@ from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.http import Httpx
 from apexdevkit.testing import RestCollection
-from tests.resource.sample_api import AppleFields, PriceFields
+from tests.fastapi.resource.sample_api import AppleFields, PriceFields
 
 
 def resource_with_dependency(dependency: ServiceDependency) -> RestCollection:

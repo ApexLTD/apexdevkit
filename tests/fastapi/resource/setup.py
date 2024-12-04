@@ -14,7 +14,13 @@ from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.http import JsonDict
 from apexdevkit.testing.fake import FakeResource
-from tests.resource.sample_api import Apple, AppleFields, Color, Name, PriceFields
+from tests.fastapi.resource.sample_api import (
+    Apple,
+    AppleFields,
+    Color,
+    Name,
+    PriceFields,
+)
 
 
 def setup(infra: RestfulServiceBuilder) -> FastAPI:

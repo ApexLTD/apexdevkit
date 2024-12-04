@@ -19,8 +19,8 @@ from apexdevkit.query.query import (
     Sort,
 )
 from apexdevkit.testing import RestCollection
-from tests.resource.sample_api import SuccessfulService
-from tests.resource.setup import FakeApple
+from tests.fastapi.resource.sample_api import SuccessfulService
+from tests.fastapi.resource.setup import FakeApple
 
 
 @pytest.fixture
