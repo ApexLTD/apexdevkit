@@ -5,8 +5,7 @@ import pytest
 from apexdevkit.error import ForbiddenError
 from apexdevkit.http import JsonDict
 from apexdevkit.testing.rest import RestCollection
-from tests.resource.sample_api import FailingService
-from tests.resource.setup import FakeApple
+from tests.fastapi.sample_api import FailingService, FakeApple
 
 
 @pytest.fixture
