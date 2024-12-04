@@ -15,7 +15,7 @@ def mounted_endpoint() -> dict[str, Any]:
 
 
 def test_should_mount() -> None:
-    app = FastApiBuilder().with_mount(mounted=mounted_app).build()
+    app = FastApiBuilder().with_mounted(mounted=mounted_app).build()
 
     response = TestClient(app).get("/mounted/hello")
 
@@ -24,7 +24,7 @@ def test_should_mount() -> None:
 
 
 def test_should_use_dashes_instead_of_underscores() -> None:
-    app = FastApiBuilder().with_mount(mounted_app=mounted_app).build()
+    app = FastApiBuilder().with_mounted(mounted_app=mounted_app).build()
 
     response = TestClient(app).get("/mounted-app/hello")
 
