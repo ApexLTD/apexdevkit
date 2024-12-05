@@ -242,17 +242,16 @@ class MsSqlSourceGenerator:
         return f"FROM {self.source}{self._argument_list()}"
 
     def _argument_list(self) -> str:
-        if self.filter is not None:
-            return (
-                "("
-                + ",".join(
-                    arg.as_arg() if arg is not None else "null"
-                    for arg in self.filter.args
-                )
-                + ")"
-            )
-        else:
+        if self.filter is None:
             return ""
+
+        return (
+            "("
+            + ",".join(
+                arg.as_arg() if arg is not None else "null" for arg in self.filter.args
+            )
+            + ")"
+        )
 
 
 @dataclass
