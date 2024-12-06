@@ -285,7 +285,6 @@ class MsSqlConditionGenerator:
     def generate(self) -> str:
         if self.condition is None:
             return ""
-        self._validate(self.condition)
 
         return f"WHERE ({self._traverse(self.condition)})"
 
@@ -310,17 +309,6 @@ class MsSqlConditionGenerator:
                 ).evaluate_for(
                     node.operands[0],  # type: ignore
                 )
-
-    def _validate(self, condition: Operator | None) -> None:
-        if condition is not None and self.translations:
-            for operand in condition.operands:
-                if isinstance(operand, Operator):
-                    self._validate(operand)
-                else:
-                    if operand.name not in self.translations.keys():
-                        raise ForbiddenError(
-                            message=f"Invalid field name: {operand.name}"
-                        )
 
 
 @dataclass
