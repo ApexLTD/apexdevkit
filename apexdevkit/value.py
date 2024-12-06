@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from decimal import Decimal
 
@@ -20,10 +21,32 @@ class Value:
         return cls(value, exponent)
 
     def add(self, other: Value) -> Value:
-        return Value(self.value + self._adjusted(other), self.exponent)
+        exponent = self.exponent * other.exponent
+        value = self.value * other.exponent + self.exponent * other.value
+        gcd = int(math.gcd(exponent, value))
+        return Value(int(value / gcd), int(exponent / gcd))
 
     def subtract(self, other: Value) -> Value:
-        return Value(self.value - self._adjusted(other), self.exponent)
+        exponent = self.exponent * other.exponent
+        value = self.value * other.exponent - self.exponent * other.value
+        gcd = int(math.gcd(exponent, value))
+        return Value(int(value / gcd), int(exponent / gcd))
 
-    def _adjusted(self, other: Value) -> int:
-        return int(Decimal(other.value) / Decimal(other.exponent) * self.exponent)
+    def multiply(self, other: Value) -> Value:
+        exponent = self.exponent * other.exponent
+        value = self.value * other.value
+        gcd = int(math.gcd(exponent, value))
+        return Value(int(value / gcd), int(exponent / gcd))
+
+    def divide(self, other: Value) -> Value:
+        exponent = self.exponent * other.value
+        value = self.value * other.exponent
+        gcd = int(math.gcd(exponent, value))
+        return Value(int(value / gcd), int(exponent / gcd))
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Value):
+            return self.as_decimal() == other.as_decimal()
+        elif isinstance(other, Decimal):
+            return self.as_decimal() == other
+        return False
