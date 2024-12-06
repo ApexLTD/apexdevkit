@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
+from functools import cached_property
 from typing import Any, ClassVar, Generic, Iterable, Protocol, TypeVar
 
 from apexdevkit.error import ForbiddenError
@@ -150,6 +151,10 @@ class MsSqlQueryBuilder:
     username: str = field(init=False)
     translations: dict[str, str] = field(init=False)
 
+    @cached_property
+    def _fields(self) -> list[MsSqlField]:
+        return [MsSqlField(name, alias) for alias, name in self.translations.items()]
+
     def with_source(self, value: str) -> MsSqlQueryBuilder:
         self.source = value
 
@@ -176,7 +181,7 @@ class MsSqlQueryBuilder:
     def filter(self, options: QueryOptions) -> DatabaseCommand:
         return MsSqlQuery(
             user=MsSqlUserGenerator(self.username),
-            selection=MsSqlSelectionGenerator(self.translations),
+            selection=MsSqlSelectionGenerator(self._fields),
             filter=MsSqlSourceGenerator(self.source, options.filter),
             condition=MsSqlConditionGenerator(options.condition, self.translations),
             ordering=MsSqlOrderGenerator(options.ordering, self.translations),
@@ -193,16 +198,34 @@ class MsSqlUserGenerator:
 
 
 @dataclass
+class MsSqlField:
+    name: str
+
+    alias: str = ""
+
+    def as_select_part(self) -> str:
+        result = f"[{self.name}]"
+
+        if self.alias:
+            result += f" AS [{self.alias}]"
+
+        return result
+
+    def as_order_part(self, is_descending=False) -> str:
+        result = self.alias or self.name
+
+        if is_descending:
+            result += " DESC"
+
+        return result
+
+
+@dataclass
 class MsSqlSelectionGenerator:
-    translations: dict[str, str]
+    fields: list[MsSqlField] = field(default_factory=list)
 
     def generate(self) -> str:
-        fields = ", ".join(
-            [
-                f"[{self.translations[key]}] AS [{key}]"
-                for key in self.translations.keys()
-            ]
-        )
+        fields = ", ".join([f.as_select_part() for f in self.fields])
 
         return f"SELECT {fields}"
 
