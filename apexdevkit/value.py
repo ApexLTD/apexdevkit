@@ -38,5 +38,9 @@ class Value:
         gcd = int(math.gcd(exponent, value))
         return Value(int(value / gcd), int(exponent / gcd))
 
-    def __eq__(self, other: Value) -> bool:
-        return self.as_decimal() == other.as_decimal()
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Value):
+            return self.as_decimal() == other.as_decimal()
+        elif isinstance(other, Decimal):
+            return self.as_decimal() == other
+        return False
