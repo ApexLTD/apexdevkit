@@ -25,14 +25,11 @@ test:
 	poetry run pytest tests \
 		--cov \
 		--last-failed \
-		--record-mode once
+		--record-mode once \
+		--approvaltests-use-reporter='PythonNative'
 
 test-ci:
 	poetry run pytest tests
-
-approvals:
-	pip install --upgrade approvaltests pytest-approvaltests 1> /dev/null
-	pytest tests/query/approvals --approvaltests-use-reporter='PythonNative'
 
 run:
 	uvicorn tests.resource.setup:app --factory
