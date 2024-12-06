@@ -25,7 +25,8 @@ test:
 	poetry run pytest tests \
 		--cov \
 		--last-failed \
-		--record-mode once
+		--record-mode once \
+		--approvaltests-use-reporter='PythonNative'
 
 test-ci:
 	poetry run pytest tests

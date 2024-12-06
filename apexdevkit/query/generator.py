@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
+from functools import cached_property
 from typing import Any, ClassVar, Generic, Iterable, Protocol, TypeVar
 
 from apexdevkit.error import ForbiddenError
@@ -150,6 +151,10 @@ class MsSqlQueryBuilder:
     username: str = field(init=False)
     translations: dict[str, str] = field(init=False)
 
+    @cached_property
+    def _fields(self) -> list[MsSqlField]:
+        return [MsSqlField(name, alias) for alias, name in self.translations.items()]
+
     def with_source(self, value: str) -> MsSqlQueryBuilder:
         self.source = value
 
@@ -176,10 +181,10 @@ class MsSqlQueryBuilder:
     def filter(self, options: QueryOptions) -> DatabaseCommand:
         return MsSqlQuery(
             user=MsSqlUserGenerator(self.username),
-            selection=MsSqlSelectionGenerator(self.translations),
+            selection=MsSqlSelectionGenerator(self._fields),
             filter=MsSqlSourceGenerator(self.source, options.filter),
             condition=MsSqlConditionGenerator(options.condition, self.translations),
-            ordering=MsSqlOrderGenerator(options.ordering, self.translations),
+            ordering=MsSqlOrderGenerator(options.ordering, self._fields),
             paging=MsSqlPagingGenerator(options.paging),
         ).generate()
 
@@ -193,16 +198,34 @@ class MsSqlUserGenerator:
 
 
 @dataclass
+class MsSqlField:
+    name: str
+
+    alias: str = ""
+
+    def as_select_part(self) -> str:
+        result = f"[{self.name}]"
+
+        if self.alias:
+            result += f" AS [{self.alias}]"
+
+        return result
+
+    def as_order_part(self, is_descending: bool = False) -> str:
+        result = self.alias or self.name
+
+        if is_descending:
+            result += " DESC"
+
+        return result
+
+
+@dataclass
 class MsSqlSelectionGenerator:
-    translations: dict[str, str]
+    fields: list[MsSqlField] = field(default_factory=list)
 
     def generate(self) -> str:
-        fields = ", ".join(
-            [
-                f"[{self.translations[key]}] AS [{key}]"
-                for key in self.translations.keys()
-            ]
-        )
+        fields = ", ".join([f.as_select_part() for f in self.fields])
 
         return f"SELECT {fields}"
 
@@ -242,17 +265,16 @@ class MsSqlSourceGenerator:
         return f"FROM {self.source}{self._argument_list()}"
 
     def _argument_list(self) -> str:
-        if self.filter is not None:
-            return (
-                "("
-                + ",".join(
-                    arg.as_arg() if arg is not None else "null"
-                    for arg in self.filter.args
-                )
-                + ")"
-            )
-        else:
+        if self.filter is None:
             return ""
+
+        return (
+            "("
+            + ",".join(
+                arg.as_arg() if arg is not None else "null" for arg in self.filter.args
+            )
+            + ")"
+        )
 
 
 @dataclass
@@ -304,27 +326,26 @@ class MsSqlConditionGenerator:
 @dataclass
 class MsSqlOrderGenerator:
     ordering: list[Sort]
-    translations: dict[str, str]
+
+    fields: list[MsSqlField] = field(default_factory=list)
 
     def generate(self) -> str:
         if not self.ordering:
             return ""
-        self._validate()
 
-        order_clause = ", ".join(
-            f"{self.translations[item.name]} DESC"
-            if item.is_descending
-            else self.translations[item.name]
-            for item in self.ordering
-        )
+        clause = ", ".join(self.generate_one(item) for item in self.ordering)
 
-        return f"ORDER BY {order_clause}"
+        return f"ORDER BY {clause}"
 
-    def _validate(self) -> None:
-        if self.translations.keys():
-            for order in self.ordering:
-                if order.name not in self.translations.keys():
-                    raise ForbiddenError(message=f"Invalid field name: {order.name}")
+    def generate_one(self, item: Sort) -> str:
+        return self.field_for(item.name).as_order_part(item.is_descending)
+
+    def field_for(self, name: str) -> MsSqlField:
+        for f in self.fields:
+            if f.name == name:
+                return f
+
+        raise ForbiddenError(message=f"Invalid field name: {name}")
 
 
 @dataclass
