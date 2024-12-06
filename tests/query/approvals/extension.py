@@ -1,4 +1,5 @@
-from approvaltests import Options, verify
+from approvaltests import verify
+from approvaltests.core import Options
 
 
 def verify_sql(code: str) -> None:
