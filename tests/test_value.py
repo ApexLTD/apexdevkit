@@ -35,3 +35,12 @@ def test_should_subtract() -> None:
     result = quantity.subtract(operand)
 
     assert result == Value(1516, 100)
+
+
+def test_should_multiply() -> None:
+    quantity = Value(15, 100)
+    operand = Value(100, 1000)
+
+    result = quantity.multiply(operand)
+
+    assert result == Value(15, 1000)

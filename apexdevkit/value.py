@@ -32,5 +32,11 @@ class Value:
         gcd = int(math.gcd(exponent, value))
         return Value(int(value / gcd), int(exponent / gcd))
 
+    def multiply(self, other: Value) -> Value:
+        exponent = self.exponent * other.exponent
+        value = self.value * other.value
+        gcd = int(math.gcd(exponent, value))
+        return Value(int(value / gcd), int(exponent / gcd))
+
     def __eq__(self, other: Value) -> bool:
         return self.as_decimal() == other.as_decimal()
