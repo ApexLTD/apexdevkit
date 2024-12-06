@@ -305,7 +305,11 @@ class MsSqlConditionGenerator:
                 assert len(node.operands) == 1
 
                 return OperationEvaluator(
-                    node.operation, self.translations
+                    node.operation,
+                    fields=[
+                        MsSqlField(name, alias)
+                        for alias, name in self.translations.items()
+                    ],
                 ).evaluate_for(
                     node.operands[0],  # type: ignore
                 )
