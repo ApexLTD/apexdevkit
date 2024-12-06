@@ -38,6 +38,12 @@ class Value:
         gcd = int(math.gcd(exponent, value))
         return Value(int(value / gcd), int(exponent / gcd))
 
+    def divide(self, other: Value) -> Value:
+        exponent = self.exponent * other.value
+        value = self.value * other.exponent
+        gcd = int(math.gcd(exponent, value))
+        return Value(int(value / gcd), int(exponent / gcd))
+
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Value):
             return self.as_decimal() == other.as_decimal()

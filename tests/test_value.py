@@ -44,3 +44,12 @@ def test_should_multiply() -> None:
     result = quantity.multiply(operand)
 
     assert result == Value(15, 1000)
+
+
+def test_should_divide() -> None:
+    quantity = Value(150, 100)
+    operand = Value(5, 10)
+
+    result = quantity.divide(operand)
+
+    assert result == Value(3, 1)
