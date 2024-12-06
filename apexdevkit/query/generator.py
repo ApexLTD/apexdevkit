@@ -211,7 +211,7 @@ class MsSqlField:
 
         return result
 
-    def as_order_part(self, is_descending=False) -> str:
+    def as_order_part(self, is_descending: bool = False) -> str:
         result = self.alias or self.name
 
         if is_descending:
