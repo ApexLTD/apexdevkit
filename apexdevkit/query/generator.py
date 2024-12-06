@@ -184,7 +184,7 @@ class MsSqlQueryBuilder:
             selection=MsSqlSelectionGenerator(self._fields),
             filter=MsSqlSourceGenerator(self.source, options.filter),
             condition=MsSqlConditionGenerator(options.condition, self.translations),
-            ordering=MsSqlOrderGenerator(options.ordering, self.translations),
+            ordering=MsSqlOrderGenerator(options.ordering, self._fields),
             paging=MsSqlPagingGenerator(options.paging),
         ).generate()
 
@@ -326,27 +326,26 @@ class MsSqlConditionGenerator:
 @dataclass
 class MsSqlOrderGenerator:
     ordering: list[Sort]
-    translations: dict[str, str]
+
+    fields: list[MsSqlField] = field(default_factory=list)
 
     def generate(self) -> str:
         if not self.ordering:
             return ""
-        self._validate()
 
-        order_clause = ", ".join(
-            f"{self.translations[item.name]} DESC"
-            if item.is_descending
-            else self.translations[item.name]
-            for item in self.ordering
-        )
+        clause = ", ".join(self.generate_one(item) for item in self.ordering)
 
-        return f"ORDER BY {order_clause}"
+        return f"ORDER BY {clause}"
 
-    def _validate(self) -> None:
-        if self.translations.keys():
-            for order in self.ordering:
-                if order.name not in self.translations.keys():
-                    raise ForbiddenError(message=f"Invalid field name: {order.name}")
+    def generate_one(self, item: Sort) -> str:
+        return self.field_for(item.name).as_order_part(item.is_descending)
+
+    def field_for(self, name: str) -> MsSqlField:
+        for f in self.fields:
+            if f.name == name:
+                return f
+
+        raise ForbiddenError(message=f"Invalid field name: {name}")
 
 
 @dataclass
