@@ -1,10 +1,10 @@
 from apexdevkit.query import (
-    QueryOptions,
-    Page,
-    Sort,
-    FooterOptions,
     Aggregation,
     AggregationOption,
+    FooterOptions,
+    Page,
+    QueryOptions,
+    Sort,
 )
 from apexdevkit.query.generator import MsSqlQueryBuilder
 from tests.query.approvals.extension import verify_sql

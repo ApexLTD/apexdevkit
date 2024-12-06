@@ -1,4 +1,4 @@
-from apexdevkit.query.generator import MsSqlSelectionGenerator, MsSqlField
+from apexdevkit.query.generator import MsSqlField, MsSqlSelectionGenerator
 from tests.query.approvals.extension import verify_sql
 
 

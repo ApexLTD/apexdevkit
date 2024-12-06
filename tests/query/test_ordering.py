@@ -1,4 +1,4 @@
-from apexdevkit.query.generator import MsSqlOrderGenerator, MsSqlField
+from apexdevkit.query.generator import MsSqlField, MsSqlOrderGenerator
 from apexdevkit.testing.fake import FakeSort
 
 

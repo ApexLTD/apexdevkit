@@ -1,4 +1,4 @@
-from apexdevkit.query.generator import MsSqlSelectionGenerator, MsSqlField
+from apexdevkit.query.generator import MsSqlField, MsSqlSelectionGenerator
 
 
 def test_should_generate_selection() -> None:
