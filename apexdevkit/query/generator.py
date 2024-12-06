@@ -353,8 +353,8 @@ class MsSqlPagingGenerator:
 @dataclass
 class OperationEvaluator:
     operation: Operation
-    translations: dict[str, str]
 
+    translations: dict[str, str] = field(default_factory=dict)
     fields: list[MsSqlField] = field(default_factory=list)
 
     _TEMPLATES: ClassVar[dict[Operation, str]] = defaultdict(
