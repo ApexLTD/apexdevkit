@@ -3,11 +3,7 @@ from apexdevkit.testing.fake import FakeSort
 
 
 def test_should_order_by_default_field() -> None:
-    fields = []
-
-    generator = MsSqlOrderGenerator([], fields)
-
-    assert generator.generate() == ""
+    assert MsSqlOrderGenerator(ordering=[], fields=[]).generate() == ""
 
 
 def test_should_order_ascending() -> None:
