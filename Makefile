@@ -30,5 +30,9 @@ test:
 test-ci:
 	poetry run pytest tests
 
+approvals:
+	pip install --upgrade approvaltests pytest-approvaltests 1> /dev/null
+	pytest tests/query/approvals --approvaltests-use-reporter='PythonNative'
+
 run:
 	uvicorn tests.resource.setup:app --factory
