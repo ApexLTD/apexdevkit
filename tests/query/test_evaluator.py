@@ -1,5 +1,7 @@
+import pytest
 from pytest import fixture
 
+from apexdevkit.error import ForbiddenError
 from apexdevkit.query import Leaf, NumericValue, Operation, StringValue
 from apexdevkit.query.generator import OperationEvaluator
 from apexdevkit.testing.fake import FakeLeaf, FakeNumericValue, FakeStringValue
@@ -33,6 +35,13 @@ def str_b() -> StringValue:
 @fixture
 def str_leaf(str_a: StringValue, str_b: StringValue) -> Leaf:
     return FakeLeaf(values=[str_a, str_b]).entity()
+
+
+def test_should_not_evaluate_unknown_field() -> None:
+    evaluator = OperationEvaluator(Operation.BETWEEN, {})
+
+    with pytest.raises(ForbiddenError):
+        evaluator.evaluate_for(FakeLeaf().entity())
 
 
 def test_should_evaluate_for_between(

@@ -385,12 +385,18 @@ class OperationEvaluator:
     def evaluate_for(self, node: Leaf) -> str:
         return self._TEMPLATES[self.operation].format(
             operation=self.operation.value,
-            column=self.translations[node.name],
+            column=self._column_for(node),
             raw_a=self._get_raw_value(node),
             a=self._get_value(node, 0),
             b=self._get_value(node, 1),
             values=", ".join(val.eval() for val in node.values),
         )
+
+    def _column_for(self, node: Leaf) -> str:
+        try:
+            return self.translations[node.name]
+        except KeyError:
+            raise ForbiddenError(message=f"Invalid field name: {node.name}")
 
     def _get_raw_value(self, node: Leaf) -> str | None:
         raw_a = self._get_value(node, 0)
