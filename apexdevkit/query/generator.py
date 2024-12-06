@@ -355,6 +355,8 @@ class OperationEvaluator:
     operation: Operation
     translations: dict[str, str]
 
+    fields: list[MsSqlField] = field(default_factory=list)
+
     _TEMPLATES: ClassVar[dict[Operation, str]] = defaultdict(
         lambda: "[{column}] {operation} {a}",
         {
@@ -370,6 +372,11 @@ class OperationEvaluator:
         },
     )
 
+    def __post_init__(self) -> None:
+        self.fields = self.fields or [
+            MsSqlField(name, alias) for alias, name in self.translations.items()
+        ]
+
     def evaluate_for(self, node: Leaf) -> str:
         return self._TEMPLATES[self.operation].format(
             operation=self.operation.value,
@@ -381,10 +388,11 @@ class OperationEvaluator:
         )
 
     def _column_for(self, node: Leaf) -> str:
-        try:
-            return self.translations[node.name]
-        except KeyError:
-            raise ForbiddenError(message=f"Invalid field name: {node.name}")
+        for f in self.fields:
+            if f.alias == node.name:
+                return f.name
+
+        raise ForbiddenError(message=f"Invalid field name: {node.name}")
 
     def _get_raw_value(self, node: Leaf) -> str | None:
         raw_a = self._get_value(node, 0)
