@@ -175,7 +175,7 @@ class MsSqlQueryBuilder:
             user=MsSqlUserGenerator(self.username),
             selection=MsSqlFooterGenerator(footer.aggregations, self.translations),
             filter=MsSqlSourceGenerator(self.source, footer.filter),
-            condition=MsSqlConditionGenerator(footer.condition, self.translations),
+            condition=MsSqlConditionGenerator(footer.condition, self._fields),
         ).generate()
 
     def filter(self, options: QueryOptions) -> DatabaseCommand:
@@ -183,7 +183,7 @@ class MsSqlQueryBuilder:
             user=MsSqlUserGenerator(self.username),
             selection=MsSqlSelectionGenerator(self._fields),
             filter=MsSqlSourceGenerator(self.source, options.filter),
-            condition=MsSqlConditionGenerator(options.condition, self.translations),
+            condition=MsSqlConditionGenerator(options.condition, self._fields),
             ordering=MsSqlOrderGenerator(options.ordering, self._fields),
             paging=MsSqlPagingGenerator(options.paging),
         ).generate()
@@ -280,7 +280,7 @@ class MsSqlSourceGenerator:
 @dataclass
 class MsSqlConditionGenerator:
     condition: Operator | None
-    translations: dict[str, str]
+    fields: list[MsSqlField]
 
     def generate(self) -> str:
         if self.condition is None:
@@ -306,10 +306,7 @@ class MsSqlConditionGenerator:
 
                 return OperationEvaluator(
                     node.operation,
-                    fields=[
-                        MsSqlField(name, alias)
-                        for alias, name in self.translations.items()
-                    ],
+                    fields=self.fields,
                 ).evaluate_for(
                     node.operands[0],  # type: ignore
                 )
@@ -373,11 +370,6 @@ class OperationEvaluator:
             Operation.ENDS: "[{column}] LIKE N'%{raw_a}'",
         },
     )
-
-    def __post_init__(self) -> None:
-        self.fields = self.fields or [
-            MsSqlField(name, alias) for alias, name in self.translations.items()
-        ]
 
     def evaluate_for(self, node: Leaf) -> str:
         return self._TEMPLATES[self.operation].format(
