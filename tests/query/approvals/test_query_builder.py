@@ -69,7 +69,19 @@ def test_aggregate() -> None:
     query = builder.aggregate(
         FooterOptions(
             filter=None,
-            condition=None,
+            condition=Operator(
+                Operation.OR,
+                operands=[
+                    Operator(
+                        Operation.BEGINS,
+                        operands=[Leaf("id", values=[StringValue("begin")])],
+                    ),
+                    Operator(
+                        Operation.ENDS,
+                        operands=[Leaf("name", values=[StringValue("end")])],
+                    ),
+                ],
+            ),
             aggregations=[AggregationOption("name", Aggregation.COUNT)],
         )
     )
