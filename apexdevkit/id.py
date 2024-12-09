@@ -15,7 +15,8 @@ class ApexID:
     @classmethod
     def id(cls) -> int:
         """
-        Generates a unique identifier with the following structure from most significant to least significant:
+        Generates a unique identifier with the following structure
+        from most significant to least significant:
         1 bit reserved
         41 bits for unix timestamp (millisecond precision)
         12 bits for metadata
