@@ -236,11 +236,11 @@ class MsSqlFooterGenerator:
     translations: dict[str, str]
 
     def generate(self) -> str:
-        self._validate()
+        # self._validate()
         fields = ", ".join(
             [
                 f"{footer.aggregation.value}"
-                f"({self.translations[footer.name] if footer.name else '*'}) AS "
+                f"({self.field_for(footer.name)}) AS "
                 f"{footer.name if footer.name else 'general'}"
                 f"_{footer.aggregation.value.lower()}"
                 for footer in self.aggregations
@@ -254,6 +254,15 @@ class MsSqlFooterGenerator:
             for footer in self.aggregations:
                 if footer.name and footer.name not in self.translations.keys():
                     raise ForbiddenError(message=f"Invalid field name: {footer.name}")
+
+    def field_for(self, name: str | None) -> str:
+        if name is None:
+            return "*"
+
+        try:
+            return self.translations[name]
+        except KeyError:
+            raise ForbiddenError(message=f"Invalid field name: {name}")
 
 
 @dataclass
