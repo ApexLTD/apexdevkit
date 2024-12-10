@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from functools import cached_property
 from typing import Any, ClassVar, Generic, Iterable, Protocol, TypeVar
 
 from apexdevkit.error import ForbiddenError
@@ -150,11 +149,7 @@ class MsSqlQuery:
 class MsSqlQueryBuilder:
     source: str = field(init=False)
     username: str = field(init=False)
-    translations: dict[str, str] = field(init=False)
-
-    @cached_property
-    def _fields(self) -> list[MsSqlField]:
-        return [MsSqlField(name, alias) for alias, name in self.translations.items()]
+    _fields: list[MsSqlField] = field(init=False)
 
     def with_source(self, value: str) -> MsSqlQueryBuilder:
         self.source = value
@@ -167,7 +162,7 @@ class MsSqlQueryBuilder:
         return self
 
     def with_translations(self, value: dict[str, str]) -> MsSqlQueryBuilder:
-        self.translations = value
+        self._fields = [MsSqlField(name, alias) for alias, name in value.items()]
 
         return self
 

@@ -2,7 +2,7 @@ import pytest
 
 from apexdevkit.error import ForbiddenError
 from apexdevkit.query import Aggregation, AggregationOption
-from apexdevkit.query.generator import MsSqlFooterGenerator, MsSqlField
+from apexdevkit.query.generator import MsSqlField, MsSqlFooterGenerator
 from apexdevkit.testing.fake import FakeAggregationOption
 
 
