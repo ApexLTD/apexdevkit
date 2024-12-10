@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from functools import cached_property
 from typing import Any, ClassVar, Generic, Iterable, Protocol, TypeVar
 
+from apexdevkit.annotation import deprecated
 from apexdevkit.error import ForbiddenError
 from apexdevkit.query.query import (
+    Aggregation,
     AggregationOption,
     Filter,
     FooterOptions,
@@ -149,11 +150,7 @@ class MsSqlQuery:
 class MsSqlQueryBuilder:
     source: str = field(init=False)
     username: str = field(init=False)
-    translations: dict[str, str] = field(init=False)
-
-    @cached_property
-    def _fields(self) -> list[MsSqlField]:
-        return [MsSqlField(name, alias) for alias, name in self.translations.items()]
+    _fields: list[MsSqlField] = field(init=False)
 
     def with_source(self, value: str) -> MsSqlQueryBuilder:
         self.source = value
@@ -165,17 +162,23 @@ class MsSqlQueryBuilder:
 
         return self
 
+    def with_fields(self, values: list[MsSqlField]) -> MsSqlQueryBuilder:
+        self._fields = values
+
+        return self
+
+    @deprecated(".with_translations is deprecated, use .with_fields instead")
     def with_translations(self, value: dict[str, str]) -> MsSqlQueryBuilder:
-        self.translations = value
+        self._fields = [MsSqlField(name, alias) for alias, name in value.items()]
 
         return self
 
     def aggregate(self, footer: FooterOptions) -> DatabaseCommand:
         return MsSqlQuery(
             user=MsSqlUserGenerator(self.username),
-            selection=MsSqlFooterGenerator(footer.aggregations, self.translations),
+            selection=MsSqlFooterGenerator(footer.aggregations, self._fields),
             filter=MsSqlSourceGenerator(self.source, footer.filter),
-            condition=MsSqlConditionGenerator(footer.condition, self.translations),
+            condition=MsSqlConditionGenerator(footer.condition, self._fields),
         ).generate()
 
     def filter(self, options: QueryOptions) -> DatabaseCommand:
@@ -183,7 +186,7 @@ class MsSqlQueryBuilder:
             user=MsSqlUserGenerator(self.username),
             selection=MsSqlSelectionGenerator(self._fields),
             filter=MsSqlSourceGenerator(self.source, options.filter),
-            condition=MsSqlConditionGenerator(options.condition, self.translations),
+            condition=MsSqlConditionGenerator(options.condition, self._fields),
             ordering=MsSqlOrderGenerator(options.ordering, self._fields),
             paging=MsSqlPagingGenerator(options.paging),
         ).generate()
@@ -219,6 +222,9 @@ class MsSqlField:
 
         return result
 
+    def as_aggregation_part(self, option: Aggregation) -> str:
+        return f"{option.value}({self.name}) AS {self.alias}_{option.value.lower()}"
+
 
 @dataclass
 class MsSqlSelectionGenerator:
@@ -233,27 +239,27 @@ class MsSqlSelectionGenerator:
 @dataclass
 class MsSqlFooterGenerator:
     aggregations: list[AggregationOption]
-    translations: dict[str, str]
+    fields: list[MsSqlField]
 
     def generate(self) -> str:
-        self._validate()
         fields = ", ".join(
             [
-                f"{footer.aggregation.value}"
-                f"({self.translations[footer.name] if footer.name else '*'}) AS "
-                f"{footer.name if footer.name else 'general'}"
-                f"_{footer.aggregation.value.lower()}"
+                self.field_for(footer.name).as_aggregation_part(footer.aggregation)
                 for footer in self.aggregations
             ]
         )
 
         return f"SELECT {fields}"
 
-    def _validate(self) -> None:
-        if self.translations.keys():
-            for footer in self.aggregations:
-                if footer.name and footer.name not in self.translations.keys():
-                    raise ForbiddenError(message=f"Invalid field name: {footer.name}")
+    def field_for(self, name: str | None) -> MsSqlField:
+        if name is None:
+            return MsSqlField("*", alias="general")
+
+        for f in self.fields:
+            if f.alias == name:
+                return f
+
+        raise ForbiddenError(message=f"Invalid field name: {name}")
 
 
 @dataclass
@@ -280,12 +286,11 @@ class MsSqlSourceGenerator:
 @dataclass
 class MsSqlConditionGenerator:
     condition: Operator | None
-    translations: dict[str, str]
+    fields: list[MsSqlField]
 
     def generate(self) -> str:
         if self.condition is None:
             return ""
-        self._validate(self.condition)
 
         return f"WHERE ({self._traverse(self.condition)})"
 
@@ -306,21 +311,11 @@ class MsSqlConditionGenerator:
                 assert len(node.operands) == 1
 
                 return OperationEvaluator(
-                    node.operation, self.translations
+                    node.operation,
+                    fields=self.fields,
                 ).evaluate_for(
                     node.operands[0],  # type: ignore
                 )
-
-    def _validate(self, condition: Operator | None) -> None:
-        if condition is not None and self.translations:
-            for operand in condition.operands:
-                if isinstance(operand, Operator):
-                    self._validate(operand)
-                else:
-                    if operand.name not in self.translations.keys():
-                        raise ForbiddenError(
-                            message=f"Invalid field name: {operand.name}"
-                        )
 
 
 @dataclass
@@ -365,7 +360,7 @@ class MsSqlPagingGenerator:
 @dataclass
 class OperationEvaluator:
     operation: Operation
-    translations: dict[str, str]
+    fields: list[MsSqlField]
 
     _TEMPLATES: ClassVar[dict[Operation, str]] = defaultdict(
         lambda: "[{column}] {operation} {a}",
@@ -385,12 +380,19 @@ class OperationEvaluator:
     def evaluate_for(self, node: Leaf) -> str:
         return self._TEMPLATES[self.operation].format(
             operation=self.operation.value,
-            column=self.translations[node.name],
+            column=self._column_for(node),
             raw_a=self._get_raw_value(node),
             a=self._get_value(node, 0),
             b=self._get_value(node, 1),
             values=", ".join(val.eval() for val in node.values),
         )
+
+    def _column_for(self, node: Leaf) -> str:
+        for f in self.fields:
+            if f.alias == node.name:
+                return f.name
+
+        raise ForbiddenError(message=f"Invalid field name: {node.name}")
 
     def _get_raw_value(self, node: Leaf) -> str | None:
         raw_a = self._get_value(node, 0)
