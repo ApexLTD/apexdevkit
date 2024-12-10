@@ -239,6 +239,13 @@ class MsSqlFooterGenerator:
     aggregations: list[AggregationOption]
     translations: dict[str, str]
 
+    fields: list[MsSqlField] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        self.fields = [
+            MsSqlField(name, alias) for alias, name in self.translations.items()
+        ]
+
     def generate(self) -> str:
         fields = ", ".join(
             [
@@ -253,10 +260,11 @@ class MsSqlFooterGenerator:
         if name is None:
             return MsSqlField("*", alias="general")
 
-        try:
-            return MsSqlField(self.translations[name], alias=name)
-        except KeyError:
-            raise ForbiddenError(message=f"Invalid field name: {name}")
+        for f in self.fields:
+            if f.alias == name:
+                return f
+
+        raise ForbiddenError(message=f"Invalid field name: {name}")
 
 
 @dataclass
