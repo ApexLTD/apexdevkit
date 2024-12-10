@@ -8,7 +8,7 @@ from apexdevkit.testing.fake import FakeAggregationOption
 
 def test_should_select_footer() -> None:
     option = FakeAggregationOption().entity()
-    fields = [MsSqlField("name", option.name)]
+    fields = [MsSqlField("name", option.name or "")]
 
     assert (
         MsSqlFooterGenerator([option], fields).generate()
@@ -20,8 +20,8 @@ def test_should_select_footer() -> None:
 def test_should_select_footers() -> None:
     options = [FakeAggregationOption().entity(), FakeAggregationOption().entity()]
     fields = [
-        MsSqlField("name_0", options[0].name),
-        MsSqlField("name_1", options[1].name),
+        MsSqlField("name_0", alias=options[0].name or ""),
+        MsSqlField("name_1", alias=options[1].name or ""),
     ]
 
     assert (
