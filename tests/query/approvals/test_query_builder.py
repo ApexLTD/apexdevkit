@@ -2,12 +2,12 @@ from apexdevkit.query import (
     Aggregation,
     AggregationOption,
     FooterOptions,
+    Leaf,
+    Operation,
+    Operator,
     Page,
     QueryOptions,
     Sort,
-    Operator,
-    Operation,
-    Leaf,
     StringValue,
 )
 from apexdevkit.query.generator import MsSqlQueryBuilder

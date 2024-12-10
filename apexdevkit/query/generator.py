@@ -7,6 +7,7 @@ from typing import Any, ClassVar, Generic, Iterable, Protocol, TypeVar
 
 from apexdevkit.error import ForbiddenError
 from apexdevkit.query.query import (
+    Aggregation,
     AggregationOption,
     Filter,
     FooterOptions,
@@ -19,7 +20,6 @@ from apexdevkit.query.query import (
     StringValue,
     Summary,
     SummaryExtractor,
-    Aggregation,
 )
 from apexdevkit.repository import Database, DatabaseCommand
 
@@ -220,8 +220,8 @@ class MsSqlField:
 
         return result
 
-    def as_aggregation_part(self, aggregation: Aggregation) -> str:
-        return f"{aggregation.value}({self.name}) AS {self.alias}_{aggregation.value.lower()}"
+    def as_aggregation_part(self, option: Aggregation) -> str:
+        return f"{option.value}({self.name}) AS {self.alias}_{option.value.lower()}"
 
 
 @dataclass

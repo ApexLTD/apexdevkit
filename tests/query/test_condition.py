@@ -1,8 +1,8 @@
 from apexdevkit.query import Operation, Operator
 from apexdevkit.query.generator import (
     MsSqlConditionGenerator,
-    OperationEvaluator,
     MsSqlField,
+    OperationEvaluator,
 )
 from apexdevkit.testing.fake import FakeLeaf, FakeOperator
 
