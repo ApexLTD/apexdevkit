@@ -4,6 +4,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any, ClassVar, Generic, Iterable, Protocol, TypeVar
 
+from apexdevkit.annotation import deprecated
 from apexdevkit.error import ForbiddenError
 from apexdevkit.query.query import (
     Aggregation,
@@ -161,6 +162,12 @@ class MsSqlQueryBuilder:
 
         return self
 
+    def with_fields(self, values: list[MsSqlField]) -> MsSqlQueryBuilder:
+        self._fields = values
+
+        return self
+
+    @deprecated(".with_translations is deprecated, use .with_fields instead")
     def with_translations(self, value: dict[str, str]) -> MsSqlQueryBuilder:
         self._fields = [MsSqlField(name, alias) for alias, name in value.items()]
 
