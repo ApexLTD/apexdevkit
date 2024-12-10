@@ -10,7 +10,7 @@ from apexdevkit.query import (
     Sort,
     StringValue,
 )
-from apexdevkit.query.generator import MsSqlQueryBuilder
+from apexdevkit.query.generator import MsSqlField, MsSqlQueryBuilder
 from tests.query.approvals.extension import verify_sql
 
 
@@ -19,12 +19,12 @@ def test_filter() -> None:
         MsSqlQueryBuilder()
         .with_source("TABLE")
         .with_username("John")
-        .with_translations(
-            {
-                "id": "item_id",
-                "name": "item_name",
-                "date": "date",
-            }
+        .with_fields(
+            [
+                MsSqlField("item_id", alias="id"),
+                MsSqlField("item_name", alias="name"),
+                MsSqlField("date"),
+            ]
         )
     )
 
@@ -57,12 +57,12 @@ def test_aggregate() -> None:
         MsSqlQueryBuilder()
         .with_source("TABLE")
         .with_username("John")
-        .with_translations(
-            {
-                "id": "item_id",
-                "name": "item_name",
-                "date": "date",
-            }
+        .with_fields(
+            [
+                MsSqlField("item_id", alias="id"),
+                MsSqlField("item_name", alias="name"),
+                MsSqlField("date"),
+            ]
         )
     )
 
