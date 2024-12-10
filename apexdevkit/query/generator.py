@@ -239,8 +239,8 @@ class MsSqlFooterGenerator:
         fields = ", ".join(
             [
                 f"{footer.aggregation.value}"
-                f"({self.field_for(footer.name)}) AS "
-                f"{footer.name if footer.name else 'general'}"
+                f"({self.field_for(footer.name).name}) AS "
+                f"{self.field_for(footer.name).alias}"
                 f"_{footer.aggregation.value.lower()}"
                 for footer in self.aggregations
             ]
@@ -248,12 +248,12 @@ class MsSqlFooterGenerator:
 
         return f"SELECT {fields}"
 
-    def field_for(self, name: str | None) -> str:
+    def field_for(self, name: str | None) -> MsSqlField:
         if name is None:
-            return "*"
+            return MsSqlField("*", alias="general")
 
         try:
-            return self.translations[name]
+            return MsSqlField(self.translations[name], alias=name)
         except KeyError:
             raise ForbiddenError(message=f"Invalid field name: {name}")
 
