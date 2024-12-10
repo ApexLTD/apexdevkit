@@ -8,25 +8,29 @@ from apexdevkit.testing.fake import FakeAggregationOption
 
 def test_should_select_footer() -> None:
     option = FakeAggregationOption().entity()
-    fields = [MsSqlField("name", option.name or "")]
+    generator = MsSqlFooterGenerator(
+        aggregations=[option],
+        fields=[MsSqlField("name", option.name or "")],
+    )
 
     assert (
-        MsSqlFooterGenerator([option], fields).generate()
-        == f"SELECT {option.aggregation.value}(name) AS "
+        generator.generate() == f"SELECT {option.aggregation.value}(name) AS "
         f"{option.name}_{option.aggregation.value.lower()}"
     )
 
 
 def test_should_select_footers() -> None:
     options = [FakeAggregationOption().entity(), FakeAggregationOption().entity()]
-    fields = [
-        MsSqlField("name_0", alias=options[0].name or ""),
-        MsSqlField("name_1", alias=options[1].name or ""),
-    ]
+    generator = MsSqlFooterGenerator(
+        aggregations=options,
+        fields=[
+            MsSqlField("name_0", alias=options[0].name or ""),
+            MsSqlField("name_1", alias=options[1].name or ""),
+        ],
+    )
 
     assert (
-        MsSqlFooterGenerator(options, fields).generate()
-        == f"SELECT {options[0].aggregation.value}(name_0) AS "
+        generator.generate() == f"SELECT {options[0].aggregation.value}(name_0) AS "
         f"{options[0].name}_{options[0].aggregation.value.lower()}, "
         f"{options[1].aggregation.value}(name_1) AS "
         f"{options[1].name}_{options[1].aggregation.value.lower()}"
@@ -34,11 +38,13 @@ def test_should_select_footers() -> None:
 
 
 def test_should_fail_for_unknown_field() -> None:
+    generator = MsSqlFooterGenerator(
+        aggregations=[FakeAggregationOption().entity()],
+        fields=[],
+    )
+
     with pytest.raises(ForbiddenError):
-        MsSqlFooterGenerator(
-            aggregations=[FakeAggregationOption().entity()],
-            fields=[],
-        ).generate()
+        generator.generate()
 
 
 def test_should_aggregate_without_name() -> None:
