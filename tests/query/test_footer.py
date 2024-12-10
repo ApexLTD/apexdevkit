@@ -2,16 +2,16 @@ import pytest
 
 from apexdevkit.error import ForbiddenError
 from apexdevkit.query import Aggregation, AggregationOption
-from apexdevkit.query.generator import MsSqlFooterGenerator
+from apexdevkit.query.generator import MsSqlFooterGenerator, MsSqlField
 from apexdevkit.testing.fake import FakeAggregationOption
 
 
 def test_should_select_footer() -> None:
     option = FakeAggregationOption().entity()
-    translation: dict[str, str] = {option.name: "name"}  # type: ignore
+    fields = [MsSqlField("name", option.name)]
 
     assert (
-        MsSqlFooterGenerator([option], translation).generate()
+        MsSqlFooterGenerator([option], fields).generate()
         == f"SELECT {option.aggregation.value}(name) AS "
         f"{option.name}_{option.aggregation.value.lower()}"
     )
@@ -19,13 +19,13 @@ def test_should_select_footer() -> None:
 
 def test_should_select_footers() -> None:
     options = [FakeAggregationOption().entity(), FakeAggregationOption().entity()]
-    translation: dict[str, str] = {
-        options[0].name: "name_0",  # type: ignore
-        options[1].name: "name_1",  # type: ignore
-    }
+    fields = [
+        MsSqlField("name_0", options[0].name),
+        MsSqlField("name_1", options[1].name),
+    ]
 
     assert (
-        MsSqlFooterGenerator(options, translation).generate()
+        MsSqlFooterGenerator(options, fields).generate()
         == f"SELECT {options[0].aggregation.value}(name_0) AS "
         f"{options[0].name}_{options[0].aggregation.value.lower()}, "
         f"{options[1].aggregation.value}(name_1) AS "
@@ -36,20 +36,20 @@ def test_should_select_footers() -> None:
 def test_should_fail_for_unknown_field() -> None:
     with pytest.raises(ForbiddenError):
         MsSqlFooterGenerator(
-            [FakeAggregationOption().entity()],
-            translations={"name": "name"},
+            aggregations=[FakeAggregationOption().entity()],
+            fields=[MsSqlField("name", alias="name")],
         ).generate()
 
 
 def test_should_aggregate_without_name() -> None:
     generator = MsSqlFooterGenerator(
-        [
+        aggregations=[
             AggregationOption(
                 name=None,
                 aggregation=Aggregation.COUNT,
             )
         ],
-        translations={"name": "name"},
+        fields=[MsSqlField("name", alias="name")],
     )
 
     assert generator.generate() == "SELECT COUNT(*) AS general_count"

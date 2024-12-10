@@ -174,7 +174,7 @@ class MsSqlQueryBuilder:
     def aggregate(self, footer: FooterOptions) -> DatabaseCommand:
         return MsSqlQuery(
             user=MsSqlUserGenerator(self.username),
-            selection=MsSqlFooterGenerator(footer.aggregations, self.translations),
+            selection=MsSqlFooterGenerator(footer.aggregations, self._fields),
             filter=MsSqlSourceGenerator(self.source, footer.filter),
             condition=MsSqlConditionGenerator(footer.condition, self._fields),
         ).generate()
@@ -237,14 +237,7 @@ class MsSqlSelectionGenerator:
 @dataclass
 class MsSqlFooterGenerator:
     aggregations: list[AggregationOption]
-    translations: dict[str, str]
-
-    fields: list[MsSqlField] = field(default_factory=list)
-
-    def __post_init__(self) -> None:
-        self.fields = [
-            MsSqlField(name, alias) for alias, name in self.translations.items()
-        ]
+    fields: list[MsSqlField]
 
     def generate(self) -> str:
         fields = ", ".join(
