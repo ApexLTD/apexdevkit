@@ -37,7 +37,7 @@ def test_should_fail_for_unknown_field() -> None:
     with pytest.raises(ForbiddenError):
         MsSqlFooterGenerator(
             aggregations=[FakeAggregationOption().entity()],
-            fields=[MsSqlField("name", alias="name")],
+            fields=[],
         ).generate()
 
 
@@ -49,7 +49,7 @@ def test_should_aggregate_without_name() -> None:
                 aggregation=Aggregation.COUNT,
             )
         ],
-        fields=[MsSqlField("name", alias="name")],
+        fields=[MsSqlField("name")],
     )
 
     assert generator.generate() == "SELECT COUNT(*) AS general_count"
