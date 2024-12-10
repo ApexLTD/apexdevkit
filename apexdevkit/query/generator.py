@@ -19,6 +19,7 @@ from apexdevkit.query.query import (
     StringValue,
     Summary,
     SummaryExtractor,
+    Aggregation,
 )
 from apexdevkit.repository import Database, DatabaseCommand
 
@@ -219,6 +220,9 @@ class MsSqlField:
 
         return result
 
+    def as_aggregation_part(self, aggregation: Aggregation) -> str:
+        return f"{aggregation.value}({self.name}) AS {self.alias}_{aggregation.value.lower()}"
+
 
 @dataclass
 class MsSqlSelectionGenerator:
@@ -238,10 +242,7 @@ class MsSqlFooterGenerator:
     def generate(self) -> str:
         fields = ", ".join(
             [
-                f"{footer.aggregation.value}"
-                f"({self.field_for(footer.name).name}) AS "
-                f"{self.field_for(footer.name).alias}"
-                f"_{footer.aggregation.value.lower()}"
+                self.field_for(footer.name).as_aggregation_part(footer.aggregation)
                 for footer in self.aggregations
             ]
         )
