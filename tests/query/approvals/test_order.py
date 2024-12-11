@@ -26,7 +26,7 @@ def test_order_descending() -> None:
 
 def test_order_with_alias() -> None:
     fields = [MsSqlField("id", alias="item_id")]
-    ordering = [Sort("id", is_descending=False)]
+    ordering = [Sort("item_id", is_descending=False)]
 
     generator = MsSqlOrderGenerator(ordering, fields)
 
@@ -35,7 +35,7 @@ def test_order_with_alias() -> None:
 
 def test_should_order_with_multiple_fields() -> None:
     fields = [MsSqlField("id", alias="item_id"), MsSqlField("name")]
-    ordering = [Sort("id", is_descending=True), Sort("name", is_descending=False)]
+    ordering = [Sort("item_id", is_descending=True), Sort("name", is_descending=False)]
 
     generator = MsSqlOrderGenerator(ordering, fields)
 

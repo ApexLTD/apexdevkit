@@ -1,1 +1,1 @@
-ORDER BY item_id DESC, name
+ORDER BY id DESC, name
