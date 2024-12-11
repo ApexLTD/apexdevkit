@@ -263,6 +263,31 @@ class MsSqlFooterGenerator:
 
 
 @dataclass
+class MsSqlOrderGenerator:
+    ordering: list[Sort]
+
+    fields: list[MsSqlField] = field(default_factory=list)
+
+    def generate(self) -> str:
+        if not self.ordering:
+            return ""
+
+        clause = ", ".join(self.generate_one(item) for item in self.ordering)
+
+        return f"ORDER BY {clause}"
+
+    def generate_one(self, item: Sort) -> str:
+        return self.field_for(item.name).as_order_part(item.is_descending)
+
+    def field_for(self, name: str) -> MsSqlField:
+        for f in self.fields:
+            if f.name == name:
+                return f
+
+        raise ForbiddenError(message=f"Invalid field name: {name}")
+
+
+@dataclass
 class MsSqlSourceGenerator:
     source: str
     filter: Filter | None = None
@@ -316,31 +341,6 @@ class MsSqlConditionGenerator:
                 ).evaluate_for(
                     node.operands[0],  # type: ignore
                 )
-
-
-@dataclass
-class MsSqlOrderGenerator:
-    ordering: list[Sort]
-
-    fields: list[MsSqlField] = field(default_factory=list)
-
-    def generate(self) -> str:
-        if not self.ordering:
-            return ""
-
-        clause = ", ".join(self.generate_one(item) for item in self.ordering)
-
-        return f"ORDER BY {clause}"
-
-    def generate_one(self, item: Sort) -> str:
-        return self.field_for(item.name).as_order_part(item.is_descending)
-
-    def field_for(self, name: str) -> MsSqlField:
-        for f in self.fields:
-            if f.name == name:
-                return f
-
-        raise ForbiddenError(message=f"Invalid field name: {name}")
 
 
 @dataclass
