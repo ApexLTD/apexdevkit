@@ -1,1 +1,1 @@
-ORDER BY item_id
+ORDER BY id
