@@ -55,22 +55,26 @@ class MsSqlConnector:
     db_password: str
     db_name: str
     db_tds_version = "7.0"
+    db_port: str | None = None
 
     def connect(self) -> ContextManager[Connection]:
         return ConnectionContextManager(self._connection())
 
     def _connection(self) -> Connection:
-        return MsSqlConnectionAdapter(
-            pymssql.connect(
-                tds_version=self.db_tds_version,
-                server=self.db_host,
-                user=self.db_user,
-                password=self.db_password,
-                database=self.db_name,
-                as_dict=True,
-                autocommit=True,
-            )
-        )
+        connection_params = {
+            "tds_version": self.db_tds_version,
+            "server": self.db_host,
+            "user": self.db_user,
+            "password": self.db_password,
+            "database": self.db_name,
+            "as_dict": True,
+            "autocommit": True,
+        }
+
+        if self.db_port is not None:
+            connection_params["port"] = self.db_port
+
+        return MsSqlConnectionAdapter(pymssql.connect(**connection_params))
 
 
 class ConnectionContextManager(AbstractContextManager[Connection]):
