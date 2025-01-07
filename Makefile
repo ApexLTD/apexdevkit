@@ -4,7 +4,7 @@ install:
 	poetry install
 
 lock:
-	poetry lock --no-update
+	poetry lock
 
 amend:
 	git commit --amend --no-edit -a
