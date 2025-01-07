@@ -1,13 +1,13 @@
+amend:
+	git commit --amend --no-edit -a
+
 install:
 	python -m pip install --upgrade pip
 	python -m pip install --upgrade poetry
 	poetry install
 
 lock:
-	poetry lock --no-update
-
-amend:
-	git commit --amend --no-edit -a
+	poetry lock
 
 update:
 	poetry update
@@ -30,6 +30,3 @@ test:
 
 test-ci:
 	poetry run pytest tests
-
-run:
-	uvicorn tests.resource.setup:app --factory
