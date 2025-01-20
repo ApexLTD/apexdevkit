@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterator, Mapping, Self
+from typing import Any, Callable, Iterator, Mapping
 
 import httpx
-from httpx import Client
 
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
 from apexdevkit.http.httpx.hooks import (
@@ -28,10 +27,6 @@ class Httpx:
     client: httpx.Client
 
     config: HttpxConfig = field(default_factory=default_config)
-
-    @classmethod
-    def create_for(cls, url: str) -> Self:
-        return cls(Client(base_url=url))
 
     def with_endpoint(self, value: str) -> Httpx:
         return Httpx(self.client, self.config.with_endpoint(value))
