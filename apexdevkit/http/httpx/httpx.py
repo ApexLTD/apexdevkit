@@ -8,13 +8,12 @@ from httpx import Client
 
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
 from apexdevkit.http.httpx.hooks import (
-    HttpxHandler,
-    BeforeRequestHook,
     AfterResponseHook,
+    BeforeRequestHook,
+    HttpxHandler,
 )
 from apexdevkit.http.json import JsonDict
 from apexdevkit.http.url import HttpUrl
-
 
 _RequestHandler = HttpxHandler[httpx.Request]
 _ResponseHandler = HttpxHandler[httpx.Response]

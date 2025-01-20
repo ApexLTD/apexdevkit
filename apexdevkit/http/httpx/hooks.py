@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TypeVar, Protocol, Generic
+from typing import Generic, Protocol, TypeVar
 
 import httpx
 
