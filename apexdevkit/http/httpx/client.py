@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Iterator, Mapping, Self
+from typing import Any, Callable, Iterator, Mapping, Self
 
 import httpx
 from httpx import Client
@@ -94,10 +94,10 @@ class Httpx:
                 },
             )
 
-        def _build_before_request_hooks(self) -> list[BeforeRequestHook]:
+        def _build_before_request_hooks(self) -> list[Callable[..., Any]]:
             return [BeforeRequestHook(handler) for handler in self.request_handlers]
 
-        def _build_after_response_hooks(self) -> list[AfterResponseHook]:
+        def _build_after_response_hooks(self) -> list[Callable[..., Any]]:
             return [AfterResponseHook(handler) for handler in self.response_handlers]
 
 

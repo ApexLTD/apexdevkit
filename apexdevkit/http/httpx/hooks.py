@@ -5,7 +5,7 @@ from typing import Generic, Protocol, TypeVar
 
 import httpx
 
-ContextT = TypeVar("ContextT")
+ContextT = TypeVar("ContextT", contravariant=True)
 
 
 class HttpxHandler(Protocol[ContextT]):
