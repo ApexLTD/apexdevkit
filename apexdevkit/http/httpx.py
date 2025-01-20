@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Iterator, Mapping, Self
+from typing import Any, Iterator, Mapping, Self, Protocol, TypeVar, Generic
 
 import httpx
 from httpx import Client
@@ -10,9 +10,79 @@ from apexdevkit.http.fluent import HttpMethod, HttpResponse
 from apexdevkit.http.json import JsonDict
 from apexdevkit.http.url import HttpUrl
 
+ContextT = TypeVar("ContextT")
+
+
+class HttpxHandler(Protocol[ContextT]):
+    def on_get(self, context: ContextT) -> None:
+        pass
+
+    def on_post(self, context: ContextT) -> None:
+        pass
+
+    def on_patch(self, context: ContextT) -> None:
+        pass
+
+    def on_delete(self, context: ContextT) -> None:
+        pass
+
+
+class DefaultHandler(Generic[ContextT]):
+    def on_get(self, context: ContextT) -> None:
+        pass
+
+    def on_post(self, context: ContextT) -> None:
+        pass
+
+    def on_patch(self, context: ContextT) -> None:
+        pass
+
+    def on_delete(self, context: ContextT) -> None:
+        pass
+
+
+@dataclass(frozen=True)
+class BeforeRequestHook:
+    handler: HttpxHandler[httpx.Request]
+
+    def __call__(self, request: httpx.Request) -> None:
+        match request.method.upper():
+            case "GET":
+                self.handler.on_get(request)
+            case "POST":
+                self.handler.on_post(request)
+            case "PATCH":
+                self.handler.on_patch(request)
+            case "DELETE":
+                self.handler.on_delete(request)
+            case _:
+                pass
+
+
+@dataclass(frozen=True)
+class AfterResponseHook:
+    handler: HttpxHandler[httpx.Response]
+
+    def __call__(self, response: httpx.Response) -> None:
+        match response.request.method.upper():
+            case "GET":
+                self.handler.on_get(response)
+            case "POST":
+                self.handler.on_post(response)
+            case "PATCH":
+                self.handler.on_patch(response)
+            case "DELETE":
+                self.handler.on_delete(response)
+            case _:
+                pass
+
 
 def default_config() -> HttpxConfig:
     return HttpxConfig()
+
+
+_RequestHandler = HttpxHandler[httpx.Request]
+_ResponseHandler = HttpxHandler[httpx.Response]
 
 
 @dataclass(frozen=True)
@@ -44,6 +114,53 @@ class Httpx:
                 **self.config.with_endpoint(endpoint),
             )
         )
+
+    @dataclass
+    class Builder:
+        config: HttpxConfig = field(default_factory=default_config)
+
+        request_handlers: list[_RequestHandler] = field(default_factory=list)
+        response_handlers: list[_ResponseHandler] = field(default_factory=list)
+
+        url: str = field(init=False)
+
+        def with_url(self, value: str) -> Httpx.Builder:
+            self.url = value
+
+            return self
+
+        def and_config(self, value: HttpxConfig) -> Httpx.Builder:
+            self.config = value
+
+            return self
+
+        def before_request(self, handler: _RequestHandler) -> Httpx.Builder:
+            self.request_handlers.append(handler)
+
+            return self
+
+        def after_response(self, handler: _ResponseHandler) -> Httpx.Builder:
+            self.response_handlers.append(handler)
+
+            return self
+
+        def build(self) -> Httpx:
+            return Httpx(self._build_client(), self.config)
+
+        def _build_client(self) -> httpx.Client:
+            return httpx.Client(
+                base_url=self.url,
+                event_hooks={
+                    "request": self._build_before_request_hooks(),
+                    "response": self._build_after_response_hooks(),
+                },
+            )
+
+        def _build_before_request_hooks(self) -> list[BeforeRequestHook]:
+            return [BeforeRequestHook(handler) for handler in self.request_handlers]
+
+        def _build_after_response_hooks(self) -> list[AfterResponseHook]:
+            return [AfterResponseHook(handler) for handler in self.response_handlers]
 
 
 @dataclass(frozen=True)
