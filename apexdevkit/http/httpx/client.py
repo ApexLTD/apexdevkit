@@ -1,14 +1,21 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Iterator, Mapping, Self
+from typing import Any, Callable, Iterator, Mapping
 
 import httpx
-from httpx import Client
 
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
+from apexdevkit.http.httpx.hooks import (
+    AfterResponseHook,
+    BeforeRequestHook,
+    HttpxHandler,
+)
 from apexdevkit.http.json import JsonDict
 from apexdevkit.http.url import HttpUrl
+
+_RequestHandler = HttpxHandler[httpx.Request]
+_ResponseHandler = HttpxHandler[httpx.Response]
 
 
 def default_config() -> HttpxConfig:
@@ -20,10 +27,6 @@ class Httpx:
     client: httpx.Client
 
     config: HttpxConfig = field(default_factory=default_config)
-
-    @classmethod
-    def create_for(cls, url: str) -> Self:
-        return cls(Client(base_url=url))
 
     def with_endpoint(self, value: str) -> Httpx:
         return Httpx(self.client, self.config.with_endpoint(value))
@@ -44,6 +47,53 @@ class Httpx:
                 **self.config.with_endpoint(endpoint),
             )
         )
+
+    @dataclass
+    class Builder:
+        config: HttpxConfig = field(default_factory=default_config)
+
+        request_handlers: list[_RequestHandler] = field(default_factory=list)
+        response_handlers: list[_ResponseHandler] = field(default_factory=list)
+
+        url: str = field(init=False)
+
+        def with_url(self, value: str) -> Httpx.Builder:
+            self.url = value
+
+            return self
+
+        def and_config(self, value: HttpxConfig) -> Httpx.Builder:
+            self.config = value
+
+            return self
+
+        def before_request(self, handler: _RequestHandler) -> Httpx.Builder:
+            self.request_handlers.append(handler)
+
+            return self
+
+        def after_response(self, handler: _ResponseHandler) -> Httpx.Builder:
+            self.response_handlers.append(handler)
+
+            return self
+
+        def build(self) -> Httpx:
+            return Httpx(self._build_client(), self.config)
+
+        def _build_client(self) -> httpx.Client:
+            return httpx.Client(
+                base_url=self.url,
+                event_hooks={
+                    "request": self._build_before_request_hooks(),
+                    "response": self._build_after_response_hooks(),
+                },
+            )
+
+        def _build_before_request_hooks(self) -> list[Callable[..., Any]]:
+            return [BeforeRequestHook(handler) for handler in self.request_handlers]
+
+        def _build_after_response_hooks(self) -> list[Callable[..., Any]]:
+            return [AfterResponseHook(handler) for handler in self.response_handlers]
 
 
 @dataclass(frozen=True)

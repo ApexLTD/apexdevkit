@@ -1,0 +1,43 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - httpbin.org
+      user-agent:
+      - Hogwarts
+    method: DELETE
+    uri: http://httpbin.org/delete
+  response:
+    body:
+      string: "{\n  \"args\": {}, \n  \"data\": \"\", \n  \"files\": {}, \n  \"form\":
+        {}, \n  \"headers\": {\n    \"Accept\": \"*/*\", \n    \"Accept-Encoding\":
+        \"gzip, deflate\", \n    \"Host\": \"httpbin.org\", \n    \"User-Agent\":
+        \"Hogwarts\", \n    \"X-Amzn-Trace-Id\": \"Root=1-678e2b5c-40cd93ca4a160c4856429571\"\n
+        \ }, \n  \"json\": null, \n  \"origin\": \"95.104.119.242\", \n  \"url\":
+        \"http://httpbin.org/delete\"\n}\n"
+    headers:
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '359'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 20 Jan 2025 10:54:20 GMT
+      Server:
+      - gunicorn/19.9.0
+    status:
+      code: 200
+      message: OK
+version: 1

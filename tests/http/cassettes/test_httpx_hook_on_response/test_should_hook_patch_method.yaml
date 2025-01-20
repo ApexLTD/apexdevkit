@@ -1,0 +1,45 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '0'
+      host:
+      - httpbin.org
+      user-agent:
+      - Hogwarts
+    method: PATCH
+    uri: http://httpbin.org/patch
+  response:
+    body:
+      string: "{\n  \"args\": {}, \n  \"data\": \"\", \n  \"files\": {}, \n  \"form\":
+        {}, \n  \"headers\": {\n    \"Accept\": \"*/*\", \n    \"Accept-Encoding\":
+        \"gzip, deflate\", \n    \"Content-Length\": \"0\", \n    \"Host\": \"httpbin.org\",
+        \n    \"User-Agent\": \"Hogwarts\", \n    \"X-Amzn-Trace-Id\": \"Root=1-678e2b5b-2fff302f4125ff134605d20a\"\n
+        \ }, \n  \"json\": null, \n  \"origin\": \"95.104.119.242\", \n  \"url\":
+        \"http://httpbin.org/patch\"\n}\n"
+    headers:
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '386'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 20 Jan 2025 10:54:19 GMT
+      Server:
+      - gunicorn/19.9.0
+    status:
+      code: 200
+      message: OK
+version: 1

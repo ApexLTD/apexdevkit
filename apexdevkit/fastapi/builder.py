@@ -53,7 +53,7 @@ class FastApiBuilder:
 
     def with_mounted(self, **apps: FastAPI) -> Self:
         for path, app in apps.items():
-            self.app.mount(f'/{path.replace("_", "-")}', app)
+            self.app.mount(f"/{path.replace('_', '-')}", app)
 
         return self
 

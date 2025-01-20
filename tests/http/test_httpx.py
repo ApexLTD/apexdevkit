@@ -8,7 +8,12 @@ ECHO_SERVER = "http://httpbin.org"
 
 @fixture
 def http() -> Http:
-    return Httpx.create_for(ECHO_SERVER).with_header("User-Agent", "hogwarts")
+    return (
+        Httpx.Builder()
+        .with_url(ECHO_SERVER)
+        .build()
+        .with_header("User-Agent", "hogwarts")
+    )
 
 
 @pytest.mark.vcr
