@@ -1,88 +1,27 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Iterator, Mapping, Self, Protocol, TypeVar, Generic
+from typing import Any, Iterator, Mapping, Self
 
 import httpx
 from httpx import Client
 
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
+from apexdevkit.http.httpx.hooks import (
+    HttpxHandler,
+    BeforeRequestHook,
+    AfterResponseHook,
+)
 from apexdevkit.http.json import JsonDict
 from apexdevkit.http.url import HttpUrl
-
-ContextT = TypeVar("ContextT")
-
-
-class HttpxHandler(Protocol[ContextT]):
-    def on_get(self, context: ContextT) -> None:
-        pass
-
-    def on_post(self, context: ContextT) -> None:
-        pass
-
-    def on_patch(self, context: ContextT) -> None:
-        pass
-
-    def on_delete(self, context: ContextT) -> None:
-        pass
-
-
-class DefaultHandler(Generic[ContextT]):
-    def on_get(self, context: ContextT) -> None:
-        pass
-
-    def on_post(self, context: ContextT) -> None:
-        pass
-
-    def on_patch(self, context: ContextT) -> None:
-        pass
-
-    def on_delete(self, context: ContextT) -> None:
-        pass
-
-
-@dataclass(frozen=True)
-class BeforeRequestHook:
-    handler: HttpxHandler[httpx.Request]
-
-    def __call__(self, request: httpx.Request) -> None:
-        match request.method.upper():
-            case "GET":
-                self.handler.on_get(request)
-            case "POST":
-                self.handler.on_post(request)
-            case "PATCH":
-                self.handler.on_patch(request)
-            case "DELETE":
-                self.handler.on_delete(request)
-            case _:
-                pass
-
-
-@dataclass(frozen=True)
-class AfterResponseHook:
-    handler: HttpxHandler[httpx.Response]
-
-    def __call__(self, response: httpx.Response) -> None:
-        match response.request.method.upper():
-            case "GET":
-                self.handler.on_get(response)
-            case "POST":
-                self.handler.on_post(response)
-            case "PATCH":
-                self.handler.on_patch(response)
-            case "DELETE":
-                self.handler.on_delete(response)
-            case _:
-                pass
-
-
-def default_config() -> HttpxConfig:
-    return HttpxConfig()
 
 
 _RequestHandler = HttpxHandler[httpx.Request]
 _ResponseHandler = HttpxHandler[httpx.Response]
+
+
+def default_config() -> HttpxConfig:
+    return HttpxConfig()
 
 
 @dataclass(frozen=True)
