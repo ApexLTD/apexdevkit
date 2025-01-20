@@ -1,4 +1,4 @@
-from .httpx import Httpx, HttpxConfig
+from .client import Httpx, HttpxConfig
 
 __all__ = [
     "Httpx",
