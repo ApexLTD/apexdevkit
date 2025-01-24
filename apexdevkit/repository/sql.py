@@ -22,7 +22,7 @@ class _SqlField:
     parent_value: Any | None = None
 
     is_filter: bool = False
-    filter_value: Any | None | NotNone = None
+    filter_values: list[Any | None | NotNone] = field(default_factory=list)
 
     is_fixed: bool = False
     fixed_value: Any | None = None
@@ -41,7 +41,7 @@ class SqlFieldBuilder:
     _parent_value: Any | None = None
 
     _is_filter: bool = False
-    _filter_value: Any | None | NotNone = None
+    _filter_values: list[Any | None | NotNone] = field(default_factory=list)
 
     _is_fixed: bool = False
     _fixed_value: Any | None = None
@@ -82,9 +82,9 @@ class SqlFieldBuilder:
 
         return self
 
-    def as_filter(self, value: Any | None | NotNone) -> SqlFieldBuilder:
+    def as_filter(self, values: list[Any | None | NotNone]) -> SqlFieldBuilder:
         self._is_filter = True
-        self._filter_value = value
+        self._filter_values = values
 
         return self
 
@@ -105,7 +105,7 @@ class SqlFieldBuilder:
             self._is_parent,
             self._parent_value,
             self._is_filter,
-            self._filter_value,
+            self._filter_values,
             self._is_fixed,
             self._fixed_value,
         )
@@ -161,6 +161,9 @@ class SqlFieldManager:
                 data[key.name] = key.parent_value
             if key.is_fixed:
                 data[key.name] = key.fixed_value
+            if key.is_filter:
+                for index, value in enumerate(key.filter_values):
+                    data[key.name + "_filter_" + str(index)] = value
         return data
 
     def _parent_filter(self) -> str:
@@ -197,20 +200,26 @@ class SqlFieldManager:
         statements: list[str] = []
         for key in self.fields:
             if key.is_filter:
-                if key.filter_value is None:
-                    statements.append(
-                        self.key_formatter.replace("x", key.name) + " IS NULL"
-                    )
-                elif isinstance(key.filter_value, NotNone):
-                    statements.append(
-                        self.key_formatter.replace("x", key.name) + " IS NOT NULL"
-                    )
-                else:
-                    statements.append(
-                        self.key_formatter.replace("x", key.name)
-                        + " = "
-                        + self.value_formatter.replace("x", key.name)
-                    )
+                inner_statements: list[str] = []
+                for index, value in enumerate(key.filter_values):
+                    if value is None:
+                        inner_statements.append(
+                            self.key_formatter.replace("x", key.name) + " IS NULL"
+                        )
+                    elif isinstance(value, NotNone):
+                        inner_statements.append(
+                            self.key_formatter.replace("x", key.name) + " IS NOT NULL"
+                        )
+                    else:
+                        inner_statements.append(
+                            self.key_formatter.replace("x", key.name)
+                            + " = "
+                            + self.value_formatter.replace(
+                                "x", key.name + "_filter_" + str(index)
+                            )
+                        )
+                if len(inner_statements) > 0:
+                    statements.append("(" + " OR ".join(inner_statements) + ")")
 
         return " AND ".join(statements)
 
