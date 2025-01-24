@@ -9,7 +9,7 @@ from apexdevkit.repository.mssql import (
     MsSqlTableBuilder,
     SqlTable,
 )
-from apexdevkit.repository.sql import NotNone, SqlFieldBuilder
+from apexdevkit.repository.sql import SqlFieldBuilder
 
 
 @dataclass
@@ -46,7 +46,7 @@ def table() -> SqlTable[Apple]:
                 SqlFieldBuilder()
                 .with_name("manager")
                 .as_fixed(None)
-                .as_filter(NotNone())
+                .as_filter(5)
                 .build(),
             ]
         )
@@ -85,10 +85,10 @@ def test_should_count(table: SqlTable[Apple]) -> None:
             EXECUTE AS USER = 'test'
             SELECT count(*) AS n_items
             FROM [test].[apples]
-            WHERE [manager] IS NOT NULL
+            WHERE [manager] = %(manager_filter)s
             REVERT
         """
-    ).with_data(kingdom="fruits", manager=None)
+    ).with_data(kingdom="fruits", manager=None, manager_filter=5)
 
 
 def test_should_insert(table: SqlTable[Apple], apple: Apple) -> None:
@@ -107,11 +107,13 @@ def test_should_insert(table: SqlTable[Apple], apple: Apple) -> None:
         + """ [manager] AS manager
             
                 FROM [test].[apples]
-                WHERE [apid] = %(apid)s AND [manager] IS NOT NULL
+                WHERE [apid] = %(apid)s AND [manager] = %(manager_filter)s
             
             REVERT
         """
-    ).with_data(kingdom="fruits", manager=None, **AppleFormatter().dump(apple))
+    ).with_data(
+        kingdom="fruits", manager=None, manager_filter=5, **AppleFormatter().dump(apple)
+    )
 
 
 def test_should_select(table: SqlTable[Apple], apple: Apple) -> None:
@@ -122,10 +124,10 @@ def test_should_select(table: SqlTable[Apple], apple: Apple) -> None:
             SELECT
                 [apid], [clr], [pid], [kingdom], [manager] 
             FROM [test].[apples]
-            WHERE [apid] = %(apid)s AND [manager] IS NOT NULL
+            WHERE [apid] = %(apid)s AND [manager] = %(manager_filter)s
             REVERT
         """
-    ).with_data(apid=apple.id, manager=None, kingdom="fruits")
+    ).with_data(apid=apple.id, manager=None, manager_filter=5, kingdom="fruits")
 
 
 def test_should_select_all(table: SqlTable[Apple]) -> None:
@@ -136,11 +138,11 @@ def test_should_select_all(table: SqlTable[Apple]) -> None:
             SELECT
                 [apid], [clr], [pid], [kingdom], [manager]
             FROM [test].[apples]
-            WHERE [manager] IS NOT NULL
+            WHERE [manager] = %(manager_filter)s
             ORDER BY apid
             REVERT
         """
-    ).with_data(kingdom="fruits", manager=None)
+    ).with_data(kingdom="fruits", manager=None, manager_filter=5)
 
 
 def test_should_update(table: SqlTable[Apple], apple: Apple) -> None:
@@ -152,10 +154,12 @@ def test_should_update(table: SqlTable[Apple], apple: Apple) -> None:
             SET
                 clr = %(clr)s, pid = %(pid)s, """
         + """kingdom = %(kingdom)s, manager = %(manager)s
-            WHERE [apid] = %(apid)s AND [manager] IS NOT NULL
+            WHERE [apid] = %(apid)s AND [manager] = %(manager_filter)s
             REVERT
         """
-    ).with_data(kingdom="fruits", manager=None, **AppleFormatter().dump(apple))
+    ).with_data(
+        kingdom="fruits", manager=None, manager_filter=5, **AppleFormatter().dump(apple)
+    )
 
 
 def test_should_delete(table: SqlTable[Apple], apple: Apple) -> None:
@@ -165,10 +169,10 @@ def test_should_delete(table: SqlTable[Apple], apple: Apple) -> None:
             EXECUTE AS USER = 'test'
             DELETE
             FROM [test].[apples]
-            WHERE [apid] = %(apid)s AND [manager] IS NOT NULL
+            WHERE [apid] = %(apid)s AND [manager] = %(manager_filter)s
             REVERT
         """
-    ).with_data(apid=apple.id, kingdom="fruits", manager=None)
+    ).with_data(apid=apple.id, kingdom="fruits", manager=None, manager_filter=5)
 
 
 def test_should_delete_all(table: SqlTable[Apple]) -> None:
@@ -178,10 +182,10 @@ def test_should_delete_all(table: SqlTable[Apple]) -> None:
             EXECUTE AS USER = 'test'
             DELETE
             FROM [test].[apples]
-            WHERE [manager] IS NOT NULL
+            WHERE [manager] = %(manager_filter)s
             REVERT
         """
-    ).with_data(kingdom="fruits", manager=None)
+    ).with_data(kingdom="fruits", manager=None, manager_filter=5)
 
 
 def test_should_count_with_parent(table_with_parent: SqlTable[Apple]) -> None:

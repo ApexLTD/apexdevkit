@@ -161,6 +161,8 @@ class SqlFieldManager:
                 data[key.name] = key.parent_value
             if key.is_fixed:
                 data[key.name] = key.fixed_value
+            if key.is_filter:
+                data[key.name + "_filter"] = key.filter_value
         return data
 
     def _parent_filter(self) -> str:
@@ -209,7 +211,7 @@ class SqlFieldManager:
                     statements.append(
                         self.key_formatter.replace("x", key.name)
                         + " = "
-                        + self.value_formatter.replace("x", key.name)
+                        + self.value_formatter.replace("x", key.name + "_filter")
                     )
 
         return " AND ".join(statements)
