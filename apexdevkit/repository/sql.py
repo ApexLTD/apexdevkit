@@ -163,7 +163,8 @@ class SqlFieldManager:
                 data[key.name] = key.fixed_value
             if key.is_filter:
                 for index, value in enumerate(key.filter_values):
-                    data[key.name + "_filter_" + str(index)] = value
+                    if value is not None and not isinstance(value, NotNone):
+                        data[key.name + "_filter_" + str(index)] = value
         return data
 
     def _parent_filter(self) -> str:
