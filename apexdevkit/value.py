@@ -18,35 +18,42 @@ class Value:
         integer_part, _, fractional_part = decimal_str.partition(".")
         value = int(integer_part + fractional_part)
         exponent = 10 ** len(fractional_part)
+
         return cls(value, exponent)
 
     def add(self, other: Value) -> Value:
         exponent = self.exponent * other.exponent
         value = self.value * other.exponent + self.exponent * other.value
         gcd = int(math.gcd(exponent, value))
+
         return Value(int(value / gcd), int(exponent / gcd))
 
     def subtract(self, other: Value) -> Value:
         exponent = self.exponent * other.exponent
         value = self.value * other.exponent - self.exponent * other.value
         gcd = int(math.gcd(exponent, value))
+
         return Value(int(value / gcd), int(exponent / gcd))
 
     def multiply(self, other: Value) -> Value:
         exponent = self.exponent * other.exponent
         value = self.value * other.value
         gcd = int(math.gcd(exponent, value))
+
         return Value(int(value / gcd), int(exponent / gcd))
 
     def divide(self, other: Value) -> Value:
         exponent = self.exponent * other.value
         value = self.value * other.exponent
         gcd = int(math.gcd(exponent, value))
+
         return Value(int(value / gcd), int(exponent / gcd))
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Value):
             return self.as_decimal() == other.as_decimal()
-        elif isinstance(other, Decimal):
+
+        if isinstance(other, Decimal):
             return self.as_decimal() == other
+
         return False
