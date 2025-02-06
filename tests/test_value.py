@@ -53,3 +53,7 @@ def test_should_divide() -> None:
     result = quantity.divide(operand)
 
     assert result == Value(3, 1)
+
+
+def test_should_convert_to_float() -> None:
+    assert float(Value(1516, 100)) == 15.16
