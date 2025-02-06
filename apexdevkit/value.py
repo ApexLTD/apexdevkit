@@ -10,6 +10,8 @@ class Value:
     value: int = 0
     exponent: int = 1
 
+    unit: str = "unknown"
+
     def as_decimal(self) -> Decimal:
         return Decimal(self.value) / Decimal(self.exponent)
 
