@@ -12,24 +12,24 @@ from apexdevkit.http import Httpx
 from apexdevkit.testing import RestCollection
 from tests.fastapi.sample_api import AppleFields, PriceFields
 
-PARENT = RestfulName("apple")
-CHILD = RestfulName("price")
+_PARENT = RestfulName("apple")
+_CHILD = RestfulName("price")
 
 
-def resource(dependency: Dependency) -> RestCollection:
+def _resource(dependency: Dependency) -> RestCollection:
     return RestCollection(
-        name=PARENT,
+        name=_PARENT,
         http=Httpx(
             TestClient(
                 FastApiBuilder()
                 .with_route(
                     apples=RestfulRouter()
-                    .with_name(PARENT)
+                    .with_name(_PARENT)
                     .with_fields(AppleFields())
                     .with_dependency(dependency)
                     .with_sub_resource(
                         prices=RestfulRouter()
-                        .with_name(CHILD)
+                        .with_name(_CHILD)
                         .with_fields(PriceFields())
                         .with_dependency(dependency)
                         .default()
@@ -49,7 +49,7 @@ def test_should_build_dependable_with_user(faker: Faker) -> None:
     builder = MagicMock(spec=RestfulServiceBuilder)
 
     (
-        resource(DependableBuilder.from_callable(builder).with_user(lambda: user))
+        _resource(DependableBuilder.from_callable(builder).with_user(lambda: user))
         .read_all()
         .ensure()
     )
@@ -63,9 +63,9 @@ def test_should_build_dependable_with_parent(faker: Faker) -> None:
     builder = MagicMock(spec=RestfulServiceBuilder)
 
     (
-        resource(DependableBuilder.from_callable(builder).with_parent(PARENT))
+        _resource(DependableBuilder.from_callable(builder).with_parent(_PARENT))
         .sub_resource(parent_id)
-        .sub_resource(CHILD.singular)
+        .sub_resource(_CHILD.singular)
         .read_all()
         .ensure()
         .success()
@@ -81,15 +81,15 @@ def test_should_not_build_dependable_when_no_parent(faker: Faker) -> None:
     builder().with_parent.side_effect = DoesNotExistError(parent_id)
 
     (
-        resource(DependableBuilder.from_callable(builder).with_parent(PARENT))
+        _resource(DependableBuilder.from_callable(builder).with_parent(_PARENT))
         .sub_resource(parent_id)
-        .sub_resource(CHILD.singular)
+        .sub_resource(_CHILD.singular)
         .read_all()
         .ensure()
         .fail()
         .with_code(404)
         .and_message(
-            f"An item<{PARENT.singular.capitalize()}> "
+            f"An item<{_PARENT.singular.capitalize()}> "
             f"with id<{parent_id}> does not exist."
         )
     )
