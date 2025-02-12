@@ -62,15 +62,13 @@ def test_should_build_dependable_with_user(faker: Faker) -> None:
     builder = MagicMock(spec=RestfulServiceBuilder)
 
     (
-        resource(
-            DependableBuilder.from_callable(lambda: builder).with_user(lambda: user)
-        )
+        resource(DependableBuilder.from_callable(builder).with_user(lambda: user))
         .read_all()
         .ensure()
     )
 
-    builder.with_user.assert_called_once_with(user)
-    builder.with_user().build.assert_called_once()
+    builder().with_user.assert_called_once_with(user)
+    builder().with_user().build.assert_called_once()
 
 
 def test_should_build_dependable_with_parent(
