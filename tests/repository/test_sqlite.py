@@ -56,9 +56,6 @@ class FakeTable(SqlTable[_Item]):
     def delete(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand("DELETE FROM ITEM WHERE id=:id").with_data(id=item_id)
 
-    def delete_all(self) -> DatabaseCommand:
-        return DatabaseCommand("DELETE FROM ITEM")
-
     def load(self, data: dict[str, Any]) -> _Item:
         return DataclassFormatter[_Item](_Item).load(data)
 

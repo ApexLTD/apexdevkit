@@ -5,10 +5,7 @@ from uuid import uuid4
 from pytest import fixture
 
 from apexdevkit.repository import DatabaseCommand
-from apexdevkit.repository.mssql import (
-    MsSqlTableBuilder,
-    SqlTable,
-)
+from apexdevkit.repository.mssql import MsSqlTableBuilder, SqlTable
 from apexdevkit.repository.sql import SqlFieldBuilder
 
 
