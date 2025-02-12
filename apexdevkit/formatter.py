@@ -23,6 +23,37 @@ class Formatter(Protocol[_SourceT, _TargetT]):  # pragma: no cover
         pass
 
 
+@dataclass(frozen=True)
+class AliasFormatter(Formatter[Mapping[str, Any], _TargetT]):
+    inner: Formatter[Mapping[str, Any], _TargetT]
+
+    alias: AliasMapping
+
+    def load(self, source: Mapping[str, Any]) -> _TargetT:
+        return self.inner.load(self.alias.reverse().translate(source))
+
+    def dump(self, target: _TargetT) -> Mapping[str, Any]:
+        return self.alias.translate(self.inner.dump(target))
+
+
+@dataclass(frozen=True)
+class AliasMapping:
+    alias: Mapping[str, str]
+
+    @classmethod
+    def parse(cls, **alias: str) -> AliasMapping:
+        return cls(alias)
+
+    def reverse(self) -> AliasMapping:
+        return AliasMapping({value: key for key, value in self.alias.items()})
+
+    def translate(self, mapping: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.value_of(key): value for key, value in mapping.items()}
+
+    def value_of(self, key: str) -> str:
+        return self.alias.get(key, key)
+
+
 class PickleFormatter(Generic[_ItemT]):
     def dump(self, item: _ItemT) -> bytes:
         return pickle.dumps(item)
