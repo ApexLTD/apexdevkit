@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
-from typing import Any
 from uuid import uuid4
 
 from pytest import fixture
 
+from apexdevkit.formatter import AliasFormatter, AliasMapping, DataclassFormatter
 from apexdevkit.repository import DatabaseCommand
 from apexdevkit.repository.mssql import MsSqlTableBuilder, SqlTable
 from apexdevkit.repository.sql import SqlFieldBuilder
@@ -17,23 +17,25 @@ class Apple:
     id: str = field(default_factory=lambda: str(uuid4()))
 
 
-@dataclass
-class AppleFormatter:
-    def dump(self, data: Apple) -> dict[str, Any]:
-        return {"apid": data.id, "clr": data.color, "pid": data.parent}
-
-    def load(self, raw: dict[str, Any]) -> Apple:
-        return Apple(raw["clr"], raw["pid"], raw["apid"])
+def AppleFormatter() -> AliasFormatter[Apple]:
+    return AliasFormatter(
+        DataclassFormatter(Apple),
+        alias=AliasMapping.parse(
+            id="apid",
+            color="clr",
+            parent="pid",
+        ),
+    )
 
 
 @fixture
 def table() -> SqlTable[Apple]:
     return (
-        MsSqlTableBuilder()
+        MsSqlTableBuilder[Apple]()
         .with_username("test")
         .with_schema("test")
         .with_table("apples")
-        .with_formatter(AppleFormatter())  # type: ignore
+        .with_formatter(AppleFormatter())
         .with_fields(
             [
                 SqlFieldBuilder().with_name("apid").as_id().in_ordering().build(),
@@ -51,28 +53,28 @@ def table() -> SqlTable[Apple]:
     )
 
 
-@fixture()
-def table_with_parent() -> SqlTable[Apple]:
+@fixture
+def apple() -> Apple:
+    return Apple(color="red", parent="test", id="1")
+
+
+@fixture
+def table_with_parent(apple: Apple) -> SqlTable[Apple]:
     return (
-        MsSqlTableBuilder()
+        MsSqlTableBuilder[Apple]()
         .with_username("test")
         .with_schema("test")
         .with_table("apples")
-        .with_formatter(AppleFormatter())  # type: ignore
+        .with_formatter(AppleFormatter())
         .with_fields(
             [
                 SqlFieldBuilder().with_name("apid").as_id().in_ordering().build(),
                 SqlFieldBuilder().with_name("clr").build(),
-                SqlFieldBuilder().with_name("pid").as_parent("test").build(),
+                SqlFieldBuilder().with_name("pid").as_parent(apple.parent).build(),
             ]
         )
         .build()
     )
-
-
-@fixture
-def apple() -> Apple:
-    return Apple("red", "1", "1")
 
 
 def test_should_count(table: SqlTable[Apple]) -> None:
@@ -230,7 +232,6 @@ def test_should_insert_with_parent(
 ) -> None:
     command = table_with_parent.insert(apple)
     dumped = AppleFormatter().dump(apple)
-    dumped["pid"] = "test"
 
     assert command == DatabaseCommand(
         """
@@ -288,7 +289,6 @@ def test_should_update_with_parent(
 ) -> None:
     command = table_with_parent.update(apple)
     dumped = AppleFormatter().dump(apple)
-    dumped["pid"] = "test"
 
     assert command == DatabaseCommand(
         """
