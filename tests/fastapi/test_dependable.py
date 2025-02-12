@@ -15,7 +15,7 @@ from tests.fastapi.sample_api import AppleFields, PriceFields
 
 
 @pytest.fixture
-def identifier() -> str:
+def parent_id() -> str:
     return "id"
 
 
@@ -72,35 +72,38 @@ def test_should_build_dependable_with_user(faker: Faker) -> None:
 
 
 def test_should_build_dependable_with_parent(
-    identifier: str,
     parent: RestfulName,
     child: RestfulName,
+    faker: Faker,
 ) -> None:
+    parent_id = str(faker.uuid4())
     builder = MagicMock(spec=RestfulServiceBuilder)
 
     (
         resource(DependableBuilder.from_callable(builder).with_parent(parent))
-        .sub_resource(identifier)
+        .sub_resource(parent_id)
         .sub_resource(child.singular)
         .read_all()
         .ensure()
+        .success()
     )
 
-    builder().with_parent.assert_called_once_with(identifier)
+    builder().with_parent.assert_called_once_with(parent_id)
     builder().with_parent().build.assert_called_once()
 
 
 def test_should_not_build_dependable_when_no_parent(
-    identifier: str,
     parent: RestfulName,
     child: RestfulName,
+    faker: Faker,
 ) -> None:
+    parent_id = str(faker.uuid4())
     builder = MagicMock(spec=RestfulServiceBuilder)
-    builder().with_parent.side_effect = DoesNotExistError(identifier)
+    builder().with_parent.side_effect = DoesNotExistError(parent_id)
 
     (
         resource(DependableBuilder.from_callable(builder).with_parent(parent))
-        .sub_resource(identifier)
+        .sub_resource(parent_id)
         .sub_resource(child.singular)
         .read_all()
         .ensure()
@@ -108,6 +111,6 @@ def test_should_not_build_dependable_when_no_parent(
         .with_code(404)
         .and_message(
             f"An item<{parent.singular.capitalize()}> "
-            f"with id<{identifier}> does not exist."
+            f"with id<{parent_id}> does not exist."
         )
     )
