@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Generic, Iterable, Iterator, TypeVar
+from typing import Any, Generic, Iterable, Iterator, Mapping, TypeVar
 
 from pymssql.exceptions import DatabaseError
 
@@ -81,7 +81,7 @@ class SqlTable(Generic[ItemT]):  # pragma: no cover
     def update(self, item: ItemT) -> DatabaseCommand:
         raise NotImplementedError
 
-    def load(self, data: dict[str, Any]) -> ItemT:
+    def load(self, data: Mapping[str, Any]) -> ItemT:
         raise NotImplementedError
 
     def exists(self, duplicate: ItemT) -> ExistsError:
@@ -143,7 +143,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
     username: str | None = None
     schema: str | None = None
     table: str | None = None
-    formatter: Formatter[dict[str, Any], ItemT] | None = None
+    formatter: Formatter[Mapping[str, Any], ItemT] | None = None
     fields: list[_SqlField] | None = None
 
     def with_username(self, value: str) -> MsSqlTableBuilder[ItemT]:
@@ -174,7 +174,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
         )
 
     def with_formatter(
-        self, value: Formatter[dict[str, Any], ItemT]
+        self, value: Formatter[Mapping[str, Any], ItemT]
     ) -> MsSqlTableBuilder[ItemT]:
         return MsSqlTableBuilder[ItemT](
             self.username,
@@ -226,7 +226,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
 class DefaultSqlTable(SqlTable[ItemT]):
     schema: str
     table: str
-    formatter: Formatter[dict[str, Any], ItemT]
+    formatter: Formatter[Mapping[str, Any], ItemT]
     fields: SqlFieldManager
     username: str | None = None
 
@@ -336,7 +336,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
             REVERT
         """).with_data(self.fields.with_fixed({}))
 
-    def load(self, data: dict[str, Any]) -> ItemT:
+    def load(self, data: Mapping[str, Any]) -> ItemT:
         return self.formatter.load(data)
 
     def exists(self, duplicate: ItemT) -> ExistsError:

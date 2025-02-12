@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Mapping
 from uuid import uuid4
 
 from pytest import fixture, raises
@@ -56,7 +56,7 @@ class FakeTable(SqlTable[_Item]):
     def delete(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand("DELETE FROM ITEM WHERE id=:id").with_data(id=item_id)
 
-    def load(self, data: dict[str, Any]) -> _Item:
+    def load(self, data: Mapping[str, Any]) -> _Item:
         return DataclassFormatter[_Item](_Item).load(data)
 
     def duplicate(self, item: _Item) -> ExistsError:

@@ -3,7 +3,7 @@ from __future__ import annotations
 import pickle
 from copy import deepcopy
 from dataclasses import asdict, dataclass, field, fields, is_dataclass
-from typing import Any, Generic, Protocol, Self, TypeVar, get_args
+from typing import Any, Generic, Mapping, Protocol, Self, TypeVar, get_args
 
 from typing_extensions import get_type_hints
 
@@ -55,7 +55,7 @@ class DataclassFormatter(Generic[_TargetT]):
 
         return self
 
-    def load(self, raw: dict[str, Any]) -> _TargetT:
+    def load(self, raw: Mapping[str, Any]) -> _TargetT:
         raw = FluentDict[Any](deepcopy(raw)).select(
             *self.resource.__annotations__.keys()
         )
@@ -82,13 +82,13 @@ class DataclassFormatter(Generic[_TargetT]):
 
         return self.resource(**raw)
 
-    def dump(self, item: _TargetT) -> dict[str, Any]:
+    def dump(self, item: _TargetT) -> Mapping[str, Any]:
         return asdict(item)  # type: ignore
 
 
 class ValueFormatter:
-    def load(self, raw: dict[str, Any]) -> Value:
+    def load(self, raw: Mapping[str, Any]) -> Value:
         return DataclassFormatter(Value).load(raw)
 
-    def dump(self, value: Value) -> dict[str, Any]:
+    def dump(self, value: Value) -> Mapping[str, Any]:
         return DataclassFormatter(Value).dump(value)

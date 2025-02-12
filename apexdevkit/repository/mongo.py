@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, ContextManager, Generic, Iterator, Protocol, TypeVar
+from typing import Any, ContextManager, Generic, Iterator, Mapping, Protocol, TypeVar
 
 from pymongo import MongoClient, ReturnDocument
 from pymongo.collection import Collection
@@ -24,7 +24,7 @@ class MongoRepository(Generic[ItemT]):
     connector: MongoConnector
     database_name: str
     collection_name: str
-    formatter: Formatter[dict[str, Any], ItemT]
+    formatter: Formatter[Mapping[str, Any], ItemT]
 
     def collection(self, client: MongoClient[Any]) -> Collection[Any]:
         return client[self.database_name][self.collection_name]

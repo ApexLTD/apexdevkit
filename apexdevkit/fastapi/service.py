@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from abc import ABC
 from dataclasses import dataclass
-from typing import Any, Dict, Generic, Iterable, TypeVar
+from typing import Any, Dict, Generic, Iterable, Mapping, TypeVar
 
 from apexdevkit.formatter import Formatter
 from apexdevkit.query.query import FooterOptions, QueryOptions, Summary
 from apexdevkit.repository.decorator import BatchRepositoryDecorator
 from apexdevkit.repository.interface import Repository
 
-RawItem = dict[str, Any]
+RawItem = Mapping[str, Any]
 RawCollection = Iterable[RawItem]
 
 
@@ -64,11 +64,11 @@ ItemT = TypeVar("ItemT")
 
 @dataclass(frozen=True)
 class RestfulRepositoryBuilder(Generic[ItemT]):
-    formatter: Formatter[dict[str, Any], ItemT] | None = None
+    formatter: Formatter[Mapping[str, Any], ItemT] | None = None
     repository: Repository[ItemT] | None = None
 
     def with_formatter(
-        self, formatter: Formatter[dict[str, Any], ItemT]
+        self, formatter: Formatter[Mapping[str, Any], ItemT]
     ) -> RestfulRepositoryBuilder[ItemT]:
         return RestfulRepositoryBuilder[ItemT](formatter, self.repository)
 
@@ -85,7 +85,7 @@ class RestfulRepositoryBuilder(Generic[ItemT]):
 
 @dataclass(frozen=True)
 class _RestfulRepository(RestfulService, Generic[ItemT]):
-    formatter: Formatter[dict[str, Any], ItemT]
+    formatter: Formatter[Mapping[str, Any], ItemT]
     repository: Repository[ItemT]
 
     def create_one(self, item: RawItem) -> RawItem:
@@ -106,7 +106,7 @@ class _RestfulRepository(RestfulService, Generic[ItemT]):
         return [self.formatter.dump(item) for item in self.repository]
 
     def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
-        data = self.formatter.dump(self.repository.read(item_id))
+        data = dict(self.formatter.dump(self.repository.read(item_id)))
         data.update(**with_fields)
 
         self.repository.update(self.formatter.load(data))
@@ -116,7 +116,7 @@ class _RestfulRepository(RestfulService, Generic[ItemT]):
     def update_many(self, items: RawCollectionWithId) -> RawCollection:
         updates = []
         for fields in items:
-            data = self.formatter.dump(self.repository.read(fields["id"]))
+            data = dict(self.formatter.dump(self.repository.read(fields["id"])))
             data.update(**fields)
 
             updates.append(self.formatter.load(data))

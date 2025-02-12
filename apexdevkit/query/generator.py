@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, ClassVar, Generic, Iterable, Protocol, TypeVar
+from typing import Any, ClassVar, Generic, Iterable, Mapping, Protocol, TypeVar
 
 from apexdevkit.annotation import deprecated
 from apexdevkit.error import ForbiddenError
@@ -27,7 +27,7 @@ ItemT = TypeVar("ItemT", covariant=True)
 
 
 class _Loader(Protocol[ItemT]):
-    def load(self, raw: dict[str, Any]) -> ItemT:
+    def load(self, raw: Mapping[str, Any]) -> ItemT:
         pass
 
 
