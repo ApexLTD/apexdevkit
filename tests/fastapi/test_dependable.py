@@ -14,26 +14,6 @@ from apexdevkit.testing import RestCollection
 from tests.fastapi.sample_api import AppleFields, PriceFields
 
 
-def resource_with_dependency(dependency: Dependency) -> RestCollection:
-    return RestCollection(
-        name=RestfulName("apple"),
-        http=Httpx(
-            TestClient(
-                FastApiBuilder()
-                .with_route(
-                    apples=RestfulRouter()
-                    .with_name(RestfulName("apple"))
-                    .with_fields(AppleFields())
-                    .with_dependency(dependency)
-                    .default()
-                    .build()
-                )
-                .build()
-            )
-        ),
-    )
-
-
 def parent_resource(dependency: Dependency) -> RestCollection:
     return RestCollection(
         name=RestfulName("apple"),
@@ -44,6 +24,7 @@ def parent_resource(dependency: Dependency) -> RestCollection:
                     apples=RestfulRouter()
                     .with_name(RestfulName("apple"))
                     .with_fields(AppleFields())
+                    .with_dependency(dependency)
                     .with_sub_resource(
                         prices=RestfulRouter()
                         .with_name(RestfulName("price"))
@@ -52,6 +33,7 @@ def parent_resource(dependency: Dependency) -> RestCollection:
                         .default()
                         .build()
                     )
+                    .default()
                     .build()
                 )
                 .build()
@@ -95,7 +77,7 @@ def test_should_build_dependable_with_user(
     infra = MagicMock(spec=RestfulServiceBuilder)
 
     (
-        resource_with_dependency(
+        parent_resource(
             DependableBuilder.from_callable(lambda: infra).with_user(extract_user)
         )
         .read_all()
