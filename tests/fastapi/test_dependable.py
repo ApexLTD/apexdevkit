@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
 import pytest
+from faker import Faker
 from starlette.testclient import TestClient
 
 from apexdevkit.error import DoesNotExistError
@@ -56,8 +57,8 @@ def resource(dependency: Dependency) -> RestCollection:
     )
 
 
-def test_should_build_dependable_with_user() -> None:
-    user = "A"
+def test_should_build_dependable_with_user(faker: Faker) -> None:
+    user = faker.name()
     infra = MagicMock(spec=RestfulServiceBuilder)
 
     (
