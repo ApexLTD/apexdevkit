@@ -14,7 +14,7 @@ from apexdevkit.testing import RestCollection
 from tests.fastapi.sample_api import AppleFields, PriceFields
 
 
-def parent_resource(dependency: Dependency) -> RestCollection:
+def resource(dependency: Dependency) -> RestCollection:
     return RestCollection(
         name=RestfulName("apple"),
         http=Httpx(
@@ -77,9 +77,7 @@ def test_should_build_dependable_with_user(
     infra = MagicMock(spec=RestfulServiceBuilder)
 
     (
-        parent_resource(
-            DependableBuilder.from_callable(lambda: infra).with_user(extract_user)
-        )
+        resource(DependableBuilder.from_callable(lambda: infra).with_user(extract_user))
         .read_all()
         .ensure()
     )
@@ -95,9 +93,7 @@ def test_should_build_dependable_with_parent(
 ) -> None:
     infra = MagicMock(spec=RestfulServiceBuilder)
     (
-        parent_resource(
-            DependableBuilder.from_callable(lambda: infra).with_parent(parent)
-        )
+        resource(DependableBuilder.from_callable(lambda: infra).with_parent(parent))
         .sub_resource(identifier)
         .sub_resource(child.singular)
         .read_all()
@@ -115,10 +111,9 @@ def test_should_not_build_dependable_when_no_parent(
 ) -> None:
     infra = MagicMock(spec=RestfulServiceBuilder)
     infra.with_parent.side_effect = DoesNotExistError(identifier)
+
     (
-        parent_resource(
-            DependableBuilder.from_callable(lambda: infra).with_parent(parent)
-        )
+        resource(DependableBuilder.from_callable(lambda: infra).with_parent(parent))
         .sub_resource(identifier)
         .sub_resource(child.singular)
         .read_all()
