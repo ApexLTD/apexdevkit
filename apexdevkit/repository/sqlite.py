@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from sqlite3 import IntegrityError
-from typing import Any, Generic, Iterable, Iterator
+from typing import Any, Generic, Iterable, Iterator, Mapping
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
@@ -87,7 +87,7 @@ class SqlTable(Generic[ItemT]):  # pragma: no cover
     def delete_all(self) -> DatabaseCommand:
         raise NotImplementedError
 
-    def load(self, data: dict[str, Any]) -> ItemT:
+    def load(self, data: Mapping[str, Any]) -> ItemT:
         raise NotImplementedError
 
     def duplicate(self, item: ItemT) -> ExistsError:
@@ -96,20 +96,20 @@ class SqlTable(Generic[ItemT]):  # pragma: no cover
 
 @dataclass
 class UnknownError(Exception):
-    raw: dict[str, Any]
+    raw: Mapping[str, Any]
 
 
 @dataclass(frozen=True)
 class SqliteTableBuilder(Generic[ItemT]):
     table_name: str | None = None
-    formatter: Formatter[dict[str, Any], ItemT] | None = None
+    formatter: Formatter[Mapping[str, Any], ItemT] | None = None
     fields: list[_SqlField] | None = None
 
     def with_name(self, value: str) -> SqliteTableBuilder[ItemT]:
         return SqliteTableBuilder[ItemT](value, self.formatter, self.fields)
 
     def with_formatter(
-        self, value: Formatter[dict[str, Any], ItemT]
+        self, value: Formatter[Mapping[str, Any], ItemT]
     ) -> SqliteTableBuilder[ItemT]:
         return SqliteTableBuilder[ItemT](self.table_name, value, self.fields)
 
@@ -150,7 +150,7 @@ class SqliteTableBuilder(Generic[ItemT]):
 @dataclass(frozen=True)
 class _DefaultSqlTable(SqlTable[ItemT]):
     table_name: str
-    formatter: Formatter[dict[str, Any], ItemT]
+    formatter: Formatter[Mapping[str, Any], ItemT]
     fields: SqlFieldManager
 
     def count_all(self) -> DatabaseCommand:
@@ -244,7 +244,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             {self.fields.where_statement(include_id=False)};
         """).with_data(self.fields.with_fixed({}))
 
-    def load(self, data: dict[str, Any]) -> ItemT:
+    def load(self, data: Mapping[str, Any]) -> ItemT:
         return self.formatter.load(data)
 
     def duplicate(self, item: ItemT) -> ExistsError:

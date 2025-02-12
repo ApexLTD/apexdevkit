@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Mapping
 from unittest.mock import MagicMock
 from uuid import uuid4
 
@@ -61,7 +61,7 @@ class AppleTable(SqlTable[Apple]):
             WHERE [apid] = %(id)s
         """).with_data(self.dump(apple))
 
-    def load(self, data: dict[str, Any]) -> Apple:
+    def load(self, data: Mapping[str, Any]) -> Apple:
         return Apple(color=str(data["color"]), id=str(data["id"]))
 
     def dump(self, apple: Apple) -> dict[str, Any]:

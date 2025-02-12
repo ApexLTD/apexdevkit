@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Iterator
+from typing import Any, Iterator, Mapping
 
 
 @dataclass(frozen=True)
@@ -155,7 +155,9 @@ class SqlFieldManager:
         else:
             return ""
 
-    def with_fixed(self, data: dict[str, Any]) -> dict[str, Any]:
+    def with_fixed(self, raw: Mapping[str, Any]) -> dict[str, Any]:
+        data = dict(raw)
+
         for key in self.fields:
             if key.is_parent:
                 data[key.name] = key.parent_value
