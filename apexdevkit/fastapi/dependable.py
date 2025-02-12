@@ -4,6 +4,7 @@ from typing import Annotated, Any, Callable, Protocol
 from fastapi import Depends, Path
 from fastapi.requests import Request
 
+from apexdevkit.annotation import deprecated
 from apexdevkit.error import ApiError, DoesNotExistError
 from apexdevkit.fastapi import RestfulServiceBuilder
 from apexdevkit.fastapi.name import RestfulName
@@ -82,10 +83,34 @@ class InfraDependency:
         return Annotated[RestfulServiceBuilder, Depends(_)]
 
 
+_BuilderCallable = Callable[..., RestfulServiceBuilder]
+
+
+@dataclass(frozen=True)
+class BuilderCallableDependency:
+    create_builder: _BuilderCallable
+
+    def as_dependable(self) -> type[RestfulServiceBuilder]:
+        def _() -> RestfulServiceBuilder:
+            return self.create_builder()
+
+        return Annotated[RestfulServiceBuilder, Depends(_)]
+
+
 @dataclass(frozen=True)
 class DependableBuilder:
     dependency: _Dependency | None = None
 
+    @classmethod
+    def from_callable(cls, value: _BuilderCallable) -> "DependableBuilder":
+        return DependableBuilder(BuilderCallableDependency(value))
+
+    @deprecated(
+        """
+        DependableBuilder().from_infra() is deprecated,
+        use DependencyBuilder.from_callable() instead
+        """
+    )
     def from_infra(self, value: RestfulServiceBuilder) -> "DependableBuilder":
         return DependableBuilder(InfraDependency(value))
 

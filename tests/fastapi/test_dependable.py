@@ -1,38 +1,40 @@
-from typing import Any, Callable
 from unittest.mock import MagicMock
 
-import pytest
+from faker import Faker
 from starlette.testclient import TestClient
 
 from apexdevkit.error import DoesNotExistError
-from apexdevkit.fastapi import (
-    FastApiBuilder,
-    RestfulServiceBuilder,
-)
-from apexdevkit.fastapi.dependable import (
-    InfraDependency,
-    ParentDependency,
-    ServiceDependency,
-    UserDependency,
-)
+from apexdevkit.fastapi import FastApiBuilder, RestfulServiceBuilder
+from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.fastapi.router import RestfulRouter
+from apexdevkit.fastapi.router import Dependency, RestfulRouter
 from apexdevkit.http import Httpx
 from apexdevkit.testing import RestCollection
 from tests.fastapi.sample_api import AppleFields, PriceFields
 
+_PARENT = RestfulName("apple")
+_CHILD = RestfulName("price")
 
-def resource_with_dependency(dependency: ServiceDependency) -> RestCollection:
+
+def _resource(dependency: Dependency) -> RestCollection:
     return RestCollection(
-        name=RestfulName("apple"),
+        name=_PARENT,
         http=Httpx(
             TestClient(
                 FastApiBuilder()
                 .with_route(
                     apples=RestfulRouter()
-                    .with_name(RestfulName("apple"))
+                    .with_name(_PARENT)
                     .with_fields(AppleFields())
                     .with_dependency(dependency)
+                    .with_sub_resource(
+                        prices=RestfulRouter()
+                        .with_name(_CHILD)
+                        .with_fields(PriceFields())
+                        .with_dependency(dependency)
+                        .default()
+                        .build()
+                    )
                     .default()
                     .build()
                 )
@@ -42,95 +44,52 @@ def resource_with_dependency(dependency: ServiceDependency) -> RestCollection:
     )
 
 
-def parent_resource(dependency: ServiceDependency) -> RestCollection:
-    return RestCollection(
-        name=RestfulName("apple"),
-        http=Httpx(
-            TestClient(
-                FastApiBuilder()
-                .with_route(
-                    apples=RestfulRouter()
-                    .with_name(RestfulName("apple"))
-                    .with_fields(AppleFields())
-                    .with_sub_resource(
-                        prices=RestfulRouter()
-                        .with_name(RestfulName("price"))
-                        .with_fields(PriceFields())
-                        .with_dependency(dependency)
-                        .default()
-                        .build()
-                    )
-                    .build()
-                )
-                .build()
-            )
-        ),
+def test_should_build_dependable_with_user(faker: Faker) -> None:
+    user = faker.name()
+    builder = MagicMock(spec=RestfulServiceBuilder)
+
+    (
+        _resource(DependableBuilder.from_callable(builder).with_user(lambda: user))
+        .read_all()
+        .ensure()
     )
 
-
-@pytest.fixture
-def user() -> Any:
-    return "A"
+    builder().with_user.assert_called_once_with(user)
+    builder().with_user().build.assert_called_once()
 
 
-@pytest.fixture
-def extract_user(user: Any) -> Callable[..., Any]:
-    def _() -> Any:
-        return user
+def test_should_build_dependable_with_parent(faker: Faker) -> None:
+    parent_id = str(faker.uuid4())
+    builder = MagicMock(spec=RestfulServiceBuilder)
 
-    return _
+    (
+        _resource(DependableBuilder.from_callable(builder).with_parent(_PARENT))
+        .sub_resource(parent_id)
+        .sub_resource(_CHILD.singular)
+        .read_all()
+        .ensure()
+        .success()
+    )
 
-
-@pytest.fixture
-def identifier() -> str:
-    return "id"
-
-
-@pytest.fixture
-def parent() -> RestfulName:
-    return RestfulName("apple")
-
-
-@pytest.fixture
-def child() -> RestfulName:
-    return RestfulName("price")
+    builder().with_parent.assert_called_once_with(parent_id)
+    builder().with_parent().build.assert_called_once()
 
 
-def test_should_build_dependable_with_user(
-    user: Any, extract_user: Callable[..., Any]
-) -> None:
-    infra = MagicMock(spec=RestfulServiceBuilder)
-    dependency = ServiceDependency(UserDependency(extract_user, InfraDependency(infra)))
+def test_should_not_build_dependable_when_no_parent(faker: Faker) -> None:
+    parent_id = str(faker.uuid4())
+    builder = MagicMock(spec=RestfulServiceBuilder)
+    builder().with_parent.side_effect = DoesNotExistError(parent_id)
 
-    resource_with_dependency(dependency).read_all().ensure()
-
-    infra.with_user.assert_called_once_with(user)
-    infra.with_user().build.assert_called_once()
-
-
-def test_should_build_dependable_with_parent(
-    identifier: str, parent: RestfulName, child: RestfulName
-) -> None:
-    infra = MagicMock(spec=RestfulServiceBuilder)
-    dependency = ServiceDependency(ParentDependency(parent, InfraDependency(infra)))
-
-    parent_resource(dependency).sub_resource(identifier).sub_resource(
-        child.singular
-    ).read_all().ensure()
-
-    infra.with_parent.assert_called_once_with(identifier)
-    infra.with_parent().build.assert_called_once()
-
-
-def test_should_not_build_dependable_when_no_parent(
-    identifier: str, parent: RestfulName, child: RestfulName
-) -> None:
-    infra = MagicMock(spec=RestfulServiceBuilder)
-    infra.with_parent.side_effect = DoesNotExistError(identifier)
-    dependency = ServiceDependency(ParentDependency(parent, InfraDependency(infra)))
-
-    parent_resource(dependency).sub_resource(identifier).sub_resource(
-        child.singular
-    ).read_all().ensure().fail().with_code(404).and_message(
-        f"An item<{parent.singular.capitalize()}> with id<{identifier}> does not exist."
+    (
+        _resource(DependableBuilder.from_callable(builder).with_parent(_PARENT))
+        .sub_resource(parent_id)
+        .sub_resource(_CHILD.singular)
+        .read_all()
+        .ensure()
+        .fail()
+        .with_code(404)
+        .and_message(
+            f"An item<{_PARENT.singular.capitalize()}> "
+            f"with id<{parent_id}> does not exist."
+        )
     )
