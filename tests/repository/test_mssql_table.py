@@ -27,10 +27,6 @@ _FORMATTER = AliasFormatter(
 )
 
 
-def AppleFormatter() -> AliasFormatter[Apple]:
-    return _FORMATTER
-
-
 @fixture
 def table() -> SqlTable[Apple]:
     return (
@@ -38,7 +34,7 @@ def table() -> SqlTable[Apple]:
         .with_username("test")
         .with_schema("test")
         .with_table("apples")
-        .with_formatter(AppleFormatter())
+        .with_formatter(_FORMATTER)
         .with_fields(
             [
                 SqlFieldBuilder().with_name("apid").as_id().in_ordering().build(),
@@ -68,7 +64,7 @@ def table_with_parent(apple: Apple) -> SqlTable[Apple]:
         .with_username("test")
         .with_schema("test")
         .with_table("apples")
-        .with_formatter(AppleFormatter())
+        .with_formatter(_FORMATTER)
         .with_fields(
             [
                 SqlFieldBuilder().with_name("apid").as_id().in_ordering().build(),
@@ -120,7 +116,7 @@ def test_should_insert(table: SqlTable[Apple], apple: Apple) -> None:
         manager=None,
         manager_filter_0=5,
         manager_filter_1=4,
-        **AppleFormatter().dump(apple),
+        **_FORMATTER.dump(apple),
     )
 
 
@@ -179,7 +175,7 @@ def test_should_update(table: SqlTable[Apple], apple: Apple) -> None:
         manager=None,
         manager_filter_0=5,
         manager_filter_1=4,
-        **AppleFormatter().dump(apple),
+        **_FORMATTER.dump(apple),
     )
 
 
@@ -234,7 +230,7 @@ def test_should_insert_with_parent(
     table_with_parent: SqlTable[Apple], apple: Apple
 ) -> None:
     command = table_with_parent.insert(apple)
-    dumped = AppleFormatter().dump(apple)
+    dumped = _FORMATTER.dump(apple)
 
     assert command == DatabaseCommand(
         """
@@ -291,7 +287,7 @@ def test_should_update_with_parent(
     table_with_parent: SqlTable[Apple], apple: Apple
 ) -> None:
     command = table_with_parent.update(apple)
-    dumped = AppleFormatter().dump(apple)
+    dumped = _FORMATTER.dump(apple)
 
     assert command == DatabaseCommand(
         """
