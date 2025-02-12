@@ -17,15 +17,18 @@ class Apple:
     id: str = field(default_factory=lambda: str(uuid4()))
 
 
+_FORMATTER = AliasFormatter(
+    DataclassFormatter(Apple),
+    alias=AliasMapping.parse(
+        id="apid",
+        color="clr",
+        parent="pid",
+    ),
+)
+
+
 def AppleFormatter() -> AliasFormatter[Apple]:
-    return AliasFormatter(
-        DataclassFormatter(Apple),
-        alias=AliasMapping.parse(
-            id="apid",
-            color="clr",
-            parent="pid",
-        ),
-    )
+    return _FORMATTER
 
 
 @fixture
