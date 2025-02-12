@@ -1,4 +1,3 @@
-from typing import Any, Callable
 from unittest.mock import MagicMock
 
 import pytest
@@ -12,19 +11,6 @@ from apexdevkit.fastapi.router import Dependency, RestfulRouter
 from apexdevkit.http import Httpx
 from apexdevkit.testing import RestCollection
 from tests.fastapi.sample_api import AppleFields, PriceFields
-
-
-@pytest.fixture
-def user() -> Any:
-    return "A"
-
-
-@pytest.fixture
-def extract_user(user: Any) -> Callable[..., Any]:
-    def _() -> Any:
-        return user
-
-    return _
 
 
 @pytest.fixture
@@ -70,14 +56,12 @@ def resource(dependency: Dependency) -> RestCollection:
     )
 
 
-def test_should_build_dependable_with_user(
-    user: Any,
-    extract_user: Callable[..., Any],
-) -> None:
+def test_should_build_dependable_with_user() -> None:
+    user = "A"
     infra = MagicMock(spec=RestfulServiceBuilder)
 
     (
-        resource(DependableBuilder.from_callable(lambda: infra).with_user(extract_user))
+        resource(DependableBuilder.from_callable(lambda: infra).with_user(lambda: user))
         .read_all()
         .ensure()
     )
