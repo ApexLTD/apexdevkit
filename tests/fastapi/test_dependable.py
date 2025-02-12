@@ -5,24 +5,16 @@ import pytest
 from starlette.testclient import TestClient
 
 from apexdevkit.error import DoesNotExistError
-from apexdevkit.fastapi import (
-    FastApiBuilder,
-    RestfulServiceBuilder,
-)
-from apexdevkit.fastapi.dependable import (
-    InfraDependency,
-    ParentDependency,
-    ServiceDependency,
-    UserDependency,
-)
+from apexdevkit.fastapi import FastApiBuilder, RestfulServiceBuilder
+from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.fastapi.router import RestfulRouter
+from apexdevkit.fastapi.router import Dependency, RestfulRouter
 from apexdevkit.http import Httpx
 from apexdevkit.testing import RestCollection
 from tests.fastapi.sample_api import AppleFields, PriceFields
 
 
-def resource_with_dependency(dependency: ServiceDependency) -> RestCollection:
+def resource_with_dependency(dependency: Dependency) -> RestCollection:
     return RestCollection(
         name=RestfulName("apple"),
         http=Httpx(
@@ -42,7 +34,7 @@ def resource_with_dependency(dependency: ServiceDependency) -> RestCollection:
     )
 
 
-def parent_resource(dependency: ServiceDependency) -> RestCollection:
+def parent_resource(dependency: Dependency) -> RestCollection:
     return RestCollection(
         name=RestfulName("apple"),
         http=Httpx(
@@ -97,40 +89,62 @@ def child() -> RestfulName:
 
 
 def test_should_build_dependable_with_user(
-    user: Any, extract_user: Callable[..., Any]
+    user: Any,
+    extract_user: Callable[..., Any],
 ) -> None:
     infra = MagicMock(spec=RestfulServiceBuilder)
-    dependency = ServiceDependency(UserDependency(extract_user, InfraDependency(infra)))
 
-    resource_with_dependency(dependency).read_all().ensure()
+    (
+        resource_with_dependency(
+            DependableBuilder.from_callable(lambda: infra).with_user(extract_user)
+        )
+        .read_all()
+        .ensure()
+    )
 
     infra.with_user.assert_called_once_with(user)
     infra.with_user().build.assert_called_once()
 
 
 def test_should_build_dependable_with_parent(
-    identifier: str, parent: RestfulName, child: RestfulName
+    identifier: str,
+    parent: RestfulName,
+    child: RestfulName,
 ) -> None:
     infra = MagicMock(spec=RestfulServiceBuilder)
-    dependency = ServiceDependency(ParentDependency(parent, InfraDependency(infra)))
-
-    parent_resource(dependency).sub_resource(identifier).sub_resource(
-        child.singular
-    ).read_all().ensure()
+    (
+        parent_resource(
+            DependableBuilder.from_callable(lambda: infra).with_parent(parent)
+        )
+        .sub_resource(identifier)
+        .sub_resource(child.singular)
+        .read_all()
+        .ensure()
+    )
 
     infra.with_parent.assert_called_once_with(identifier)
     infra.with_parent().build.assert_called_once()
 
 
 def test_should_not_build_dependable_when_no_parent(
-    identifier: str, parent: RestfulName, child: RestfulName
+    identifier: str,
+    parent: RestfulName,
+    child: RestfulName,
 ) -> None:
     infra = MagicMock(spec=RestfulServiceBuilder)
     infra.with_parent.side_effect = DoesNotExistError(identifier)
-    dependency = ServiceDependency(ParentDependency(parent, InfraDependency(infra)))
-
-    parent_resource(dependency).sub_resource(identifier).sub_resource(
-        child.singular
-    ).read_all().ensure().fail().with_code(404).and_message(
-        f"An item<{parent.singular.capitalize()}> with id<{identifier}> does not exist."
+    (
+        parent_resource(
+            DependableBuilder.from_callable(lambda: infra).with_parent(parent)
+        )
+        .sub_resource(identifier)
+        .sub_resource(child.singular)
+        .read_all()
+        .ensure()
+        .fail()
+        .with_code(404)
+        .and_message(
+            f"An item<{parent.singular.capitalize()}> "
+            f"with id<{identifier}> does not exist."
+        )
     )
