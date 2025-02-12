@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock
 
-import pytest
 from faker import Faker
 from starlette.testclient import TestClient
 
@@ -13,31 +12,24 @@ from apexdevkit.http import Httpx
 from apexdevkit.testing import RestCollection
 from tests.fastapi.sample_api import AppleFields, PriceFields
 
-
-@pytest.fixture
-def parent() -> RestfulName:
-    return RestfulName("apple")
-
-
-@pytest.fixture
-def child() -> RestfulName:
-    return RestfulName("price")
+PARENT = RestfulName("apple")
+CHILD = RestfulName("price")
 
 
 def resource(dependency: Dependency) -> RestCollection:
     return RestCollection(
-        name=RestfulName("apple"),
+        name=PARENT,
         http=Httpx(
             TestClient(
                 FastApiBuilder()
                 .with_route(
                     apples=RestfulRouter()
-                    .with_name(RestfulName("apple"))
+                    .with_name(PARENT)
                     .with_fields(AppleFields())
                     .with_dependency(dependency)
                     .with_sub_resource(
                         prices=RestfulRouter()
-                        .with_name(RestfulName("price"))
+                        .with_name(CHILD)
                         .with_fields(PriceFields())
                         .with_dependency(dependency)
                         .default()
@@ -66,18 +58,14 @@ def test_should_build_dependable_with_user(faker: Faker) -> None:
     builder().with_user().build.assert_called_once()
 
 
-def test_should_build_dependable_with_parent(
-    parent: RestfulName,
-    child: RestfulName,
-    faker: Faker,
-) -> None:
+def test_should_build_dependable_with_parent(faker: Faker) -> None:
     parent_id = str(faker.uuid4())
     builder = MagicMock(spec=RestfulServiceBuilder)
 
     (
-        resource(DependableBuilder.from_callable(builder).with_parent(parent))
+        resource(DependableBuilder.from_callable(builder).with_parent(PARENT))
         .sub_resource(parent_id)
-        .sub_resource(child.singular)
+        .sub_resource(CHILD.singular)
         .read_all()
         .ensure()
         .success()
@@ -87,25 +75,21 @@ def test_should_build_dependable_with_parent(
     builder().with_parent().build.assert_called_once()
 
 
-def test_should_not_build_dependable_when_no_parent(
-    parent: RestfulName,
-    child: RestfulName,
-    faker: Faker,
-) -> None:
+def test_should_not_build_dependable_when_no_parent(faker: Faker) -> None:
     parent_id = str(faker.uuid4())
     builder = MagicMock(spec=RestfulServiceBuilder)
     builder().with_parent.side_effect = DoesNotExistError(parent_id)
 
     (
-        resource(DependableBuilder.from_callable(builder).with_parent(parent))
+        resource(DependableBuilder.from_callable(builder).with_parent(PARENT))
         .sub_resource(parent_id)
-        .sub_resource(child.singular)
+        .sub_resource(CHILD.singular)
         .read_all()
         .ensure()
         .fail()
         .with_code(404)
         .and_message(
-            f"An item<{parent.singular.capitalize()}> "
+            f"An item<{PARENT.singular.capitalize()}> "
             f"with id<{parent_id}> does not exist."
         )
     )
