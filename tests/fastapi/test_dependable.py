@@ -76,17 +76,18 @@ def test_should_build_dependable_with_parent(
     parent: RestfulName,
     child: RestfulName,
 ) -> None:
-    infra = MagicMock(spec=RestfulServiceBuilder)
+    builder = MagicMock(spec=RestfulServiceBuilder)
+
     (
-        resource(DependableBuilder.from_callable(lambda: infra).with_parent(parent))
+        resource(DependableBuilder.from_callable(builder).with_parent(parent))
         .sub_resource(identifier)
         .sub_resource(child.singular)
         .read_all()
         .ensure()
     )
 
-    infra.with_parent.assert_called_once_with(identifier)
-    infra.with_parent().build.assert_called_once()
+    builder().with_parent.assert_called_once_with(identifier)
+    builder().with_parent().build.assert_called_once()
 
 
 def test_should_not_build_dependable_when_no_parent(
@@ -94,11 +95,11 @@ def test_should_not_build_dependable_when_no_parent(
     parent: RestfulName,
     child: RestfulName,
 ) -> None:
-    infra = MagicMock(spec=RestfulServiceBuilder)
-    infra.with_parent.side_effect = DoesNotExistError(identifier)
+    builder = MagicMock(spec=RestfulServiceBuilder)
+    builder().with_parent.side_effect = DoesNotExistError(identifier)
 
     (
-        resource(DependableBuilder.from_callable(lambda: infra).with_parent(parent))
+        resource(DependableBuilder.from_callable(builder).with_parent(parent))
         .sub_resource(identifier)
         .sub_resource(child.singular)
         .read_all()
