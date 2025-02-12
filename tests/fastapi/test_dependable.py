@@ -15,11 +15,6 @@ from tests.fastapi.sample_api import AppleFields, PriceFields
 
 
 @pytest.fixture
-def parent_id() -> str:
-    return "id"
-
-
-@pytest.fixture
 def parent() -> RestfulName:
     return RestfulName("apple")
 
