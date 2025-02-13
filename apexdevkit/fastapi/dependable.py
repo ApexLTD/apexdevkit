@@ -99,11 +99,11 @@ class BuilderCallableDependency:
 
 @dataclass(frozen=True)
 class DependableBuilder:
-    dependency: _Dependency | None = None
+    dependency: _Dependency
 
     @classmethod
     def from_callable(cls, value: _BuilderCallable) -> "DependableBuilder":
-        return DependableBuilder(BuilderCallableDependency(value))
+        return cls(BuilderCallableDependency(value))
 
     @deprecated(
         """
@@ -115,16 +115,10 @@ class DependableBuilder:
         return DependableBuilder(InfraDependency(value))
 
     def with_parent(self, value: RestfulName) -> "DependableBuilder":
-        if self.dependency is None:
-            raise RuntimeError("RestfulServiceBuilder type not set")
         return DependableBuilder(ParentDependency(value, self.dependency))
 
     def with_user(self, extract_user: Callable[..., Any]) -> "DependableBuilder":
-        if self.dependency is None:
-            raise RuntimeError("RestfulServiceBuilder type not set")
         return DependableBuilder(UserDependency(extract_user, self.dependency))
 
     def as_dependable(self) -> type[RestfulService]:
-        if self.dependency is None:
-            raise RuntimeError("RestfulServiceBuilder type not set")
         return ServiceDependency(self.dependency).as_dependable()
