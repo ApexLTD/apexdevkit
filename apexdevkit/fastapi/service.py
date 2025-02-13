@@ -64,8 +64,9 @@ ItemT = TypeVar("ItemT")
 
 @dataclass(frozen=True)
 class RestfulRepository(RestfulService, Generic[ItemT]):
-    formatter: Formatter[Mapping[str, Any], ItemT]
     repository: Repository[ItemT]
+
+    formatter: Formatter[Mapping[str, Any], ItemT]
 
     def create_one(self, item: RawItem) -> RawItem:
         return self.formatter.dump(self.repository.create(self.formatter.load(item)))
@@ -118,24 +119,3 @@ class RestfulRepository(RestfulService, Generic[ItemT]):
 
     def delete_one(self, item_id: str) -> None:
         self.repository.delete(item_id)
-
-    @dataclass(frozen=True)
-    class Builder(Generic[ItemT]):
-        formatter: Formatter[Mapping[str, Any], ItemT] | None = None
-        repository: Repository[ItemT] | None = None
-
-        def with_formatter(
-            self, formatter: Formatter[Mapping[str, Any], ItemT]
-        ) -> RestfulRepository.Builder[ItemT]:
-            return RestfulRepository.Builder(formatter, self.repository)
-
-        def with_repository(
-            self, repository: Repository[ItemT]
-        ) -> RestfulRepository.Builder[ItemT]:
-            return RestfulRepository.Builder(self.formatter, repository)
-
-        def build(self) -> RestfulService:
-            assert self.formatter is not None, "Formatter not provided"
-            assert self.repository is not None, "Repository not provided"
-
-            return RestfulRepository(self.formatter, self.repository)

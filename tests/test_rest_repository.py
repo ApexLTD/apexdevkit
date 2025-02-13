@@ -42,12 +42,7 @@ def repository() -> BatchRepository[Animal]:
 
 @pytest.fixture
 def service(repository: BatchRepository[Animal]) -> RestfulService:
-    return (
-        RestfulRepository.Builder[Animal]()
-        .with_formatter(DataclassFormatter(Animal))
-        .with_repository(repository)
-        .build()
-    )
+    return RestfulRepository(repository, formatter=DataclassFormatter(Animal))
 
 
 def test_should_create_one(
