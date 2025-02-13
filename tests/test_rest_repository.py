@@ -5,7 +5,7 @@ from typing import Any, Type
 import pytest
 
 from apexdevkit.error import DoesNotExistError, ExistsError
-from apexdevkit.fastapi.service import RestfulRepositoryBuilder, RestfulService
+from apexdevkit.fastapi.service import RestfulRepository, RestfulService
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import InMemoryRepository
 from apexdevkit.repository.decorator import BatchRepositoryDecorator
@@ -43,7 +43,7 @@ def repository() -> BatchRepository[Animal]:
 @pytest.fixture
 def service(repository: BatchRepository[Animal]) -> RestfulService:
     return (
-        RestfulRepositoryBuilder[Animal]()
+        RestfulRepository.Builder[Animal]()
         .with_formatter(DataclassFormatter(Animal))
         .with_repository(repository)
         .build()
