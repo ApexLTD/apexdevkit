@@ -79,7 +79,7 @@ class RestfulServiceBuilder(ABC):
 
 
 @dataclass
-class PreBuiltRestfulService(RestfulServiceBuilder):  # pragma: no cover
+class PreBuilt(RestfulServiceBuilder):  # pragma: no cover
     service: RestfulService
 
     def build(self) -> RestfulService:
