@@ -76,3 +76,11 @@ class RestfulServiceBuilder(ABC):
     @abstractmethod
     def build(self) -> RestfulService:  # pragma: no cover
         pass
+
+
+@dataclass
+class PreBuiltRestfulService(RestfulServiceBuilder):  # pragma: no cover
+    service: RestfulService
+
+    def build(self) -> RestfulService:
+        return self.service

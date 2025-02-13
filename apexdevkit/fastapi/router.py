@@ -6,7 +6,6 @@ from typing import Annotated, Any, Protocol, Self, TypeVar
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.responses import JSONResponse
 
-from apexdevkit.fastapi.builder import RestfulServiceBuilder
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.resource import RestfulResource, SummaryResponse
 from apexdevkit.fastapi.response import RestfulResponse
@@ -22,14 +21,6 @@ T = TypeVar("T")
 class Dependency(Protocol):  # pragma: no cover
     def as_dependable(self) -> type[RestfulService]:
         pass
-
-
-@dataclass
-class PreBuiltRestfulService(RestfulServiceBuilder):  # pragma: no cover
-    service: RestfulService
-
-    def build(self) -> RestfulService:
-        return self.service
 
 
 @dataclass
