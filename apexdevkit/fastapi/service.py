@@ -78,8 +78,8 @@ class RestfulRepositoryBuilder(Generic[ItemT]):
         return RestfulRepositoryBuilder(self.formatter, repository)
 
     def build(self) -> RestfulService:
-        assert self.formatter, "Formatter not provided"
-        assert self.repository, "Repository not provided"
+        assert self.formatter is not None, "Formatter not provided"
+        assert self.repository is not None, "Repository not provided"
 
         return _RestfulRepository(self.formatter, self.repository)
 
