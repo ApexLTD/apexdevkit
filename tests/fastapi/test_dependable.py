@@ -49,13 +49,13 @@ def test_should_build_dependable_with_user(faker: Faker) -> None:
     builder = MagicMock(spec=RestfulServiceBuilder)
 
     (
-        _resource(DependableBuilder.from_callable(builder).with_user(lambda: user))
+        _resource(DependableBuilder.from_builder(builder).with_user(lambda: user))
         .read_all()
         .ensure()
     )
 
-    builder().with_user.assert_called_once_with(user)
-    builder().with_user().build.assert_called_once()
+    builder.with_user.assert_called_once_with(user)
+    builder.with_user().build.assert_called_once()
 
 
 def test_should_build_dependable_with_parent(faker: Faker) -> None:
@@ -63,7 +63,7 @@ def test_should_build_dependable_with_parent(faker: Faker) -> None:
     builder = MagicMock(spec=RestfulServiceBuilder)
 
     (
-        _resource(DependableBuilder.from_callable(builder).with_parent(_PARENT))
+        _resource(DependableBuilder.from_builder(builder).with_parent(_PARENT))
         .sub_resource(parent_id)
         .sub_resource(_CHILD.singular)
         .read_all()
@@ -71,17 +71,17 @@ def test_should_build_dependable_with_parent(faker: Faker) -> None:
         .success()
     )
 
-    builder().with_parent.assert_called_once_with(parent_id)
-    builder().with_parent().build.assert_called_once()
+    builder.with_parent.assert_called_once_with(parent_id)
+    builder.with_parent().build.assert_called_once()
 
 
 def test_should_not_build_dependable_when_no_parent(faker: Faker) -> None:
     parent_id = str(faker.uuid4())
     builder = MagicMock(spec=RestfulServiceBuilder)
-    builder().with_parent.side_effect = DoesNotExistError(parent_id)
+    builder.with_parent.side_effect = DoesNotExistError(parent_id)
 
     (
-        _resource(DependableBuilder.from_callable(builder).with_parent(_PARENT))
+        _resource(DependableBuilder.from_builder(builder).with_parent(_PARENT))
         .sub_resource(parent_id)
         .sub_resource(_CHILD.singular)
         .read_all()

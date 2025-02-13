@@ -44,9 +44,7 @@ class FakeUser:
 
 
 def setup(infra: RestfulServiceBuilder, fake_user: FakeUser) -> FastAPI:
-    dependable = DependableBuilder.from_callable(lambda: infra).with_user(
-        fake_user.user
-    )
+    dependable = DependableBuilder.from_builder(infra).with_user(fake_user.user)
 
     return (
         FastApiBuilder()

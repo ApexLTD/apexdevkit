@@ -6,6 +6,7 @@ from fastapi.requests import Request
 
 from apexdevkit.error import ApiError, DoesNotExistError
 from apexdevkit.fastapi import RestfulServiceBuilder
+from apexdevkit.fastapi.builder import PreBuilt
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.service import RestfulService
@@ -92,6 +93,14 @@ class DependableBuilder:
     @classmethod
     def from_callable(cls, value: _BuilderCallable) -> "DependableBuilder":
         return cls(BuilderCallableDependency(value))
+
+    @classmethod
+    def from_builder(cls, value: RestfulServiceBuilder) -> "DependableBuilder":
+        return cls(BuilderCallableDependency(lambda: value))
+
+    @classmethod
+    def from_service(cls, value: RestfulService) -> "DependableBuilder":
+        return cls(BuilderCallableDependency(lambda: PreBuilt(value)))
 
     def with_parent(self, value: RestfulName) -> "DependableBuilder":
         return DependableBuilder(ParentDependency(value, self.dependency))
