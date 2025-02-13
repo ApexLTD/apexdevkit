@@ -81,11 +81,11 @@ class RestfulRepositoryBuilder(Generic[ItemT]):
         assert self.formatter is not None, "Formatter not provided"
         assert self.repository is not None, "Repository not provided"
 
-        return _RestfulRepository(self.formatter, self.repository)
+        return RestfulRepository(self.formatter, self.repository)
 
 
 @dataclass(frozen=True)
-class _RestfulRepository(RestfulService, Generic[ItemT]):
+class RestfulRepository(RestfulService, Generic[ItemT]):
     formatter: Formatter[Mapping[str, Any], ItemT]
     repository: Repository[ItemT]
 
