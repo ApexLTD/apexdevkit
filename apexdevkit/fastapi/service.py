@@ -70,16 +70,17 @@ class RestfulRepositoryBuilder(Generic[ItemT]):
     def with_formatter(
         self, formatter: Formatter[Mapping[str, Any], ItemT]
     ) -> RestfulRepositoryBuilder[ItemT]:
-        return RestfulRepositoryBuilder[ItemT](formatter, self.repository)
+        return RestfulRepositoryBuilder(formatter, self.repository)
 
     def with_repository(
         self, repository: Repository[ItemT]
     ) -> RestfulRepositoryBuilder[ItemT]:
-        return RestfulRepositoryBuilder[ItemT](self.formatter, repository)
+        return RestfulRepositoryBuilder(self.formatter, repository)
 
     def build(self) -> RestfulService:
-        if self.formatter is None or self.repository is None:
-            raise RuntimeError("Formatter or repository not provided.")
+        assert self.formatter, "Formatter not provided"
+        assert self.repository, "Repository not provided"
+
         return _RestfulRepository(self.formatter, self.repository)
 
 
