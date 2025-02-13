@@ -71,17 +71,6 @@ class UserDependency:
         return Annotated[RestfulServiceBuilder, Depends(_)]
 
 
-@dataclass(frozen=True)
-class InfraDependency:
-    infra: RestfulServiceBuilder
-
-    def as_dependable(self) -> type[RestfulServiceBuilder]:
-        def _() -> RestfulServiceBuilder:
-            return self.infra
-
-        return Annotated[RestfulServiceBuilder, Depends(_)]
-
-
 _BuilderCallable = Callable[..., RestfulServiceBuilder]
 
 
