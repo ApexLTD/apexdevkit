@@ -25,7 +25,8 @@ from apexdevkit.testing.fake import FakeResource
 
 
 def setup(infra: RestfulServiceBuilder) -> FastAPI:
-    dependable = DependableBuilder().from_infra(infra).with_user(lambda: None)
+    dependable = DependableBuilder.from_callable(lambda: infra).with_user(lambda: None)
+
     return (
         FastApiBuilder()
         .with_title("Apple API")

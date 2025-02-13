@@ -63,30 +63,10 @@ ItemT = TypeVar("ItemT")
 
 
 @dataclass(frozen=True)
-class RestfulRepositoryBuilder(Generic[ItemT]):
-    formatter: Formatter[Mapping[str, Any], ItemT] | None = None
-    repository: Repository[ItemT] | None = None
-
-    def with_formatter(
-        self, formatter: Formatter[Mapping[str, Any], ItemT]
-    ) -> RestfulRepositoryBuilder[ItemT]:
-        return RestfulRepositoryBuilder[ItemT](formatter, self.repository)
-
-    def with_repository(
-        self, repository: Repository[ItemT]
-    ) -> RestfulRepositoryBuilder[ItemT]:
-        return RestfulRepositoryBuilder[ItemT](self.formatter, repository)
-
-    def build(self) -> RestfulService:
-        if self.formatter is None or self.repository is None:
-            raise RuntimeError("Formatter or repository not provided.")
-        return _RestfulRepository(self.formatter, self.repository)
-
-
-@dataclass(frozen=True)
-class _RestfulRepository(RestfulService, Generic[ItemT]):
-    formatter: Formatter[Mapping[str, Any], ItemT]
+class RestfulRepository(RestfulService, Generic[ItemT]):
     repository: Repository[ItemT]
+
+    formatter: Formatter[Mapping[str, Any], ItemT]
 
     def create_one(self, item: RawItem) -> RawItem:
         return self.formatter.dump(self.repository.create(self.formatter.load(item)))
