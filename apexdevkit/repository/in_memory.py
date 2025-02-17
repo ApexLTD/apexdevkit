@@ -19,13 +19,6 @@ class InMemoryRepository(Generic[ItemT]):
     keys: list[_KeyFunction[ItemT]] = field(default_factory=list)
     seeds: frozenset[ItemT] = field(default_factory=frozenset)
 
-    def with_namespace(self, value: str) -> InMemoryRepository[ItemT]:
-        return InMemoryRepository[ItemT](
-            store=StoreNamespace(value, self.store),
-            keys=self.keys,
-            seeds=self.seeds,
-        )
-
     def with_store(self, value: KeyValueStore[ItemT]) -> InMemoryRepository[ItemT]:
         return InMemoryRepository[ItemT](
             store=value,
@@ -111,30 +104,6 @@ class InMemoryByteStore(Generic[ItemT]):
     def values(self) -> Iterable[ItemT]:
         for raw in self.items.values():
             yield self.formatter.load(raw)
-
-
-@dataclass
-class StoreNamespace(Generic[ItemT]):
-    name: str
-    inner: KeyValueStore[ItemT]
-
-    def count(self) -> int:
-        return self.inner.count()
-
-    def values(self) -> Iterable[ItemT]:
-        return self.inner.values()
-
-    def set(self, key: str, value: ItemT) -> None:
-        self.inner.set(self._expand(key), value)
-
-    def get(self, key: str) -> ItemT:
-        return self.inner.get(self._expand(key))
-
-    def drop(self, key: str) -> None:
-        self.inner.drop(self._expand(key))
-
-    def _expand(self, key: str) -> str:
-        return "-".join([self.name, key])
 
 
 @dataclass
