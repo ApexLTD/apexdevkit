@@ -58,7 +58,7 @@ class Value:
         if isinstance(other, Decimal):
             return self.as_decimal() == other
 
-        return False
+        return False  # pragma: no cover
 
     def __float__(self) -> float:
         return float(self.as_decimal())
