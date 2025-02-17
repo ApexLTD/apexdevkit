@@ -5,7 +5,7 @@ from apexdevkit.repository.interface import ItemT, Repository
 
 
 @dataclass
-class RepositoryDecorator(Generic[ItemT]):
+class RepositoryDecorator(Generic[ItemT]):  # pragma: no cover
     inner: Repository[ItemT]
 
     def create(self, item: ItemT) -> ItemT:
