@@ -7,7 +7,6 @@ from functools import cached_property
 from typing import Any, ContextManager
 
 import pymssql
-from pymongo import MongoClient
 from pymssql import Connection as _Connection
 from pymssql import Cursor
 
@@ -38,14 +37,6 @@ class SqliteInMemoryConnector:
         connection.row_factory = sqlite3.Row
 
         return connection
-
-
-@dataclass(frozen=True)
-class PyMongoConnector:
-    dsn: str
-
-    def connect(self) -> ContextManager[MongoClient[Any]]:
-        return MongoClient(self.dsn)
 
 
 @dataclass(frozen=True)
