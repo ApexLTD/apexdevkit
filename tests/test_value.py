@@ -57,3 +57,10 @@ def test_should_divide() -> None:
 
 def test_should_convert_to_float() -> None:
     assert float(Value(1516, 100)) == 15.16
+
+
+def test_should_compare_to_decimal() -> None:
+    decimal_string = "15.16"
+
+    assert Value.from_string(decimal_string) == Decimal(decimal_string)
+    assert Value.from_string(decimal_string) != Decimal(decimal_string) * 2 + 1

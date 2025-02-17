@@ -1,12 +1,11 @@
 from dataclasses import dataclass
-from typing import Any, Iterable, Iterator
+from typing import Any, Generic, Iterable, Iterator
 
-from apexdevkit.repository.base import RepositoryBase
 from apexdevkit.repository.interface import ItemT, Repository
 
 
 @dataclass
-class RepositoryDecorator(RepositoryBase[ItemT]):
+class RepositoryDecorator(Generic[ItemT]):  # pragma: no cover
     inner: Repository[ItemT]
 
     def create(self, item: ItemT) -> ItemT:
@@ -31,7 +30,7 @@ class RepositoryDecorator(RepositoryBase[ItemT]):
         return self.inner.__len__()
 
 
-class BatchRepositoryDecorator(RepositoryDecorator[ItemT]):
+class BruteForceBatch(RepositoryDecorator[ItemT]):
     def create_many(self, items: Iterable[ItemT]) -> Iterable[ItemT]:
         return [self.inner.create(item) for item in items]
 

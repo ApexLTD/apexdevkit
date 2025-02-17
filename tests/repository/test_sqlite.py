@@ -8,8 +8,6 @@ from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Database, DatabaseCommand
 from apexdevkit.repository.connector import SqliteInMemoryConnector
-from apexdevkit.repository.decorator import BatchRepositoryDecorator
-from apexdevkit.repository.interface import BatchRepository
 from apexdevkit.repository.sqlite import SqliteRepository, SqlTable
 
 
@@ -66,35 +64,30 @@ class FakeTable(SqlTable[_Item]):
 
 
 @fixture
-def repository() -> BatchRepository[_Item]:
+def repository() -> SqliteRepository[_Item]:
     db = Database(SqliteInMemoryConnector())
     db.execute(FakeTable().setup()).fetch_none()
 
-    return BatchRepositoryDecorator(
-        SqliteRepository[_Item](
-            table=FakeTable(),
-            db=db,
-        )
-    )
+    return SqliteRepository(table=FakeTable(), db=db)
 
 
-def test_should_list_nothing_when_empty(repository: BatchRepository[_Item]) -> None:
+def test_should_list_nothing_when_empty(repository: SqliteRepository[_Item]) -> None:
     assert len(repository) == 0
     assert list(repository) == []
 
 
-def test_should_not_read_unknown(repository: BatchRepository[_Item]) -> None:
+def test_should_not_read_unknown(repository: SqliteRepository[_Item]) -> None:
     with raises(DoesNotExistError):
         repository.read(str(uuid4()))
 
 
-def test_should_create(repository: BatchRepository[_Item]) -> None:
+def test_should_create(repository: SqliteRepository[_Item]) -> None:
     item = _Item(id=str(uuid4()), external_id=str(uuid4()))
 
     assert repository.create(item) == item
 
 
-def test_should_not_duplicate_on_create(repository: BatchRepository[_Item]) -> None:
+def test_should_not_duplicate_on_create(repository: SqliteRepository[_Item]) -> None:
     item = _Item(id=str(uuid4()), external_id=str(uuid4()))
     repository.create(item)
 
@@ -102,29 +95,7 @@ def test_should_not_duplicate_on_create(repository: BatchRepository[_Item]) -> N
         repository.create(item)
 
 
-def test_should_create_many(repository: BatchRepository[_Item]) -> None:
-    items = [
-        _Item(id=str(uuid4()), external_id=str(uuid4())),
-        _Item(id=str(uuid4()), external_id=str(uuid4())),
-    ]
-
-    assert repository.create_many(items) == items
-
-
-def test_should_not_duplicate_on_create_many(
-    repository: BatchRepository[_Item],
-) -> None:
-    items = [
-        _Item(id=str(uuid4()), external_id=str(uuid4())),
-        _Item(id=str(uuid4()), external_id=str(uuid4())),
-    ]
-    repository.create(items[1])
-
-    with raises(ExistsError, match=f"_Item with id<{items[1].id}> already exists."):
-        repository.create_many(items)
-
-
-def test_should_persist(repository: BatchRepository[_Item]) -> None:
+def test_should_persist(repository: SqliteRepository[_Item]) -> None:
     item = _Item(id=str(uuid4()), external_id=str(uuid4()))
     repository.create(item)
 
@@ -132,18 +103,7 @@ def test_should_persist(repository: BatchRepository[_Item]) -> None:
     assert repository.read(item.id) == item
 
 
-def test_should_persist_many(repository: BatchRepository[_Item]) -> None:
-    items = [
-        _Item(id=str(uuid4()), external_id=str(uuid4())),
-        _Item(id=str(uuid4()), external_id=str(uuid4())),
-    ]
-    repository.create_many(items)
-
-    assert len(repository) == 2
-    assert list(repository) == items
-
-
-def test_should_persist_update(repository: BatchRepository[_Item]) -> None:
+def test_should_persist_update(repository: SqliteRepository[_Item]) -> None:
     old_item = _Item(id=str(uuid4()), external_id=str(uuid4()))
     repository.create(old_item)
 
@@ -153,29 +113,10 @@ def test_should_persist_update(repository: BatchRepository[_Item]) -> None:
     assert repository.read(item.id) == item
 
 
-def test_should_persist_update_many(repository: BatchRepository[_Item]) -> None:
-    old_items = [
-        _Item(id=str(uuid4()), external_id=str(uuid4())),
-        _Item(id=str(uuid4()), external_id=str(uuid4())),
-    ]
-    repository.create_many(old_items)
+def test_should_persist_delete(repository: SqliteRepository[_Item]) -> None:
+    item = _Item(id=str(uuid4()), external_id=str(uuid4()))
+    repository.create(item)
 
-    items = [
-        _Item(id=old_items[0].id, external_id=str(uuid4())),
-        _Item(id=old_items[1].id, external_id=str(uuid4())),
-    ]
-    repository.update_many(items)
+    repository.delete(item.id)
 
-    assert list(repository) == items
-
-
-def test_should_persist_delete(repository: BatchRepository[_Item]) -> None:
-    items = [
-        _Item(id=str(uuid4()), external_id=str(uuid4())),
-        _Item(id=str(uuid4()), external_id=str(uuid4())),
-    ]
-    repository.create_many(items)
-
-    repository.delete(items[1].id)
-
-    assert list(repository) == [items[0]]
+    assert list(repository) == []
