@@ -20,17 +20,13 @@ class InMemoryRepository(Generic[ItemT]):
     seeds: frozenset[ItemT] = field(default_factory=frozenset)
 
     def with_store(self, value: KeyValueStore[ItemT]) -> InMemoryRepository[ItemT]:
-        return InMemoryRepository[ItemT](
-            store=value,
-            keys=self.keys,
-            seeds=self.seeds,
-        )
+        return InMemoryRepository(store=value, keys=self.keys, seeds=self.seeds)
 
     def and_key(self, function: _KeyFunction[ItemT]) -> InMemoryRepository[ItemT]:
         return self.with_key(function)
 
     def with_key(self, function: _KeyFunction[ItemT]) -> InMemoryRepository[ItemT]:
-        return InMemoryRepository[ItemT](
+        return InMemoryRepository(
             store=self.store,
             keys=[*self.keys, function],
             seeds=self.seeds,
