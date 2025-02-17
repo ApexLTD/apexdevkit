@@ -31,7 +31,7 @@ class RepositoryDecorator(RepositoryBase[ItemT]):
         return self.inner.__len__()
 
 
-class BatchRepositoryDecorator(RepositoryDecorator[ItemT]):
+class BruteForceBatch(RepositoryDecorator[ItemT]):
     def create_many(self, items: Iterable[ItemT]) -> Iterable[ItemT]:
         return [self.inner.create(item) for item in items]
 
