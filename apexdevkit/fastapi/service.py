@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import ABC
 from dataclasses import dataclass
+from functools import cached_property
 from typing import Any, Dict, Generic, Iterable, Mapping, TypeVar
 
 from apexdevkit.formatter import Formatter
@@ -68,13 +69,17 @@ class RestfulRepository(RestfulService, Generic[ItemT]):
 
     formatter: Formatter[Mapping[str, Any], ItemT]
 
+    @cached_property
+    def _batch(self) -> BatchRepositoryDecorator[ItemT]:
+        return BatchRepositoryDecorator(self.repository)
+
     def create_one(self, item: RawItem) -> RawItem:
         return self.formatter.dump(self.repository.create(self.formatter.load(item)))
 
     def create_many(self, items: RawCollection) -> RawCollection:
         return [
             self.formatter.dump(item)
-            for item in BatchRepositoryDecorator(self.repository).create_many(
+            for item in self._batch.create_many(
                 [self.formatter.load(fields) for fields in items]
             )
         ]
@@ -101,7 +106,7 @@ class RestfulRepository(RestfulService, Generic[ItemT]):
 
             updates.append(self.formatter.load(data))
 
-        BatchRepositoryDecorator(self.repository).update_many(updates)
+        self._batch.update_many(updates)
 
         return [self.formatter.dump(item) for item in updates]
 
@@ -111,9 +116,7 @@ class RestfulRepository(RestfulService, Generic[ItemT]):
         return item
 
     def replace_many(self, items: RawCollection) -> RawCollection:
-        BatchRepositoryDecorator(self.repository).update_many(
-            [self.formatter.load(item) for item in items]
-        )
+        self._batch.update_many([self.formatter.load(item) for item in items])
 
         return items
 
