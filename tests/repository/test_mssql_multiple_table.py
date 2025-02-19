@@ -183,6 +183,8 @@ def test_should_select_all(table: SqlTable[Fruit]) -> None:
             SELECT
                 [apid], [clr], [pid], [type], [kingdom], [manager]
             FROM [test].[apples]
+            WHERE ([manager] = %(manager_filter_0)s OR [manager] = """
+        + """%(manager_filter_1)s)
             UNION ALL
             SELECT
                 [apid], [clr], [pid], [type], [kingdom], [manager]

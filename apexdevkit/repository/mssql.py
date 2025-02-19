@@ -384,7 +384,8 @@ class DefaultSqlTable(SqlTable[ItemT]):
             [
                 f"""SELECT
                 {columns}
-            FROM [{self.schema}].[{table}]"""
+            FROM [{self.schema}].[{table}]
+            {self.fields.where_statement(include_id=False)}"""
                 for table in self.tables
             ]
         )
@@ -392,7 +393,6 @@ class DefaultSqlTable(SqlTable[ItemT]):
         return DatabaseCommand(f"""
             {self._user_check}
             {selections}
-            {self.fields.where_statement(include_id=False)}
             {self.fields.order}
             REVERT
         """).with_data(self.fields.with_fixed({}))
