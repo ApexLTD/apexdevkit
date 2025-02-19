@@ -81,10 +81,13 @@ def test_should_count(table: SqlTable[Apple]) -> None:
     assert command == DatabaseCommand(
         """
             EXECUTE AS USER = 'test'
-            SELECT count(*) AS n_items
-            FROM [test].[apples]
-            WHERE ([manager] = %(manager_filter_0)s OR [manager] = """
-        + """%(manager_filter_1)s)
+            SELECT
+            (
+                SELECT COUNT(*)
+                FROM [test].[apples]
+                WHERE ([manager] = %(manager_filter_0)s OR """
+        + """[manager] = %(manager_filter_1)s)
+            ) AS n_items
             REVERT
         """
     ).with_data(kingdom="fruits", manager=None, manager_filter_0=5, manager_filter_1=4)
@@ -218,9 +221,12 @@ def test_should_count_with_parent(table_with_parent: SqlTable[Apple]) -> None:
     assert command == DatabaseCommand(
         """
             EXECUTE AS USER = 'test'
-            SELECT count(*) AS n_items
-            FROM [test].[apples]
-            WHERE [pid] = %(pid)s
+            SELECT
+            (
+                SELECT COUNT(*)
+                FROM [test].[apples]
+                WHERE [pid] = %(pid)s
+            ) AS n_items
             REVERT
         """
     ).with_data(pid="test")
