@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Generic, Iterable, Iterator, Mapping, TypeVar
 
 from pymssql.exceptions import DatabaseError
@@ -142,7 +142,7 @@ class UnknownError(Exception):
 class MsSqlTableBuilder(Generic[ItemT]):
     username: str | None = None
     schema: str | None = None
-    table: str | None = None
+    tables: list[str] = field(default_factory=list)
     formatter: Formatter[Mapping[str, Any], ItemT] | None = None
     fields: list[_SqlField] | None = None
 
@@ -150,7 +150,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
         return MsSqlTableBuilder[ItemT](
             value,
             self.schema,
-            self.table,
+            self.tables,
             self.formatter,
             self.fields,
         )
@@ -159,7 +159,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
         return MsSqlTableBuilder[ItemT](
             self.username,
             value,
-            self.table,
+            self.tables,
             self.formatter,
             self.fields,
         )
@@ -168,10 +168,13 @@ class MsSqlTableBuilder(Generic[ItemT]):
         return MsSqlTableBuilder[ItemT](
             self.username,
             self.schema,
-            value,
+            self.tables + [value],
             self.formatter,
             self.fields,
         )
+
+    def and_table(self, value: str) -> MsSqlTableBuilder[ItemT]:
+        return self.with_table(value)
 
     def with_formatter(
         self, value: Formatter[Mapping[str, Any], ItemT]
@@ -179,7 +182,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
         return MsSqlTableBuilder[ItemT](
             self.username,
             self.schema,
-            self.table,
+            self.tables,
             value,
             self.fields,
         )
@@ -204,18 +207,23 @@ class MsSqlTableBuilder(Generic[ItemT]):
         return MsSqlTableBuilder[ItemT](
             self.username,
             self.schema,
-            self.table,
+            self.tables,
             self.formatter,
             key_list,
         )
 
     def build(self) -> SqlTable[ItemT]:
-        if not self.schema or not self.table or not self.formatter or not self.fields:
+        if (
+            not self.schema
+            or len(self.tables) < 1
+            or not self.formatter
+            or not self.fields
+        ):
             raise ValueError("Cannot build sql table.")
 
         return DefaultSqlTable(
             self.schema,
-            self.table,
+            self.tables,
             self.formatter,
             SqlFieldManager.Builder().with_fields(self.fields).for_mssql().build(),
             self.username,
@@ -225,7 +233,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
 @dataclass(frozen=True)
 class DefaultSqlTable(SqlTable[ItemT]):
     schema: str
-    table: str
+    tables: list[str]
     formatter: Formatter[Mapping[str, Any], ItemT]
     fields: SqlFieldManager
     username: str | None = None
@@ -234,7 +242,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
         return DatabaseCommand(f"""
             {self._user_check}
             SELECT count(*) AS n_items
-            FROM [{self.schema}].[{self.table}]
+            FROM [{self.schema}].[{self.tables[0]}]
             {self.fields.where_statement(include_id=False)}
             REVERT
         """).with_data(self.fields.with_fixed({}))
@@ -252,7 +260,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
                 ["[" + field.name + "] AS " + field.name for field in self.fields]
             )
             where_statement = f"""
-                FROM [{self.schema}].[{self.table}]
+                FROM [{self.schema}].[{self.tables[0]}]
                 {self.fields.where_statement(include_id=True, read_id=True)}
             """
         except ValueError:
@@ -263,7 +271,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
 
         return DatabaseCommand(f"""
             {self._user_check}
-            INSERT INTO [{self.schema}].[{self.table}] (
+            INSERT INTO [{self.schema}].[{self.tables[0]}] (
                 {columns}
             )
             VALUES (
@@ -282,7 +290,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
             {self._user_check}
             SELECT
                 {columns} 
-            FROM [{self.schema}].[{self.table}]
+            FROM [{self.schema}].[{self.tables[0]}]
             {self.fields.where_statement(include_id=True)}
             REVERT
         """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
@@ -294,7 +302,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
             {self._user_check}
             SELECT
                 {columns}
-            FROM [{self.schema}].[{self.table}]
+            FROM [{self.schema}].[{self.tables[0]}]
             {self.fields.where_statement(include_id=False)}
             {self.fields.order}
             REVERT
@@ -311,7 +319,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
 
         return DatabaseCommand(f"""
             {self._user_check}
-            UPDATE [{self.schema}].[{self.table}]
+            UPDATE [{self.schema}].[{self.tables[0]}]
             SET
                 {updates}
             {self.fields.where_statement(include_id=True)}
@@ -322,7 +330,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
         return DatabaseCommand(f"""
             {self._user_check}
             DELETE
-            FROM [{self.schema}].[{self.table}]
+            FROM [{self.schema}].[{self.tables[0]}]
             {self.fields.where_statement(include_id=True)}
             REVERT
         """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
@@ -331,7 +339,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
         return DatabaseCommand(f"""
             {self._user_check}
             DELETE
-            FROM [{self.schema}].[{self.table}]
+            FROM [{self.schema}].[{self.tables[0]}]
             {self.fields.where_statement(include_id=False)}
             REVERT
         """).with_data(self.fields.with_fixed({}))
