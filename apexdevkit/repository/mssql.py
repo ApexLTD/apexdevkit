@@ -147,6 +147,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
     fields: list[_SqlField] | None = None
     table_mapper: Callable[[ItemT], str] | None = None
     table_id_mapper: Callable[[str], str] | None = None
+    id_transformer: Callable[[str], str] = lambda identifier: identifier
 
     def with_username(self, value: str) -> MsSqlTableBuilder[ItemT]:
         return MsSqlTableBuilder[ItemT](
@@ -157,6 +158,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.fields,
             self.table_mapper,
             self.table_id_mapper,
+            self.id_transformer,
         )
 
     def with_schema(self, value: str) -> MsSqlTableBuilder[ItemT]:
@@ -168,6 +170,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.fields,
             self.table_mapper,
             self.table_id_mapper,
+            self.id_transformer,
         )
 
     def with_table(self, value: str) -> MsSqlTableBuilder[ItemT]:
@@ -179,6 +182,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.fields,
             self.table_mapper,
             self.table_id_mapper,
+            self.id_transformer,
         )
 
     def and_table(self, value: str) -> MsSqlTableBuilder[ItemT]:
@@ -195,6 +199,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.fields,
             value,
             self.table_id_mapper,
+            self.id_transformer,
         )
 
     def with_table_id_mapper(
@@ -207,6 +212,21 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.formatter,
             self.fields,
             self.table_mapper,
+            value,
+            self.id_transformer,
+        )
+
+    def with_id_transformer(
+        self, value: Callable[[str], str]
+    ) -> MsSqlTableBuilder[ItemT]:
+        return MsSqlTableBuilder[ItemT](
+            self.username,
+            self.schema,
+            self.tables,
+            self.formatter,
+            self.fields,
+            self.table_mapper,
+            self.table_id_mapper,
             value,
         )
 
@@ -221,6 +241,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.fields,
             self.table_mapper,
             self.table_id_mapper,
+            self.id_transformer,
         )
 
     def with_fields(self, value: Iterable[_SqlField]) -> MsSqlTableBuilder[ItemT]:
@@ -248,6 +269,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
             key_list,
             self.table_mapper,
             self.table_id_mapper,
+            self.id_transformer,
         )
 
     def build(self) -> SqlTable[ItemT]:
@@ -267,6 +289,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.username,
             self.table_mapper,
             self.table_id_mapper,
+            self.id_transformer,
         )
 
 
@@ -279,6 +302,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
     username: str | None = None
     table_mapper: Callable[[ItemT], str] | None = None
     table_id_mapper: Callable[[str], str] | None = None
+    id_transformer: Callable[[str], str] = lambda identifier: identifier
 
     def count_all(self) -> DatabaseCommand:
         selections = " + ".join(
@@ -340,6 +364,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
         self._require_id_mapper_if_necessary()
 
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
+        table_identifier = self.id_transformer(item_id)
 
         return DatabaseCommand(f"""
             {self._user_check}
@@ -348,7 +373,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
             FROM [{self.schema}].[{self._determine_table_by_id(item_id)}]
             {self.fields.where_statement(include_id=True)}
             REVERT
-        """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
+        """).with_data(self.fields.with_fixed({self.fields.id: table_identifier}))
 
     def select_all(self) -> DatabaseCommand:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
@@ -395,13 +420,15 @@ class DefaultSqlTable(SqlTable[ItemT]):
     def delete(self, item_id: str) -> DatabaseCommand:
         self._require_mapper_if_necessary()
 
+        table_identifier = self.id_transformer(item_id)
+
         return DatabaseCommand(f"""
             {self._user_check}
             DELETE
             FROM [{self.schema}].[{self._determine_table_by_id(item_id)}]
             {self.fields.where_statement(include_id=True)}
             REVERT
-        """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
+        """).with_data(self.fields.with_fixed({self.fields.id: table_identifier}))
 
     def delete_all(self) -> DatabaseCommand:
         if len(self.tables) > 1:

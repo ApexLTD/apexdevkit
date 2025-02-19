@@ -68,6 +68,9 @@ def table() -> SqlTable[Fruit]:
         .with_table_id_mapper(
             lambda identifier: "apples" if identifier.startswith("apple_") else "pears"
         )
+        .with_id_transformer(
+            lambda identifier: identifier.replace("apple_", "").replace("pear_", ""),
+        )
         .with_formatter(_Formatter())
         .with_fields(
             [
@@ -164,7 +167,7 @@ def test_should_select(table: SqlTable[Fruit], apple: Fruit) -> None:
             REVERT
         """
     ).with_data(
-        apid=apple.id,
+        apid=apple.id.replace("apple_", ""),
         manager=None,
         manager_filter_0=5,
         manager_filter_1=4,
@@ -226,7 +229,7 @@ def test_should_delete(table: SqlTable[Fruit], pear: Fruit) -> None:
             REVERT
         """
     ).with_data(
-        apid=pear.id,
+        apid=pear.id.replace("pear_", ""),
         kingdom="fruits",
         manager=None,
         manager_filter_0=5,
