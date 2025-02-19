@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Generic, Iterable, Iterator, Mapping, TypeVar
+from typing import Any, Callable, Generic, Iterable, Iterator, Mapping, TypeVar
 
 from pymssql.exceptions import DatabaseError
 
@@ -145,6 +145,8 @@ class MsSqlTableBuilder(Generic[ItemT]):
     tables: list[str] = field(default_factory=list)
     formatter: Formatter[Mapping[str, Any], ItemT] | None = None
     fields: list[_SqlField] | None = None
+    table_mapper: Callable[[ItemT], str] | None = None
+    table_id_mapper: Callable[[str], str] | None = None
 
     def with_username(self, value: str) -> MsSqlTableBuilder[ItemT]:
         return MsSqlTableBuilder[ItemT](
@@ -153,6 +155,8 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.tables,
             self.formatter,
             self.fields,
+            self.table_mapper,
+            self.table_id_mapper,
         )
 
     def with_schema(self, value: str) -> MsSqlTableBuilder[ItemT]:
@@ -162,6 +166,8 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.tables,
             self.formatter,
             self.fields,
+            self.table_mapper,
+            self.table_id_mapper,
         )
 
     def with_table(self, value: str) -> MsSqlTableBuilder[ItemT]:
@@ -171,10 +177,38 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.tables + [value],
             self.formatter,
             self.fields,
+            self.table_mapper,
+            self.table_id_mapper,
         )
 
     def and_table(self, value: str) -> MsSqlTableBuilder[ItemT]:
         return self.with_table(value)
+
+    def with_table_mapper(
+        self, value: Callable[[ItemT], str]
+    ) -> MsSqlTableBuilder[ItemT]:
+        return MsSqlTableBuilder[ItemT](
+            self.username,
+            self.schema,
+            self.tables,
+            self.formatter,
+            self.fields,
+            value,
+            self.table_id_mapper,
+        )
+
+    def with_table_id_mapper(
+        self, value: Callable[[str], str]
+    ) -> MsSqlTableBuilder[ItemT]:
+        return MsSqlTableBuilder[ItemT](
+            self.username,
+            self.schema,
+            self.tables,
+            self.formatter,
+            self.fields,
+            self.table_mapper,
+            value,
+        )
 
     def with_formatter(
         self, value: Formatter[Mapping[str, Any], ItemT]
@@ -185,6 +219,8 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.tables,
             value,
             self.fields,
+            self.table_mapper,
+            self.table_id_mapper,
         )
 
     def with_fields(self, value: Iterable[_SqlField]) -> MsSqlTableBuilder[ItemT]:
@@ -210,6 +246,8 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.tables,
             self.formatter,
             key_list,
+            self.table_mapper,
+            self.table_id_mapper,
         )
 
     def build(self) -> SqlTable[ItemT]:
@@ -227,6 +265,8 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.formatter,
             SqlFieldManager.Builder().with_fields(self.fields).for_mssql().build(),
             self.username,
+            self.table_mapper,
+            self.table_id_mapper,
         )
 
 
@@ -237,6 +277,8 @@ class DefaultSqlTable(SqlTable[ItemT]):
     formatter: Formatter[Mapping[str, Any], ItemT]
     fields: SqlFieldManager
     username: str | None = None
+    table_mapper: Callable[[ItemT], str] | None = None
+    table_id_mapper: Callable[[str], str] | None = None
 
     def count_all(self) -> DatabaseCommand:
         return DatabaseCommand(f"""
@@ -248,6 +290,8 @@ class DefaultSqlTable(SqlTable[ItemT]):
         """).with_data(self.fields.with_fixed({}))
 
     def insert(self, item: ItemT) -> DatabaseCommand:
+        self._require_mapper_if_necessary()
+
         columns = ", ".join(
             ["[" + field.name + "]" for field in self.fields if field.include_in_insert]
         )
@@ -260,7 +304,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
                 ["[" + field.name + "] AS " + field.name for field in self.fields]
             )
             where_statement = f"""
-                FROM [{self.schema}].[{self.tables[0]}]
+                FROM [{self.schema}].[{self._determine_table_by_item(item)}]
                 {self.fields.where_statement(include_id=True, read_id=True)}
             """
         except ValueError:
@@ -271,7 +315,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
 
         return DatabaseCommand(f"""
             {self._user_check}
-            INSERT INTO [{self.schema}].[{self.tables[0]}] (
+            INSERT INTO [{self.schema}].[{self._determine_table_by_item(item)}] (
                 {columns}
             )
             VALUES (
@@ -284,13 +328,15 @@ class DefaultSqlTable(SqlTable[ItemT]):
         """).with_data(self.fields.with_fixed(self.formatter.dump(item)))
 
     def select(self, item_id: str) -> DatabaseCommand:
+        self._require_id_mapper_if_necessary()
+
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
 
         return DatabaseCommand(f"""
             {self._user_check}
             SELECT
                 {columns} 
-            FROM [{self.schema}].[{self.tables[0]}]
+            FROM [{self.schema}].[{self._determine_table_by_id(item_id)}]
             {self.fields.where_statement(include_id=True)}
             REVERT
         """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
@@ -309,6 +355,8 @@ class DefaultSqlTable(SqlTable[ItemT]):
         """).with_data(self.fields.with_fixed({}))
 
     def update(self, item: ItemT) -> DatabaseCommand:
+        self._require_mapper_if_necessary()
+
         updates = ", ".join(
             [
                 f"{field.name} = %({field.name})s"
@@ -319,7 +367,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
 
         return DatabaseCommand(f"""
             {self._user_check}
-            UPDATE [{self.schema}].[{self.tables[0]}]
+            UPDATE [{self.schema}].[{self._determine_table_by_item(item)}]
             SET
                 {updates}
             {self.fields.where_statement(include_id=True)}
@@ -327,10 +375,12 @@ class DefaultSqlTable(SqlTable[ItemT]):
         """).with_data(self.fields.with_fixed(self.formatter.dump(item)))
 
     def delete(self, item_id: str) -> DatabaseCommand:
+        self._require_mapper_if_necessary()
+
         return DatabaseCommand(f"""
             {self._user_check}
             DELETE
-            FROM [{self.schema}].[{self.tables[0]}]
+            FROM [{self.schema}].[{self._determine_table_by_id(item_id)}]
             {self.fields.where_statement(include_id=True)}
             REVERT
         """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
@@ -352,6 +402,38 @@ class DefaultSqlTable(SqlTable[ItemT]):
         return ExistsError(duplicate).with_duplicate(
             lambda i: f"{self.fields.id}<{raw[self.fields.id]}>"
         )
+
+    def _require_mapper_if_necessary(self) -> None:
+        if len(self.tables) > 1 and self.table_mapper is None:
+            raise RuntimeError(
+                f"Attempt to use multiple tables {self.tables} "
+                f"on insert or update when mapping not provided"
+            )
+
+    def _require_id_mapper_if_necessary(self) -> None:
+        if len(self.tables) > 1 and self.table_id_mapper is None:
+            raise RuntimeError(
+                f"Attempt to use multiple tables {self.tables} "
+                f"on read or delete when id mapping not provided"
+            )
+
+    def _determine_table_by_item(self, item: ItemT) -> str:
+        if len(self.tables) == 1 or self.table_mapper is None:
+            return self.tables[0]
+        else:
+            table = self.table_mapper(item)
+            if table not in self.tables:
+                raise RuntimeError(f"Illegal table {table} provided")
+            return table
+
+    def _determine_table_by_id(self, identifier: str) -> str:
+        if len(self.tables) == 1 or self.table_id_mapper is None:
+            return self.tables[0]
+        else:
+            table = self.table_id_mapper(identifier)
+            if table not in self.tables:
+                raise RuntimeError(f"Illegal table {table} provided")
+            return table
 
     @property
     def _user_check(self) -> str:
