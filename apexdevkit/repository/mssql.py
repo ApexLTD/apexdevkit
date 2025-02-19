@@ -353,7 +353,9 @@ class DefaultSqlTable(SqlTable[ItemT]):
     def select_all(self) -> DatabaseCommand:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
 
-        selections = " UNION ALL ".join(
+        selections = """
+            UNION ALL
+            """.join(
             [
                 f"""SELECT
                 {columns}
