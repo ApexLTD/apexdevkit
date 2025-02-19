@@ -281,11 +281,20 @@ class DefaultSqlTable(SqlTable[ItemT]):
     table_id_mapper: Callable[[str], str] | None = None
 
     def count_all(self) -> DatabaseCommand:
+        selections = " + ".join(
+            [
+                f"""(
+                SELECT COUNT(*)
+                FROM [{self.schema}].[{table}]
+                {self.fields.where_statement(include_id=False)}
+            )"""
+                for table in self.tables
+            ]
+        )
         return DatabaseCommand(f"""
             {self._user_check}
-            SELECT count(*) AS n_items
-            FROM [{self.schema}].[{self.tables[0]}]
-            {self.fields.where_statement(include_id=False)}
+            SELECT
+            {selections} AS n_items
             REVERT
         """).with_data(self.fields.with_fixed({}))
 
@@ -344,11 +353,18 @@ class DefaultSqlTable(SqlTable[ItemT]):
     def select_all(self) -> DatabaseCommand:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
 
+        selections = " UNION ALL ".join(
+            [
+                f"""SELECT
+                {columns}
+            FROM [{self.schema}].[{table}]"""
+                for table in self.tables
+            ]
+        )
+
         return DatabaseCommand(f"""
             {self._user_check}
-            SELECT
-                {columns}
-            FROM [{self.schema}].[{self.tables[0]}]
+            {selections}
             {self.fields.where_statement(include_id=False)}
             {self.fields.order}
             REVERT
@@ -386,6 +402,11 @@ class DefaultSqlTable(SqlTable[ItemT]):
         """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
 
     def delete_all(self) -> DatabaseCommand:
+        if len(self.tables) > 1:
+            raise RuntimeError(
+                f"Deletion of multiple tables {self.tables} not supported"
+            )
+
         return DatabaseCommand(f"""
             {self._user_check}
             DELETE
