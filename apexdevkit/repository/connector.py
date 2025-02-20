@@ -77,6 +77,7 @@ class ConnectionContextManager(AbstractContextManager[Connection]):
 
     def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
         self.connection.cursor().close()
+        self.connection.close()
 
 
 @dataclass
@@ -85,6 +86,9 @@ class MsSqlConnectionAdapter:
 
     def cursor(self) -> MsSqlCursorAdapter:
         return MsSqlCursorAdapter(self.connection.cursor())
+
+    def close(self) -> None:
+        self.connection.close()
 
 
 @dataclass
