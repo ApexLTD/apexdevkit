@@ -53,6 +53,9 @@ class Connection(Protocol):  # pragma: no cover
     def cursor(self) -> Cursor:
         pass
 
+    def close(self) -> None:
+        pass
+
 
 class Cursor(Protocol):  # pragma: no cover
     def execute(self, *args: Any, **kwargs: Any) -> Any:
