@@ -81,13 +81,10 @@ def test_should_count(table: SqlTable[Apple]) -> None:
     assert command == DatabaseCommand(
         """
             EXECUTE AS USER = 'test'
-            SELECT
-            (
-                SELECT COUNT(*)
-                FROM [test].[apples]
-                WHERE ([manager] = %(manager_filter_0)s OR """
-        + """[manager] = %(manager_filter_1)s)
-            ) AS n_items
+            SELECT count(*) AS n_items
+            FROM [test].[apples]
+            WHERE ([manager] = %(manager_filter_0)s OR [manager] = """
+        + """%(manager_filter_1)s)
             REVERT
         """
     ).with_data(kingdom="fruits", manager=None, manager_filter_0=5, manager_filter_1=4)
@@ -107,11 +104,11 @@ def test_should_insert(table: SqlTable[Apple], apple: Apple) -> None:
             SELECT
                 [apid] AS apid, [clr] AS clr, [pid] AS pid, [kingdom] AS kingdom,"""
         + """ [manager] AS manager
-            
+
                 FROM [test].[apples]
                 WHERE [apid] = %(apid)s AND ([manager] = %(manager_filter_0)s """
         + """OR [manager] = %(manager_filter_1)s)
-            
+
             REVERT
         """
     ).with_data(
@@ -221,12 +218,9 @@ def test_should_count_with_parent(table_with_parent: SqlTable[Apple]) -> None:
     assert command == DatabaseCommand(
         """
             EXECUTE AS USER = 'test'
-            SELECT
-            (
-                SELECT COUNT(*)
-                FROM [test].[apples]
-                WHERE [pid] = %(pid)s
-            ) AS n_items
+            SELECT count(*) AS n_items
+            FROM [test].[apples]
+            WHERE [pid] = %(pid)s
             REVERT
         """
     ).with_data(pid="test")
@@ -249,10 +243,10 @@ def test_should_insert_with_parent(
             );
             SELECT
                 [apid] AS apid, [clr] AS clr, [pid] AS pid
-            
+
                 FROM [test].[apples]
                 WHERE [pid] = %(pid)s AND [apid] = %(apid)s
-            
+
             REVERT
         """
     ).with_data(dumped)
