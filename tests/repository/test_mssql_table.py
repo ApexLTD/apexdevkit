@@ -104,11 +104,11 @@ def test_should_insert(table: SqlTable[Apple], apple: Apple) -> None:
             SELECT
                 [apid] AS apid, [clr] AS clr, [pid] AS pid, [kingdom] AS kingdom,"""
         + """ [manager] AS manager
-
+            
                 FROM [test].[apples]
                 WHERE [apid] = %(apid)s AND ([manager] = %(manager_filter_0)s """
         + """OR [manager] = %(manager_filter_1)s)
-
+            
             REVERT
         """
     ).with_data(
@@ -243,10 +243,10 @@ def test_should_insert_with_parent(
             );
             SELECT
                 [apid] AS apid, [clr] AS clr, [pid] AS pid
-
+            
                 FROM [test].[apples]
                 WHERE [pid] = %(pid)s AND [apid] = %(apid)s
-
+            
             REVERT
         """
     ).with_data(dumped)
