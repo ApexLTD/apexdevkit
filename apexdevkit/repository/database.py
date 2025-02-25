@@ -94,4 +94,4 @@ class DatabaseCommand:
         return DatabaseCommand(self.value, value)
 
     def __str__(self) -> str:  # pragma: no cover
-        return self.value
+        return self.value % self.payload
