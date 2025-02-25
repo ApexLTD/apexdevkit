@@ -281,7 +281,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
         return DatabaseCommand(f"""
             {self._user_check}
             SELECT
-                {columns} 
+                {columns}
             FROM [{self.schema}].[{self.table}]
             {self.fields.where_statement(include_id=True)}
             REVERT

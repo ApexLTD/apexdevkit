@@ -126,7 +126,7 @@ def test_should_select(table: SqlTable[Apple], apple: Apple) -> None:
         """
             EXECUTE AS USER = 'test'
             SELECT
-                [apid], [clr], [pid], [kingdom], [manager] 
+                [apid], [clr], [pid], [kingdom], [manager]
             FROM [test].[apples]
             WHERE [apid] = %(apid)s AND ([manager] = %(manager_filter_0)s OR """
         + """[manager] = %(manager_filter_1)s)
@@ -260,7 +260,7 @@ def test_should_select_with_parent(
         """
             EXECUTE AS USER = 'test'
             SELECT
-                [apid], [clr], [pid] 
+                [apid], [clr], [pid]
             FROM [test].[apples]
             WHERE [pid] = %(pid)s AND [apid] = %(apid)s
             REVERT
