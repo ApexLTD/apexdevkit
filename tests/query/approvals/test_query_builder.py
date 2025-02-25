@@ -49,7 +49,7 @@ def test_filter() -> None:
         )
     )
 
-    verify_sql(str(query))
+    verify_sql(query.value)
 
 
 def test_aggregate() -> None:
@@ -86,4 +86,4 @@ def test_aggregate() -> None:
         )
     )
 
-    verify_sql(str(query))
+    verify_sql(query.value)
