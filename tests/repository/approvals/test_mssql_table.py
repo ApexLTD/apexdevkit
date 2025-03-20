@@ -26,15 +26,21 @@ def table() -> SqlTable[Apple]:
         .with_formatter(_FORMATTER)
         .with_fields(
             [
-                SqlFieldBuilder().with_name("apid").as_id().in_ordering().build(),
+                SqlFieldBuilder()
+                .with_name("apid")
+                .as_id()
+                .in_ordering(descending=True)
+                .build(),
                 SqlFieldBuilder().with_name("clr").build(),
                 SqlFieldBuilder().with_name("pid").build(),
                 SqlFieldBuilder().with_name("kingdom").as_fixed("fruits").build(),
-                SqlFieldBuilder()
-                .with_name("manager")
-                .as_fixed(None)
-                .as_filter([5, 4])
-                .build(),
+                (
+                    SqlFieldBuilder()
+                    .with_name("manager")
+                    .as_fixed(None)
+                    .as_filter([5, 4])
+                    .build()
+                ),
             ]
         )
         .build()

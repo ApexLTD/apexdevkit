@@ -13,10 +13,12 @@ class NotNone:
 class _SqlField:
     name: str
     is_id: bool = False
-    is_ordered: bool = False
     is_composite: bool = False
     include_in_insert: bool = True
     include_in_update: bool = True
+
+    is_ordered: bool = False
+    is_descending: bool = False
 
     is_parent: bool = False
     parent_value: Any | None = None
@@ -32,10 +34,12 @@ class _SqlField:
 class SqlFieldBuilder:
     _name: str = field(init=False)
     _is_id: bool = False
-    _is_ordered: bool = False
     _is_composite: bool = False
     _include_in_insert: bool = True
     _include_in_update: bool = True
+
+    _is_ordered: bool = False
+    _is_descending: bool = False
 
     _is_parent: bool = False
     _parent_value: Any | None = None
@@ -61,8 +65,9 @@ class SqlFieldBuilder:
 
         return self
 
-    def in_ordering(self) -> SqlFieldBuilder:
+    def in_ordering(self, descending: bool = False) -> SqlFieldBuilder:
         self._is_ordered = True
+        self._is_descending = descending
 
         return self
 
@@ -96,18 +101,19 @@ class SqlFieldBuilder:
 
     def build(self) -> _SqlField:
         return _SqlField(
-            self._name,
-            self._is_id,
-            self._is_ordered,
-            self._is_composite,
-            self._include_in_insert,
-            self._include_in_update,
-            self._is_parent,
-            self._parent_value,
-            self._is_filter,
-            self._filter_values,
-            self._is_fixed,
-            self._fixed_value,
+            name=self._name,
+            is_id=self._is_id,
+            is_composite=self._is_composite,
+            include_in_insert=self._include_in_insert,
+            include_in_update=self._include_in_update,
+            is_ordered=self._is_ordered,
+            is_descending=self._is_descending,
+            is_parent=self._is_parent,
+            parent_value=self._parent_value,
+            is_filter=self._is_filter,
+            filter_values=self._filter_values,
+            is_fixed=self._is_fixed,
+            fixed_value=self._fixed_value,
         )
 
 
@@ -131,9 +137,12 @@ class SqlFieldManager:
 
     @property
     def order(self) -> str:
-        ordering = [key.name for key in self.fields if key.is_ordered]
+        ordering = [key for key in self.fields if key.is_ordered]
+        order_clauses = [
+            f"{key.name} DESC" if key.is_descending else key.name for key in ordering
+        ]
         if len(ordering) > 0:
-            return "ORDER BY " + ", ".join(ordering)
+            return "ORDER BY " + ", ".join(order_clauses)
         else:
             return ""
 
