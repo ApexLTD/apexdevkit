@@ -137,9 +137,12 @@ class SqlFieldManager:
 
     @property
     def order(self) -> str:
-        ordering = [key.name for key in self.fields if key.is_ordered]
+        ordering = [key for key in self.fields if key.is_ordered]
+        order_clauses = [
+            f"{key.name} DESC" if key.is_descending else key.name for key in ordering
+        ]
         if len(ordering) > 0:
-            return "ORDER BY " + ", ".join(ordering)
+            return "ORDER BY " + ", ".join(order_clauses)
         else:
             return ""
 
