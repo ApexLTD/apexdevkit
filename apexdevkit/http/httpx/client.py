@@ -37,6 +37,9 @@ class Httpx:
     def with_param(self, key: str, value: str) -> Httpx:
         return Httpx(self.client, self.config.with_param(key, value))
 
+    def with_data(self, value: JsonDict) -> Httpx:
+        return Httpx(self.client, self.config.with_data(value))
+
     def with_json(self, value: JsonDict) -> Httpx:
         return Httpx(self.client, self.config.with_json(value))
 
@@ -116,6 +119,7 @@ class HttpxConfig(Mapping[str, Any]):
     headers: JsonDict = field(default_factory=JsonDict)
     params: JsonDict = field(default_factory=JsonDict)
     json: JsonDict | None = None
+    data: JsonDict | None = None
 
     def with_endpoint(self, endpoint: str) -> HttpxConfig:
         return HttpxConfig(
@@ -123,6 +127,7 @@ class HttpxConfig(Mapping[str, Any]):
             headers=self.headers,
             params=self.params,
             json=self.json,
+            data=self.data,
         )
 
     def with_header(self, key: str, value: str) -> HttpxConfig:
@@ -131,6 +136,7 @@ class HttpxConfig(Mapping[str, Any]):
             headers=self.headers.merge(JsonDict({key: value})),
             params=self.params,
             json=self.json,
+            data=self.data,
         )
 
     def with_param(self, key: str, value: str) -> HttpxConfig:
@@ -139,6 +145,16 @@ class HttpxConfig(Mapping[str, Any]):
             headers=self.headers,
             params=self.params.merge(JsonDict({key: value})),
             json=self.json,
+            data=self.data,
+        )
+
+    def with_data(self, value: JsonDict) -> HttpxConfig:
+        return HttpxConfig(
+            endpoint=self.endpoint,
+            headers=self.headers,
+            params=self.params,
+            json=self.json,
+            data=value,
         )
 
     def with_json(self, value: JsonDict) -> HttpxConfig:
@@ -147,6 +163,7 @@ class HttpxConfig(Mapping[str, Any]):
             headers=self.headers,
             params=self.params,
             json=value,
+            data=self.data,
         )
 
     def as_dict(self) -> dict[str, Any]:
@@ -155,6 +172,7 @@ class HttpxConfig(Mapping[str, Any]):
             "headers": dict(self.headers),
             "params": dict(self.params),
             "json": dict(self.json) if self.json is not None else None,
+            "data": dict(self.data) if self.data is not None else None,
         }
 
     def __len__(self) -> int:

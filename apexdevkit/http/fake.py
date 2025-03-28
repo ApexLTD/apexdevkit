@@ -45,6 +45,7 @@ class FakeHttp:
     headers: dict[str, str] = field(default_factory=dict)
     params: dict[str, str] = field(default_factory=dict)
     json: JsonDict = field(default_factory=JsonDict)
+    data: JsonDict = field(default_factory=JsonDict)
 
     _request: InterceptedRequest = field(init=False)
 
@@ -63,6 +64,11 @@ class FakeHttp:
 
     def with_json(self, value: JsonDict) -> Self:
         self.json = value
+
+        return self
+
+    def with_data(self, value: JsonDict) -> Self:
+        self.data = value
 
         return self
 

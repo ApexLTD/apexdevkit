@@ -27,6 +27,15 @@ def test_should_attach_json() -> None:
     assert http.json == value
 
 
+def test_should_attach_data() -> None:
+    http = FakeHttp()
+    value = JsonDict().with_a(Harry="Potter")
+
+    FluentHttp(http).with_data(value)
+
+    assert http.data == value
+
+
 def test_should_form_post_response() -> None:
     http = FakeHttp()
 
@@ -50,6 +59,15 @@ def test_should_post_with_json() -> None:
     FluentHttp(http).with_json(value).post().on_endpoint(HttpMethod.post.name)
 
     assert http.json == value
+
+
+def test_should_post_with_data() -> None:
+    http = FakeHttp()
+    value = JsonDict().with_a(Harry="Potter")
+
+    FluentHttp(http).with_data(value).post().on_endpoint(HttpMethod.post.name)
+
+    assert http.data == value
 
 
 def test_should_form_get_response() -> None:
@@ -93,6 +111,15 @@ def test_should_patch_with_json() -> None:
     assert http.json == value
 
 
+def test_should_patch_with_data() -> None:
+    http = FakeHttp()
+    value = JsonDict().with_a(Harry="Potter")
+
+    FluentHttp(http).with_data(value).patch().on_endpoint(HttpMethod.patch.name)
+
+    assert http.data == value
+
+
 def test_should_delete() -> None:
     http = FakeHttp()
 
@@ -132,3 +159,12 @@ def test_should_put_with_json() -> None:
     FluentHttp(http).with_json(value).put().on_endpoint(HttpMethod.put.name)
 
     assert http.json == value
+
+
+def test_should_put_with_data() -> None:
+    http = FakeHttp()
+    value = JsonDict().with_a(Harry="Potter")
+
+    FluentHttp(http).with_data(value).put().on_endpoint(HttpMethod.put.name)
+
+    assert http.data == value
