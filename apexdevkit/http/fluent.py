@@ -20,6 +20,9 @@ class Http(Protocol):  # pragma: no cover
     def with_json(self, value: JsonDict) -> Http:
         pass
 
+    def with_data(self, value: JsonDict) -> Http:
+        pass
+
     def request(self, method: HttpMethod, endpoint: str = "") -> HttpResponse:
         pass
 
@@ -64,6 +67,12 @@ class FluentHttp:
 
     def with_json(self, value: JsonDict) -> FluentHttp:
         return FluentHttp(self.http.with_json(value))
+
+    def and_data(self, value: JsonDict) -> FluentHttp:
+        return self.with_data(value)
+
+    def with_data(self, value: JsonDict) -> FluentHttp:
+        return FluentHttp(self.http.with_data(value))
 
     def post(self) -> FluentHttpRequest:
         return FluentHttpRequest(HttpMethod.post, self.http)
