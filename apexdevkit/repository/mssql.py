@@ -50,8 +50,11 @@ class MsSqlRepository(RepositoryBase[ItemT]):
     def read(self, item_id: str) -> ItemT:
         try:
             raw = self.db.execute(self.table.select(item_id)).fetch_one()
-        except OperationalError:
-            raise DoesNotExistError(item_id)
+        except OperationalError as e:
+            if "Conversion failed" in str(e):
+                raise DoesNotExistError(item_id)
+            else:
+                raise e
 
         if not raw:
             raise DoesNotExistError(item_id)
