@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Generic, Iterable, Iterator, Mapping, TypeVar
 
-from pymssql.exceptions import DatabaseError
+from pymssql.exceptions import DatabaseError, OperationalError
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
@@ -48,7 +48,10 @@ class MsSqlRepository(RepositoryBase[ItemT]):
             raise UnknownError(e.message)
 
     def read(self, item_id: str) -> ItemT:
-        raw = self.db.execute(self.table.select(item_id)).fetch_one()
+        try:
+            raw = self.db.execute(self.table.select(item_id)).fetch_one()
+        except OperationalError:
+            raise DoesNotExistError(item_id)
 
         if not raw:
             raise DoesNotExistError(item_id)
