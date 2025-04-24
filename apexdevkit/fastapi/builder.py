@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Self
+from typing import Any, Self, Mapping
 
 from fastapi import APIRouter, FastAPI
 from starlette.responses import JSONResponse
@@ -44,6 +44,9 @@ class FastApiBuilder:
         return self
 
     def with_route(self, **values: APIRouter) -> Self:
+        return self.with_routes(values)
+
+    def with_routes(self, values: Mapping[str, APIRouter]) -> Self:
         for key, value in values.items():
             self.app.include_router(
                 value, prefix=f"/{key}", tags=value.tags or [key.title()]
