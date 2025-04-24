@@ -72,6 +72,11 @@ class FastApiBuilder:
 
         return self
 
+    def with_swagger(self, **config: Any) -> Self:
+        self.app.swagger_ui_parameters = config
+
+        return self
+
 
 @dataclass
 class RestfulServiceBuilder(ABC):
