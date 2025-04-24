@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Self, Mapping
+from typing import Any, Mapping, Self
 
 from fastapi import APIRouter, FastAPI
+from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
 from apexdevkit.error import ApiError
@@ -57,6 +58,17 @@ class FastApiBuilder:
     def with_mounted(self, **apps: FastAPI) -> Self:
         for path, app in apps.items():
             self.app.mount(f"/{path.replace('_', '-')}", app)
+
+        return self
+
+    def with_frontend(self, origin: str) -> Self:
+        self.app.add_middleware(
+            CORSMiddleware,
+            allow_origins=[origin],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
 
         return self
 
