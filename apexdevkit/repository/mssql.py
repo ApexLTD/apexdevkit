@@ -151,6 +151,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
     table: str | None = None
     formatter: Formatter[Mapping[str, Any], ItemT] | None = None
     fields: list[_SqlField] | None = None
+    custom_filters: list[str] | None = None
 
     def with_username(self, value: str) -> MsSqlTableBuilder[ItemT]:
         return MsSqlTableBuilder[ItemT](
@@ -159,6 +160,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.table,
             self.formatter,
             self.fields,
+            self.custom_filters,
         )
 
     def with_schema(self, value: str) -> MsSqlTableBuilder[ItemT]:
@@ -168,6 +170,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.table,
             self.formatter,
             self.fields,
+            self.custom_filters,
         )
 
     def with_table(self, value: str) -> MsSqlTableBuilder[ItemT]:
@@ -177,6 +180,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
             value,
             self.formatter,
             self.fields,
+            self.custom_filters,
         )
 
     def with_formatter(
@@ -188,6 +192,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.table,
             value,
             self.fields,
+            self.custom_filters,
         )
 
     def with_fields(self, value: Iterable[_SqlField]) -> MsSqlTableBuilder[ItemT]:
@@ -213,17 +218,32 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.table,
             self.formatter,
             key_list,
+            self.custom_filters,
+        )
+
+    def with_custom_filters(self, filters: Iterable[str]) -> MsSqlTableBuilder[ItemT]:
+        return MsSqlTableBuilder[ItemT](
+            self.username,
+            self.schema,
+            self.table,
+            self.formatter,
+            self.fields,
+            list(filters),
         )
 
     def build(self) -> SqlTable[ItemT]:
         if not self.schema or not self.table or not self.formatter or not self.fields:
             raise ValueError("Cannot build sql table.")
 
+        field_manager = SqlFieldManager.Builder().with_fields(self.fields)
+        if self.custom_filters and len(self.custom_filters) > 0:
+            field_manager = field_manager.with_custom_filters(self.custom_filters)
+
         return DefaultSqlTable(
             self.schema,
             self.table,
             self.formatter,
-            SqlFieldManager.Builder().with_fields(self.fields).for_mssql().build(),
+            field_manager.for_mssql().build(),
             self.username,
         )
 
