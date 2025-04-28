@@ -120,6 +120,7 @@ class SqlFieldBuilder:
 @dataclass
 class SqlFieldManager:
     fields: list[_SqlField]
+    custom_filters: list[str]
     key_formatter: str
     value_formatter: str
 
@@ -209,7 +210,7 @@ class SqlFieldManager:
         )
 
     def _general_filters(self) -> str:
-        statements: list[str] = []
+        statements: list[str] = [] + self.custom_filters
         for key in self.fields:
             if key.is_filter:
                 inner_statements: list[str] = []
@@ -237,12 +238,19 @@ class SqlFieldManager:
 
     @dataclass
     class Builder:
+        custom_filters: list[str] = field(default_factory=list)
+
         fields: list[_SqlField] = field(init=False)
         key_formatter: str = field(init=False)
         value_formatter: str = field(init=False)
 
         def with_fields(self, fields: list[_SqlField]) -> SqlFieldManager.Builder:
             self.fields = fields
+
+            return self
+
+        def with_custom_filters(self, fields: list[str]) -> SqlFieldManager.Builder:
+            self.custom_filters = fields
 
             return self
 
@@ -260,5 +268,8 @@ class SqlFieldManager:
 
         def build(self) -> SqlFieldManager:
             return SqlFieldManager(
-                self.fields, self.key_formatter, self.value_formatter
+                self.fields,
+                self.custom_filters,
+                self.key_formatter,
+                self.value_formatter,
             )

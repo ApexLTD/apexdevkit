@@ -2,5 +2,5 @@
             EXECUTE AS USER = 'test'
             DELETE
             FROM [test].[apples]
-            WHERE ([manager] = 5 OR [manager] = 4)
+            WHERE pid > 5 AND ([manager] = 5 OR [manager] = 4)
             REVERT

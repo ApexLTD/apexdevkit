@@ -43,6 +43,7 @@ def table() -> SqlTable[Apple]:
                 ),
             ]
         )
+        .with_custom_filters(["pid > 5"])
         .build()
     )
 
