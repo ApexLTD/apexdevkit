@@ -17,6 +17,7 @@ format:
 	poetry run ruff check  apexdevkit tests --fix
 
 lint:
+	poetry check --strict
 	poetry run ruff format apexdevkit tests --check
 	poetry run ruff check apexdevkit tests
 	poetry run mypy apexdevkit tests
