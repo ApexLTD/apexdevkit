@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from sqlite3 import IntegrityError
-from typing import Any, Generic, Iterable, Iterator, Mapping
+from typing import Any, Generic
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter

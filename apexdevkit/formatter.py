@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import pickle
+from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import asdict, dataclass, field, fields, is_dataclass
-from typing import Any, Generic, Mapping, Protocol, Self, TypeVar, get_args
-
-from typing_extensions import get_type_hints
+from typing import Any, Generic, Protocol, Self, TypeVar, get_args, get_type_hints
 
 from apexdevkit.fluent import FluentDict
 from apexdevkit.value import Value

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass
-from typing import Any, Generic, Iterable, Iterator, Mapping, TypeVar
+from typing import Any, Generic, TypeVar
 
 from pymssql.exceptions import DatabaseError, OperationalError
 

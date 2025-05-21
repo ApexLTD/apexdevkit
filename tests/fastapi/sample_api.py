@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import random
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import Enum
 from functools import cached_property
-from typing import Any, Iterable, Type
+from typing import Any
 
 from fastapi import FastAPI
 
@@ -159,7 +160,7 @@ class PriceFields(SchemaFields):
 class FakeApple(FakeResource[Apple]):
     id: str | None = None
     name: Name | None = None
-    item_type: Type[Apple] = field(default=Apple)
+    item_type: type[Apple] = field(default=Apple)
 
     @cached_property
     def _raw(self) -> dict[str, Any]:

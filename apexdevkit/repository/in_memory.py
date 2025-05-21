@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Callable, Iterable, Iterator
 from contextlib import suppress
 from dataclasses import dataclass, field
-from typing import Any, Callable, Generic, Iterable, Iterator, Protocol, Self
+from typing import Any, Generic, Protocol, Self
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter, PickleFormatter

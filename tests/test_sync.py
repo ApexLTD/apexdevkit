@@ -1,5 +1,5 @@
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
-from typing import Iterable, Iterator
 from uuid import uuid4
 
 from apexdevkit.synchronization import FullSync, Sync

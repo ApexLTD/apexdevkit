@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
-from typing import Any, ClassVar, Generic, Iterable, Mapping, Protocol, TypeVar
+from typing import Any, ClassVar, Generic, Protocol, TypeVar
 
 from apexdevkit.annotation import deprecated
 from apexdevkit.error import ForbiddenError

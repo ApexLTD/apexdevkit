@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
-from typing import Callable, Generic, Iterator, TypeVar
+from typing import Generic, TypeVar
 
 from apexdevkit.error import DoesNotExistError
 from apexdevkit.formatter import Formatter

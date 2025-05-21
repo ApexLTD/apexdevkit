@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Any, Protocol, Type
+from typing import Any, Protocol
 
 from apexdevkit.http.json import JsonDict
 
@@ -103,25 +103,25 @@ class FluentHttpRequest:
 class FluentHttpResponse:
     response: HttpResponse
 
-    def on_bad_request(self, raises: Exception | Type[Exception]) -> FluentHttpResponse:
+    def on_bad_request(self, raises: Exception | type[Exception]) -> FluentHttpResponse:
         if self.response.code() == 400:
             raise raises
 
         return self
 
-    def on_conflict(self, raises: Exception | Type[Exception]) -> FluentHttpResponse:
+    def on_conflict(self, raises: Exception | type[Exception]) -> FluentHttpResponse:
         if self.response.code() == 409:
             raise raises
 
         return self
 
-    def on_not_found(self, raises: Exception | Type[Exception]) -> FluentHttpResponse:
+    def on_not_found(self, raises: Exception | type[Exception]) -> FluentHttpResponse:
         if self.response.code() == 404:
             raise raises
 
         return self
 
-    def on_failure(self, raises: Type[Exception]) -> FluentHttpResponse:
+    def on_failure(self, raises: type[Exception]) -> FluentHttpResponse:
         if self.response.code() < 200 or self.response.code() > 299:
             raise raises(self.response.raw(), self.response.code())
 

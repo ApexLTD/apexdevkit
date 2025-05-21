@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Annotated, Any, Callable, Protocol
+from typing import Annotated, Any, Protocol
 
 from fastapi import Depends, Path
 from fastapi.requests import Request

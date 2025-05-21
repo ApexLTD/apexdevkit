@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Any, Type
+from typing import Any
 
 import pytest
 
@@ -23,7 +23,7 @@ class Animal:
 class FakeAnimal(FakeResource[Animal]):
     id: str | None = None
     name: str | None = None
-    item_type: Type[Animal] = field(default=Animal)
+    item_type: type[Animal] = field(default=Animal)
 
     @cached_property
     def _raw(self) -> dict[str, Any]:
