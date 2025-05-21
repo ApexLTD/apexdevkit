@@ -183,7 +183,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
 
         return DatabaseCommand(f"""
             SELECT
-                {columns} 
+                {columns}
             FROM {self.table_name.upper()}
             {self.fields.where_statement(include_id=True)};
         """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
@@ -198,7 +198,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
 
         return DatabaseCommand(f"""
             SELECT
-                {columns} 
+                {columns}
             FROM {self.table_name.upper()}
             WHERE {duplicates};
         """).with_data({key: raw[key] for key in raw if key in self.fields.composite})

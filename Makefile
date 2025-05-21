@@ -16,6 +16,9 @@ format:
 	poetry run ruff format apexdevkit tests
 	poetry run ruff check  apexdevkit tests --fix
 
+format-unsafe:
+	poetry run ruff check  apexdevkit tests --fix --unsafe-fixes
+
 lint:
 	poetry check --strict
 	poetry run ruff format apexdevkit tests --check

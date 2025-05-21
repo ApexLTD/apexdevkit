@@ -25,39 +25,39 @@ class AppleTable(SqlTable[Apple]):
 
     def insert(self, apple: Apple) -> DatabaseCommand:
         return DatabaseCommand("""
-            INSERT INTO test.apples ([clr]) 
-            OUTPUT (INSERTED.clr AS color, INSERTED.apid AS id) 
+            INSERT INTO test.apples ([clr])
+            OUTPUT (INSERTED.clr AS color, INSERTED.apid AS id)
             VALUES (%(color)s)
         """).with_data(color=apple.color)
 
     def select(self, apple_id: str) -> DatabaseCommand:
         return DatabaseCommand("""
-            SELECT [clr] AS color, [apid] AS id 
-            FROM test.apples 
+            SELECT [clr] AS color, [apid] AS id
+            FROM test.apples
             WHERE [apid] = %(id)s
         """).with_data(id=apple_id)
 
     def select_all(self) -> DatabaseCommand:
         return DatabaseCommand("""
-            SELECT [clr] AS color, [apid] AS id 
-            FROM test.apples 
+            SELECT [clr] AS color, [apid] AS id
+            FROM test.apples
         """)
 
     def delete(self, apple_id: str) -> DatabaseCommand:
         return DatabaseCommand("""
-            DELETE FROM test.apples 
+            DELETE FROM test.apples
             WHERE [apid] = %(id)s
         """).with_data(id=apple_id)
 
     def delete_all(self) -> DatabaseCommand:
         return DatabaseCommand("""
-            DELETE FROM test.apples 
+            DELETE FROM test.apples
         """)
 
     def update(self, apple: Apple) -> DatabaseCommand:
         return DatabaseCommand("""
             UPDATE test.apples
-            SET [clr] = %(color)s 
+            SET [clr] = %(color)s
             WHERE [apid] = %(id)s
         """).with_data(self.dump(apple))
 
