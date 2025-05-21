@@ -29,7 +29,6 @@ mypy = "*"
 ruff = "*"
 
 [tool.mypy]
-python_version = "3.11"
 ignore_missing_imports = true
 strict = true
 exclude = [
@@ -38,7 +37,6 @@ exclude = [
 ]
 
 [tool.ruff]
-target-version = "py311"
 line-length = 88
 
 exclude = [
