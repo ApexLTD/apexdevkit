@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
+from contextlib import AbstractContextManager
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, ContextManager, Iterable, Mapping, Protocol
+from typing import Any, Protocol
 
 _RawData = Mapping[str, Any]
 
@@ -45,7 +47,7 @@ class Database:
 
 
 class Connector(Protocol):  # pragma: no cover
-    def connect(self) -> ContextManager[Connection]:
+    def connect(self) -> AbstractContextManager[Connection]:
         pass
 
 

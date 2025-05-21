@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from abc import ABC
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Dict, Generic, Iterable, Mapping, TypeVar
+from typing import Any, Generic, TypeVar
 
 from apexdevkit.formatter import Formatter
 from apexdevkit.query.query import FooterOptions, QueryOptions, Summary
@@ -14,7 +14,7 @@ RawItem = Mapping[str, Any]
 RawCollection = Iterable[RawItem]
 
 
-class _RawItemWithId(Dict[str, Any]):
+class _RawItemWithId(dict[str, Any]):
     def __post_init__(self) -> None:
         assert "id" in self
 
@@ -22,7 +22,7 @@ class _RawItemWithId(Dict[str, Any]):
 RawCollectionWithId = Iterable[_RawItemWithId]
 
 
-class RestfulService(ABC):  # pragma: no cover
+class RestfulService:  # pragma: no cover
     def create_one(self, item: RawItem) -> RawItem:
         raise NotImplementedError(self.create_one.__name__)
 

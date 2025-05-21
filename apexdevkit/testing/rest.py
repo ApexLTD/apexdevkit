@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Iterable, Self
+from typing import Any, Self
 
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.request import HttpRequest

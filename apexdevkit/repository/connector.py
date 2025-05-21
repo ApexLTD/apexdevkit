@@ -4,7 +4,7 @@ import sqlite3
 from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, ContextManager
+from typing import Any
 
 import pymssql
 from pymssql import Connection as _Connection
@@ -17,7 +17,7 @@ from apexdevkit.repository import Connection
 class SqliteFileConnector:
     dsn: str
 
-    def connect(self) -> ContextManager[Connection]:
+    def connect(self) -> AbstractContextManager[Connection]:
         connection = sqlite3.connect(self.dsn)
         connection.row_factory = sqlite3.Row
 
@@ -28,11 +28,11 @@ class SqliteFileConnector:
 class SqliteInMemoryConnector:
     dsn: str = ":memory:"
 
-    def connect(self) -> ContextManager[Connection]:
+    def connect(self) -> AbstractContextManager[Connection]:
         return self._connection
 
     @cached_property
-    def _connection(self) -> ContextManager[Connection]:
+    def _connection(self) -> AbstractContextManager[Connection]:
         connection = sqlite3.connect(self.dsn, check_same_thread=False)
         connection.row_factory = sqlite3.Row
 
@@ -48,7 +48,7 @@ class MsSqlConnector:
     db_tds_version = "7.0"
     db_port: str | None = None
 
-    def connect(self) -> ContextManager[Connection]:
+    def connect(self) -> AbstractContextManager[Connection]:
         return ConnectionContextManager(self._connection())
 
     def _connection(self) -> Connection:

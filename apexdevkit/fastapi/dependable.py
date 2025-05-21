@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Annotated, Any, Callable, Protocol
+from typing import Annotated, Any, Protocol
 
 from fastapi import Depends, Path
 from fastapi.requests import Request
@@ -52,7 +53,7 @@ class ParentDependency:
             try:
                 return builder.with_parent(parent_id)
             except DoesNotExistError as e:
-                raise ApiError(404, RestfulResponse(self.parent).not_found(e))
+                raise ApiError(404, RestfulResponse(self.parent).not_found(e)) from e
 
         return Annotated[RestfulServiceBuilder, Depends(_)]
 

@@ -5,7 +5,7 @@ from apexdevkit.id import ApexID
 
 def test_should_generate_unique() -> None:
     ids_set = set()
-    for i in range(ApexID._sequence_bitmask):
+    for _ in range(ApexID._sequence_bitmask):
         generated_id = ApexID.id()
 
         assert generated_id not in ids_set
@@ -30,7 +30,7 @@ def test_should_encode_timestamp() -> None:
 def test_should_sort_in_generated_order() -> None:
     ids = []
 
-    for i in range(10_000):
+    for _ in range(10_000):
         ids.append(ApexID.id())
 
     sorted_ids = ids.copy()

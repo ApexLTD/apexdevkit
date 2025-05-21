@@ -1,5 +1,6 @@
 import inspect
-from typing import Any, Callable, TypeVar, cast
+from collections.abc import Callable
+from typing import Any, TypeVar, cast
 from warnings import warn
 
 F = TypeVar("F", bound=Callable[..., Any])

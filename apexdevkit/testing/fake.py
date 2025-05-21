@@ -3,7 +3,7 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Any, Generic, Type, TypeVar
+from typing import Any, Generic, TypeVar
 
 from faker import Faker
 
@@ -70,7 +70,7 @@ class Fake:
 
 @dataclass(frozen=True)
 class FakeResource(Generic[ItemT]):
-    item_type: Type[ItemT] = field()
+    item_type: type[ItemT] = field()
     fake: Fake = field(default_factory=Fake)
 
     @cached_property
@@ -89,7 +89,7 @@ class FakeResource(Generic[ItemT]):
 
 @dataclass(frozen=True)
 class FakeValue(FakeResource[Value]):
-    item_type: Type[Value] = field(default=Value)
+    item_type: type[Value] = field(default=Value)
 
     @cached_property
     def _raw(self) -> dict[str, Any]:
@@ -101,7 +101,7 @@ class FakeValue(FakeResource[Value]):
 
 @dataclass(frozen=True)
 class FakeNumericValue(FakeResource[NumericValue]):
-    item_type: Type[NumericValue] = field(default=NumericValue)
+    item_type: type[NumericValue] = field(default=NumericValue)
 
     @cached_property
     def _raw(self) -> dict[str, Any]:
@@ -113,7 +113,7 @@ class FakeNumericValue(FakeResource[NumericValue]):
 
 @dataclass(frozen=True)
 class FakeStringValue(FakeResource[StringValue]):
-    item_type: Type[StringValue] = field(default=StringValue)
+    item_type: type[StringValue] = field(default=StringValue)
 
     @cached_property
     def _raw(self) -> dict[str, Any]:
@@ -124,7 +124,7 @@ class FakeStringValue(FakeResource[StringValue]):
 
 @dataclass(frozen=True)
 class FakeDateValue(FakeResource[DateValue]):
-    item_type: Type[DateValue] = field(default=DateValue)
+    item_type: type[DateValue] = field(default=DateValue)
 
     @cached_property
     def _raw(self) -> dict[str, Any]:
@@ -134,7 +134,7 @@ class FakeDateValue(FakeResource[DateValue]):
 @dataclass(frozen=True)
 class FakeLeaf(FakeResource[Leaf]):
     values: list[NumericValue | StringValue | DateValue] = field(default_factory=list)
-    item_type: Type[Leaf] = field(default=Leaf)
+    item_type: type[Leaf] = field(default=Leaf)
 
     @cached_property
     def _raw(self) -> dict[str, Any]:
@@ -147,7 +147,7 @@ class FakeLeaf(FakeResource[Leaf]):
 @dataclass(frozen=True)
 class FakeOperator(FakeResource[Operator]):
     operands: list[Operator | Leaf] = field(default_factory=list)
-    item_type: Type[Operator] = field(default=Operator)
+    item_type: type[Operator] = field(default=Operator)
 
     @cached_property
     def _raw(self) -> dict[str, Any]:
@@ -160,7 +160,7 @@ class FakeOperator(FakeResource[Operator]):
 @dataclass(frozen=True)
 class FakeSort(FakeResource[Sort]):
     is_descending: bool | None = None
-    item_type: Type[Sort] = field(default=Sort)
+    item_type: type[Sort] = field(default=Sort)
 
     @cached_property
     def _raw(self) -> dict[str, Any]:
@@ -174,7 +174,7 @@ class FakeSort(FakeResource[Sort]):
 
 @dataclass(frozen=True)
 class FakePage(FakeResource[Page]):
-    item_type: Type[Page] = field(default=Page)
+    item_type: type[Page] = field(default=Page)
 
     @cached_property
     def _raw(self) -> dict[str, Any]:
@@ -188,7 +188,7 @@ class FakePage(FakeResource[Page]):
 @dataclass(frozen=True)
 class FakeFilter(FakeResource[Filter]):
     args: list[NumericValue | StringValue] = field(default_factory=list)
-    item_type: Type[Filter] = field(default=Filter)
+    item_type: type[Filter] = field(default=Filter)
 
     @cached_property
     def _raw(self) -> dict[str, Any]:
@@ -203,7 +203,7 @@ class FakeQueryOptions(FakeResource[QueryOptions]):
     condition: Operator | None = None
     ordering: list[Sort] = field(default_factory=list)
     paging: Page | None = None
-    item_type: Type[QueryOptions] = field(default=QueryOptions)
+    item_type: type[QueryOptions] = field(default=QueryOptions)
 
     @cached_property
     def _raw(self) -> dict[str, Any]:
@@ -217,7 +217,7 @@ class FakeQueryOptions(FakeResource[QueryOptions]):
 
 @dataclass(frozen=True)
 class FakeAggregationOption(FakeResource[AggregationOption]):
-    item_type: Type[AggregationOption] = field(default=AggregationOption)
+    item_type: type[AggregationOption] = field(default=AggregationOption)
 
     @cached_property
     def _raw(self) -> dict[str, Any]:

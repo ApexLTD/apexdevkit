@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Callable, Iterable, Iterator
 from contextlib import suppress
 from dataclasses import dataclass, field
-from typing import Any, Callable, Generic, Iterable, Iterator, Protocol, Self
+from typing import Any, Generic, Protocol, Self
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter, PickleFormatter
@@ -131,14 +132,14 @@ class _SingleKeyRepository(RepositoryBase[ItemT]):
     def delete(self, item_id: str) -> None:
         try:
             self.store.drop(item_id)
-        except KeyError:
-            raise DoesNotExistError(item_id)
+        except KeyError as e:
+            raise DoesNotExistError(item_id) from e
 
     def read(self, item_id: str) -> ItemT:
         try:
             return self.store.get(item_id)
-        except KeyError:
-            raise DoesNotExistError(item_id)
+        except KeyError as e:
+            raise DoesNotExistError(item_id) from e
 
     def __iter__(self) -> Iterator[ItemT]:
         return iter(self.store.values())

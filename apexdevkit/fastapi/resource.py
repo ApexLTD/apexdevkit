@@ -1,6 +1,7 @@
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Union
+from typing import Any, Union
 
 from pydantic import BaseModel
 from starlette.responses import JSONResponse

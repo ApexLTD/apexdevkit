@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from sqlite3 import IntegrityError
-from typing import Any, Generic, Iterable, Iterator, Mapping
+from typing import Any, Generic
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
@@ -28,8 +29,8 @@ class SqliteRepository(RepositoryBase[ItemT]):
 
         try:
             return int(raw["n_items"])
-        except KeyError:
-            raise UnknownError(raw)
+        except KeyError as e:
+            raise UnknownError(raw) from e
 
     def create(self, item: ItemT) -> ItemT:
         try:
@@ -183,7 +184,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
 
         return DatabaseCommand(f"""
             SELECT
-                {columns} 
+                {columns}
             FROM {self.table_name.upper()}
             {self.fields.where_statement(include_id=True)};
         """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
@@ -198,7 +199,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
 
         return DatabaseCommand(f"""
             SELECT
-                {columns} 
+                {columns}
             FROM {self.table_name.upper()}
             WHERE {duplicates};
         """).with_data({key: raw[key] for key in raw if key in self.fields.composite})

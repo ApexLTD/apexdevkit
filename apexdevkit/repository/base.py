@@ -1,4 +1,5 @@
-from typing import Any, Generic, Iterator
+from collections.abc import Iterator
+from typing import Any, Generic
 
 from apexdevkit.repository.interface import ItemT, Repository
 

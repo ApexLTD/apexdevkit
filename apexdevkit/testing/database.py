@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from contextlib import nullcontext
+from contextlib import AbstractContextManager, nullcontext
 from dataclasses import dataclass, field
-from typing import Any, ContextManager, Self
+from typing import Any, Self
 
 from apexdevkit.repository import DatabaseCommand
 
@@ -27,7 +27,7 @@ class FakeConnector:
     def fetchall(self) -> list[dict[str, Any]]:
         return self.results.pop()  # type: ignore
 
-    def connect(self) -> ContextManager[Self]:
+    def connect(self) -> AbstractContextManager[Self]:
         return nullcontext(self)
 
     def cursor(self) -> Self:

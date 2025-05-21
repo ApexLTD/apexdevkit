@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
-from typing import Callable, Generic, Iterator, TypeVar
+from typing import Generic, TypeVar
 
 from apexdevkit.error import DoesNotExistError
 from apexdevkit.formatter import Formatter
@@ -75,22 +76,34 @@ class MultipleRepositoryBuilder(Generic[ItemT]):
         self,
         repository: Repository[ItemT],
         condition: Callable[[ItemT], bool] = lambda item: True,
-        formatter: Formatter[ItemT, ItemT] = NoFormatter[ItemT](),
+        formatter: Formatter[ItemT, ItemT] | None = None,
         id_prefix: str = "",
     ) -> MultipleRepositoryBuilder[ItemT]:
         return MultipleRepositoryBuilder[ItemT](
             self.repositories
-            + [_InnerRepository(repository, condition, formatter, id_prefix)]
+            + [
+                _InnerRepository(
+                    repository,
+                    condition,
+                    formatter or NoFormatter[ItemT](),
+                    id_prefix,
+                )
+            ]
         )
 
     def and_repository(
         self,
         repository: Repository[ItemT],
         condition: Callable[[ItemT], bool] = lambda item: True,
-        formatter: Formatter[ItemT, ItemT] = NoFormatter[ItemT](),
+        formatter: Formatter[ItemT, ItemT] | None = None,
         id_prefix: str = "",
     ) -> MultipleRepositoryBuilder[ItemT]:
-        return self.with_repository(repository, condition, formatter, id_prefix)
+        return self.with_repository(
+            repository,
+            condition,
+            formatter or NoFormatter[ItemT](),
+            id_prefix,
+        )
 
     def build(self) -> MultipleRepository[ItemT]:
         return MultipleRepository[ItemT](self.repositories)

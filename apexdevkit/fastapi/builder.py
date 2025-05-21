@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Any, Mapping, Self
+from typing import Any, Self
 
 from fastapi import APIRouter, FastAPI
 from starlette.middleware.cors import CORSMiddleware

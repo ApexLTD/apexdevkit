@@ -59,7 +59,7 @@ class SummaryExtractor:
     def _value(self, value: Any) -> NumericValue | DateValue | StringValue | NullValue:
         if value is None:
             return NullValue()
-        if isinstance(value, (int, float, Decimal)):
+        if isinstance(value, int | float | Decimal):
             return NumericValue.from_decimal(Decimal(value))
         if self.aggregation.name and (
             "date" in self.aggregation.name.lower()

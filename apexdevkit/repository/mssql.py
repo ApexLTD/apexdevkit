@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass
-from typing import Any, Generic, Iterable, Iterator, Mapping, TypeVar
+from typing import Any, Generic, TypeVar
 
 from pymssql.exceptions import DatabaseError, OperationalError
 
@@ -27,8 +28,8 @@ class MsSqlRepository(RepositoryBase[ItemT]):
 
         try:
             return int(raw["n_items"])
-        except KeyError:
-            raise UnknownError(raw)
+        except KeyError as e:
+            raise UnknownError(raw) from e
 
     def delete(self, item_id: str) -> None:
         self.db.execute(self.table.delete(item_id)).fetch_none()
@@ -40,19 +41,17 @@ class MsSqlRepository(RepositoryBase[ItemT]):
         try:
             return self.table.load(self.db.execute(self.table.insert(item)).fetch_one())
         except DatabaseError as e:
-            e = MssqlException(e)
+            if MssqlException(e).is_duplication():
+                raise self.table.exists(item) from e
 
-            if e.is_duplication():
-                raise self.table.exists(item)
-
-            raise UnknownError(e.message)
+            raise UnknownError(MssqlException(e).message) from e
 
     def read(self, item_id: str) -> ItemT:
         try:
             raw = self.db.execute(self.table.select(item_id)).fetch_one()
         except OperationalError as e:
             if "Conversion failed" in str(e):
-                raise DoesNotExistError(item_id)
+                raise DoesNotExistError(item_id) from e
             else:
                 raise e
 
@@ -273,7 +272,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
             [f"%({key.name})s" for key in self.fields if key.include_in_insert]
         )
         try:
-            self.fields.id
+            _ = self.fields.id
             output = ", ".join(
                 ["[" + field.name + "] AS " + field.name for field in self.fields]
             )

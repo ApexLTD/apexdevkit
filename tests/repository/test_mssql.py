@@ -1,5 +1,6 @@
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Any, Mapping
+from typing import Any
 from unittest.mock import MagicMock
 from uuid import uuid4
 
@@ -25,39 +26,39 @@ class AppleTable(SqlTable[Apple]):
 
     def insert(self, apple: Apple) -> DatabaseCommand:
         return DatabaseCommand("""
-            INSERT INTO test.apples ([clr]) 
-            OUTPUT (INSERTED.clr AS color, INSERTED.apid AS id) 
+            INSERT INTO test.apples ([clr])
+            OUTPUT (INSERTED.clr AS color, INSERTED.apid AS id)
             VALUES (%(color)s)
         """).with_data(color=apple.color)
 
     def select(self, apple_id: str) -> DatabaseCommand:
         return DatabaseCommand("""
-            SELECT [clr] AS color, [apid] AS id 
-            FROM test.apples 
+            SELECT [clr] AS color, [apid] AS id
+            FROM test.apples
             WHERE [apid] = %(id)s
         """).with_data(id=apple_id)
 
     def select_all(self) -> DatabaseCommand:
         return DatabaseCommand("""
-            SELECT [clr] AS color, [apid] AS id 
-            FROM test.apples 
+            SELECT [clr] AS color, [apid] AS id
+            FROM test.apples
         """)
 
     def delete(self, apple_id: str) -> DatabaseCommand:
         return DatabaseCommand("""
-            DELETE FROM test.apples 
+            DELETE FROM test.apples
             WHERE [apid] = %(id)s
         """).with_data(id=apple_id)
 
     def delete_all(self) -> DatabaseCommand:
         return DatabaseCommand("""
-            DELETE FROM test.apples 
+            DELETE FROM test.apples
         """)
 
     def update(self, apple: Apple) -> DatabaseCommand:
         return DatabaseCommand("""
             UPDATE test.apples
-            SET [clr] = %(color)s 
+            SET [clr] = %(color)s
             WHERE [apid] = %(id)s
         """).with_data(self.dump(apple))
 
@@ -86,7 +87,7 @@ def test_should_retrieve_all(apple: Apple) -> None:
     table = AppleTable()
 
     executor.fetch_all.return_value = [table.dump(apple)]
-    result = [item for item in MsSqlRepository[Apple](db, table)]
+    result = list(iter(MsSqlRepository[Apple](db, table)))
 
     db.execute.assert_called_once_with(table.select_all())
     executor.fetch_all.assert_called_once()

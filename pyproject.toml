@@ -1,16 +1,19 @@
-[tool.poetry]
+[project]
 name = "apexdevkit"
-version = "1.22.2"
+version = "1.23.0"
 description = "Apex Development Tools for python."
-authors = ["Apex Dev <dev@apex.ge>"]
 readme = "README.md"
+authors = [
+    { name = "Apex Dev", email = "dev@apex.ge" }
+]
+dynamic = ["dependencies"]
+requires-python = ">=3.11"
 
 [tool.poetry.dependencies]
-python = "^3.11"
 httpx = "*"
 fastapi = "*"
 uvicorn = "*"
-sentry-sdk = {extras = ["fastapi"], version = "*"}
+sentry-sdk = { extras = ["fastapi"], version = "*" }
 python-dotenv = "*"
 pymssql = "2.3.2"
 
@@ -22,14 +25,12 @@ pytest-cov = "*"
 pytest-recording = "*"
 coverage = "*"
 faker = "*"
-mongomock = "*"
 
 [tool.poetry.group.lint.dependencies]
 mypy = "*"
 ruff = "*"
 
 [tool.mypy]
-python_version = "3.11"
 ignore_missing_imports = true
 strict = true
 exclude = [
@@ -38,7 +39,6 @@ exclude = [
 ]
 
 [tool.ruff]
-target-version = "py311"
 line-length = 88
 
 exclude = [
@@ -48,10 +48,16 @@ exclude = [
     "venv",
 ]
 
-lint.select = ["E", "F", "I"]
-lint.ignore = []
-lint.fixable = ["A", "B", "C", "D", "E", "F", "I"]
-lint.unfixable = []
+[tool.ruff.lint]
+select = [
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade
+    "W",    # pycodestyle warnings
+]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10
