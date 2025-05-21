@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from abc import ABC
 from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, Dict, Generic, Iterable, Mapping, TypeVar
@@ -22,7 +21,7 @@ class _RawItemWithId(Dict[str, Any]):
 RawCollectionWithId = Iterable[_RawItemWithId]
 
 
-class RestfulService(ABC):  # pragma: no cover
+class RestfulService:  # pragma: no cover
     def create_one(self, item: RawItem) -> RawItem:
         raise NotImplementedError(self.create_one.__name__)
 
