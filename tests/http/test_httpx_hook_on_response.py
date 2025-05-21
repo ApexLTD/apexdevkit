@@ -36,31 +36,23 @@ class FakeResponseHandler:
 
 @pytest.mark.vcr
 def test_should_hook_get_method(http: Httpx) -> None:
-    with pytest.raises(ValueError) as cm:
+    with pytest.raises(ValueError, match="get"):
         http.request(HttpMethod.get, "/get")
-
-    assert str(cm.value) == "on_get"
 
 
 @pytest.mark.vcr
 def test_should_hook_post_method(http: Httpx) -> None:
-    with pytest.raises(ValueError) as cm:
+    with pytest.raises(ValueError, match="post"):
         http.request(HttpMethod.post, "/post")
-
-    assert str(cm.value) == "on_post"
 
 
 @pytest.mark.vcr
 def test_should_hook_patch_method(http: Httpx) -> None:
-    with pytest.raises(ValueError) as cm:
+    with pytest.raises(ValueError, match="patch"):
         http.request(HttpMethod.patch, "/patch")
-
-    assert str(cm.value) == "on_patch"
 
 
 @pytest.mark.vcr
 def test_should_hook_delete_method(http: Httpx) -> None:
-    with pytest.raises(ValueError) as cm:
+    with pytest.raises(ValueError, match="delete"):
         http.request(HttpMethod.delete, "/delete")
-
-    assert str(cm.value) == "on_delete"

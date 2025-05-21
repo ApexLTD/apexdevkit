@@ -1,4 +1,4 @@
-from pytest import fixture
+import pytest
 
 from apexdevkit.formatter import AliasFormatter, AliasMapping, DataclassFormatter
 from apexdevkit.repository.mssql import MsSqlTableBuilder, SqlTable
@@ -16,7 +16,7 @@ _FORMATTER = AliasFormatter(
 )
 
 
-@fixture
+@pytest.fixture
 def table(apple: Apple) -> SqlTable[Apple]:
     return (
         MsSqlTableBuilder[Apple]()

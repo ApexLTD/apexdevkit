@@ -6,7 +6,6 @@ from uuid import uuid4
 
 import pytest
 from pymssql.exceptions import DatabaseError
-from pytest import fixture
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.repository import Database, DatabaseCommand, MsSqlRepository
@@ -75,7 +74,7 @@ class AppleTable(SqlTable[Apple]):
         return ExistsError(duplicate).with_duplicate(lambda i: f"id<{duplicate.id}>")
 
 
-@fixture
+@pytest.fixture
 def apple() -> Apple:
     return Apple("red")
 

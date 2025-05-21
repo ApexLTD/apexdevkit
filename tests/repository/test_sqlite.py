@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Any
 from uuid import uuid4
 
-from pytest import fixture, raises
+import pytest
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
@@ -64,7 +64,7 @@ class FakeTable(SqlTable[_Item]):
         )
 
 
-@fixture
+@pytest.fixture
 def repository() -> SqliteRepository[_Item]:
     db = Database(SqliteInMemoryConnector())
     db.execute(FakeTable().setup()).fetch_none()
@@ -78,7 +78,7 @@ def test_should_list_nothing_when_empty(repository: SqliteRepository[_Item]) -> 
 
 
 def test_should_not_read_unknown(repository: SqliteRepository[_Item]) -> None:
-    with raises(DoesNotExistError):
+    with pytest.raises(DoesNotExistError):
         repository.read(str(uuid4()))
 
 
@@ -92,7 +92,7 @@ def test_should_not_duplicate_on_create(repository: SqliteRepository[_Item]) -> 
     item = _Item(id=str(uuid4()), external_id=str(uuid4()))
     repository.create(item)
 
-    with raises(ExistsError, match=f"_Item with id<{item.id}> already exists."):
+    with pytest.raises(ExistsError, match=f"_Item with id<{item.id}> already exists."):
         repository.create(item)
 
 

@@ -1,12 +1,11 @@
 import pytest
-from pytest import fixture
 
 from apexdevkit.http import Http, HttpMethod, Httpx, JsonDict
 
 ECHO_SERVER = "http://httpbin.org"
 
 
-@fixture
+@pytest.fixture
 def http() -> Http:
     return (
         Httpx.Builder()
