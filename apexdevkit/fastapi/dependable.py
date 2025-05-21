@@ -52,7 +52,7 @@ class ParentDependency:
             try:
                 return builder.with_parent(parent_id)
             except DoesNotExistError as e:
-                raise ApiError(404, RestfulResponse(self.parent).not_found(e))
+                raise ApiError(404, RestfulResponse(self.parent).not_found(e)) from e
 
         return Annotated[RestfulServiceBuilder, Depends(_)]
 

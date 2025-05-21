@@ -28,8 +28,8 @@ class SqliteRepository(RepositoryBase[ItemT]):
 
         try:
             return int(raw["n_items"])
-        except KeyError:
-            raise UnknownError(raw)
+        except KeyError as e:
+            raise UnknownError(raw) from e
 
     def create(self, item: ItemT) -> ItemT:
         try:

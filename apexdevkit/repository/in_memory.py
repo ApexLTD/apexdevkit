@@ -131,14 +131,14 @@ class _SingleKeyRepository(RepositoryBase[ItemT]):
     def delete(self, item_id: str) -> None:
         try:
             self.store.drop(item_id)
-        except KeyError:
-            raise DoesNotExistError(item_id)
+        except KeyError as e:
+            raise DoesNotExistError(item_id) from e
 
     def read(self, item_id: str) -> ItemT:
         try:
             return self.store.get(item_id)
-        except KeyError:
-            raise DoesNotExistError(item_id)
+        except KeyError as e:
+            raise DoesNotExistError(item_id) from e
 
     def __iter__(self) -> Iterator[ItemT]:
         return iter(self.store.values())
