@@ -22,7 +22,6 @@ pytest-cov = "*"
 pytest-recording = "*"
 coverage = "*"
 faker = "*"
-mongomock = "*"
 
 [tool.poetry.group.lint.dependencies]
 mypy = "*"
