@@ -147,7 +147,6 @@ def test_should_read_all(
 
 
 def test_should_read_aggregated(
-    apple: JsonDict,
     service: SuccessfulService,
     resource: RestCollection,
 ) -> None:
@@ -235,7 +234,7 @@ def test_should_delete_one(
     assert service.called_with == apple["id"]
 
 
-def test_should_sub_resource(apple: JsonDict, resource: RestCollection) -> None:
+def test_should_sub_resource(resource: RestCollection) -> None:
     (
         resource.sub_resource(str(uuid4()))
         .sub_resource("price")

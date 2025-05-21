@@ -24,12 +24,11 @@ def deprecated(warning: str) -> Callable[[F], F]:
     def decorator(obj: F) -> F:
         if inspect.isfunction(obj) or inspect.ismethod(obj):
             return cast(F, _wrap_function(obj, warning))
-        elif inspect.isclass(obj):
+        if inspect.isclass(obj):
             return cast(F, _deprecate_class(obj, warning))
-        else:
-            raise TypeError(
-                f"Unsupported type for deprecation: {type(obj)}"
-            )  # pragma: no cover
+        raise TypeError(
+            f"Unsupported type for deprecation: {type(obj)}"
+        )  # pragma: no cover
 
     return decorator
 

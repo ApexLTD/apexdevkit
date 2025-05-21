@@ -74,44 +74,24 @@ def setup(infra: RestfulServiceBuilder) -> FastAPI:
 class FailingService(RestfulServiceBuilder, RestfulService):
     error: Exception | type[Exception]
 
+    def fail(self, *_: Any, **__: Any) -> Any:
+        raise self.error
+
     def build(self) -> RestfulService:
         return self
 
-    def create_one(self, item: RawItem) -> RawItem:
-        raise self.error
-
-    def create_many(self, items: RawCollection) -> RawCollection:
-        raise self.error
-
-    def read_one(self, item_id: str) -> RawItem:
-        raise self.error
-
-    def filter_with(self, options: QueryOptions) -> RawCollection:
-        raise self.error
-
-    def read_many(self, **params: Any) -> RawCollection:
-        raise self.error
-
-    def aggregate_with(self, options: FooterOptions) -> Iterable[Summary]:
-        raise self.error
-
-    def read_all(self) -> RawCollection:
-        raise self.error
-
-    def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
-        raise self.error
-
-    def update_many(self, items: RawCollectionWithId) -> RawCollection:
-        raise self.error
-
-    def replace_one(self, item: RawItem) -> RawItem:
-        raise self.error
-
-    def replace_many(self, items: RawCollection) -> RawCollection:
-        raise self.error
-
-    def delete_one(self, item_id: str) -> None:
-        raise self.error
+    create_one = fail
+    create_many = fail
+    read_one = fail
+    filter_with = fail
+    read_many = fail
+    aggregate_with = fail
+    read_all = fail
+    update_one = fail
+    update_many = fail
+    replace_one = fail
+    replace_many = fail
+    delete_one = fail
 
 
 class Color(Enum):

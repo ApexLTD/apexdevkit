@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from uuid import uuid4
 
-from pytest import fixture
+import pytest
 
 
 @dataclass
@@ -12,6 +12,6 @@ class Apple:
     id: str = field(default_factory=lambda: str(uuid4()))
 
 
-@fixture
+@pytest.fixture
 def apple() -> Apple:
     return Apple(color="red", parent="test", id="1")

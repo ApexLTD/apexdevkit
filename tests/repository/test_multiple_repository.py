@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
-from pytest import fixture
+import pytest
 
 from apexdevkit.formatter import DataclassFormatter, PickleFormatter
 from apexdevkit.repository import InMemoryByteStore, InMemoryRepository, Repository
@@ -76,7 +76,7 @@ class FishFormatter:
         return Animal(**raw)
 
 
-@fixture
+@pytest.fixture
 def birds() -> Repository[Animal]:
     return (
         InMemoryRepository[Animal]()
@@ -85,7 +85,7 @@ def birds() -> Repository[Animal]:
     )
 
 
-@fixture
+@pytest.fixture
 def fishes() -> Repository[Animal]:
     return (
         InMemoryRepository[Animal]()
@@ -94,7 +94,7 @@ def fishes() -> Repository[Animal]:
     )
 
 
-@fixture
+@pytest.fixture
 def multiple(
     birds: Repository[Animal], fishes: Repository[Animal]
 ) -> Repository[Animal]:

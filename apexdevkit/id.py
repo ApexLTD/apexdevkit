@@ -30,7 +30,7 @@ class ApexID:
                 cls.sequence = 0
 
             if cls.sequence > cls._sequence_bitmask:
-                raise DuplicateIDException("Duplicate ID Generated")
+                raise DuplicateIDError("Duplicate ID Generated")
 
             cls.last_timestamp = current_timestamp
 
@@ -50,5 +50,5 @@ class ApexID:
         return int(os.getenv("APEX_ID_METADATA", "0"))
 
 
-class DuplicateIDException(Exception):
+class DuplicateIDError(Exception):
     pass

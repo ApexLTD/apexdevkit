@@ -145,8 +145,8 @@ class SqlFieldManager:
         ]
         if len(ordering) > 0:
             return "ORDER BY " + ", ".join(order_clauses)
-        else:
-            return ""
+
+        return ""
 
     def __iter__(self) -> Iterator[_SqlField]:
         yield from self.fields
@@ -163,8 +163,8 @@ class SqlFieldManager:
         ]
         if len(statements) > 0:
             return "WHERE " + " AND ".join(statements)
-        else:
-            return ""
+
+        return ""
 
     def with_fixed(self, raw: Mapping[str, Any]) -> dict[str, Any]:
         data = dict(raw)
@@ -185,14 +185,13 @@ class SqlFieldManager:
         if result is not None:
             if result.parent_value is None:
                 return self.key_formatter.replace("x", result.name) + " IS NULL"
-            else:
-                return (
-                    self.key_formatter.replace("x", result.name)
-                    + " = "
-                    + self.value_formatter.replace("x", result.name)
-                )
-        else:
-            return ""
+            return (
+                self.key_formatter.replace("x", result.name)
+                + " = "
+                + self.value_formatter.replace("x", result.name)
+            )
+
+        return ""
 
     def _id_filter(self, include_id: bool, read_id: bool) -> str:
         return (

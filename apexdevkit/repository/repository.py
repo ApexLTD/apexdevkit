@@ -75,7 +75,7 @@ class MultipleRepositoryBuilder(Generic[ItemT]):
     def with_repository(
         self,
         repository: Repository[ItemT],
-        condition: Callable[[ItemT], bool] = lambda item: True,
+        condition: Callable[[ItemT], bool] = lambda _: True,
         formatter: Formatter[ItemT, ItemT] | None = None,
         id_prefix: str = "",
     ) -> MultipleRepositoryBuilder[ItemT]:
@@ -94,7 +94,7 @@ class MultipleRepositoryBuilder(Generic[ItemT]):
     def and_repository(
         self,
         repository: Repository[ItemT],
-        condition: Callable[[ItemT], bool] = lambda item: True,
+        condition: Callable[[ItemT], bool] = lambda _: True,
         formatter: Formatter[ItemT, ItemT] | None = None,
         id_prefix: str = "",
     ) -> MultipleRepositoryBuilder[ItemT]:
@@ -112,7 +112,7 @@ class MultipleRepositoryBuilder(Generic[ItemT]):
 @dataclass(frozen=True)
 class _InnerRepository(Generic[ItemT]):
     inner: Repository[ItemT]
-    condition: Callable[[ItemT], bool] = lambda item: True
+    condition: Callable[[ItemT], bool] = lambda _: True
     formatter: Formatter[ItemT, ItemT] = field(
         default_factory=lambda: NoFormatter[ItemT]()
     )
