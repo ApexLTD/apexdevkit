@@ -46,10 +46,9 @@ exclude = [
     "venv",
 ]
 
-lint.select = ["E", "F", "I"]
-lint.ignore = []
-lint.fixable = ["A", "B", "C", "D", "E", "F", "I"]
-lint.unfixable = []
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+fixable = ["A", "B", "C", "D", "E", "F", "I"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10
