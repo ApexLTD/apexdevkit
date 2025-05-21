@@ -47,7 +47,13 @@ exclude = [
 ]
 
 [tool.ruff.lint]
-select = ["B", "E", "F", "I", "W"]
+select = [
+    "B",    # flake8-bugbear
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "I",    # isort
+    "W",    # pycodestyle warnings
+]
 fixable = ["A", "B", "C", "D", "E", "F", "I", "W"]
 
 [tool.ruff.lint.mccabe]
