@@ -86,7 +86,7 @@ def test_should_retrieve_all(apple: Apple) -> None:
     table = AppleTable()
 
     executor.fetch_all.return_value = [table.dump(apple)]
-    result = [item for item in MsSqlRepository[Apple](db, table)]
+    result = list(iter(MsSqlRepository[Apple](db, table)))
 
     db.execute.assert_called_once_with(table.select_all())
     executor.fetch_all.assert_called_once()
