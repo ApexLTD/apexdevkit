@@ -5,7 +5,7 @@ description = "Apex Development Tools for python."
 readme = "README.md"
 authors = [{ email = "Apex Dev <dev@apex.ge>" }]
 dynamic = ["dependencies"]
-requires-python = ">= 3.11"
+requires-python = ">=3.11"
 
 [tool.poetry.dependencies]
 httpx = "*"
