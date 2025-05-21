@@ -61,6 +61,7 @@ select = [
     "RSE",  # flake8-raise
     "RET",  # flake8-return
     "SIM",  # flake8-simplify
+    "T20",  # flake8-print
     "UP",   # pyupgrade
     "W",    # pycodestyle warnings
 ]
