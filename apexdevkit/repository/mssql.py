@@ -366,7 +366,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
     def exists(self, duplicate: ItemT) -> ExistsError:
         raw = self.formatter.dump(duplicate)
         return ExistsError(duplicate).with_duplicate(
-            lambda i: f"{self.fields.id}<{raw[self.fields.id]}>"
+            lambda _: f"{self.fields.id}<{raw[self.fields.id]}>"
         )
 
     @property

@@ -21,16 +21,16 @@ def http() -> Httpx:
 
 @dataclass
 class FakeResponseHandler:
-    def on_get(self, response: httpx.Response) -> None:
+    def on_get(self, _: httpx.Response) -> None:
         raise ValueError("on_get")
 
-    def on_post(self, response: httpx.Response) -> None:
+    def on_post(self, _: httpx.Response) -> None:
         raise ValueError("on_post")
 
-    def on_patch(self, response: httpx.Response) -> None:
+    def on_patch(self, _: httpx.Response) -> None:
         raise ValueError("on_patch")
 
-    def on_delete(self, response: httpx.Response) -> None:
+    def on_delete(self, _: httpx.Response) -> None:
         raise ValueError("on_delete")
 
 

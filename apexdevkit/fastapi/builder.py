@@ -20,7 +20,7 @@ class FastApiBuilder:
     def build(self) -> FastAPI:
         self.app.add_exception_handler(
             ApiError,
-            lambda request, exc: JSONResponse(content=exc.data, status_code=exc.code),
+            lambda _, exc: JSONResponse(content=exc.data, status_code=exc.code),
         )
         return self.app
 

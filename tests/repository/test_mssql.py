@@ -71,7 +71,7 @@ class AppleTable(SqlTable[Apple]):
         }
 
     def exists(self, duplicate: Apple) -> ExistsError:
-        return ExistsError(duplicate).with_duplicate(lambda i: f"id<{duplicate.id}>")
+        return ExistsError(duplicate).with_duplicate(lambda _: f"id<{duplicate.id}>")
 
 
 @pytest.fixture

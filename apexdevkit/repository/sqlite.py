@@ -61,7 +61,7 @@ class SqliteRepository(RepositoryBase[ItemT]):
 
 
 class SqlTable(Generic[ItemT]):  # pragma: no cover
-    def bind(self, **kwargs: Any) -> SqlTable[ItemT]:
+    def bind(self, **_: Any) -> SqlTable[ItemT]:
         return self
 
     def count_all(self) -> DatabaseCommand:
@@ -92,7 +92,7 @@ class SqlTable(Generic[ItemT]):  # pragma: no cover
         raise NotImplementedError
 
     def duplicate(self, item: ItemT) -> ExistsError:
-        return ExistsError(item).with_duplicate(lambda i: "Unknown")
+        return ExistsError(item).with_duplicate(lambda _: "Unknown")
 
 
 @dataclass
@@ -251,7 +251,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
     def duplicate(self, item: ItemT) -> ExistsError:
         raw = self.formatter.dump(item)
         return ExistsError(item).with_duplicate(
-            lambda i: ",".join(
+            lambda _: ",".join(
                 [f"{key}<{raw[key]}>" for key in raw if key in self.fields.composite]
             )
         )

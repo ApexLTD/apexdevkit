@@ -135,10 +135,7 @@ def test_should_update_one(
     assert repository.read(updated.entity().id) == updated.entity()
 
 
-def test_should_not_update_unknown(
-    repository: Repository[Animal],
-    service: RestfulService,
-) -> None:
+def test_should_not_update_unknown(service: RestfulService) -> None:
     updated = FakeAnimal()
 
     with pytest.raises(DoesNotExistError):
@@ -164,7 +161,6 @@ def test_should_update_many(
 
 
 def test_should_not_update_unknown_many(
-    repository: Repository[Animal],
     service: RestfulService,
 ) -> None:
     updated_1 = FakeAnimal()
@@ -188,10 +184,7 @@ def test_should_replace_one(
     assert repository.read(replaced.entity().id) == replaced.entity()
 
 
-def test_should_not_replace_unknown(
-    repository: Repository[Animal],
-    service: RestfulService,
-) -> None:
+def test_should_not_replace_unknown(service: RestfulService) -> None:
     replaced = FakeAnimal()
 
     with pytest.raises(DoesNotExistError):
@@ -217,10 +210,7 @@ def test_should_replace_many(
     assert list(repository) == [replaced_1.entity(), replaced_2.entity()]
 
 
-def test_should_not_replace_unknown_many(
-    repository: Repository[Animal],
-    service: RestfulService,
-) -> None:
+def test_should_not_replace_unknown_many(service: RestfulService) -> None:
     replaced_1 = FakeAnimal()
     replaced_2 = FakeAnimal()
 
@@ -235,14 +225,11 @@ def test_should_delete_one(
     animal = FakeAnimal()
     repository.create(animal.entity())
 
-    repository.delete(animal.entity().id)
+    service.delete_one(animal.entity().id)
     assert len(repository) == 0
 
 
-def test_should_not_delete_unknown(
-    repository: Repository[Animal],
-    service: RestfulService,
-) -> None:
+def test_should_not_delete_unknown(service: RestfulService) -> None:
     animal = FakeAnimal()
 
     with pytest.raises(DoesNotExistError):

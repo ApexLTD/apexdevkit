@@ -96,16 +96,16 @@ class MsSqlCursorAdapter:
     cursor: Cursor
 
     def execute(self, *args: Any, **kwargs: Any) -> Any:
-        self.cursor.execute(*args, **kwargs)  # type : ignore
+        self.cursor.execute(*args, **kwargs)
 
     def executemany(self, *args: Any, **kwargs: Any) -> Any:
-        self.cursor.executemany(*args, **kwargs)  # type : ignore
+        self.cursor.executemany(*args, **kwargs)
 
-    def fetchone(self, *args: Any, **kwargs: Any) -> Any:
-        return self.cursor.fetchone()  # type : ignore
+    def fetchone(self, *_: Any, **__: Any) -> Any:
+        return self.cursor.fetchone()
 
-    def fetchall(self, *args: Any, **kwargs: Any) -> Any:
-        return self.cursor.fetchall()  # type : ignore
+    def fetchall(self, *_: Any, **__: Any) -> Any:
+        return self.cursor.fetchall()
 
     def close(self) -> None:
         self.cursor.close()  # type : ignore
