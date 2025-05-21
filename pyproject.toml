@@ -47,7 +47,7 @@ exclude = [
 ]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "W"]
+select = ["B", "E", "F", "I", "W"]
 fixable = ["A", "B", "C", "D", "E", "F", "I", "W"]
 
 [tool.ruff.lint.mccabe]
