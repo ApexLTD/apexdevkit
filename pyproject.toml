@@ -3,7 +3,9 @@ name = "apexdevkit"
 version = "1.23.0"
 description = "Apex Development Tools for python."
 readme = "README.md"
-authors = [{ email = "Apex Dev <dev@apex.ge>" }]
+authors = [
+    { name = "Apex Dev", email = "dev@apex.ge" }
+]
 dynamic = ["dependencies"]
 requires-python = ">=3.11"
 
