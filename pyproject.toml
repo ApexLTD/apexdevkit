@@ -1,16 +1,16 @@
-[tool.poetry]
+[project]
 name = "apexdevkit"
 version = "1.22.2"
 description = "Apex Development Tools for python."
-authors = ["Apex Dev <dev@apex.ge>"]
 readme = "README.md"
+requires-python = "^3.11"
+authors = [{ email = "Apex Dev <dev@apex.ge>" }]
 
 [tool.poetry.dependencies]
-python = "^3.11"
 httpx = "*"
 fastapi = "*"
 uvicorn = "*"
-sentry-sdk = {extras = ["fastapi"], version = "*"}
+sentry-sdk = { extras = ["fastapi"], version = "*" }
 python-dotenv = "*"
 pymssql = "2.3.2"
 
