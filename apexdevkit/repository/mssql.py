@@ -271,7 +271,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
             [f"%({key.name})s" for key in self.fields if key.include_in_insert]
         )
         try:
-            self.fields.id
+            _ = self.fields.id
             output = ", ".join(
                 ["[" + field.name + "] AS " + field.name for field in self.fields]
             )
