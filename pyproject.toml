@@ -1,6 +1,6 @@
 [project]
 name = "apexdevkit"
-version = "1.22.2"
+version = "1.23.0"
 description = "Apex Development Tools for python."
 readme = "README.md"
 authors = [{ email = "Apex Dev <dev@apex.ge>" }]
