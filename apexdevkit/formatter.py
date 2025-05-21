@@ -95,7 +95,7 @@ class DataclassFormatter(Generic[_TargetT]):
             key_type = types[key.name]
             if key.name not in raw:
                 continue
-            elif key.name in self.sub_formatters.keys():
+            if key.name in self.sub_formatters.keys():
                 raw[key.name] = (
                     self.sub_formatters[key.name].load(raw.pop(key.name))
                     if raw[key.name]

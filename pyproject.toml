@@ -56,6 +56,8 @@ select = [
     "F",    # pyflakes
     "I",    # isort
     "PT",   # flake8-pytest-style
+    "RSE",  # flake8-raise
+    "RET",  # flake8-return
     "UP",   # pyupgrade
     "W",    # pycodestyle warnings
 ]

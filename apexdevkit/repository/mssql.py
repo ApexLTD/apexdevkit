@@ -52,8 +52,7 @@ class MsSqlRepository(RepositoryBase[ItemT]):
         except OperationalError as e:
             if "Conversion failed" in str(e):
                 raise DoesNotExistError(item_id) from e
-            else:
-                raise e
+            raise e
 
         if not raw:
             raise DoesNotExistError(item_id)
@@ -374,5 +373,4 @@ class DefaultSqlTable(SqlTable[ItemT]):
     def _user_check(self) -> str:
         if self.username is not None:
             return f"EXECUTE AS USER = '{self.username}'"
-        else:
-            return ""
+        return ""
