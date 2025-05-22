@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Iterator
+from collections import defaultdict
+from collections.abc import Callable, Iterable, Iterator, MutableMapping
 from contextlib import suppress
 from dataclasses import dataclass, field
 from typing import Any, Generic, Protocol, Self
@@ -101,6 +102,19 @@ class InMemoryByteStore(Generic[ItemT]):
     def values(self) -> Iterable[ItemT]:
         for raw in self.items.values():
             yield self.formatter.load(raw)
+
+    @dataclass
+    class Cache:
+        items: MutableMapping[str, InMemoryByteStore[Any]] = field(init=False)
+
+        def __post_init__(self) -> None:
+            self.items = defaultdict(InMemoryByteStore)
+
+        def store_for(self, name: str) -> InMemoryByteStore[Any]:
+            return self.items[name]
+
+        def clear(self) -> None:
+            self.items.clear()
 
 
 @dataclass
