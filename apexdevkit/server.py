@@ -74,6 +74,14 @@ class UvicornServer:
 class Sentry:
     dsn: str = environment_variable("SENTRY_DSN", default="")
     release: str = environment_variable("RELEASE", default="unknown")
+    trace_sample_rate: str = environment_variable(
+        "SENTRY_TRACE_SAMPLE_RATE",
+        default="0.2",
+    )
+    profile_sample_rate: str = environment_variable(
+        "SENTRY_PROFILE_SAMPLE_RATE",
+        default="0.2",
+    )
 
     def setup(self) -> None:
         if not self.dsn:
@@ -81,8 +89,11 @@ class Sentry:
 
         sentry_sdk.init(
             release=self.release,
-            traces_sample_rate=1.0,
-            profiles_sample_rate=1.0,
+            traces_sample_rate=float(self.trace_sample_rate),
+            profiles_sample_rate=float(self.profile_sample_rate),
+            _experiments={
+                "enable_logs": True,
+            },
         )
 
 
