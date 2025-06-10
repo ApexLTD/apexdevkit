@@ -6,7 +6,7 @@ from functools import cached_property
 from typing import Any, Generic, TypeVar
 
 from apexdevkit.formatter import Formatter
-from apexdevkit.query.query import FooterOptions, QueryOptions, Summary
+from apexdevkit.query.query import FooterOptions, Summary
 from apexdevkit.repository.decorator import BruteForceBatch
 from apexdevkit.repository.interface import Repository
 
@@ -35,7 +35,7 @@ class RestfulService:  # pragma: no cover
     def read_many(self, **params: Any) -> RawCollection:
         raise NotImplementedError(self.read_many.__name__)
 
-    def filter_with(self, options: QueryOptions) -> RawCollection:
+    def filter_with(self, options: RawItem) -> RawCollection:
         raise NotImplementedError(self.filter_with.__name__)
 
     def read_all(self) -> RawCollection:

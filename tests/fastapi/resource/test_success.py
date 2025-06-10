@@ -4,6 +4,7 @@ from uuid import uuid4
 
 import pytest
 
+from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.http import JsonDict
 from apexdevkit.query.query import (
     Aggregation,
@@ -128,11 +129,13 @@ def test_should_read_filtered(
         .with_collection([apple])
     )
 
-    assert service.called_with == QueryOptions(
-        Filter(args=[DateValue("20221212")]),
-        Operator(Operation.NOT, [Leaf("test", [])]),
-        [Sort("test", False)],
-        Page(None, None, None),
+    assert service.called_with == DataclassFormatter(QueryOptions).dump(
+        QueryOptions(
+            Filter(args=[DateValue("20221212")]),
+            Operator(Operation.NOT, [Leaf("test", [])]),
+            [Sort("test", False)],
+            Page(None, None, None),
+        )
     )
 
 

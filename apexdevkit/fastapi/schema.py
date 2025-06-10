@@ -8,6 +8,7 @@ from pydantic import BaseModel, create_model
 
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fluent import FluentDict
+from apexdevkit.http import JsonDict
 
 
 class SchemaFields(ABC):
@@ -19,6 +20,9 @@ class SchemaFields(ABC):
 
     def editable(self) -> FluentDict[type]:
         return self.readable().drop("id")
+
+    def filters(self) -> FluentDict[type]:
+        return JsonDict()
 
     @abstractmethod
     def readable(self) -> FluentDict[type]:  # pragma: no cover
@@ -38,6 +42,7 @@ class RestfulSchema:
         update_many_item = self._schema_for(
             "UpdateManyItem", self.fields.editable().merge(self.fields.id())
         )
+        self._schema_for("Filter", self.fields.filters())
 
         self._schema_for("Item", {self.name.singular: schema})
         self._schema_for("Collection", {self.name.plural: list[schema], "count": int})
@@ -127,6 +132,14 @@ class RestfulSchema:
 
         def _(request: schema) -> Iterable[dict[str, Any]]:
             return [dict(item) for item in request.model_dump()[self.name.plural]]
+
+        return _
+
+    def for_filters(self) -> Callable[[BaseModel], dict[str, Any]]:
+        schema = self.schemas["Filter"]
+
+        def _(request: schema) -> dict[str, Any]:
+            return request.model_dump()
 
         return _
 

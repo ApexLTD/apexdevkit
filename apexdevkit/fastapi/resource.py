@@ -79,12 +79,10 @@ class RestfulResource:
 
         return endpoint
 
-    def filter_with(self, Service) -> _Endpoint:  # type: ignore
-        def endpoint(service: Service, options: _QueryOptions) -> _Response:
+    def filter_with(self, Service, QueryOptions) -> _Endpoint:  # type: ignore
+        def endpoint(service: Service, options: QueryOptions) -> _Response:
             try:
-                return self.response.found_many(
-                    list(service.filter_with(options.to_query_options()))
-                )
+                return self.response.found_many(list(service.filter_with(options)))
             except ForbiddenError as e:
                 return JSONResponse(self.response.forbidden(e), 403)
 
