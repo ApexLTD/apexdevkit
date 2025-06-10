@@ -171,7 +171,10 @@ class RestfulRouter:
     ) -> Self:
         self.router.add_api_route(
             "/filter",
-            self.resource.filter_with(Service=self._resolve(dependency)),
+            self.resource.filter_with(
+                Service=self._resolve(dependency),
+                QueryOptions=Annotated[RawItem, Depends(self.schema.for_filters())],
+            ),
             methods=["POST"],
             status_code=200,
             responses={},

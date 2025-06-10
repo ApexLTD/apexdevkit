@@ -21,7 +21,14 @@ from apexdevkit.fastapi.service import (
     RestfulService,
 )
 from apexdevkit.http import JsonDict
-from apexdevkit.query.query import FooterOptions, QueryOptions, Summary
+from apexdevkit.query import Filter
+from apexdevkit.query.query import (
+    FooterOptions,
+    Operator,
+    Page,
+    Sort,
+    Summary,
+)
 from apexdevkit.testing.fake import FakeResource
 
 
@@ -130,6 +137,15 @@ class AppleFields(SchemaFields):
             name=JsonDict().with_a(common=str).and_a(scientific=str)
         )
 
+    def filters(self) -> JsonDict:
+        return (
+            JsonDict()
+            .with_a(filter=Filter | None)
+            .and_a(condition=Operator | None)
+            .and_a(ordering=list[Sort])
+            .and_a(paging=Page)
+        )
+
 
 class PriceFields(SchemaFields):
     def readable(self) -> JsonDict:
@@ -179,7 +195,7 @@ class SuccessfulService(RestfulServiceBuilder, RestfulService):
         self.called_with = params
         return [self.always_return]
 
-    def filter_with(self, options: QueryOptions) -> RawCollection:
+    def filter_with(self, options: RawItem) -> RawCollection:
         self.called_with = options
         return [self.always_return]
 
