@@ -24,6 +24,9 @@ class SchemaFields(ABC):
     def filters(self) -> FluentDict[type]:
         return JsonDict()
 
+    def sum_filters(self) -> FluentDict[type]:
+        return JsonDict()
+
     @abstractmethod
     def readable(self) -> FluentDict[type]:  # pragma: no cover
         pass
@@ -43,6 +46,7 @@ class RestfulSchema:
             "UpdateManyItem", self.fields.editable().merge(self.fields.id())
         )
         self._schema_for("Filter", self.fields.filters())
+        self._schema_for("Sum", self.fields.sum_filters())
 
         self._schema_for("Item", {self.name.singular: schema})
         self._schema_for("Collection", {self.name.plural: list[schema], "count": int})
@@ -137,6 +141,14 @@ class RestfulSchema:
 
     def for_filters(self) -> Callable[[BaseModel], dict[str, Any]]:
         schema = self.schemas["Filter"]
+
+        def _(request: schema) -> dict[str, Any]:
+            return request.model_dump()
+
+        return _
+
+    def for_sum(self) -> Callable[[BaseModel], dict[str, Any]]:
+        schema = self.schemas["Sum"]
 
         def _(request: schema) -> dict[str, Any]:
             return request.model_dump()

@@ -75,6 +75,17 @@ def test_should_not_filter_forbidden(resource: RestCollection) -> None:
     )
 
 
+def test_should_not_sum_forbidden(resource: RestCollection) -> None:
+    (
+        resource.sum_with()
+        .from_data(JsonDict().with_a(is_rotten=True))
+        .ensure()
+        .fail()
+        .with_code(403)
+        .and_message("Forbidden")
+    )
+
+
 def test_should_not_read_many_forbidden(read_many_resource: RestCollection) -> None:
     read_many_resource.read_many(color="red").ensure().fail().with_code(
         403

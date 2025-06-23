@@ -139,6 +139,21 @@ def test_should_read_filtered(
     )
 
 
+def test_should_read_summed(
+    service: SuccessfulService,
+    resource: RestCollection,
+) -> None:
+    (
+        resource.sum_with()
+        .from_data(JsonDict().with_a(is_rotten=True))
+        .ensure()
+        .success()
+        .with_code(200)
+    )
+
+    assert service.called_with == {"is_rotten": True}
+
+
 def test_should_read_all(
     apple: JsonDict,
     service: SuccessfulService,

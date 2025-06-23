@@ -59,6 +59,15 @@ class _RestResource:
             ),
         )
 
+    def sum_with(self) -> _TestRequest:
+        return _TestRequest(
+            self.name,
+            HttpRequest(
+                HttpMethod.post,
+                self.http.with_endpoint(self.name.plural).with_endpoint("sum"),
+            ),
+        )
+
     def read_all(self) -> _TestRequest:
         return _TestRequest(
             self.name,
