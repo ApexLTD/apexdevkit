@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Path, Query
 from fastapi.responses import JSONResponse
 
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.fastapi.resource import RestfulResource, SummaryResponse
+from apexdevkit.fastapi.resource import RestfulResource, SummaryResponse, SumResponse
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.schema import RestfulSchema, Schema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
@@ -181,6 +181,27 @@ class RestfulRouter:
             response_model=self.schema.for_collection(),
             include_in_schema=is_documented,
             summary="Read Filtered",
+        )
+
+        return self
+
+    def with_sum_endpoint(
+        self,
+        dependency: Dependency | None = None,
+        is_documented: bool = True,
+    ) -> Self:
+        self.router.add_api_route(
+            "/sum",
+            self.resource.sum_with(
+                Service=self._resolve(dependency),
+                FilterOptions=Annotated[RawItem, Depends(self.schema.for_sum())],
+            ),
+            methods=["POST"],
+            status_code=200,
+            responses={},
+            response_model=SumResponse,
+            include_in_schema=is_documented,
+            summary="Sum",
         )
 
         return self

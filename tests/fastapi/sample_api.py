@@ -61,6 +61,7 @@ def setup(infra: RestfulServiceBuilder) -> FastAPI:
                 .with_replace_one_endpoint(dependable)
                 .with_replace_many_endpoint(dependable)
                 .with_filter_endpoint(dependable)
+                .with_sum_endpoint(dependable)
                 .with_aggregate_endpoint(dependable)
                 .build()
             }
@@ -91,6 +92,7 @@ class FailingService(RestfulServiceBuilder, RestfulService):
     create_many = fail
     read_one = fail
     filter_with = fail
+    sum_with = fail
     read_many = fail
     aggregate_with = fail
     read_all = fail
@@ -146,6 +148,9 @@ class AppleFields(SchemaFields):
             .and_a(paging=Page)
         )
 
+    def sum_filters(self) -> JsonDict:
+        return JsonDict().with_a(is_rotten=bool)
+
 
 class PriceFields(SchemaFields):
     def readable(self) -> JsonDict:
@@ -198,6 +203,10 @@ class SuccessfulService(RestfulServiceBuilder, RestfulService):
     def filter_with(self, options: RawItem) -> RawCollection:
         self.called_with = options
         return [self.always_return]
+
+    def sum_with(self, options: RawItem) -> int:
+        self.called_with = options
+        return 1
 
     def read_all(self) -> RawCollection:
         self.called_with = None

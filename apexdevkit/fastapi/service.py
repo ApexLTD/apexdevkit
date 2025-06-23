@@ -38,6 +38,9 @@ class RestfulService:  # pragma: no cover
     def filter_with(self, options: RawItem) -> RawCollection:
         raise NotImplementedError(self.filter_with.__name__)
 
+    def sum_with(self, options: RawItem) -> int:
+        raise NotImplementedError(self.filter_with.__name__)
+
     def read_all(self) -> RawCollection:
         raise NotImplementedError(self.read_all.__name__)
 

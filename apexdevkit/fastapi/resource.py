@@ -88,6 +88,19 @@ class RestfulResource:
 
         return endpoint
 
+    def sum_with(self, Service, FilterOptions) -> _Endpoint:  # type: ignore
+        def endpoint(service: Service, options: FilterOptions) -> _Response:
+            try:
+                return {
+                    "status": "success",
+                    "code": 200,
+                    "count": service.sum_with(options),
+                }
+            except ForbiddenError as e:
+                return JSONResponse(self.response.forbidden(e), 403)
+
+        return endpoint
+
     def read_all(self, Service) -> _Endpoint:  # type: ignore
         def endpoint(service: Service) -> _Response:
             try:
@@ -312,3 +325,9 @@ class SummaryResponse(BaseModel):
     status: str
     code: int
     data: _SummaryListEnvelope
+
+
+class SumResponse(BaseModel):
+    status: str
+    code: int
+    count: int
