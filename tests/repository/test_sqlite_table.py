@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from uuid import uuid4
 
 from _pytest.fixtures import fixture
-from _pytest.python_api import raises
+from _pytest.raises import raises
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
