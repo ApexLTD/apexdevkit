@@ -38,7 +38,7 @@ class Httpx:
     def with_param(self, key: str, value: str) -> Httpx:
         return Httpx(self.client, self.config.with_param(key, value))
 
-    def with_data(self, value: JsonDict) -> Httpx:
+    def with_data(self, value: Any) -> Httpx:
         return Httpx(self.client, self.config.with_data(value))
 
     def with_json(self, value: JsonDict) -> Httpx:
@@ -120,7 +120,7 @@ class HttpxConfig(Mapping[str, Any]):
     headers: JsonDict = field(default_factory=JsonDict)
     params: JsonDict = field(default_factory=JsonDict)
     json: JsonDict | None = None
-    data: JsonDict | None = None
+    data: Any | None = None
 
     def with_endpoint(self, endpoint: str) -> HttpxConfig:
         return HttpxConfig(
@@ -149,7 +149,7 @@ class HttpxConfig(Mapping[str, Any]):
             data=self.data,
         )
 
-    def with_data(self, value: JsonDict) -> HttpxConfig:
+    def with_data(self, value: Any) -> HttpxConfig:
         return HttpxConfig(
             endpoint=self.endpoint,
             headers=self.headers,
@@ -173,8 +173,13 @@ class HttpxConfig(Mapping[str, Any]):
             "headers": dict(self.headers),
             "params": dict(self.params),
             "json": dict(self.json) if self.json is not None else None,
-            "data": dict(self.data) if self.data is not None else None,
+            "data": self._data() if self.data is not None else None,
         }
+
+    def _data(self) -> Any:
+        if isinstance(self.data, Mapping):
+            return dict(self.data)
+        return str(self.data)
 
     def __len__(self) -> int:
         return len(self.as_dict())
