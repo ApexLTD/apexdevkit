@@ -105,14 +105,25 @@ class SqliteTableBuilder(Generic[ItemT]):
     table_name: str | None = None
     formatter: Formatter[Mapping[str, Any], ItemT] | None = None
     fields: list[_SqlField] | None = None
+    custom_filters: list[str] | None = None
 
     def with_name(self, value: str) -> SqliteTableBuilder[ItemT]:
-        return SqliteTableBuilder[ItemT](value, self.formatter, self.fields)
+        return SqliteTableBuilder[ItemT](
+            value,
+            self.formatter,
+            self.fields,
+            self.custom_filters,
+        )
 
     def with_formatter(
         self, value: Formatter[Mapping[str, Any], ItemT]
     ) -> SqliteTableBuilder[ItemT]:
-        return SqliteTableBuilder[ItemT](self.table_name, value, self.fields)
+        return SqliteTableBuilder[ItemT](
+            self.table_name,
+            value,
+            self.fields,
+            self.custom_filters,
+        )
 
     def with_fields(self, value: Iterable[_SqlField]) -> SqliteTableBuilder[ItemT]:
         key_list = list(value)
@@ -135,16 +146,29 @@ class SqliteTableBuilder(Generic[ItemT]):
             self.table_name,
             self.formatter,
             key_list,
+            self.custom_filters,
+        )
+
+    def with_custom_filters(self, filters: Iterable[str]) -> SqliteTableBuilder[ItemT]:
+        return SqliteTableBuilder[ItemT](
+            self.table_name,
+            self.formatter,
+            self.fields,
+            list(filters),
         )
 
     def build(self) -> SqlTable[ItemT]:
         if not self.table_name or not self.formatter or not self.fields:
             raise ValueError("Parameter missing.")
 
+        field_manager = SqlFieldManager.Builder().with_fields(self.fields)
+        if self.custom_filters and len(self.custom_filters) > 0:
+            field_manager = field_manager.with_custom_filters(self.custom_filters)
+
         return _DefaultSqlTable(
             self.table_name,
             self.formatter,
-            SqlFieldManager.Builder().with_fields(self.fields).for_sqlite().build(),
+            field_manager.for_sqlite().build(),
         )
 
 
