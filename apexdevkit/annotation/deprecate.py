@@ -23,7 +23,7 @@ def deprecated(warning: str) -> Callable[[F], F]:
 
     def decorator(obj: F) -> F:
         if inspect.isfunction(obj) or inspect.ismethod(obj):
-            return cast(F, _wrap_function(obj, warning))
+            return _wrap_function(obj, warning)
         if inspect.isclass(obj):
             return cast(F, _deprecate_class(obj, warning))
         raise TypeError(

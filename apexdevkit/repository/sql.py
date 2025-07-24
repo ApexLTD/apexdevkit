@@ -14,6 +14,7 @@ class NotNone:
 class _SqlField:
     name: str
     is_id: bool = False
+    is_selectable: bool = False
     is_composite: bool = False
     include_in_insert: bool = True
     include_in_update: bool = True
@@ -35,6 +36,7 @@ class _SqlField:
 class SqlFieldBuilder:
     _name: str = field(init=False)
     _is_id: bool = False
+    _is_selectable: bool = False
     _is_composite: bool = False
     _include_in_insert: bool = True
     _include_in_update: bool = True
@@ -58,6 +60,11 @@ class SqlFieldBuilder:
 
     def as_id(self) -> SqlFieldBuilder:
         self._is_id = True
+
+        return self
+
+    def as_selectable(self) -> SqlFieldBuilder:
+        self._is_selectable = True
 
         return self
 
@@ -104,6 +111,7 @@ class SqlFieldBuilder:
         return _SqlField(
             name=self._name,
             is_id=self._is_id,
+            is_selectable=self._is_selectable,
             is_composite=self._is_composite,
             include_in_insert=self._include_in_insert,
             include_in_update=self._include_in_update,
@@ -194,20 +202,39 @@ class SqlFieldManager:
         return ""
 
     def _id_filter(self, include_id: bool, read_id: bool) -> str:
-        return (
-            self.key_formatter.replace("x", self.id)
-            + " = "
-            + (
-                self.value_formatter.replace("x", self.id)
-                if not read_id
-                or next(  # type: ignore
-                    (key for key in self.fields if key.is_id), None
-                ).include_in_insert
-                else "SCOPE_IDENTITY()"
-            )
-            if include_id
-            else ""
+        if not include_id:
+            return ""
+
+        clauses = []
+
+        id_field = next((key for key in self.fields if key.is_id), None)
+        if id_field is None:
+            raise ValueError("Id field is required.")
+
+        value_expr = (
+            self.value_formatter.replace("x", id_field.name)
+            if not read_id or id_field.include_in_insert
+            else "SCOPE_IDENTITY()"
         )
+        clauses.append(
+            f"{self.key_formatter.replace('x', id_field.name)} = {value_expr}"
+        )
+
+        if not read_id:
+            selectable_fields = [
+                selectable
+                for selectable in self.fields
+                if selectable.is_selectable and not selectable.is_id
+            ]
+            for selectable in selectable_fields:
+                key_expr = self.key_formatter.replace("x", selectable.name)
+                val_expr = self.value_formatter.replace("x", id_field.name)
+                clauses.append(f"{key_expr} = {val_expr}")
+
+        if len(clauses) == 1:
+            return clauses[0]
+
+        return "(" + " OR ".join(clauses) + ")"
 
     def _general_filters(self) -> str:
         statements: list[str] = [] + self.custom_filters
