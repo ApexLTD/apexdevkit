@@ -61,7 +61,7 @@ def repository() -> SqliteRepository[_Item]:
         .with_fields(
             [
                 SqlFieldBuilder().with_name("id").as_id().as_composite().build(),
-                SqlFieldBuilder().with_name("name").build(),
+                SqlFieldBuilder().with_name("name").as_selectable().build(),
                 SqlFieldBuilder().with_name("count").build(),
                 SqlFieldBuilder().with_name("parent").as_parent(0).build(),
                 SqlFieldBuilder().with_name("fixed").as_fixed(1).build(),
@@ -103,7 +103,7 @@ def test_should_persist(
     repository.create(item)
 
     assert len(repository) == 1
-    assert repository.read(item.id) == item_with_parent
+    assert repository.read(item.name) == item_with_parent
 
 
 def test_should_persist_update(
@@ -114,7 +114,7 @@ def test_should_persist_update(
 
     repository.update(item)
 
-    assert repository.read(item.id) == item_with_parent
+    assert repository.read(item.name) == item_with_parent
 
 
 def test_should_persist_delete(
@@ -122,7 +122,7 @@ def test_should_persist_delete(
 ) -> None:
     repository.create(item)
 
-    repository.delete(item.id)
+    repository.delete(item.name)
 
     assert list(repository) == []
 
