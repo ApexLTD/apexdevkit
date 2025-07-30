@@ -5,7 +5,7 @@ from typing import Annotated, Any, Protocol
 from fastapi import Depends, Path
 from fastapi.requests import Request
 
-from apexdevkit.error import ApiError, DoesNotExistError
+from apexdevkit.error import ApiError, DoesNotExistError, ForbiddenError
 from apexdevkit.fastapi import RestfulServiceBuilder
 from apexdevkit.fastapi.builder import PreBuilt
 from apexdevkit.fastapi.name import RestfulName
@@ -33,7 +33,12 @@ class ServiceDependency:
         Builder = self.dependency.as_dependable()
 
         def _(builder: Builder) -> RestfulService:
-            return builder.build()
+            try:
+                return builder.build()
+            except ForbiddenError as e:
+                raise ApiError(
+                    403, RestfulResponse(RestfulName("unknown")).forbidden(e)
+                ) from e
 
         return Annotated[RestfulService, Depends(_)]
 
