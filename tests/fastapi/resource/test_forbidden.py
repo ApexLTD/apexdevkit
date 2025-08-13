@@ -92,26 +92,6 @@ def test_should_not_read_many_forbidden(read_many_resource: RestCollection) -> N
     ).and_message("Forbidden")
 
 
-def test_should_not_read_aggregated_forbidden(
-    resource: RestCollection,
-) -> None:
-    (
-        resource.aggregate_with()
-        .from_data(
-            JsonDict()
-            .with_a(filter=None)
-            .and_a(condition=None)
-            .and_a(
-                aggregations=[JsonDict().with_a(name=None).and_a(aggregation="COUNT")]
-            )
-        )
-        .ensure()
-        .fail()
-        .with_code(403)
-        .and_message("Forbidden")
-    )
-
-
 def test_should_not_read_all_forbidden(resource: RestCollection) -> None:
     resource.read_all().ensure().fail().with_code(403).and_message("Forbidden")
 

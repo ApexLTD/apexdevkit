@@ -7,11 +7,8 @@ import pytest
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.http import JsonDict
 from apexdevkit.query.query import (
-    Aggregation,
-    AggregationOption,
     DateValue,
     Filter,
-    FooterOptions,
     Leaf,
     Operation,
     Operator,
@@ -162,37 +159,6 @@ def test_should_read_all(
     resource.read_all().ensure().success().with_code(200).and_collection([apple])
 
     assert service.called_with is None
-
-
-def test_should_read_aggregated(
-    service: SuccessfulService,
-    resource: RestCollection,
-) -> None:
-    (
-        resource.aggregate_with()
-        .from_data(
-            JsonDict()
-            .with_a(filter=JsonDict().with_a(args=[JsonDict().with_a(date="20221212")]))
-            .and_a(
-                condition=JsonDict()
-                .with_a(operation="NOT")
-                .and_a(operands=[JsonDict().with_a(name="test").and_a(values=[])])
-            )
-            .and_a(
-                aggregations=[JsonDict().with_a(name=None).and_a(aggregation="COUNT")]
-            )
-        )
-        .ensure()
-        .success()
-        .with_code(200)
-        .with_collection([])
-    )
-
-    assert service.called_with == FooterOptions(
-        Filter(args=[DateValue("20221212")]),
-        Operator(Operation.NOT, [Leaf("test", [])]),
-        [AggregationOption(None, Aggregation.COUNT)],
-    )
 
 
 def test_should_update_one(

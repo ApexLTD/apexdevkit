@@ -77,15 +77,6 @@ class _RestResource:
             ),
         )
 
-    def aggregate_with(self) -> _TestRequest:
-        return _TestRequest(
-            RestfulName("summary"),
-            HttpRequest(
-                HttpMethod.post,
-                self.http.with_endpoint(self.name.plural).with_endpoint("aggregate"),
-            ),
-        )
-
     def update_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,

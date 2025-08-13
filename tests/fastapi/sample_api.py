@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import random
-from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import Enum
 from functools import cached_property
@@ -23,11 +22,9 @@ from apexdevkit.fastapi.service import (
 from apexdevkit.http import JsonDict
 from apexdevkit.query import Filter
 from apexdevkit.query.query import (
-    FooterOptions,
     Operator,
     Page,
     Sort,
-    Summary,
 )
 from apexdevkit.testing.fake import FakeResource
 
@@ -62,7 +59,6 @@ def setup(infra: RestfulServiceBuilder) -> FastAPI:
                 .with_replace_many_endpoint(dependable)
                 .with_filter_endpoint(dependable)
                 .with_aggregation_endpoint(dependable)
-                .with_aggregate_endpoint(dependable)
                 .build()
             }
         )
@@ -95,7 +91,6 @@ class FailingService(RestfulServiceBuilder, RestfulService):
     aggregation_with = fail
     sum_with = fail
     read_many = fail
-    aggregate_with = fail
     read_all = fail
     update_one = fail
     update_many = fail
@@ -212,10 +207,6 @@ class SuccessfulService(RestfulServiceBuilder, RestfulService):
     def read_all(self) -> RawCollection:
         self.called_with = None
         return [self.always_return]
-
-    def aggregate_with(self, options: FooterOptions) -> Iterable[Summary]:
-        self.called_with = options
-        return []
 
     def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
         self.called_with = (item_id, with_fields)
