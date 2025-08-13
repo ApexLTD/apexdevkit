@@ -7,7 +7,6 @@ from pydantic import BaseModel
 from starlette.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
-from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.query.query import (
     Aggregation,
@@ -88,13 +87,13 @@ class RestfulResource:
 
         return endpoint
 
-    def sum_with(self, Service, FilterOptions) -> _Endpoint:  # type: ignore
+    def aggregation_with(self, Service, FilterOptions) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, options: FilterOptions) -> _Response:
             try:
                 return {
                     "status": "success",
                     "code": 200,
-                    "count": service.sum_with(options),
+                    "aggregations": service.aggregation_with(options),
                 }
             except ForbiddenError as e:
                 return JSONResponse(self.response.forbidden(e), 403)
@@ -107,19 +106,6 @@ class RestfulResource:
                 return self.response.found_many(list(service.read_all()))
             except ForbiddenError as e:
                 return JSONResponse(self.response.forbidden(e), 403)
-
-        return endpoint
-
-    def aggregate_with(self, Service) -> _Endpoint:  # type: ignore
-        def endpoint(service: Service, options: _FooterOptions) -> _Response:
-            try:
-                return RestfulResponse(RestfulName("summary")).found_many(
-                    list(service.aggregate_with(options.to_footer_options()))
-                )
-            except ForbiddenError as e:
-                return JSONResponse(
-                    RestfulResponse(RestfulName("summary")).forbidden(e), 403
-                )
 
         return endpoint
 

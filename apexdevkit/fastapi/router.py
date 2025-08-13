@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Path, Query
 from fastapi.responses import JSONResponse
 
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.fastapi.resource import RestfulResource, SummaryResponse, SumResponse
+from apexdevkit.fastapi.resource import RestfulResource
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.schema import RestfulSchema, Schema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
@@ -185,23 +185,25 @@ class RestfulRouter:
 
         return self
 
-    def with_sum_endpoint(
+    def with_aggregation_endpoint(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
-            "/sum",
-            self.resource.sum_with(
+            "/aggregation",
+            self.resource.aggregation_with(
                 Service=self._resolve(dependency),
-                FilterOptions=Annotated[RawItem, Depends(self.schema.for_sum())],
+                FilterOptions=Annotated[
+                    RawItem, Depends(self.schema.for_aggregation())
+                ],
             ),
             methods=["POST"],
             status_code=200,
             responses={},
-            response_model=SumResponse,
+            response_model=self.schema.for_aggregation_result(),
             include_in_schema=is_documented,
-            summary="Sum",
+            summary="Aggregation",
         )
 
         return self
@@ -220,24 +222,6 @@ class RestfulRouter:
             response_model=self.schema.for_collection(),
             include_in_schema=is_documented,
             summary="Read All",
-        )
-
-        return self
-
-    def with_aggregate_endpoint(
-        self,
-        dependency: Dependency | None = None,
-        is_documented: bool = True,
-    ) -> Self:
-        self.router.add_api_route(
-            "/aggregate",
-            self.resource.aggregate_with(Service=self._resolve(dependency)),
-            methods=["POST"],
-            status_code=200,
-            responses={},
-            response_model=SummaryResponse,
-            include_in_schema=is_documented,
-            summary="Read Aggregated",
         )
 
         return self
