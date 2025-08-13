@@ -144,7 +144,7 @@ def test_should_read_summed(
     resource: RestCollection,
 ) -> None:
     (
-        resource.sum_with()
+        resource.aggregation_with()
         .from_data(JsonDict().with_a(is_rotten=True))
         .ensure()
         .success()

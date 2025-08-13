@@ -77,7 +77,7 @@ def test_should_not_filter_forbidden(resource: RestCollection) -> None:
 
 def test_should_not_sum_forbidden(resource: RestCollection) -> None:
     (
-        resource.sum_with()
+        resource.aggregation_with()
         .from_data(JsonDict().with_a(is_rotten=True))
         .ensure()
         .fail()

@@ -88,13 +88,13 @@ class RestfulResource:
 
         return endpoint
 
-    def sum_with(self, Service, FilterOptions) -> _Endpoint:  # type: ignore
+    def aggregation_with(self, Service, FilterOptions) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, options: FilterOptions) -> _Response:
             try:
                 return {
                     "status": "success",
                     "code": 200,
-                    "count": service.sum_with(options),
+                    "aggregations": service.aggregation_with(options),
                 }
             except ForbiddenError as e:
                 return JSONResponse(self.response.forbidden(e), 403)

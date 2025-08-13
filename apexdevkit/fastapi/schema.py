@@ -9,6 +9,12 @@ from pydantic import BaseModel, create_model
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fluent import FluentDict
 from apexdevkit.http import JsonDict
+from apexdevkit.value import Value
+
+
+class AggregationResult(BaseModel):
+    field: str
+    aggregation: Value
 
 
 class SchemaFields(ABC):
@@ -24,8 +30,11 @@ class SchemaFields(ABC):
     def filters(self) -> FluentDict[type]:
         return JsonDict()
 
-    def sum_filters(self) -> FluentDict[type]:
+    def aggregation_filters(self) -> FluentDict[type]:
         return JsonDict()
+
+    def aggregation_result(self) -> FluentDict[type]:
+        return JsonDict().with_a(count=int).and_a(sums=list[AggregationResult])
 
     @abstractmethod
     def readable(self) -> FluentDict[type]:  # pragma: no cover
@@ -46,7 +55,8 @@ class RestfulSchema:
             "UpdateManyItem", self.fields.editable().merge(self.fields.id())
         )
         self._schema_for("Filter", self.fields.filters())
-        self._schema_for("Sum", self.fields.sum_filters())
+        self._schema_for("Aggregation", self.fields.aggregation_filters())
+        self._schema_for("AggregationResult", self.fields.aggregation_result())
 
         self._schema_for("Item", {self.name.singular: schema})
         self._schema_for("Collection", {self.name.plural: list[schema], "count": int})
@@ -147,13 +157,22 @@ class RestfulSchema:
 
         return _
 
-    def for_sum(self) -> Callable[[BaseModel], dict[str, Any]]:
-        schema = self.schemas["Sum"]
+    def for_aggregation(self) -> Callable[[BaseModel], dict[str, Any]]:
+        schema = self.schemas["Aggregation"]
 
         def _(request: schema) -> dict[str, Any]:
             return request.model_dump()
 
         return _
+
+    def for_aggregation_result(self) -> type[BaseModel]:
+        return self._schema_for(
+            "AggregationResultResponse",
+            FluentDict[type]()
+            .with_a(status=str)
+            .and_a(code=int)
+            .and_a(aggregations=self.schemas["AggregationResult"]),
+        )
 
 
 @dataclass(frozen=True)
