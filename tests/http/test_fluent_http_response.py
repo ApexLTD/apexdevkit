@@ -36,6 +36,7 @@ def test_should_respond_with_json() -> None:
     json = (
         FluentHttpResponse(FakeResponse())
         .on_bad_request(raises=AssertionError)
+        .on_not_found(raises=AssertionError)
         .on_conflict(raises=AssertionError)
         .on_failure(raises=AssertionError)
         .json()

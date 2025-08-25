@@ -6,7 +6,6 @@ from functools import cached_property
 from typing import Any, Self
 
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.fastapi.request import HttpRequest
 from apexdevkit.http import Http, HttpMethod, JsonDict
 from apexdevkit.http.fluent import HttpResponse
 
@@ -123,39 +122,42 @@ class _RestResource:
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class _TestRequest:
     resource: RestfulName
     request: HttpRequest
 
-    def with_id(self, value: Any) -> Self:
-        self.request = self.request.with_endpoint(value)
+    def with_id(self, value: Any) -> _TestRequest:
+        return _TestRequest(
+            resource=self.resource,
+            request=self.request.with_endpoint(value),
+        )
 
-        return self
-
-    def from_collection(self, value: list[JsonDict]) -> Self:
+    def from_collection(self, value: list[JsonDict]) -> _TestRequest:
         return self.with_data(
             JsonDict({self.resource.plural: [dict(item) for item in value]})
         )
 
-    def and_data(self, value: JsonDict) -> Self:
+    def and_data(self, value: JsonDict) -> _TestRequest:
         return self.with_data(value)
 
-    def from_data(self, value: JsonDict) -> Self:
+    def from_data(self, value: JsonDict) -> _TestRequest:
         return self.with_data(value)
 
-    def with_data(self, value: JsonDict) -> Self:
-        self.request = self.request.with_json(value)
+    def with_data(self, value: JsonDict) -> _TestRequest:
+        return _TestRequest(
+            resource=self.resource,
+            request=self.request.with_json(value),
+        )
 
-        return self
-
-    def and_param(self, name: str, value: Any) -> Self:
+    def and_param(self, name: str, value: Any) -> _TestRequest:
         return self.with_param(name, value)
 
-    def with_param(self, name: str, value: Any) -> Self:
-        self.request = self.request.with_param(name, str(value))
-
-        return self
+    def with_param(self, name: str, value: Any) -> _TestRequest:
+        return _TestRequest(
+            resource=self.resource,
+            request=self.request.with_param(name, str(value)),
+        )
 
     @cached_property
     def response(self) -> HttpResponse:
@@ -175,6 +177,33 @@ class _TestRequest:
             json=JsonDict(self.response.json()),
             http_code=self.response.code(),
         )
+
+
+@dataclass(frozen=True)
+class HttpRequest:
+    method: HttpMethod
+    http: Http
+
+    def with_endpoint(self, value: Any) -> HttpRequest:
+        return HttpRequest(
+            method=self.method,
+            http=self.http.with_endpoint(str(value)),
+        )
+
+    def with_param(self, name: str, value: Any) -> HttpRequest:
+        return HttpRequest(
+            method=self.method,
+            http=self.http.with_param(name, value),
+        )
+
+    def with_json(self, value: JsonDict) -> HttpRequest:
+        return HttpRequest(
+            method=self.method,
+            http=self.http.with_json(value),
+        )
+
+    def __call__(self) -> HttpResponse:
+        return self.http.request(self.method)
 
 
 @dataclass
