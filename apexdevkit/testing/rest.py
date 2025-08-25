@@ -6,7 +6,6 @@ from functools import cached_property
 from typing import Any, Self
 
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.fastapi.request import HttpRequest
 from apexdevkit.http import Http, HttpMethod, JsonDict
 from apexdevkit.http.fluent import HttpResponse
 
@@ -175,6 +174,33 @@ class _TestRequest:
             json=JsonDict(self.response.json()),
             http_code=self.response.code(),
         )
+
+
+@dataclass(frozen=True)
+class HttpRequest:
+    method: HttpMethod
+    http: Http
+
+    def with_endpoint(self, value: Any) -> HttpRequest:
+        return HttpRequest(
+            method=self.method,
+            http=self.http.with_endpoint(str(value)),
+        )
+
+    def with_param(self, name: str, value: Any) -> HttpRequest:
+        return HttpRequest(
+            method=self.method,
+            http=self.http.with_param(name, value),
+        )
+
+    def with_json(self, value: JsonDict) -> HttpRequest:
+        return HttpRequest(
+            method=self.method,
+            http=self.http.with_json(value),
+        )
+
+    def __call__(self) -> HttpResponse:
+        return self.http.request(self.method)
 
 
 @dataclass
