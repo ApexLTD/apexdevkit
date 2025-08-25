@@ -54,6 +54,7 @@ class Httpx:
 
     @dataclass
     class Builder:
+        timeout_s: int = field(default_factory=lambda: 30)
         config: HttpxConfig = field(default_factory=default_config)
 
         request_handlers: list[_RequestHandler] = field(default_factory=list)
@@ -63,6 +64,11 @@ class Httpx:
 
         def with_url(self, value: str) -> Httpx.Builder:
             self.url = value
+
+            return self
+
+        def with_timeout(self, timeout_s: int) -> Httpx.Builder:
+            self.timeout_s = timeout_s
 
             return self
 
@@ -87,6 +93,7 @@ class Httpx:
         def _build_client(self) -> httpx.Client:
             return httpx.Client(
                 base_url=self.url,
+                timeout=self.timeout_s,
                 event_hooks={
                     "request": self._build_before_request_hooks(),
                     "response": self._build_after_response_hooks(),
