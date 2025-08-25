@@ -127,33 +127,33 @@ class _TestRequest:
     resource: RestfulName
     request: HttpRequest
 
-    def with_id(self, value: Any) -> Self:
+    def with_id(self, value: Any) -> _TestRequest:
         return _TestRequest(
             resource=self.resource,
             request=self.request.with_endpoint(value),
         )
 
-    def from_collection(self, value: list[JsonDict]) -> Self:
+    def from_collection(self, value: list[JsonDict]) -> _TestRequest:
         return self.with_data(
             JsonDict({self.resource.plural: [dict(item) for item in value]})
         )
 
-    def and_data(self, value: JsonDict) -> Self:
+    def and_data(self, value: JsonDict) -> _TestRequest:
         return self.with_data(value)
 
-    def from_data(self, value: JsonDict) -> Self:
+    def from_data(self, value: JsonDict) -> _TestRequest:
         return self.with_data(value)
 
-    def with_data(self, value: JsonDict) -> Self:
+    def with_data(self, value: JsonDict) -> _TestRequest:
         return _TestRequest(
             resource=self.resource,
             request=self.request.with_json(value),
         )
 
-    def and_param(self, name: str, value: Any) -> Self:
+    def and_param(self, name: str, value: Any) -> _TestRequest:
         return self.with_param(name, value)
 
-    def with_param(self, name: str, value: Any) -> Self:
+    def with_param(self, name: str, value: Any) -> _TestRequest:
         return _TestRequest(
             resource=self.resource,
             request=self.request.with_param(name, str(value)),
