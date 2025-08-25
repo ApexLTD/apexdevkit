@@ -122,15 +122,16 @@ class _RestResource:
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class _TestRequest:
     resource: RestfulName
     request: HttpRequest
 
     def with_id(self, value: Any) -> Self:
-        self.request = self.request.with_endpoint(value)
-
-        return self
+        return _TestRequest(
+            resource=self.resource,
+            request=self.request.with_endpoint(value),
+        )
 
     def from_collection(self, value: list[JsonDict]) -> Self:
         return self.with_data(
@@ -144,17 +145,19 @@ class _TestRequest:
         return self.with_data(value)
 
     def with_data(self, value: JsonDict) -> Self:
-        self.request = self.request.with_json(value)
-
-        return self
+        return _TestRequest(
+            resource=self.resource,
+            request=self.request.with_json(value),
+        )
 
     def and_param(self, name: str, value: Any) -> Self:
         return self.with_param(name, value)
 
     def with_param(self, name: str, value: Any) -> Self:
-        self.request = self.request.with_param(name, str(value))
-
-        return self
+        return _TestRequest(
+            resource=self.resource,
+            request=self.request.with_param(name, str(value)),
+        )
 
     @cached_property
     def response(self) -> HttpResponse:
