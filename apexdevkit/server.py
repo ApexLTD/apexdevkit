@@ -9,6 +9,7 @@ import sentry_sdk
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from sentry_sdk.types import Event, Hint
 
 from apexdevkit.environment import environment_variable
 
@@ -87,6 +88,12 @@ class Sentry:
         if not self.dsn:
             return
 
+        def before_send(event: Event, _hint: Hint) -> Event | None:
+            if event.get("contexts", {}).get("response", {}).get("status_code") == 422:
+                return None
+
+            return event
+
         sentry_sdk.init(
             release=self.release,
             traces_sample_rate=float(self.trace_sample_rate),
@@ -94,6 +101,7 @@ class Sentry:
             _experiments={
                 "enable_logs": True,
             },
+            before_send=before_send,
         )
 
 
