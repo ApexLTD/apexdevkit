@@ -128,6 +128,6 @@ def test_should_merge_with_overlap(faker: Faker) -> None:
     key = faker.word()
     value = faker.word()
 
-    result = FluentDict({key: ANY}).merge(FluentDict({key: value}))
+    result = FluentDict({key: faker.word()}).merge(FluentDict({key: value}))
 
     assert result == {key: value}
