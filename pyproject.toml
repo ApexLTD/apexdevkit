@@ -15,7 +15,7 @@ fastapi = "*"
 uvicorn = "*"
 sentry-sdk = { extras = ["fastapi"], version = "*" }
 python-dotenv = "*"
-pymssql = "2.3.2"
+pymssql = "2.3.8"
 
 [tool.poetry.group.dev.dependencies]
 approvaltests = "*"
