@@ -87,7 +87,9 @@ class DataclassFormatter(Generic[_TargetT]):
 
     def load(self, raw: Mapping[str, Any]) -> _TargetT:
         raw = FluentDict[Any](deepcopy(raw)).select(
-            *self.resource.__annotations__.keys()
+            *self.resource.__annotations__.keys(),
+            "id",
+            "idempotency_id",
         )
 
         for key in fields(self.resource):  # type: ignore
