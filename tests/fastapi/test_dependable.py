@@ -23,20 +23,23 @@ def _resource(dependency: Dependency) -> RestCollection:
             TestClient(
                 FastApiBuilder()
                 .with_route(
-                    apples=RestfulRouter()
-                    .with_name(_PARENT)
-                    .with_fields(AppleFields())
-                    .with_dependency(dependency)
-                    .with_sub_resource(
-                        prices=RestfulRouter()
-                        .with_name(_CHILD)
-                        .with_fields(PriceFields())
-                        .with_dependency(dependency)
+                    apples=(
+                        RestfulRouter.named(_PARENT.singular)
+                        .with_fields(AppleFields())
+                        .with_default_dependency(dependency)
+                        .with_sub_resource(
+                            prices=(
+                                RestfulRouter.named(_CHILD.singular)
+                                .child_of(_PARENT.singular)
+                                .with_fields(PriceFields())
+                                .with_default_dependency(dependency)
+                                .default()
+                                .build()
+                            )
+                        )
                         .default()
                         .build()
                     )
-                    .default()
-                    .build()
                 )
                 .build()
             )

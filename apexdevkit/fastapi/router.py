@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from functools import cached_property
 from typing import Annotated, Any, Protocol, Self, TypeVar
 
 from fastapi import APIRouter, Depends, Path, Query
@@ -25,16 +24,28 @@ class Dependency(Protocol):  # pragma: no cover
 
 @dataclass
 class RestfulRouter:
+    name: RestfulName
+
+    parent: RestfulName | None = None
     router: APIRouter = field(default_factory=APIRouter)
 
-    name: RestfulName = field(init=False)
-    fields: SchemaFields = field(init=False)
+    _schema: RestfulSchema = field(init=False)
+    _dependency: Dependency | None = field(init=False, default=None)
 
-    dependency: Dependency | None = None
+    @classmethod
+    def named(cls, singular: str, *, plural: str | None = None) -> "RestfulRouter":
+        if plural:
+            return cls(RestfulName(singular, plural))
 
-    @cached_property
-    def schema(self) -> RestfulSchema:
-        return RestfulSchema(name=self.name, fields=self.fields)
+        return cls(RestfulName(singular))
+
+    def child_of(self, singular: str, *, plural: str | None = None) -> Self:
+        self.parent = RestfulName(singular)
+
+        if plural:
+            self.parent = RestfulName(singular, plural)
+
+        return self
 
     @property
     def resource(self) -> RestfulResource:
@@ -48,13 +59,8 @@ class RestfulRouter:
     def item_path(self) -> str:
         return "/{" + self.id_alias + "}"
 
-    def with_name(self, value: RestfulName) -> Self:
-        self.name = value
-
-        return self
-
     def with_fields(self, value: SchemaFields) -> Self:
-        self.fields = value
+        self._schema = RestfulSchema(name=self.name, fields=value)
 
         return self
 
@@ -63,12 +69,12 @@ class RestfulRouter:
 
         return self
 
-    def with_dependency(self, value: Dependency) -> Self:
-        self.dependency = value
+    def with_default_dependency(self, value: Dependency) -> Self:
+        self._dependency = value
 
         return self
 
-    def with_create_one_endpoint(
+    def with_create_one(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -79,20 +85,20 @@ class RestfulRouter:
                 Service=self._resolve(dependency),
                 Item=Annotated[
                     RawItem,
-                    Depends(self.schema.for_create_one()),
+                    Depends(self._schema.for_create_one()),
                 ],
             ),
             methods=["POST"],
             status_code=201,
             responses={409: {}},
-            response_model=self.schema.for_item(),
+            response_model=self._schema.for_item(),
             include_in_schema=is_documented,
             summary="Create One",
         )
 
         return self
 
-    def with_create_many_endpoint(
+    def with_create_many(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -103,20 +109,20 @@ class RestfulRouter:
                 Service=self._resolve(dependency),
                 Collection=Annotated[
                     RawCollection,
-                    Depends(self.schema.for_create_many()),
+                    Depends(self._schema.for_create_many()),
                 ],
             ),
             methods=["POST"],
             status_code=201,
             responses={409: {}},
-            response_model=self.schema.for_collection(),
+            response_model=self._schema.for_collection(),
             include_in_schema=is_documented,
             summary="Create Many",
         )
 
         return self
 
-    def with_read_one_endpoint(
+    def with_read_one(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -133,14 +139,14 @@ class RestfulRouter:
             methods=["GET"],
             status_code=200,
             responses={404: {}},
-            response_model=self.schema.for_item(),
+            response_model=self._schema.for_item(),
             include_in_schema=is_documented,
             summary="Read One",
         )
 
         return self
 
-    def with_read_many_endpoint(
+    def with_read_many(
         self,
         query: FluentDict[Any],
         dependency: Dependency | None = None,
@@ -157,14 +163,14 @@ class RestfulRouter:
             methods=["GET"],
             status_code=200,
             responses={},
-            response_model=self.schema.for_collection(),
+            response_model=self._schema.for_collection(),
             include_in_schema=is_documented,
             summary="Read Many",
         )
 
         return self
 
-    def with_filter_endpoint(
+    def with_filter(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -173,19 +179,19 @@ class RestfulRouter:
             "/filter",
             self.resource.filter_with(
                 Service=self._resolve(dependency),
-                QueryOptions=Annotated[RawItem, Depends(self.schema.for_filters())],
+                QueryOptions=Annotated[RawItem, Depends(self._schema.for_filters())],
             ),
             methods=["POST"],
             status_code=200,
             responses={},
-            response_model=self.schema.for_collection(),
+            response_model=self._schema.for_collection(),
             include_in_schema=is_documented,
             summary="Read Filtered",
         )
 
         return self
 
-    def with_aggregation_endpoint(
+    def with_aggregation(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -195,20 +201,20 @@ class RestfulRouter:
             self.resource.aggregation_with(
                 Service=self._resolve(dependency),
                 FilterOptions=Annotated[
-                    RawItem, Depends(self.schema.for_aggregation())
+                    RawItem, Depends(self._schema.for_aggregation())
                 ],
             ),
             methods=["POST"],
             status_code=200,
             responses={},
-            response_model=self.schema.for_aggregation_result(),
+            response_model=self._schema.for_aggregation_result(),
             include_in_schema=is_documented,
             summary="Aggregation",
         )
 
         return self
 
-    def with_read_all_endpoint(
+    def with_read_all(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -219,14 +225,14 @@ class RestfulRouter:
             methods=["GET"],
             status_code=200,
             responses={},
-            response_model=self.schema.for_collection(),
+            response_model=self._schema.for_collection(),
             include_in_schema=is_documented,
             summary="Read All",
         )
 
         return self
 
-    def with_update_one_endpoint(
+    def with_update_one(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -241,20 +247,20 @@ class RestfulRouter:
                 ],
                 Updates=Annotated[
                     RawItem,
-                    Depends(self.schema.for_update_one()),
+                    Depends(self._schema.for_update_one()),
                 ],
             ),
             methods=["PATCH"],
             status_code=200,
             responses={404: {}},
-            response_model=self.schema.for_no_data(),
+            response_model=self._schema.for_no_data(),
             include_in_schema=is_documented,
             summary="Update One",
         )
 
         return self
 
-    def with_update_many_endpoint(
+    def with_update_many(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -265,20 +271,20 @@ class RestfulRouter:
                 Service=self._resolve(dependency),
                 Collection=Annotated[
                     RawCollection,
-                    Depends(self.schema.for_update_many()),
+                    Depends(self._schema.for_update_many()),
                 ],
             ),
             methods=["PATCH"],
             status_code=200,
             responses={},
-            response_model=self.schema.for_no_data(),
+            response_model=self._schema.for_no_data(),
             include_in_schema=is_documented,
             summary="Update Many",
         )
 
         return self
 
-    def with_replace_one_endpoint(
+    def with_replace_one(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -289,20 +295,20 @@ class RestfulRouter:
                 Service=self._resolve(dependency),
                 Item=Annotated[
                     RawItem,
-                    Depends(self.schema.for_replace_one()),
+                    Depends(self._schema.for_replace_one()),
                 ],
             ),
             methods=["PUT"],
             status_code=200,
             responses={404: {}},
-            response_model=self.schema.for_no_data(),
+            response_model=self._schema.for_no_data(),
             include_in_schema=is_documented,
             summary="Replace One",
         )
 
         return self
 
-    def with_replace_many_endpoint(
+    def with_replace_many(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -313,20 +319,20 @@ class RestfulRouter:
                 Service=self._resolve(dependency),
                 Collection=Annotated[
                     RawCollection,
-                    Depends(self.schema.for_replace_many()),
+                    Depends(self._schema.for_replace_many()),
                 ],
             ),
             methods=["PUT"],
             status_code=200,
             responses={},
-            response_model=self.schema.for_no_data(),
+            response_model=self._schema.for_no_data(),
             include_in_schema=is_documented,
             summary="Replace Many",
         )
 
         return self
 
-    def with_delete_one_endpoint(
+    def with_delete_one(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -343,7 +349,7 @@ class RestfulRouter:
             methods=["DELETE"],
             status_code=200,
             responses={404: {}},
-            response_model=self.schema.for_no_data(),
+            response_model=self._schema.for_no_data(),
             include_in_schema=is_documented,
             summary="Delete One",
         )
@@ -358,20 +364,20 @@ class RestfulRouter:
 
     def default(self) -> Self:
         return (
-            self.with_create_one_endpoint()
-            .with_create_many_endpoint()
-            .with_read_one_endpoint()
-            .with_read_all_endpoint()
-            .with_update_one_endpoint()
-            .with_update_many_endpoint()
-            .with_delete_one_endpoint()
+            self.with_create_one()
+            .with_create_many()
+            .with_read_one()
+            .with_read_all()
+            .with_update_one()
+            .with_update_many()
+            .with_delete_one()
         )
 
     def build(self) -> APIRouter:
         return self.router
 
     def _resolve(self, dependency: Dependency | None) -> type[RestfulService]:
-        resolved = dependency or self.dependency
+        resolved = dependency or self._dependency
         assert resolved, "One of default or endpoint dependency must be specified"
 
         return resolved.as_dependable()

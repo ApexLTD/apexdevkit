@@ -39,36 +39,38 @@ def setup(infra: RestfulServiceBuilder) -> FastAPI:
         .with_description("Sample API for unit testing various testing routines")
         .with_route(
             **{
-                "market-apples": RestfulRouter()
-                .with_name(RestfulName("market-apple"))
-                .with_fields(AppleFields())
-                .with_sub_resource(
-                    prices=(
-                        RestfulRouter()
-                        .with_name(RestfulName("price"))
-                        .with_fields(PriceFields())
-                        .with_delete_one_endpoint(
-                            dependable.with_parent(RestfulName("market-apple"))
+                "market-apples": (
+                    RestfulRouter.named("market-apple")
+                    .with_fields(AppleFields())
+                    .with_sub_resource(
+                        prices=(
+                            RestfulRouter.named("price")
+                            .child_of("market-apple")
+                            .with_fields(PriceFields())
+                            .with_delete_one(
+                                dependable.with_parent(RestfulName("market-apple"))
+                            )
+                            .build()
                         )
-                        .build()
                     )
+                    .with_default_dependency(dependable)
+                    .default()
+                    .with_replace_one(dependable)
+                    .with_replace_many(dependable)
+                    .with_filter(dependable)
+                    .with_aggregation(dependable)
+                    .build()
                 )
-                .with_dependency(dependable)
-                .default()
-                .with_replace_one_endpoint(dependable)
-                .with_replace_many_endpoint(dependable)
-                .with_filter_endpoint(dependable)
-                .with_aggregation_endpoint(dependable)
-                .build()
             }
         )
         .with_route(
-            apples=RestfulRouter()
-            .with_name(RestfulName("apple"))
-            .with_fields(AppleFields())
-            .with_dependency(dependable)
-            .with_read_many_endpoint(JsonDict().with_a(color=str))
-            .build()
+            apples=(
+                RestfulRouter.named("apple")
+                .with_fields(AppleFields())
+                .with_default_dependency(dependable)
+                .with_read_many(JsonDict().with_a(color=str))
+                .build()
+            )
         )
         .build()
     )
