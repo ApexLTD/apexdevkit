@@ -70,7 +70,7 @@ class RestfulRouter:
 
         return self
 
-    def with_create_one_endpoint(
+    def with_create_one(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -94,7 +94,7 @@ class RestfulRouter:
 
         return self
 
-    def with_create_many_endpoint(
+    def with_create_many(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -118,7 +118,7 @@ class RestfulRouter:
 
         return self
 
-    def with_read_one_endpoint(
+    def with_read_one(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -142,7 +142,7 @@ class RestfulRouter:
 
         return self
 
-    def with_read_many_endpoint(
+    def with_read_many(
         self,
         query: FluentDict[Any],
         dependency: Dependency | None = None,
@@ -166,7 +166,7 @@ class RestfulRouter:
 
         return self
 
-    def with_filter_endpoint(
+    def with_filter(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -187,7 +187,7 @@ class RestfulRouter:
 
         return self
 
-    def with_aggregation_endpoint(
+    def with_aggregation(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -210,7 +210,7 @@ class RestfulRouter:
 
         return self
 
-    def with_read_all_endpoint(
+    def with_read_all(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -228,7 +228,7 @@ class RestfulRouter:
 
         return self
 
-    def with_update_one_endpoint(
+    def with_update_one(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -256,7 +256,7 @@ class RestfulRouter:
 
         return self
 
-    def with_update_many_endpoint(
+    def with_update_many(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -280,7 +280,7 @@ class RestfulRouter:
 
         return self
 
-    def with_replace_one_endpoint(
+    def with_replace_one(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -304,7 +304,7 @@ class RestfulRouter:
 
         return self
 
-    def with_replace_many_endpoint(
+    def with_replace_many(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -328,7 +328,7 @@ class RestfulRouter:
 
         return self
 
-    def with_delete_one_endpoint(
+    def with_delete_one(
         self,
         dependency: Dependency | None = None,
         is_documented: bool = True,
@@ -360,13 +360,13 @@ class RestfulRouter:
 
     def default(self) -> Self:
         return (
-            self.with_create_one_endpoint()
-            .with_create_many_endpoint()
-            .with_read_one_endpoint()
-            .with_read_all_endpoint()
-            .with_update_one_endpoint()
-            .with_update_many_endpoint()
-            .with_delete_one_endpoint()
+            self.with_create_one()
+            .with_create_many()
+            .with_read_one()
+            .with_read_all()
+            .with_update_one()
+            .with_update_many()
+            .with_delete_one()
         )
 
     def build(self) -> APIRouter:
