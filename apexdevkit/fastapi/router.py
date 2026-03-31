@@ -63,10 +63,22 @@ class RestfulRouter:
         self._schema = RestfulSchema(
             name=self.name,
             fields=value,
-            generator=Schema(self.name),
+            generator=self._schema_generator,
         )
 
         return self
+
+    @property
+    def _schema_generator(self) -> Schema:
+        if self.parent:
+            return Schema(
+                RestfulName(
+                    self.parent.singular + self.name.singular.capitalize(),
+                    self.parent.singular + self.name.plural.capitalize(),
+                )
+            )
+
+        return Schema(self.name)
 
     def with_tag(self, value: list[str | Enum]) -> Self:
         self.router.tags = value
