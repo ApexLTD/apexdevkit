@@ -32,6 +32,13 @@ class RestfulRouter:
 
     dependency: Dependency | None = None
 
+    @classmethod
+    def named(cls, singular: str, *, plural: str | None = None) -> "RestfulRouter":
+        if plural:
+            return cls(RestfulName(singular, plural))
+
+        return cls(RestfulName(singular))
+
     @cached_property
     def schema(self) -> RestfulSchema:
         return RestfulSchema(name=self.name, fields=self.fields)

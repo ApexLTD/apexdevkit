@@ -40,11 +40,11 @@ def setup(infra: RestfulServiceBuilder) -> FastAPI:
         .with_route(
             **{
                 "market-apples": (
-                    RestfulRouter(RestfulName("market-apple"))
+                    RestfulRouter.named("market-apple")
                     .with_fields(AppleFields())
                     .with_sub_resource(
                         prices=(
-                            RestfulRouter(RestfulName("price"))
+                            RestfulRouter.named("price")
                             .with_fields(PriceFields())
                             .with_delete_one_endpoint(
                                 dependable.with_parent(RestfulName("market-apple"))
@@ -64,7 +64,7 @@ def setup(infra: RestfulServiceBuilder) -> FastAPI:
         )
         .with_route(
             apples=(
-                RestfulRouter(RestfulName("apple"))
+                RestfulRouter.named("apple")
                 .with_fields(AppleFields())
                 .with_dependency(dependable)
                 .with_read_many_endpoint(JsonDict().with_a(color=str))

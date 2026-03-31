@@ -52,7 +52,7 @@ def setup(infra: RestfulServiceBuilder, fake_user: FakeUser) -> FastAPI:
         .with_version("1.0.0")
         .with_description("Sample API for unit testing various testing routines")
         .with_route(
-            apples=RestfulRouter(RestfulName("apple"))
+            apples=RestfulRouter.named("apple")
             .with_fields(AppleFields())
             .with_create_one_endpoint(dependable)
             .with_create_many_endpoint(dependable)
