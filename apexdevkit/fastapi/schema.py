@@ -178,16 +178,16 @@ class RestfulSchema:
 
 @dataclass(frozen=True)
 class Schema:
-    name: str
+    resource: str
 
     def schema_for(self, action: str, fields: dict[str, Any]) -> type[BaseModel]:
-        return self._nested_schema_for(self.name + action, fields)
+        return self._nested_schema_for(self.resource + action, fields)
 
     def optional_schema_for(
         self, action: str, fields: dict[str, Any]
     ) -> type[BaseModel]:
         return create_model(
-            self.name + action,
+            self.resource + action,
             **{
                 field_name: (field_type | None, None)
                 for field_name, field_type in fields.items()
