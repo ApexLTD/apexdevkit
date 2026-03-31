@@ -45,6 +45,7 @@ class SchemaFields(ABC):
 class RestfulSchema:
     name: RestfulName
     fields: SchemaFields
+    generator: "Schema"
 
     def __post_init__(self) -> None:
         schema = self._schema_for("", self.fields.readable())
@@ -66,7 +67,7 @@ class RestfulSchema:
 
     def _schema_for(self, action: str, fields: dict[str, Any]) -> type[BaseModel]:
         if action not in self.schemas:
-            self.schemas[action] = Schema(self.name).schema_for(action, fields)
+            self.schemas[action] = self.generator.schema_for(action, fields)
 
         return self.schemas[action]
 

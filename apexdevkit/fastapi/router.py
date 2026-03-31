@@ -60,7 +60,11 @@ class RestfulRouter:
         return "/{" + self.id_alias + "}"
 
     def with_fields(self, value: SchemaFields) -> Self:
-        self._schema = RestfulSchema(name=self.name, fields=value)
+        self._schema = RestfulSchema(
+            name=self.name,
+            fields=value,
+            generator=Schema(self.name),
+        )
 
         return self
 
