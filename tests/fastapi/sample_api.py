@@ -45,6 +45,7 @@ def setup(infra: RestfulServiceBuilder) -> FastAPI:
                     .with_sub_resource(
                         prices=(
                             RestfulRouter.named("price")
+                            .child_of("market-apple")
                             .with_fields(PriceFields())
                             .with_delete_one(
                                 dependable.with_parent(RestfulName("market-apple"))

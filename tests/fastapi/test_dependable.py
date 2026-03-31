@@ -24,12 +24,13 @@ def _resource(dependency: Dependency) -> RestCollection:
                 FastApiBuilder()
                 .with_route(
                     apples=(
-                        RestfulRouter(_PARENT)
+                        RestfulRouter.named(_PARENT.singular)
                         .with_fields(AppleFields())
                         .with_default_dependency(dependency)
                         .with_sub_resource(
                             prices=(
-                                RestfulRouter(_CHILD)
+                                RestfulRouter.named(_CHILD.singular)
+                                .child_of(_PARENT.singular)
                                 .with_fields(PriceFields())
                                 .with_default_dependency(dependency)
                                 .default()

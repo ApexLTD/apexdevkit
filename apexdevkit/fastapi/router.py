@@ -26,6 +26,7 @@ class Dependency(Protocol):  # pragma: no cover
 class RestfulRouter:
     name: RestfulName
 
+    parent: RestfulName | None = None
     router: APIRouter = field(default_factory=APIRouter)
 
     _schema: RestfulSchema = field(init=False)
@@ -37,6 +38,14 @@ class RestfulRouter:
             return cls(RestfulName(singular, plural))
 
         return cls(RestfulName(singular))
+
+    def child_of(self, singular: str, *, plural: str | None = None) -> Self:
+        self.parent = RestfulName(singular)
+
+        if plural:
+            self.parent = RestfulName(singular, plural)
+
+        return self
 
     @property
     def resource(self) -> RestfulResource:
