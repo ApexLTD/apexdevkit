@@ -72,13 +72,10 @@ class RestfulRouter:
     def _schema_generator(self) -> Schema:
         if self.parent:
             return Schema(
-                RestfulName(
-                    self.parent.singular.capitalize() + self.name.singular.capitalize(),
-                    self.parent.singular.capitalize() + self.name.plural.capitalize(),
-                )
+                self.parent.singular.capitalize() + self.name.singular.capitalize()
             )
 
-        return Schema(self.name)
+        return Schema(self.name.singular.capitalize())
 
     def with_tag(self, value: list[str | Enum]) -> Self:
         self.router.tags = value
@@ -173,7 +170,8 @@ class RestfulRouter:
             self.resource.read_many(
                 Service=self._resolve(dependency),
                 QueryParams=Annotated[
-                    Schema(self.name).optional_schema_for("ReadMany", query), Query()
+                    Schema(self.name.singular).optional_schema_for("ReadMany", query),
+                    Query(),
                 ],
             ),
             methods=["GET"],
