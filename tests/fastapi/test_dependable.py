@@ -26,12 +26,12 @@ def _resource(dependency: Dependency) -> RestCollection:
                     apples=(
                         RestfulRouter(_PARENT)
                         .with_fields(AppleFields())
-                        .with_dependency(dependency)
+                        .with_default_dependency(dependency)
                         .with_sub_resource(
                             prices=(
                                 RestfulRouter(_CHILD)
                                 .with_fields(PriceFields())
-                                .with_dependency(dependency)
+                                .with_default_dependency(dependency)
                                 .default()
                                 .build()
                             )

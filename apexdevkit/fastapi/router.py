@@ -65,7 +65,7 @@ class RestfulRouter:
 
         return self
 
-    def with_dependency(self, value: Dependency) -> Self:
+    def with_default_dependency(self, value: Dependency) -> Self:
         self.dependency = value
 
         return self

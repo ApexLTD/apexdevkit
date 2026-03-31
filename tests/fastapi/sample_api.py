@@ -52,7 +52,7 @@ def setup(infra: RestfulServiceBuilder) -> FastAPI:
                             .build()
                         )
                     )
-                    .with_dependency(dependable)
+                    .with_default_dependency(dependable)
                     .default()
                     .with_replace_one(dependable)
                     .with_replace_many(dependable)
@@ -66,7 +66,7 @@ def setup(infra: RestfulServiceBuilder) -> FastAPI:
             apples=(
                 RestfulRouter.named("apple")
                 .with_fields(AppleFields())
-                .with_dependency(dependable)
+                .with_default_dependency(dependable)
                 .with_read_many(JsonDict().with_a(color=str))
                 .build()
             )
