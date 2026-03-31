@@ -29,7 +29,7 @@ class RestfulRouter:
 
     router: APIRouter = field(default_factory=APIRouter)
 
-    _fields: SchemaFields = field(init=False)
+    _schema: RestfulSchema = field(init=False)
     _dependency: Dependency | None = field(init=False, default=None)
 
     @classmethod
@@ -41,7 +41,7 @@ class RestfulRouter:
 
     @cached_property
     def schema(self) -> RestfulSchema:
-        return RestfulSchema(name=self.name, fields=self._fields)
+        return self._schema
 
     @property
     def resource(self) -> RestfulResource:
@@ -56,7 +56,7 @@ class RestfulRouter:
         return "/{" + self.id_alias + "}"
 
     def with_fields(self, value: SchemaFields) -> Self:
-        self._fields = value
+        self._schema = RestfulSchema(name=self.name, fields=value)
 
         return self
 
