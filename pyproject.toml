@@ -1,6 +1,6 @@
 [project]
 name = "apexdevkit"
-version = "1.25.0"
+version = "1.25.1"
 description = "Apex Development Tools for python."
 readme = "README.md"
 authors = [
