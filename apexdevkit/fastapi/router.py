@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from functools import cached_property
 from typing import Annotated, Any, Protocol, Self, TypeVar
 
 from fastapi import APIRouter, Depends, Path, Query
@@ -38,10 +37,6 @@ class RestfulRouter:
             return cls(RestfulName(singular, plural))
 
         return cls(RestfulName(singular))
-
-    @cached_property
-    def schema(self) -> RestfulSchema:
-        return self._schema
 
     @property
     def resource(self) -> RestfulResource:
@@ -81,13 +76,13 @@ class RestfulRouter:
                 Service=self._resolve(dependency),
                 Item=Annotated[
                     RawItem,
-                    Depends(self.schema.for_create_one()),
+                    Depends(self._schema.for_create_one()),
                 ],
             ),
             methods=["POST"],
             status_code=201,
             responses={409: {}},
-            response_model=self.schema.for_item(),
+            response_model=self._schema.for_item(),
             include_in_schema=is_documented,
             summary="Create One",
         )
@@ -105,13 +100,13 @@ class RestfulRouter:
                 Service=self._resolve(dependency),
                 Collection=Annotated[
                     RawCollection,
-                    Depends(self.schema.for_create_many()),
+                    Depends(self._schema.for_create_many()),
                 ],
             ),
             methods=["POST"],
             status_code=201,
             responses={409: {}},
-            response_model=self.schema.for_collection(),
+            response_model=self._schema.for_collection(),
             include_in_schema=is_documented,
             summary="Create Many",
         )
@@ -135,7 +130,7 @@ class RestfulRouter:
             methods=["GET"],
             status_code=200,
             responses={404: {}},
-            response_model=self.schema.for_item(),
+            response_model=self._schema.for_item(),
             include_in_schema=is_documented,
             summary="Read One",
         )
@@ -159,7 +154,7 @@ class RestfulRouter:
             methods=["GET"],
             status_code=200,
             responses={},
-            response_model=self.schema.for_collection(),
+            response_model=self._schema.for_collection(),
             include_in_schema=is_documented,
             summary="Read Many",
         )
@@ -175,12 +170,12 @@ class RestfulRouter:
             "/filter",
             self.resource.filter_with(
                 Service=self._resolve(dependency),
-                QueryOptions=Annotated[RawItem, Depends(self.schema.for_filters())],
+                QueryOptions=Annotated[RawItem, Depends(self._schema.for_filters())],
             ),
             methods=["POST"],
             status_code=200,
             responses={},
-            response_model=self.schema.for_collection(),
+            response_model=self._schema.for_collection(),
             include_in_schema=is_documented,
             summary="Read Filtered",
         )
@@ -197,13 +192,13 @@ class RestfulRouter:
             self.resource.aggregation_with(
                 Service=self._resolve(dependency),
                 FilterOptions=Annotated[
-                    RawItem, Depends(self.schema.for_aggregation())
+                    RawItem, Depends(self._schema.for_aggregation())
                 ],
             ),
             methods=["POST"],
             status_code=200,
             responses={},
-            response_model=self.schema.for_aggregation_result(),
+            response_model=self._schema.for_aggregation_result(),
             include_in_schema=is_documented,
             summary="Aggregation",
         )
@@ -221,7 +216,7 @@ class RestfulRouter:
             methods=["GET"],
             status_code=200,
             responses={},
-            response_model=self.schema.for_collection(),
+            response_model=self._schema.for_collection(),
             include_in_schema=is_documented,
             summary="Read All",
         )
@@ -243,13 +238,13 @@ class RestfulRouter:
                 ],
                 Updates=Annotated[
                     RawItem,
-                    Depends(self.schema.for_update_one()),
+                    Depends(self._schema.for_update_one()),
                 ],
             ),
             methods=["PATCH"],
             status_code=200,
             responses={404: {}},
-            response_model=self.schema.for_no_data(),
+            response_model=self._schema.for_no_data(),
             include_in_schema=is_documented,
             summary="Update One",
         )
@@ -267,13 +262,13 @@ class RestfulRouter:
                 Service=self._resolve(dependency),
                 Collection=Annotated[
                     RawCollection,
-                    Depends(self.schema.for_update_many()),
+                    Depends(self._schema.for_update_many()),
                 ],
             ),
             methods=["PATCH"],
             status_code=200,
             responses={},
-            response_model=self.schema.for_no_data(),
+            response_model=self._schema.for_no_data(),
             include_in_schema=is_documented,
             summary="Update Many",
         )
@@ -291,13 +286,13 @@ class RestfulRouter:
                 Service=self._resolve(dependency),
                 Item=Annotated[
                     RawItem,
-                    Depends(self.schema.for_replace_one()),
+                    Depends(self._schema.for_replace_one()),
                 ],
             ),
             methods=["PUT"],
             status_code=200,
             responses={404: {}},
-            response_model=self.schema.for_no_data(),
+            response_model=self._schema.for_no_data(),
             include_in_schema=is_documented,
             summary="Replace One",
         )
@@ -315,13 +310,13 @@ class RestfulRouter:
                 Service=self._resolve(dependency),
                 Collection=Annotated[
                     RawCollection,
-                    Depends(self.schema.for_replace_many()),
+                    Depends(self._schema.for_replace_many()),
                 ],
             ),
             methods=["PUT"],
             status_code=200,
             responses={},
-            response_model=self.schema.for_no_data(),
+            response_model=self._schema.for_no_data(),
             include_in_schema=is_documented,
             summary="Replace Many",
         )
@@ -345,7 +340,7 @@ class RestfulRouter:
             methods=["DELETE"],
             status_code=200,
             responses={404: {}},
-            response_model=self.schema.for_no_data(),
+            response_model=self._schema.for_no_data(),
             include_in_schema=is_documented,
             summary="Delete One",
         )
