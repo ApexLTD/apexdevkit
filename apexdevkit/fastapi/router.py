@@ -28,9 +28,9 @@ class RestfulRouter:
     name: RestfulName
 
     router: APIRouter = field(default_factory=APIRouter)
-    fields: SchemaFields = field(init=False)
 
-    dependency: Dependency | None = None
+    _fields: SchemaFields = field(init=False)
+    _dependency: Dependency | None = field(init=False, default=None)
 
     @classmethod
     def named(cls, singular: str, *, plural: str | None = None) -> "RestfulRouter":
@@ -41,7 +41,7 @@ class RestfulRouter:
 
     @cached_property
     def schema(self) -> RestfulSchema:
-        return RestfulSchema(name=self.name, fields=self.fields)
+        return RestfulSchema(name=self.name, fields=self._fields)
 
     @property
     def resource(self) -> RestfulResource:
@@ -56,7 +56,7 @@ class RestfulRouter:
         return "/{" + self.id_alias + "}"
 
     def with_fields(self, value: SchemaFields) -> Self:
-        self.fields = value
+        self._fields = value
 
         return self
 
@@ -66,7 +66,7 @@ class RestfulRouter:
         return self
 
     def with_default_dependency(self, value: Dependency) -> Self:
-        self.dependency = value
+        self._dependency = value
 
         return self
 
@@ -373,7 +373,7 @@ class RestfulRouter:
         return self.router
 
     def _resolve(self, dependency: Dependency | None) -> type[RestfulService]:
-        resolved = dependency or self.dependency
+        resolved = dependency or self._dependency
         assert resolved, "One of default or endpoint dependency must be specified"
 
         return resolved.as_dependable()
