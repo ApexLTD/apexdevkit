@@ -73,8 +73,8 @@ class RestfulRouter:
         if self.parent:
             return Schema(
                 RestfulName(
-                    self.parent.singular + self.name.singular.capitalize(),
-                    self.parent.singular + self.name.plural.capitalize(),
+                    self.parent.singular.capitalize() + self.name.singular.capitalize(),
+                    self.parent.singular.capitalize() + self.name.plural.capitalize(),
                 )
             )
 

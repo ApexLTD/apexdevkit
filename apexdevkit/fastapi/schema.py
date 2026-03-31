@@ -181,13 +181,13 @@ class Schema:
     name: RestfulName
 
     def schema_for(self, action: str, fields: dict[str, Any]) -> type[BaseModel]:
-        return self._nested_schema_for(self.name.singular.capitalize() + action, fields)
+        return self._nested_schema_for(self.name.singular + action, fields)
 
     def optional_schema_for(
         self, action: str, fields: dict[str, Any]
     ) -> type[BaseModel]:
         return create_model(
-            self.name.singular.capitalize() + action,
+            self.name.singular + action,
             **{
                 field_name: (field_type | None, None)
                 for field_name, field_type in fields.items()
@@ -200,9 +200,7 @@ class Schema:
         for field_name, field_type in fields.items():
             if isinstance(field_type, dict):
                 model_fields[field_name] = (
-                    self._nested_schema_for(
-                        name.capitalize() + field_name.capitalize(), field_type
-                    ),
+                    self._nested_schema_for(name + field_name.capitalize(), field_type),
                     ...,
                 )
             else:
