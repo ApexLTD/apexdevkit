@@ -45,6 +45,7 @@ class SchemaFields(ABC):
 class RestfulSchema:
     name: RestfulName
     fields: SchemaFields
+    generator: "Schema"
 
     def __post_init__(self) -> None:
         schema = self._schema_for("", self.fields.readable())
@@ -66,7 +67,7 @@ class RestfulSchema:
 
     def _schema_for(self, action: str, fields: dict[str, Any]) -> type[BaseModel]:
         if action not in self.schemas:
-            self.schemas[action] = Schema(self.name).schema_for(action, fields)
+            self.schemas[action] = self.generator.schema_for(action, fields)
 
         return self.schemas[action]
 
@@ -177,16 +178,16 @@ class RestfulSchema:
 
 @dataclass(frozen=True)
 class Schema:
-    name: RestfulName
+    resource: str
 
     def schema_for(self, action: str, fields: dict[str, Any]) -> type[BaseModel]:
-        return self._nested_schema_for(self.name.singular.capitalize() + action, fields)
+        return self._nested_schema_for(self.resource + action, fields)
 
     def optional_schema_for(
         self, action: str, fields: dict[str, Any]
     ) -> type[BaseModel]:
         return create_model(
-            self.name.singular.capitalize() + action,
+            self.resource + action,
             **{
                 field_name: (field_type | None, None)
                 for field_name, field_type in fields.items()
@@ -199,9 +200,7 @@ class Schema:
         for field_name, field_type in fields.items():
             if isinstance(field_type, dict):
                 model_fields[field_name] = (
-                    self._nested_schema_for(
-                        name.capitalize() + field_name.capitalize(), field_type
-                    ),
+                    self._nested_schema_for(name + field_name.capitalize(), field_type),
                     ...,
                 )
             else:

@@ -60,9 +60,22 @@ class RestfulRouter:
         return "/{" + self.id_alias + "}"
 
     def with_fields(self, value: SchemaFields) -> Self:
-        self._schema = RestfulSchema(name=self.name, fields=value)
+        self._schema = RestfulSchema(
+            name=self.name,
+            fields=value,
+            generator=self._schema_generator,
+        )
 
         return self
+
+    @property
+    def _schema_generator(self) -> Schema:
+        if self.parent:
+            return Schema(
+                self.parent.singular.capitalize() + self.name.singular.capitalize()
+            )
+
+        return Schema(self.name.singular.capitalize())
 
     def with_tag(self, value: list[str | Enum]) -> Self:
         self.router.tags = value
@@ -157,7 +170,8 @@ class RestfulRouter:
             self.resource.read_many(
                 Service=self._resolve(dependency),
                 QueryParams=Annotated[
-                    Schema(self.name).optional_schema_for("ReadMany", query), Query()
+                    Schema(self.name.singular).optional_schema_for("ReadMany", query),
+                    Query(),
                 ],
             ),
             methods=["GET"],
