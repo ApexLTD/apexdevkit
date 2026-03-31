@@ -25,9 +25,9 @@ class Dependency(Protocol):  # pragma: no cover
 
 @dataclass
 class RestfulRouter:
-    router: APIRouter = field(default_factory=APIRouter)
+    name: RestfulName
 
-    name: RestfulName = field(init=False)
+    router: APIRouter = field(default_factory=APIRouter)
     fields: SchemaFields = field(init=False)
 
     dependency: Dependency | None = None
@@ -47,11 +47,6 @@ class RestfulRouter:
     @property
     def item_path(self) -> str:
         return "/{" + self.id_alias + "}"
-
-    def with_name(self, value: RestfulName) -> Self:
-        self.name = value
-
-        return self
 
     def with_fields(self, value: SchemaFields) -> Self:
         self.fields = value
