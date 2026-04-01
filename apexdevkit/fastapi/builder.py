@@ -6,8 +6,8 @@ from dataclasses import dataclass, field
 from typing import Any, Self
 
 from fastapi import APIRouter, FastAPI
-from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from apexdevkit.error import ApiError
 from apexdevkit.fastapi.service import RestfulService
@@ -51,14 +51,16 @@ class FastApiBuilder:
     def with_routes(self, values: Mapping[str, APIRouter]) -> Self:
         for key, value in values.items():
             self.app.include_router(
-                value, prefix=f"/{key}", tags=value.tags or [key.title()]
+                value,
+                prefix=_Endpoint(key).normilized(),
+                tags=value.tags or [key.title()],
             )
 
         return self
 
     def with_mounted(self, **apps: FastAPI) -> Self:
         for path, app in apps.items():
-            self.app.mount(f"/{path.replace('_', '-')}", app)
+            self.app.mount(_Endpoint(path).normilized(), app)
 
         return self
 
@@ -105,3 +107,14 @@ class PreBuilt(RestfulServiceBuilder):  # pragma: no cover
 
     def build(self) -> RestfulService:
         return self.service
+
+
+@dataclass(frozen=True)
+class _Endpoint:
+    raw: str
+
+    def normilized(self) -> str:
+        return f"/{self.raw.replace('_', '-')}"
+
+    def __str__(self) -> str:
+        return self.normilized()
