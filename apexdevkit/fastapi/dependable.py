@@ -6,8 +6,6 @@ from fastapi import Depends, Path
 from fastapi.requests import Request
 
 from apexdevkit.error import ApiError, DoesNotExistError, ForbiddenError
-from apexdevkit.fastapi import RestfulServiceBuilder
-from apexdevkit.fastapi.builder import PreBuilt
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.service import RestfulService
@@ -20,8 +18,19 @@ def inject(dependency: str) -> Any:  # pragma: no cover
     return Depends(get)
 
 
+class _ServiceBuilder(Protocol):
+    def with_user(self, user: Any) -> "_ServiceBuilder":
+        pass
+
+    def with_parent(self, identity: str) -> "_ServiceBuilder":
+        pass
+
+    def build(self) -> RestfulService:  # pragma: no cover
+        pass
+
+
 class _Dependency(Protocol):
-    def as_dependable(self) -> type[RestfulServiceBuilder]:
+    def as_dependable(self) -> type[_ServiceBuilder]:
         pass
 
 
@@ -48,19 +57,19 @@ class ParentDependency:
     parent: RestfulName
     dependency: _Dependency
 
-    def as_dependable(self) -> type[RestfulServiceBuilder]:
+    def as_dependable(self) -> type[_ServiceBuilder]:
         Builder = self.dependency.as_dependable()
         ParentId = Annotated[
             str, Path(alias=self.parent.singular.replace("-", "_") + "_id")
         ]
 
-        def _(builder: Builder, parent_id: ParentId) -> RestfulServiceBuilder:
+        def _(builder: Builder, parent_id: ParentId) -> _ServiceBuilder:
             try:
                 return builder.with_parent(parent_id)
             except DoesNotExistError as e:
                 raise ApiError(404, RestfulResponse(self.parent).not_found(e)) from e
 
-        return Annotated[RestfulServiceBuilder, Depends(_)]
+        return Annotated[_ServiceBuilder, Depends(_)]
 
 
 @dataclass(frozen=True)
@@ -68,28 +77,28 @@ class UserDependency:
     extract_user: Callable[..., Any]
     dependency: _Dependency
 
-    def as_dependable(self) -> type[RestfulServiceBuilder]:
+    def as_dependable(self) -> type[_ServiceBuilder]:
         Builder = self.dependency.as_dependable()
         User = Annotated[Any, Depends(self.extract_user)]
 
-        def _(builder: Builder, user: User) -> RestfulServiceBuilder:
+        def _(builder: Builder, user: User) -> _ServiceBuilder:
             return builder.with_user(user)
 
-        return Annotated[RestfulServiceBuilder, Depends(_)]
+        return Annotated[_ServiceBuilder, Depends(_)]
 
 
-_BuilderCallable = Callable[..., RestfulServiceBuilder]
+_BuilderCallable = Callable[..., _ServiceBuilder]
 
 
 @dataclass(frozen=True)
 class BuilderCallableDependency:
     create_builder: _BuilderCallable
 
-    def as_dependable(self) -> type[RestfulServiceBuilder]:
-        def _() -> RestfulServiceBuilder:
+    def as_dependable(self) -> type[_ServiceBuilder]:
+        def _() -> _ServiceBuilder:
             return self.create_builder()
 
-        return Annotated[RestfulServiceBuilder, Depends(_)]
+        return Annotated[_ServiceBuilder, Depends(_)]
 
 
 @dataclass(frozen=True)
@@ -101,12 +110,8 @@ class DependableBuilder:
         return cls(BuilderCallableDependency(value))
 
     @classmethod
-    def from_builder(cls, value: RestfulServiceBuilder) -> "DependableBuilder":
+    def from_builder(cls, value: _ServiceBuilder) -> "DependableBuilder":
         return cls(BuilderCallableDependency(lambda: value))
-
-    @classmethod
-    def from_service(cls, value: RestfulService) -> "DependableBuilder":
-        return cls(BuilderCallableDependency(lambda: PreBuilt(value)))
 
     def with_parent(self, value: RestfulName) -> "DependableBuilder":
         return DependableBuilder(ParentDependency(value, self.dependency))
