@@ -8,7 +8,6 @@ from starlette.testclient import TestClient
 
 from apexdevkit.fastapi import FastApiBuilder
 from apexdevkit.fastapi.builder import RestfulServiceBuilder
-from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.http import Httpx
@@ -44,8 +43,6 @@ class FakeUser:
 
 
 def setup(infra: RestfulServiceBuilder, fake_user: FakeUser) -> FastAPI:
-    dependable = DependableBuilder.from_builder(infra).with_user(fake_user.user)
-
     return (
         FastApiBuilder()
         .with_title("Apple API")
@@ -55,15 +52,18 @@ def setup(infra: RestfulServiceBuilder, fake_user: FakeUser) -> FastAPI:
             apples=(
                 RestfulRouter.named("apple")
                 .with_fields(AppleFields())
-                .with_create_one(dependable)
-                .with_create_many(dependable)
-                .with_read_one(dependable)
-                .with_read_all(dependable)
-                .with_update_one(dependable)
-                .with_update_many(dependable)
-                .with_replace_one(dependable)
-                .with_replace_many(dependable)
-                .with_delete_one(dependable)
+                .with_default_dependency(
+                    infra.as_dependable().with_user(fake_user.user)
+                )
+                .with_create_one()
+                .with_create_many()
+                .with_read_one()
+                .with_read_all()
+                .with_update_one()
+                .with_update_many()
+                .with_replace_one()
+                .with_replace_many()
+                .with_delete_one()
                 .build()
             )
         )
