@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from apexdevkit.error import ApiError
+from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.service import RestfulService
 
 
@@ -85,6 +86,9 @@ class FastApiBuilder:
 class RestfulServiceBuilder(ABC):
     parent_id: str = field(init=False)
     user: Any = field(init=False)
+
+    def as_dependable(self) -> DependableBuilder:
+        return DependableBuilder.from_builder(self)
 
     def with_user(self, user: Any) -> RestfulServiceBuilder:
         self.user = user

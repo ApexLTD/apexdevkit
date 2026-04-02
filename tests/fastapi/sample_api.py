@@ -9,7 +9,6 @@ from typing import Any
 from fastapi import FastAPI
 
 from apexdevkit.fastapi import FastApiBuilder, RestfulServiceBuilder
-from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.fastapi.schema import SchemaFields
@@ -21,16 +20,12 @@ from apexdevkit.fastapi.service import (
 )
 from apexdevkit.http import JsonDict
 from apexdevkit.query import Filter
-from apexdevkit.query.query import (
-    Operator,
-    Page,
-    Sort,
-)
+from apexdevkit.query.query import Operator, Page, Sort
 from apexdevkit.testing.fake import FakeResource
 
 
 def setup(infra: RestfulServiceBuilder) -> FastAPI:
-    dependable = DependableBuilder.from_builder(infra).with_user(lambda: None)
+    dependable = infra.as_dependable().with_user(lambda: None)
 
     return (
         FastApiBuilder()
@@ -55,10 +50,10 @@ def setup(infra: RestfulServiceBuilder) -> FastAPI:
                     )
                     .with_default_dependency(dependable)
                     .default()
-                    .with_replace_one(dependable)
-                    .with_replace_many(dependable)
-                    .with_filter(dependable)
-                    .with_aggregation(dependable)
+                    .with_replace_one()
+                    .with_replace_many()
+                    .with_filter()
+                    .with_aggregation()
                     .build()
                 )
             }
