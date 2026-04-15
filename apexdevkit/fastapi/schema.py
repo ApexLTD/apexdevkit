@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 from functools import cached_property
 from typing import Any
@@ -75,7 +75,7 @@ class RestfulSchema:
     def _models(self) -> dict[str, type[BaseModel]]:
         return {}
 
-    def __iter__(self) -> Iterable[type[BaseModel]]:
+    def __iter__(self) -> Iterator[type[BaseModel]]:
         return iter(self._models.values())
 
     def for_no_data(self) -> type[BaseModel]:
