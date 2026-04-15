@@ -66,14 +66,17 @@ class RestfulSchema:
         self._schema_for("ReplaceMany", {self.name.plural: list[replace_schema]})
 
     def _schema_for(self, action: str, fields: dict[str, Any]) -> type[BaseModel]:
-        if action not in self.schemas:
-            self.schemas[action] = self.generator.schema_for(action, fields)
+        if action not in self.models:
+            self.models[action] = self.generator.schema_for(action, fields)
 
-        return self.schemas[action]
+        return self.models[action]
 
     @cached_property
-    def schemas(self) -> dict[str, type[BaseModel]]:
+    def models(self) -> dict[str, type[BaseModel]]:
         return {}
+
+    def __iter__(self) -> Iterable[type[BaseModel]]:
+        return iter(self.models.values())
 
     def for_no_data(self) -> type[BaseModel]:
         class NoData(BaseModel):
@@ -90,7 +93,7 @@ class RestfulSchema:
             FluentDict[type]()
             .with_a(status=str)
             .and_a(code=int)
-            .and_a(data=self.schemas["Item"]),
+            .and_a(data=self.models["Item"]),
         )
 
     def for_collection(self) -> type[BaseModel]:
@@ -99,11 +102,11 @@ class RestfulSchema:
             FluentDict[type]()
             .with_a(status=str)
             .and_a(code=int)
-            .and_a(data=self.schemas["Collection"]),
+            .and_a(data=self.models["Collection"]),
         )
 
     def for_create_one(self) -> Callable[[BaseModel], dict[str, Any]]:
-        schema = self.schemas["Create"]
+        schema = self.models["Create"]
 
         def _(request: schema) -> dict[str, Any]:
             return request.model_dump()
@@ -111,7 +114,7 @@ class RestfulSchema:
         return _
 
     def for_create_many(self) -> Callable[[BaseModel], Iterable[dict[str, Any]]]:
-        schema = self.schemas["CreateMany"]
+        schema = self.models["CreateMany"]
 
         def _(request: schema) -> Iterable[dict[str, Any]]:
             return [dict(item) for item in request.model_dump()[self.name.plural]]
@@ -119,7 +122,7 @@ class RestfulSchema:
         return _
 
     def for_update_one(self) -> Callable[[BaseModel], dict[str, Any]]:
-        schema = self.schemas["Update"]
+        schema = self.models["Update"]
 
         def _(request: schema):
             return request.model_dump()
@@ -127,7 +130,7 @@ class RestfulSchema:
         return _
 
     def for_update_many(self) -> Callable[[BaseModel], Iterable[dict[str, Any]]]:
-        schema = self.schemas["UpdateMany"]
+        schema = self.models["UpdateMany"]
 
         def _(request: schema) -> Iterable[dict[str, Any]]:
             return [dict(item) for item in request.model_dump()[self.name.plural]]
@@ -135,7 +138,7 @@ class RestfulSchema:
         return _
 
     def for_replace_one(self) -> Callable[[BaseModel], dict[str, Any]]:
-        schema = self.schemas["Replace"]
+        schema = self.models["Replace"]
 
         def _(request: schema) -> dict[str, Any]:
             return request.model_dump()
@@ -143,7 +146,7 @@ class RestfulSchema:
         return _
 
     def for_replace_many(self) -> Callable[[BaseModel], Iterable[dict[str, Any]]]:
-        schema = self.schemas["ReplaceMany"]
+        schema = self.models["ReplaceMany"]
 
         def _(request: schema) -> Iterable[dict[str, Any]]:
             return [dict(item) for item in request.model_dump()[self.name.plural]]
@@ -151,7 +154,7 @@ class RestfulSchema:
         return _
 
     def for_filters(self) -> Callable[[BaseModel], dict[str, Any]]:
-        schema = self.schemas["Filter"]
+        schema = self.models["Filter"]
 
         def _(request: schema) -> dict[str, Any]:
             return request.model_dump()
@@ -159,7 +162,7 @@ class RestfulSchema:
         return _
 
     def for_aggregation(self) -> Callable[[BaseModel], dict[str, Any]]:
-        schema = self.schemas["Aggregation"]
+        schema = self.models["Aggregation"]
 
         def _(request: schema) -> dict[str, Any]:
             return request.model_dump()
@@ -172,7 +175,7 @@ class RestfulSchema:
             FluentDict[type]()
             .with_a(status=str)
             .and_a(code=int)
-            .and_a(aggregations=self.schemas["AggregationResult"]),
+            .and_a(aggregations=self.models["AggregationResult"]),
         )
 
 

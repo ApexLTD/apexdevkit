@@ -33,5 +33,5 @@ def test(approver: Approver) -> None:
         generator=Schema("apple"),
     )
 
-    for name, model in schema.schemas.items():
-        approver.verify_json(name or "Root", model.model_json_schema())
+    for model in schema:
+        approver.verify_json(model.__name__, model.model_json_schema())
