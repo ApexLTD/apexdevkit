@@ -1,6 +1,6 @@
 [project]
 name = "apexdevkit"
-version = "1.25.4"
+version = "1.26.0"
 description = "Apex Development Tools for python."
 readme = "README.md"
 authors = [
@@ -18,7 +18,7 @@ python-dotenv = "*"
 pymssql = "2.3.2"
 
 [tool.poetry.group.dev.dependencies]
-approvaltests = "*"
+approvaltests = "17.3.0"  # pinned because later version has a bug.
 pytest = "*"
 pytest-approvaltests = "*"
 pytest-cov = "*"

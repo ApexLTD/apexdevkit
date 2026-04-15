@@ -1,0 +1,49 @@
+{
+  "$defs": {
+    "AppleUpdateManyItem": {
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "color": {
+          "$ref": "#/$defs/Color",
+          "default": "red"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "id"
+      ],
+      "title": "AppleUpdateManyItem",
+      "type": "object"
+    },
+    "Color": {
+      "enum": [
+        "red",
+        "green",
+        "blue"
+      ],
+      "title": "Color",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "apples": {
+      "items": {
+        "$ref": "#/$defs/AppleUpdateManyItem"
+      },
+      "title": "Apples",
+      "type": "array"
+    }
+  },
+  "required": [
+    "apples"
+  ],
+  "title": "AppleUpdateMany",
+  "type": "object"
+}

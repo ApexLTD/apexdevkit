@@ -1,0 +1,33 @@
+{
+  "$defs": {
+    "Color": {
+      "enum": [
+        "red",
+        "green",
+        "blue"
+      ],
+      "title": "Color",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "color": {
+      "$ref": "#/$defs/Color",
+      "default": "red"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "id"
+  ],
+  "title": "AppleUpdateManyItem",
+  "type": "object"
+}

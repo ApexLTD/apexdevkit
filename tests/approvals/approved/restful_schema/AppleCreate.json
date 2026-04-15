@@ -1,0 +1,28 @@
+{
+  "$defs": {
+    "Color": {
+      "enum": [
+        "red",
+        "green",
+        "blue"
+      ],
+      "title": "Color",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "color": {
+      "$ref": "#/$defs/Color",
+      "default": "red"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "title": "AppleCreate",
+  "type": "object"
+}

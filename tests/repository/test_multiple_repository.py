@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 import pytest
@@ -23,7 +23,7 @@ class Animal:
     age: int
 
 
-class AnimalType(str, Enum):
+class AnimalType(StrEnum):
     bird = "bird"
     fish = "fish"
 
