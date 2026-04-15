@@ -202,11 +202,11 @@ class Schema:
 
         for field_name, field_type in fields.items():
             if isinstance(field_type, dict):
-                model_fields[field_name] = (
-                    self._nested_schema_for(name + field_name.capitalize(), field_type),
-                    ...,
+                model_fields[field_name] = self._nested_schema_for(
+                    name + field_name.capitalize(),
+                    field_type,
                 )
             else:
-                model_fields[field_name] = (field_type, ...)
+                model_fields[field_name] = field_type
 
         return create_model(name, **model_fields)
