@@ -1,0 +1,49 @@
+{
+  "$defs": {
+    "Color": {
+      "enum": [
+        "red",
+        "green",
+        "blue"
+      ],
+      "title": "Color",
+      "type": "string"
+    },
+    "appleReplace": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "color": {
+          "$ref": "#/$defs/Color"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "color"
+      ],
+      "title": "appleReplace",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "apples": {
+      "items": {
+        "$ref": "#/$defs/appleReplace"
+      },
+      "title": "Apples",
+      "type": "array"
+    }
+  },
+  "required": [
+    "apples"
+  ],
+  "title": "appleReplaceMany",
+  "type": "object"
+}

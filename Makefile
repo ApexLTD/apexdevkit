@@ -32,5 +32,11 @@ test:
 		--record-mode once \
 		--approvaltests-use-reporter='PythonNative'
 
+approve:
+	for f in tests/approvals/approved/*/*_actual.*; do \
+		[ -e "$$f" ] || continue; \
+		mv -- "$$f" "$${f//_actual./.}"; \
+	done
+
 test-ci:
 	poetry run pytest tests

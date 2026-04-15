@@ -1,0 +1,61 @@
+{
+  "$defs": {
+    "AggregationResult": {
+      "properties": {
+        "field": {
+          "title": "Field",
+          "type": "string"
+        },
+        "aggregation": {
+          "$ref": "#/$defs/Value"
+        }
+      },
+      "required": [
+        "field",
+        "aggregation"
+      ],
+      "title": "AggregationResult",
+      "type": "object"
+    },
+    "Value": {
+      "properties": {
+        "value": {
+          "default": 0,
+          "title": "Value",
+          "type": "integer"
+        },
+        "exponent": {
+          "default": 1,
+          "title": "Exponent",
+          "type": "integer"
+        },
+        "unit": {
+          "default": "unknown",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "title": "Value",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "count": {
+      "title": "Count",
+      "type": "integer"
+    },
+    "sums": {
+      "items": {
+        "$ref": "#/$defs/AggregationResult"
+      },
+      "title": "Sums",
+      "type": "array"
+    }
+  },
+  "required": [
+    "count",
+    "sums"
+  ],
+  "title": "appleAggregationResult",
+  "type": "object"
+}
