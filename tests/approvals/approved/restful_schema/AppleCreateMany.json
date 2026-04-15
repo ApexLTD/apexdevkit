@@ -1,20 +1,7 @@
 {
   "$defs": {
-    "Color": {
-      "enum": [
-        "red",
-        "green",
-        "blue"
-      ],
-      "title": "Color",
-      "type": "string"
-    },
-    "apple": {
+    "AppleCreate": {
       "properties": {
-        "id": {
-          "title": "Id",
-          "type": "string"
-        },
         "name": {
           "title": "Name",
           "type": "string"
@@ -24,31 +11,34 @@
         }
       },
       "required": [
-        "id",
         "name",
         "color"
       ],
-      "title": "apple",
+      "title": "AppleCreate",
       "type": "object"
+    },
+    "Color": {
+      "enum": [
+        "red",
+        "green",
+        "blue"
+      ],
+      "title": "Color",
+      "type": "string"
     }
   },
   "properties": {
     "apples": {
       "items": {
-        "$ref": "#/$defs/apple"
+        "$ref": "#/$defs/AppleCreate"
       },
       "title": "Apples",
       "type": "array"
-    },
-    "count": {
-      "title": "Count",
-      "type": "integer"
     }
   },
   "required": [
-    "apples",
-    "count"
+    "apples"
   ],
-  "title": "appleCollection",
+  "title": "AppleCreateMany",
   "type": "object"
 }

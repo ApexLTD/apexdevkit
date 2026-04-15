@@ -28,6 +28,6 @@
     "color",
     "id"
   ],
-  "title": "appleUpdateManyItem",
+  "title": "AppleUpdateManyItem",
   "type": "object"
 }

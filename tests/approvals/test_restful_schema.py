@@ -30,7 +30,7 @@ def test(approver: Approver) -> None:
     schema = RestfulSchema(
         name=RestfulName("apple"),
         fields=_AppleFields(),
-        generator=Schema("apple"),
+        generator=Schema("Apple"),
     )
 
     for model in schema:

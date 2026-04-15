@@ -1,5 +1,27 @@
 {
   "$defs": {
+    "AppleReplace": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "color": {
+          "$ref": "#/$defs/Color"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "color"
+      ],
+      "title": "AppleReplace",
+      "type": "object"
+    },
     "Color": {
       "enum": [
         "red",
@@ -8,34 +30,12 @@
       ],
       "title": "Color",
       "type": "string"
-    },
-    "appleUpdateManyItem": {
-      "properties": {
-        "name": {
-          "title": "Name",
-          "type": "string"
-        },
-        "color": {
-          "$ref": "#/$defs/Color"
-        },
-        "id": {
-          "title": "Id",
-          "type": "string"
-        }
-      },
-      "required": [
-        "name",
-        "color",
-        "id"
-      ],
-      "title": "appleUpdateManyItem",
-      "type": "object"
     }
   },
   "properties": {
     "apples": {
       "items": {
-        "$ref": "#/$defs/appleUpdateManyItem"
+        "$ref": "#/$defs/AppleReplace"
       },
       "title": "Apples",
       "type": "array"
@@ -44,6 +44,6 @@
   "required": [
     "apples"
   ],
-  "title": "appleUpdateMany",
+  "title": "AppleReplaceMany",
   "type": "object"
 }

@@ -11,10 +11,6 @@
     }
   },
   "properties": {
-    "id": {
-      "title": "Id",
-      "type": "string"
-    },
     "name": {
       "title": "Name",
       "type": "string"
@@ -24,10 +20,9 @@
     }
   },
   "required": [
-    "id",
     "name",
     "color"
   ],
-  "title": "appleReplace",
+  "title": "AppleCreate",
   "type": "object"
 }
