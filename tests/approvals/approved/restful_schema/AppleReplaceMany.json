@@ -11,13 +11,13 @@
           "type": "string"
         },
         "color": {
-          "$ref": "#/$defs/Color"
+          "$ref": "#/$defs/Color",
+          "default": "red"
         }
       },
       "required": [
         "id",
-        "name",
-        "color"
+        "name"
       ],
       "title": "AppleReplace",
       "type": "object"

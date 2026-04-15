@@ -7,12 +7,12 @@
           "type": "string"
         },
         "color": {
-          "$ref": "#/$defs/Color"
+          "$ref": "#/$defs/Color",
+          "default": "red"
         }
       },
       "required": [
-        "name",
-        "color"
+        "name"
       ],
       "title": "AppleCreate",
       "type": "object"

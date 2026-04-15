@@ -7,7 +7,8 @@
           "type": "string"
         },
         "color": {
-          "$ref": "#/$defs/Color"
+          "$ref": "#/$defs/Color",
+          "default": "red"
         },
         "id": {
           "title": "Id",
@@ -16,7 +17,6 @@
       },
       "required": [
         "name",
-        "color",
         "id"
       ],
       "title": "AppleUpdateManyItem",
