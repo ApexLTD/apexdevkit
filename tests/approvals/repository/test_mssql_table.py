@@ -3,8 +3,8 @@ import pytest
 from apexdevkit.formatter import AliasFormatter, AliasMapping, DataclassFormatter
 from apexdevkit.repository.mssql import MsSqlTableBuilder, SqlTable
 from apexdevkit.repository.sql import SqlFieldBuilder
+from tests.approvals.conftest import Approver
 from tests.approvals.repository.conftest import Apple
-from tests.approvals.repository.extension import verify_sql
 
 _FORMATTER = AliasFormatter(
     DataclassFormatter(Apple),
@@ -48,29 +48,51 @@ def table() -> SqlTable[Apple]:
     )
 
 
-def test_should_count(table: SqlTable[Apple]) -> None:
-    verify_sql(str(table.count_all()))
+def test_should_count(approver: Approver, table: SqlTable[Apple]) -> None:
+    approver.verify_sql("count", str(table.count_all()))
 
 
-def test_should_insert(table: SqlTable[Apple], apple: Apple) -> None:
-    verify_sql(str(table.insert(apple)))
+def test_should_insert(
+    approver: Approver,
+    table: SqlTable[Apple],
+    apple: Apple,
+) -> None:
+    approver.verify_sql("insert", str(table.insert(apple)))
 
 
-def test_should_select(table: SqlTable[Apple], apple: Apple) -> None:
-    verify_sql(str(table.select(apple.id)))
+def test_should_select(
+    approver: Approver,
+    table: SqlTable[Apple],
+    apple: Apple,
+) -> None:
+    approver.verify_sql("select", str(table.select(apple.id)))
 
 
-def test_should_select_all(table: SqlTable[Apple]) -> None:
-    verify_sql(str(table.select_all()))
+def test_should_select_all(
+    approver: Approver,
+    table: SqlTable[Apple],
+) -> None:
+    approver.verify_sql("select_all", str(table.select_all()))
 
 
-def test_should_update(table: SqlTable[Apple], apple: Apple) -> None:
-    verify_sql(str(table.update(apple)))
+def test_should_update(
+    approver: Approver,
+    table: SqlTable[Apple],
+    apple: Apple,
+) -> None:
+    approver.verify_sql("update", str(table.update(apple)))
 
 
-def test_should_delete(table: SqlTable[Apple], apple: Apple) -> None:
-    verify_sql(str(table.delete(apple.id)))
+def test_should_delete(
+    approver: Approver,
+    table: SqlTable[Apple],
+    apple: Apple,
+) -> None:
+    approver.verify_sql("delete", str(table.delete(apple.id)))
 
 
-def test_should_delete_all(table: SqlTable[Apple]) -> None:
-    verify_sql(str(table.delete_all()))
+def test_should_delete_all(
+    approver: Approver,
+    table: SqlTable[Apple],
+) -> None:
+    approver.verify_sql("delete_all", str(table.delete_all()))
