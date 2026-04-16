@@ -49,7 +49,7 @@ def test_filter(approver: Approver) -> None:
         )
     )
 
-    approver.verify_sql("filter", query.value)
+    approver.verify_db_command("filter", query)
 
 
 def test_aggregate(approver: Approver) -> None:
@@ -86,4 +86,4 @@ def test_aggregate(approver: Approver) -> None:
         )
     )
 
-    approver.verify_sql("aggregate", query.value)
+    approver.verify_db_command("aggregate", query)
