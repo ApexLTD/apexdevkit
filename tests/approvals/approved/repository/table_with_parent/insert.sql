@@ -1,5 +1,4 @@
-
-            EXECUTE AS USER = 'test'
+EXECUTE AS USER = 'test'
             INSERT INTO [test].[apples] (
                 [apid], [clr], [pid]
             )
@@ -8,8 +7,8 @@
             );
             SELECT
                 [apid] AS apid, [clr] AS clr, [pid] AS pid
-
+            
                 FROM [test].[apples]
                 WHERE [pid] = test AND [apid] = 1
-
+            
             REVERT
