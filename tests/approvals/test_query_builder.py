@@ -11,10 +11,10 @@ from apexdevkit.query import (
     StringValue,
 )
 from apexdevkit.query.generator import MsSqlField, MsSqlQueryBuilder
-from tests.approvals.extension import verify_sql
+from tests.approvals.conftest import Approver
 
 
-def test_filter() -> None:
+def test_filter(approver: Approver) -> None:
     builder = (
         MsSqlQueryBuilder()
         .with_source("TABLE")
@@ -49,10 +49,10 @@ def test_filter() -> None:
         )
     )
 
-    verify_sql(query.value)
+    approver.verify_sql("filter", query.value)
 
 
-def test_aggregate() -> None:
+def test_aggregate(approver: Approver) -> None:
     builder = (
         MsSqlQueryBuilder()
         .with_source("TABLE")
@@ -86,4 +86,4 @@ def test_aggregate() -> None:
         )
     )
 
-    verify_sql(query.value)
+    approver.verify_sql("aggregate", query.value)
