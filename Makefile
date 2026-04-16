@@ -33,10 +33,8 @@ test:
 		--approvaltests-use-reporter='PythonNative'
 
 approve:
-	for f in tests/approvals/approved/*/*_actual.*; do \
-		[ -e "$$f" ] || continue; \
-		mv -- "$$f" "$${f//_actual./.}"; \
-	done
+	find tests -type f -name '*_actual.*' -exec sh -c \
+	'mv "$$0" "$${0%_actual.*}.$${0##*.}"' {} \;
 
 test-ci:
 	poetry run pytest tests

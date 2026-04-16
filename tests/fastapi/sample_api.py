@@ -33,30 +33,28 @@ def setup(infra: RestfulServiceBuilder) -> FastAPI:
         .with_version("1.0.0")
         .with_description("Sample API for unit testing various testing routines")
         .with_route(
-            **{
-                "market-apples": (
-                    RestfulRouter.named("market-apple")
-                    .with_fields(AppleFields())
-                    .with_sub_resource(
-                        prices=(
-                            RestfulRouter.named("price")
-                            .child_of("market-apple")
-                            .with_fields(PriceFields())
-                            .with_delete_one(
-                                dependable.with_parent(RestfulName("market-apple"))
-                            )
-                            .build()
+            market_apples=(
+                RestfulRouter.named("market-apple")
+                .with_fields(AppleFields())
+                .with_sub_resource(
+                    prices=(
+                        RestfulRouter.named("price")
+                        .child_of("market-apple")
+                        .with_fields(PriceFields())
+                        .with_delete_one(
+                            dependable.with_parent(RestfulName("market-apple"))
                         )
+                        .build()
                     )
-                    .with_default_dependency(dependable)
-                    .default()
-                    .with_replace_one()
-                    .with_replace_many()
-                    .with_filter()
-                    .with_aggregation()
-                    .build()
                 )
-            }
+                .with_default_dependency(dependable)
+                .default()
+                .with_replace_one()
+                .with_replace_many()
+                .with_filter()
+                .with_aggregation()
+                .build()
+            )
         )
         .with_route(
             apples=(
