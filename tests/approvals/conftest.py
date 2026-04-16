@@ -15,7 +15,14 @@ from apexdevkit.repository import DatabaseCommand
 
 @pytest.fixture(scope="module")
 def module(request: pytest.FixtureRequest) -> str:
-    return Path(request.module.__file__).stem.removeprefix("test_")
+    module_path = Path(request.module.__file__)
+    module_name = module_path.stem.removeprefix("test_")
+    parent_name = module_path.parent.stem
+
+    if parent_name == "approvals":
+        return module_name
+
+    return f"{parent_name}/{module_name}"
 
 
 @pytest.fixture(scope="module")
