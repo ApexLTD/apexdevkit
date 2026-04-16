@@ -14,6 +14,11 @@ from apexdevkit.repository import DatabaseCommand
 
 
 @pytest.fixture(scope="module")
+def approver(module: str) -> Approver:
+    return Approver(module)
+
+
+@pytest.fixture(scope="module")
 def module(request: pytest.FixtureRequest) -> str:
     module_path = Path(request.module.__file__)
     module_name = module_path.stem.removeprefix("test_")
@@ -23,11 +28,6 @@ def module(request: pytest.FixtureRequest) -> str:
         return module_name
 
     return f"{parent_name}/{module_name}"
-
-
-@pytest.fixture(scope="module")
-def approver(module: str) -> Approver:
-    return Approver(module)
 
 
 @dataclass(frozen=True)
