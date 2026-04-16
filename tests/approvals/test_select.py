@@ -1,20 +1,26 @@
 from apexdevkit.query.generator import MsSqlField, MsSqlSelectionGenerator
-from tests.approvals.extension import verify_sql
+from tests.approvals.conftest import Approver
 
 
-def test_select_without_field_alias() -> None:
+def test_select_without_field_alias(approver: Approver) -> None:
     fields = [MsSqlField("id")]
 
-    verify_sql(MsSqlSelectionGenerator(fields).generate())
+    generator = MsSqlSelectionGenerator(fields)
+
+    approver.verify_sql("without_field_alias", generator.generate())
 
 
-def test_select_with_field_alias() -> None:
+def test_select_with_field_alias(approver: Approver) -> None:
     fields = [MsSqlField("item_id", alias="id")]
 
-    verify_sql(MsSqlSelectionGenerator(fields).generate())
+    generator = MsSqlSelectionGenerator(fields)
+
+    approver.verify_sql("with_field_alias", generator.generate())
 
 
-def test_select_with_multiple_fields() -> None:
+def test_select_with_multiple_fields(approver: Approver) -> None:
     fields = [MsSqlField("item_id", alias="id"), MsSqlField("name")]
 
-    verify_sql(MsSqlSelectionGenerator(fields).generate())
+    generator = MsSqlSelectionGenerator(fields)
+
+    approver.verify_sql("with_multiple_fields", generator.generate())
