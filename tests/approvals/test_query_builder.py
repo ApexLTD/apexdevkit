@@ -11,7 +11,7 @@ from apexdevkit.query import (
     StringValue,
 )
 from apexdevkit.query.generator import MsSqlField, MsSqlQueryBuilder
-from tests.query.approvals.extension import verify_sql
+from tests.approvals.extension import verify_sql
 
 
 def test_filter() -> None:

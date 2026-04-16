@@ -1,5 +1,5 @@
 from apexdevkit.query.generator import MsSqlField, MsSqlSelectionGenerator
-from tests.query.approvals.extension import verify_sql
+from tests.approvals.extension import verify_sql
 
 
 def test_select_without_field_alias() -> None:

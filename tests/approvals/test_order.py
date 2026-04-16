@@ -3,7 +3,7 @@ import pytest
 from apexdevkit.error import ForbiddenError
 from apexdevkit.query import Sort
 from apexdevkit.query.generator import MsSqlField, MsSqlOrderGenerator
-from tests.query.approvals.extension import verify_sql
+from tests.approvals.extension import verify_sql
 
 
 def test_order_ascending() -> None:
