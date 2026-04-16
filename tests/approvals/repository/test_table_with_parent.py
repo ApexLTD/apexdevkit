@@ -3,8 +3,8 @@ import pytest
 from apexdevkit.formatter import AliasFormatter, AliasMapping, DataclassFormatter
 from apexdevkit.repository.mssql import MsSqlTableBuilder, SqlTable
 from apexdevkit.repository.sql import SqlFieldBuilder
-from tests.repository.approvals.conftest import Apple
-from tests.repository.approvals.extension import verify_sql
+from tests.approvals.repository.conftest import Apple
+from tests.approvals.repository.extension import verify_sql
 
 _FORMATTER = AliasFormatter(
     DataclassFormatter(Apple),
@@ -17,7 +17,7 @@ _FORMATTER = AliasFormatter(
 
 
 @pytest.fixture
-def table() -> SqlTable[Apple]:
+def table(apple: Apple) -> SqlTable[Apple]:
     return (
         MsSqlTableBuilder[Apple]()
         .with_username("test")
@@ -26,24 +26,11 @@ def table() -> SqlTable[Apple]:
         .with_formatter(_FORMATTER)
         .with_fields(
             [
-                SqlFieldBuilder()
-                .with_name("apid")
-                .as_id()
-                .in_ordering(descending=True)
-                .build(),
+                SqlFieldBuilder().with_name("apid").as_id().in_ordering().build(),
                 SqlFieldBuilder().with_name("clr").build(),
-                SqlFieldBuilder().with_name("pid").build(),
-                SqlFieldBuilder().with_name("kingdom").as_fixed("fruits").build(),
-                (
-                    SqlFieldBuilder()
-                    .with_name("manager")
-                    .as_fixed(None)
-                    .as_filter([5, 4])
-                    .build()
-                ),
+                SqlFieldBuilder().with_name("pid").as_parent(apple.parent).build(),
             ]
         )
-        .with_custom_filters(["pid > 5"])
         .build()
     )
 
