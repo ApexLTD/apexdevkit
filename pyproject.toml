@@ -9,6 +9,9 @@ authors = [
 dynamic = ["dependencies"]
 requires-python = ">=3.11"
 
+[project.scripts]
+pycodex = "pycodex.cli:cli"
+
 [tool.poetry.dependencies]
 httpx = "*"
 fastapi = "*"
@@ -16,9 +19,6 @@ uvicorn = "*"
 sentry-sdk = { extras = ["fastapi"], version = "*" }
 python-dotenv = "*"
 pymssql = "2.3.2"
-
-[tool.poetry.scripts]
-pycodex = "pycodex.cli:cli"
 
 [tool.poetry.group.dev.dependencies]
 approvaltests = "17.3.0"  # pinned because later version has a bug.
