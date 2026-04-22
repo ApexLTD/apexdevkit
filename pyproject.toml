@@ -10,7 +10,7 @@ dynamic = ["dependencies"]
 requires-python = ">=3.11"
 
 [project.scripts]
-pycodex = "pycodex.cli:cli"
+codex = "pycodex.cli:cli"
 
 [tool.poetry]
 packages = [
@@ -27,7 +27,7 @@ python-dotenv = "*"
 pymssql = "2.3.2"
 
 [tool.poetry.group.dev.dependencies]
-approvaltests = "17.3.0"  # pinned because later version has a bug.
+approvaltests = "*"  # pinned because later version has a bug.
 pytest = "*"
 pytest-approvaltests = "*"
 pytest-cov = "*"

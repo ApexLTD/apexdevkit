@@ -60,31 +60,31 @@ trio = ["trio (>=0.32.0)"]
 
 [[package]]
 name = "approval-utilities"
-version = "17.3.0"
+version = "18.0.0"
 description = "Utilities for your production code that work well with approvaltests"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "approval_utilities-17.3.0-py3-none-any.whl", hash = "sha256:4e6ed648706157d0d48df49267dbdb5416df783cf8fa14147b099711f6ebf0c6"},
-    {file = "approval_utilities-17.3.0.tar.gz", hash = "sha256:592a4c433c15317acb74ce770e5c0a4baa923a56d5007cbecc945dd7ccb26f20"},
+    {file = "approval_utilities-18.0.0-py3-none-any.whl", hash = "sha256:7837ff40e61e8e1eede78b4713c79834ba6dcb7cdf0c95a5ab5ff6d43734eea3"},
+    {file = "approval_utilities-18.0.0.tar.gz", hash = "sha256:ed03f53fed6875dacaaf83f94bcd64a7ff287b52cf083e7dca93925231b1996e"},
 ]
 
 [[package]]
 name = "approvaltests"
-version = "17.3.0"
+version = "18.0.0"
 description = "Assertion/verification library to aid testing"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "approvaltests-17.3.0-py3-none-any.whl", hash = "sha256:0adce50397f8a5a4146cd8dd746aec107ed9ef3d8380886d1f317b5548986ad4"},
-    {file = "approvaltests-17.3.0.tar.gz", hash = "sha256:61a5d3bab7092726ec52ea8a2f271d61f7c046da5fa4ebffc23dcc4672096ab9"},
+    {file = "approvaltests-18.0.0-py3-none-any.whl", hash = "sha256:e829a453a2de225fde997e79138f6750196c63c85a7771f7b2dc3018f9e0467c"},
+    {file = "approvaltests-18.0.0.tar.gz", hash = "sha256:651ad7cca8a430793b537ef714641cb875dbc5588e1bc36e19ab6b8a8321f892"},
 ]
 
 [package.dependencies]
 allpairspy = ">=2.1.0"
-approval_utilities = "17.3.0"
+approval_utilities = "18.0.0"
 beautifulsoup4 = ">=4.4.0"
 empty-files = ">=0.0.3"
 mock = ">=5.1.0"
@@ -1598,4 +1598,4 @@ dev = ["pytest", "setuptools"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11"
-content-hash = "a5c666018ece7e696711644383a22bedbf8b410330145fba5b7b3fb6b6571a97"
+content-hash = "50082e8ec505ce103fdbde8aee8e20797a16051fbe879b9a14a03b1b8031e1fe"
