@@ -49,6 +49,22 @@ class RunRuffCheck(ShellTask):
 
 
 @dataclass(frozen=True)
+class RunRuffFormat(ShellTask):
+    on: Path
+
+    check: bool = False
+
+    @property
+    def _command(self) -> Iterable[str]:
+        yield "ruff"
+        yield "format"
+        yield str(self.on)
+
+        if self.check:
+            yield "--check"
+
+
+@dataclass(frozen=True)
 class RunMypy(ShellTask):
     on: Path
 

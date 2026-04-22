@@ -3,7 +3,7 @@ from pathlib import Path
 
 from pycodex.reporters import Reporter
 from pycodex.tasks import RunMypy, RunRuffCheck, SyncToml
-from pycodex.tasks.shell import RunPoetryCheck
+from pycodex.tasks.shell import RunPoetryCheck, RunRuffFormat
 
 
 @dataclass(frozen=True)
@@ -19,11 +19,13 @@ class PyCodex:
     def lint(self) -> int:
         return self.reporter.report(
             poetry=RunPoetryCheck(on=self.target).run(),
+            black=RunRuffFormat(on=self.target, check=True).run(),
             ruff=RunRuffCheck(on=self.target).run(),
             mypy=RunMypy(on=self.target).run(),
         )
 
     def fix(self, unsafe: bool = False) -> int:
         return self.reporter.report(
-            ruff=RunRuffCheck(on=self.target, fix=True, unsafe=unsafe).run()
+            black=RunRuffFormat(on=self.target).run(),
+            ruff=RunRuffCheck(on=self.target, fix=True, unsafe=unsafe).run(),
         )
