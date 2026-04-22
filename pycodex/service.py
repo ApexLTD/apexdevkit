@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from pycodex.reporters import Reporter
-from pycodex.tasks import RunMypy, RunRuff, SyncToml
+from pycodex.tasks import RunMypy, RunRuffCheck, SyncToml
 
 
 @dataclass(frozen=True)
@@ -17,11 +17,11 @@ class PyCodex:
 
     def lint(self) -> int:
         return self.reporter.report(
-            ruff=RunRuff(on=self.target).run(),
+            ruff=RunRuffCheck(on=self.target).run(),
             mypy=RunMypy(on=self.target).run(),
         )
 
     def fix(self, unsafe: bool = False) -> int:
         return self.reporter.report(
-            ruff=RunRuff(on=self.target, fix=True, unsafe=unsafe).run()
+            ruff=RunRuffCheck(on=self.target, fix=True, unsafe=unsafe).run()
         )

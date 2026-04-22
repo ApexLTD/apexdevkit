@@ -29,7 +29,7 @@ class ShellTask(ABC):
 
 
 @dataclass(frozen=True)
-class RunRuff(ShellTask):
+class RunRuffCheck(ShellTask):
     on: Path
 
     fix: bool = False
