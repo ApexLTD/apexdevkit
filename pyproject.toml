@@ -26,6 +26,7 @@ sentry-sdk = { extras = ["fastapi"], version = "*" }
 python-dotenv = "*"
 pymssql = "2.3.2"
 typer = "*"
+tomlkit = "*"
 
 [tool.poetry.group.dev.dependencies]
 approvaltests = "*"
