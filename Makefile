@@ -13,13 +13,13 @@ update:
 	poetry update
 
 format:
-	codex fix
+	poetry run codex fix
 
 format-unsafe:
-	codex fix --unsafe
+	poetry run codex fix --unsafe
 
 lint:
-	codex lint
+	poetry run codex lint
 
 test:
 	poetry run pytest tests \
