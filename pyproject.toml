@@ -25,9 +25,10 @@ uvicorn = "*"
 sentry-sdk = { extras = ["fastapi"], version = "*" }
 python-dotenv = "*"
 pymssql = "2.3.2"
+typer = "*"
 
 [tool.poetry.group.dev.dependencies]
-approvaltests = "*"  # pinned because later version has a bug.
+approvaltests = "*"
 pytest = "*"
 pytest-approvaltests = "*"
 pytest-cov = "*"
