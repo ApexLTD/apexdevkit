@@ -12,6 +12,12 @@ requires-python = ">=3.11"
 [project.scripts]
 pycodex = "pycodex.cli:cli"
 
+[tool.poetry]
+packages = [
+    { include = "apexdevkit" },
+    { include = "pycodex" }
+]
+
 [tool.poetry.dependencies]
 httpx = "*"
 fastapi = "*"
