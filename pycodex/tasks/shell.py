@@ -56,3 +56,15 @@ class RunMypy(ShellTask):
     def _command(self) -> Iterable[str]:
         yield "mypy"
         yield str(self.on)
+
+
+@dataclass(frozen=True)
+class RunPoetryCheck(ShellTask):
+    on: Path
+
+    @property
+    def _command(self) -> Iterable[str]:
+        yield "poetry"
+        yield "check"
+        yield "--strict"
+        yield f"--project={self.on}"
