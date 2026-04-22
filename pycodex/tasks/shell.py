@@ -29,7 +29,7 @@ class ShellTask(ABC):
 
 
 @dataclass(frozen=True)
-class RunRuff(ShellTask):
+class RunRuffCheck(ShellTask):
     on: Path
 
     fix: bool = False
@@ -49,6 +49,22 @@ class RunRuff(ShellTask):
 
 
 @dataclass(frozen=True)
+class RunRuffFormat(ShellTask):
+    on: Path
+
+    check: bool = False
+
+    @property
+    def _command(self) -> Iterable[str]:
+        yield "ruff"
+        yield "format"
+        yield str(self.on)
+
+        if self.check:
+            yield "--check"
+
+
+@dataclass(frozen=True)
 class RunMypy(ShellTask):
     on: Path
 
@@ -56,3 +72,15 @@ class RunMypy(ShellTask):
     def _command(self) -> Iterable[str]:
         yield "mypy"
         yield str(self.on)
+
+
+@dataclass(frozen=True)
+class RunPoetryCheck(ShellTask):
+    on: Path
+
+    @property
+    def _command(self) -> Iterable[str]:
+        yield "poetry"
+        yield "check"
+        yield "--strict"
+        yield f"--project={self.on}"

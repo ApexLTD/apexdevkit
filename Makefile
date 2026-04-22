@@ -13,17 +13,13 @@ update:
 	poetry update
 
 format:
-	poetry run ruff format apexdevkit tests
-	poetry run ruff check  apexdevkit tests --fix
+	poetry run codex fix
 
 format-unsafe:
-	poetry run ruff check  apexdevkit tests --fix --unsafe-fixes
+	poetry run codex fix --unsafe
 
 lint:
-	poetry check --strict
-	poetry run ruff format apexdevkit tests --check
-	poetry run ruff check apexdevkit tests
-	poetry run mypy apexdevkit tests
+	poetry run codex lint
 
 test:
 	poetry run pytest tests \
