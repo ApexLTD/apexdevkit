@@ -1,6 +1,6 @@
 [project]
 name = "apexdevkit"
-version = "1.26.3"
+version = "1.27.0"
 description = "Apex Development Tools for python."
 readme = "README.md"
 authors = [
@@ -11,6 +11,12 @@ requires-python = ">=3.11"
 
 [project.scripts]
 pycodex = "pycodex.cli:cli"
+
+[tool.poetry]
+packages = [
+    { include = "apexdevkit" },
+    { include = "pycodex" }
+]
 
 [tool.poetry.dependencies]
 httpx = "*"
