@@ -9,15 +9,6 @@ authors = [
 dynamic = ["dependencies"]
 requires-python = ">=3.11"
 
-[project.scripts]
-codex = "pycodex.cli:cli"
-
-[tool.poetry]
-packages = [
-    { include = "apexdevkit" },
-    { include = "pycodex" }
-]
-
 [tool.poetry.dependencies]
 httpx = "*"
 fastapi = "*"
@@ -37,9 +28,9 @@ pytest-recording = "*"
 coverage = "*"
 faker = "*"
 
+
 [tool.poetry.group.lint.dependencies]
-mypy = "*"
-ruff = "*"
+apexcodexpy = "0.*"
 
 [tool.mypy]
 ignore_missing_imports = true
