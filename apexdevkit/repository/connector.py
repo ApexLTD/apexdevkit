@@ -7,8 +7,6 @@ from functools import cached_property
 from typing import Any
 
 import pymssql
-from pymssql import Connection as _Connection
-from pymssql import Cursor
 
 from apexdevkit.repository import Connection
 
@@ -46,26 +44,23 @@ class MsSqlConnector:
     db_password: str
     db_name: str
     db_tds_version = "7.0"
-    db_port: str | None = None
+    db_port: str = "1433"
 
     def connect(self) -> AbstractContextManager[Connection]:
         return ConnectionContextManager(self._connection())
 
     def _connection(self) -> Connection:
-        connection_params = {
-            "tds_version": self.db_tds_version,
-            "server": self.db_host,
-            "user": self.db_user,
-            "password": self.db_password,
-            "database": self.db_name,
-            "as_dict": True,
-            "autocommit": True,
-        }
-
-        if self.db_port is not None:
-            connection_params["port"] = self.db_port
-
-        return MsSqlConnectionAdapter(pymssql.connect(**connection_params))
+        return MsSqlConnectionAdapter(
+            pymssql.connect(
+                server=self.db_host,
+                user=self.db_user,
+                password=self.db_password,
+                database=self.db_name,
+                tds_version=self.db_tds_version,
+                as_dict=True,
+                autocommit=True,
+            )
+        )
 
 
 class ConnectionContextManager(AbstractContextManager[Connection]):
@@ -82,7 +77,7 @@ class ConnectionContextManager(AbstractContextManager[Connection]):
 
 @dataclass
 class MsSqlConnectionAdapter:
-    connection: _Connection
+    connection: pymssql.Connection[pymssql.DictRow]
 
     def cursor(self) -> MsSqlCursorAdapter:
         return MsSqlCursorAdapter(self.connection.cursor())
@@ -93,7 +88,7 @@ class MsSqlConnectionAdapter:
 
 @dataclass
 class MsSqlCursorAdapter:
-    cursor: Cursor
+    cursor: pymssql.Cursor[pymssql.DictRow]
 
     def execute(self, *args: Any, **kwargs: Any) -> Any:
         self.cursor.execute(*args, **kwargs)
