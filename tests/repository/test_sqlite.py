@@ -7,14 +7,13 @@ import pytest
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
-from apexdevkit.repository import Database, DatabaseCommand
+from apexdevkit.repository import Database, DatabaseCommand, Entity
 from apexdevkit.repository.sql.connector import SqliteInMemoryConnector
 from apexdevkit.repository.sql.sqlite import SqliteRepository, SqlTable
 
 
-@dataclass
-class _Item:
-    id: str
+@dataclass(frozen=True, kw_only=True)
+class _Item(Entity):
     external_id: str
 
 

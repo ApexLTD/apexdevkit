@@ -1,22 +1,19 @@
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 from unittest.mock import MagicMock
-from uuid import uuid4
 
 import pytest
 from pymssql.exceptions import DatabaseError
 
 from apexdevkit.error import DoesNotExistError, ExistsError
-from apexdevkit.repository import Database, DatabaseCommand, MsSqlRepository
+from apexdevkit.repository import Database, DatabaseCommand, Entity, MsSqlRepository
 from apexdevkit.repository.sql.mssql import SqlTable, UnknownError
 
 
-@dataclass
-class Apple:
+@dataclass(frozen=True, kw_only=True)
+class Apple(Entity):
     color: str
-
-    id: str = field(default_factory=lambda: str(uuid4()))
 
 
 class AppleTable(SqlTable[Apple]):
@@ -76,7 +73,7 @@ class AppleTable(SqlTable[Apple]):
 
 @pytest.fixture
 def apple() -> Apple:
-    return Apple("red")
+    return Apple(color="red")
 
 
 def test_should_retrieve_all(apple: Apple) -> None:

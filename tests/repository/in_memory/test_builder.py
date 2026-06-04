@@ -8,13 +8,13 @@ from faker import Faker
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.key_fn import AttributeKey
+from apexdevkit.repository import Entity
 from apexdevkit.repository.in_memory import InMemoryRepository
 from apexdevkit.testing.fake import Fake
 
 
-@dataclass(frozen=True)
-class _Company:
-    id: str
+@dataclass(frozen=True, kw_only=True)
+class _Company(Entity):
     name: str
     code: str
     address: _Address
@@ -55,7 +55,7 @@ class _Address:
 def test_should_not_read_unknown() -> None:
     unknown_id = Fake().uuid()
 
-    repository = InMemoryRepository[_Company]().build()
+    repository = InMemoryRepository[_Company]()
 
     with pytest.raises(DoesNotExistError):
         repository.read(unknown_id)
@@ -63,7 +63,7 @@ def test_should_not_read_unknown() -> None:
 
 def test_should_persist() -> None:
     company = _Company.fake()
-    repository = InMemoryRepository[_Company]().build()
+    repository = InMemoryRepository[_Company]()
 
     repository.create(company)
 
@@ -72,12 +72,7 @@ def test_should_persist() -> None:
 
 def test_should_read_by_custom_field() -> None:
     company = _Company.fake()
-    repository = (
-        InMemoryRepository[_Company]()
-        .with_key(AttributeKey("id"))
-        .with_key(AttributeKey("code"))
-        .build()
-    )
+    repository = InMemoryRepository[_Company]().with_key(AttributeKey("code"))
 
     repository.create(company)
 
@@ -90,7 +85,6 @@ def test_should_not_duplicate() -> None:
         InMemoryRepository[_Company]()
         .with_key(function=lambda item: f"code<{item.code}>")
         .and_seeded(company)
-        .build()
     )
 
     duplicate = _Company.fake(code=company.code)
@@ -109,7 +103,6 @@ def test_should_not_not_duplicate_many_fields() -> None:
         .with_key(function=lambda item: f"code<{item.code}>")
         .and_key(function=lambda item: f"name<{item.name}>")
         .and_seeded(company)
-        .build()
     )
 
     duplicate = _Company.fake(name=company.name, code=company.code)
@@ -122,7 +115,7 @@ def test_should_not_not_duplicate_many_fields() -> None:
 
 def test_should_list() -> None:
     companies = [_Company.fake() for _ in range(10)]
-    repository = InMemoryRepository[_Company]().with_seeded(*companies).build()
+    repository = InMemoryRepository[_Company]().and_seeded(*companies)
 
     assert len(repository) == len(companies)
     assert all(company in companies for company in repository)
@@ -130,7 +123,7 @@ def test_should_list() -> None:
 
 def test_should_update() -> None:
     company = _Company.fake()
-    repository = InMemoryRepository[_Company]().with_seeded(company).build()
+    repository = InMemoryRepository[_Company]().with_seeded(company)
 
     updated = _Company.fake(id=company.id)
     repository.update(updated)
@@ -142,12 +135,12 @@ def test_should_not_delete_unknown() -> None:
     unknown_id = Fake().uuid()
 
     with pytest.raises(DoesNotExistError):
-        InMemoryRepository[_Company]().build().delete(unknown_id)
+        InMemoryRepository[_Company]().delete(unknown_id)
 
 
 def test_should_delete() -> None:
     company = _Company.fake()
-    repository = InMemoryRepository[_Company]().with_seeded(company).build()
+    repository = InMemoryRepository[_Company]().with_seeded(company)
 
     repository.delete(company.id)
 

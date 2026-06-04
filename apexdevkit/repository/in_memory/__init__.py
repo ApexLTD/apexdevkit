@@ -1,7 +1,9 @@
-from apexdevkit.repository.in_memory.builder import InMemoryRepository
-from apexdevkit.repository.in_memory.store import InMemoryByteStore, KeyValueStore
+from .mixin import CacheMixin
+from .repository import InMemoryRepository
+from .store import InMemoryByteStore, KeyValueStore
 
 __all__ = [
+    "CacheMixin",
     "InMemoryRepository",
     "InMemoryByteStore",
     "KeyValueStore",

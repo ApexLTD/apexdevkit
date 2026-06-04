@@ -85,8 +85,8 @@ class DataclassFormatter(Generic[_TargetT]):
 
         return self
 
-    def load(self, raw: Mapping[str, Any]) -> _TargetT:
-        raw = FluentDict[Any](deepcopy(raw)).select(
+    def load(self, source: Mapping[str, Any]) -> _TargetT:
+        source = FluentDict[Any](deepcopy(source)).select(
             *self.resource.__annotations__.keys(),
             "id",
             "idempotency_id",
@@ -95,27 +95,27 @@ class DataclassFormatter(Generic[_TargetT]):
         for key in fields(self.resource):  # type: ignore
             types = get_type_hints(self.resource)
             key_type = types[key.name]
-            if key.name not in raw:
+            if key.name not in source:
                 continue
             if key.name in self.sub_formatters:
-                raw[key.name] = (
-                    self.sub_formatters[key.name].load(raw.pop(key.name))
-                    if raw[key.name]
-                    else raw[key.name]
+                source[key.name] = (
+                    self.sub_formatters[key.name].load(source.pop(key.name))
+                    if source[key.name]
+                    else source[key.name]
                 )
             elif is_dataclass(key_type):
-                raw[key.name] = DataclassFormatter(key_type).load(raw[key.name])  # type: ignore
+                source[key.name] = DataclassFormatter(key_type).load(source[key.name])  # type: ignore
             else:
                 args = get_args(key_type)
                 if len(args) == 1 and is_dataclass(args[0]):
-                    raw[key.name] = ListFormatter(DataclassFormatter(args[0])).load(  # type: ignore
-                        raw[key.name]
+                    source[key.name] = ListFormatter(DataclassFormatter(args[0])).load(  # type: ignore
+                        source[key.name]
                     )
 
-        return self.resource(**raw)
+        return self.resource(**source)
 
-    def dump(self, item: _TargetT) -> Mapping[str, Any]:
-        return asdict(item)  # type: ignore
+    def dump(self, target: _TargetT) -> Mapping[str, Any]:
+        return asdict(target)  # type: ignore
 
 
 class ValueFormatter:

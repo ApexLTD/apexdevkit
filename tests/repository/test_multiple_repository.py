@@ -9,14 +9,19 @@ from typing import Any
 import pytest
 
 from apexdevkit.formatter import DataclassFormatter, PickleFormatter
-from apexdevkit.repository import InMemoryByteStore, InMemoryRepository, Repository
+from apexdevkit.repository import (
+    Entity,
+    InMemoryByteStore,
+    InMemoryRepository,
+    Repository,
+)
 from apexdevkit.repository.core.multi import (
     MultipleRepositoryBuilder,
 )
 
 
-@dataclass(frozen=True)
-class Animal:
+@dataclass(frozen=True, kw_only=True)
+class Animal(Entity):
     id: str
     type: AnimalType
     name: str
@@ -30,23 +35,23 @@ class AnimalType(StrEnum):
 
 @dataclass(frozen=True)
 class AnimalFormatter:
-    def dump(self, animal: Animal) -> bytes:
+    def dump(self, target: Animal) -> bytes:
         return PickleFormatter[Mapping[str, Any]]().dump(
             {
-                "id": int(animal.id),
-                "type": animal.type.value,
-                "name": animal.name,
-                "age": animal.age,
+                "id": int(target.id),
+                "type": target.type.value,
+                "name": target.name,
+                "age": target.age,
             }
         )
 
-    def load(self, data: bytes) -> Animal:
-        raw = PickleFormatter[Mapping[str, Any]]().load(data)
+    def load(self, source: bytes) -> Animal:
+        raw = PickleFormatter[Mapping[str, Any]]().load(source)
         return Animal(
-            str(raw["id"]),
-            AnimalType[raw["type"]],
-            (raw["name"]),
-            int(raw["age"]),
+            id=str(raw["id"]),
+            type=AnimalType[raw["type"]],
+            name=raw["name"],
+            age=int(raw["age"]),
         )
 
 
@@ -78,20 +83,12 @@ class FishFormatter:
 
 @pytest.fixture
 def birds() -> Repository[Animal]:
-    return (
-        InMemoryRepository[Animal]()
-        .with_store(InMemoryByteStore[Animal](formatter=AnimalFormatter()))
-        .build()
-    )
+    return InMemoryRepository[Animal](InMemoryByteStore(formatter=AnimalFormatter()))
 
 
 @pytest.fixture
 def fishes() -> Repository[Animal]:
-    return (
-        InMemoryRepository[Animal]()
-        .with_store(InMemoryByteStore[Animal](formatter=AnimalFormatter()))
-        .build()
-    )
+    return InMemoryRepository[Animal](InMemoryByteStore(formatter=AnimalFormatter()))
 
 
 @pytest.fixture
@@ -172,12 +169,20 @@ def test_should_update(birds: Repository[Animal], multiple: Repository[Animal]) 
     multiple.update(updated)
 
     assert birds.read(bird.id.removeprefix("bird_")) == Animal(
-        "1", type=AnimalType.bird, name="Bird", age=2
+        id="1",
+        type=AnimalType.bird,
+        name="Bird",
+        age=2,
     )
 
 
 def test_should_delete(birds: Repository[Animal], multiple: Repository[Animal]) -> None:
-    bird = Animal(id="1", type=AnimalType.bird, name="Bird", age=1)
+    bird = Animal(
+        id="1",
+        type=AnimalType.bird,
+        name="Bird",
+        age=1,
+    )
     birds.create(bird)
 
     multiple.delete("bird_" + bird.id)

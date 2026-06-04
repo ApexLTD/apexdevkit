@@ -3,10 +3,11 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic
 
 from apexdevkit.formatter import Formatter
 from apexdevkit.repository import BruteForceBatch, Repository
+from apexdevkit.repository.core import ItemT
 
 RawItem = Mapping[str, Any]
 RawCollection = Iterable[RawItem]
@@ -56,9 +57,6 @@ class RestfulService:  # pragma: no cover
 
     def delete_one(self, item_id: str) -> None:
         raise NotImplementedError(self.delete_one.__name__)
-
-
-ItemT = TypeVar("ItemT")
 
 
 @dataclass(frozen=True)

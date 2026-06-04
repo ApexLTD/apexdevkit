@@ -1,10 +1,10 @@
 import pytest
 
-from apexdevkit.repository import InMemoryByteStore
+from apexdevkit.repository import CacheMixin
 
 
 def test_should_cache_store() -> None:
-    cache = InMemoryByteStore.Cache()
+    cache = CacheMixin()
     store = cache.store_for("name")
 
     store.set("key", b"value")
@@ -13,7 +13,7 @@ def test_should_cache_store() -> None:
 
 
 def test_should_clear_cache() -> None:
-    cache = InMemoryByteStore.Cache()
+    cache = CacheMixin()
     store = cache.store_for("name")
     store.set("key", b"value")
 

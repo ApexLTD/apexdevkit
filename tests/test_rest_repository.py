@@ -7,13 +7,17 @@ import pytest
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.fastapi.service import RestfulRepository, RestfulService
 from apexdevkit.formatter import DataclassFormatter
-from apexdevkit.repository import InMemoryRepository, Repository
+from apexdevkit.repository import (
+    Entity,
+    InMemoryByteStore,
+    InMemoryRepository,
+    Repository,
+)
 from apexdevkit.testing.fake import FakeResource
 
 
-@dataclass
-class Animal:
-    id: str
+@dataclass(frozen=True, kw_only=True)
+class Animal(Entity):
     name: str
     age: int
 
@@ -30,12 +34,13 @@ class FakeAnimal(FakeResource[Animal]):
             "id": self.id or self.fake.uuid(),
             "name": self.name or self.fake.text(length=10),
             "age": self.fake.number(),
+            "idempotency_id": None,
         }
 
 
 @pytest.fixture
 def repository() -> Repository[Animal]:
-    return InMemoryRepository[Animal]().build()
+    return InMemoryRepository[Animal](InMemoryByteStore())
 
 
 @pytest.fixture
