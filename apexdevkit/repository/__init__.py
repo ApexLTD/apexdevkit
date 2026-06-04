@@ -1,4 +1,5 @@
-from apexdevkit.repository.base import Repository, RepositoryBase
+from apexdevkit.repository.core.base import Repository, RepositoryBase
+from apexdevkit.repository.core.decorator import BruteForceBatch, RepositoryDecorator
 from apexdevkit.repository.database import (
     Connection,
     Connector,
@@ -14,6 +15,10 @@ from apexdevkit.repository.in_memory import (
 from apexdevkit.repository.sql.mssql import MsSqlRepository
 
 __all__ = [
+    "Repository",
+    "RepositoryBase",
+    "BruteForceBatch",
+    "RepositoryDecorator",
     "Connection",
     "Connector",
     "Cursor",
@@ -22,7 +27,5 @@ __all__ = [
     "InMemoryRepository",
     "InMemoryByteStore",
     "KeyValueStore",
-    "Repository",
-    "RepositoryBase",
     "MsSqlRepository",
 ]

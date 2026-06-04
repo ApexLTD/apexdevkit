@@ -10,7 +10,7 @@ from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter, PickleFormatter
 from apexdevkit.key_fn import AttributeKey
 from apexdevkit.repository import RepositoryBase
-from apexdevkit.repository.base import ItemT, Repository
+from apexdevkit.repository.core.base import ItemT, Repository
 
 _KeyFunction = Callable[[ItemT], str]
 

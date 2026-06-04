@@ -7,8 +7,7 @@ import pytest
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.fastapi.service import RestfulRepository, RestfulService
 from apexdevkit.formatter import DataclassFormatter
-from apexdevkit.repository import InMemoryRepository
-from apexdevkit.repository.base import Repository
+from apexdevkit.repository import InMemoryRepository, Repository
 from apexdevkit.testing.fake import FakeResource
 
 

@@ -2,7 +2,7 @@ from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from typing import Generic
 
-from apexdevkit.repository.base import ItemT, Repository
+from apexdevkit.repository.core.base import ItemT, Repository
 
 
 @dataclass
