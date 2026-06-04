@@ -10,7 +10,7 @@ import pytest
 
 from apexdevkit.formatter import DataclassFormatter, PickleFormatter
 from apexdevkit.repository import InMemoryByteStore, InMemoryRepository, Repository
-from apexdevkit.repository.repository import (
+from apexdevkit.repository.multi import (
     MultipleRepositoryBuilder,
 )
 
