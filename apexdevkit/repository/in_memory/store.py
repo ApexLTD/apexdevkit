@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from typing import Any, Generic, Protocol
 
 from apexdevkit.formatter import Formatter, PickleFormatter
-from apexdevkit.repository.core.base import ItemT
+from apexdevkit.repository.core.interface import ItemT
 
 
 class KeyValueStore(Protocol[ItemT]):  # pragma: no cover

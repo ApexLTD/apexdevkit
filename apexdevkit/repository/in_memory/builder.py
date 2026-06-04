@@ -6,7 +6,7 @@ from typing import Generic
 
 from apexdevkit.error import ExistsError
 from apexdevkit.key_fn import AttributeKey
-from apexdevkit.repository.core.base import ItemT, KeyFn, Repository
+from apexdevkit.repository.core.interface import ItemT, KeyFn, Repository
 
 from .multi_key import MultiKeyRepository
 from .single_key import SingleKeyRepository

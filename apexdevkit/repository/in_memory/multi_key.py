@@ -4,7 +4,7 @@ from collections.abc import Iterator
 from dataclasses import dataclass, field
 
 from apexdevkit.error import DoesNotExistError, ExistsError
-from apexdevkit.repository.core.base import ItemT, KeyFn, RepositoryBase
+from apexdevkit.repository.core.interface import ItemT, KeyFn, RepositoryBase
 
 from .store import KeyValueStore
 

@@ -8,7 +8,7 @@ from typing import Any, Generic
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
 from apexdevkit.repository import Database, DatabaseCommand, RepositoryBase
-from apexdevkit.repository.core.base import ItemT
+from apexdevkit.repository.core.interface import ItemT
 from apexdevkit.repository.sql.field import NotNone, SqlFieldManager, _SqlField
 
 

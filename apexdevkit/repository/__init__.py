@@ -1,5 +1,5 @@
-from apexdevkit.repository.core.base import Repository, RepositoryBase
 from apexdevkit.repository.core.decorator import BruteForceBatch, RepositoryDecorator
+from apexdevkit.repository.core.interface import Repository, RepositoryBase
 from apexdevkit.repository.database import (
     Connection,
     Connector,
