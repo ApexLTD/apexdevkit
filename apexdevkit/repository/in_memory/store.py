@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Iterable, MutableMapping
 from dataclasses import dataclass, field
+from functools import cached_property
 from typing import Any, Generic, Protocol
 
 from apexdevkit.formatter import Formatter, PickleFormatter
@@ -48,15 +49,13 @@ class InMemoryByteStore(Generic[ItemT]):
         for raw in self.items.values():
             yield self.formatter.load(raw)
 
-    @dataclass
     class Cache:
-        items: MutableMapping[str, InMemoryByteStore[Any]] = field(init=False)
+        @cached_property
+        def _items(self) -> MutableMapping[str, KeyValueStore[Any]]:
+            return defaultdict(InMemoryByteStore)
 
-        def __post_init__(self) -> None:
-            self.items = defaultdict(InMemoryByteStore)
-
-        def store_for(self, name: str) -> InMemoryByteStore[Any]:
-            return self.items[name]
+        def store_for(self, name: str) -> KeyValueStore[Any]:
+            return self._items[name]
 
         def clear(self) -> None:
-            self.items.clear()
+            self._items.clear()
