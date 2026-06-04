@@ -4,6 +4,7 @@ from collections.abc import Iterator
 from dataclasses import dataclass, field
 
 from apexdevkit.error import DoesNotExistError, ExistsError
+from apexdevkit.key_fn import AttributeKey
 from apexdevkit.repository.core.interface import ItemT, KeyFn, RepositoryBase
 
 from .store import KeyValueStore
@@ -15,9 +16,12 @@ class MultiKeyRepository(RepositoryBase[ItemT]):
 
     keys: list[KeyFn[ItemT]] = field(default_factory=list)
 
+    def __post_init__(self) -> None:
+        self.keys.insert(0, AttributeKey("id"))
+
     def create(self, item: ItemT) -> ItemT:
         self._ensure_does_not_exist(item)
-        self.store.set(self._pk(item), item)
+        self.store.set(item.id, item)
 
         return item
 
@@ -27,16 +31,13 @@ class MultiKeyRepository(RepositoryBase[ItemT]):
                 if key(new) == key(existing):
                     ExistsError(existing).with_duplicate(key).fire()
 
-    def _pk(self, item: ItemT) -> str:
-        return self.keys[0](item)
-
     def update(self, item: ItemT) -> None:
-        self.delete(self._pk(item))
+        self.delete(item.id)
         self.create(item)
 
     def delete(self, item_id: str) -> None:
         item = self.read(item_id)
-        self.store.drop(self._pk(item))
+        self.store.drop(item.id)
 
     def read(self, item_id: str) -> ItemT:
         for key in self.keys:

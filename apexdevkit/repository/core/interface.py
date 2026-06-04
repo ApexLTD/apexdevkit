@@ -1,9 +1,22 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Iterator
+from dataclasses import dataclass, field
 from typing import Generic, Protocol, TypeVar
+from uuid import uuid4
 
-ItemT = TypeVar("ItemT")
+
+def _uuid() -> str:
+    return str(uuid4())
+
+
+@dataclass(frozen=True, kw_only=True)
+class Entity:
+    id: str = field(default_factory=_uuid)
+    idempotency_id: str | None = field(default=None)
+
+
+ItemT = TypeVar("ItemT", bound=Entity)
 KeyFn = Callable[[ItemT], str]
 
 

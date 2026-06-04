@@ -4,7 +4,8 @@ from collections.abc import Iterator
 from dataclasses import dataclass
 
 from apexdevkit.error import DoesNotExistError, ExistsError
-from apexdevkit.repository.core.interface import ItemT, KeyFn, RepositoryBase
+from apexdevkit.key_fn import AttributeKey
+from apexdevkit.repository.core.interface import ItemT, RepositoryBase
 
 from .store import KeyValueStore
 
@@ -12,24 +13,23 @@ from .store import KeyValueStore
 @dataclass
 class SingleKeyRepository(RepositoryBase[ItemT]):
     store: KeyValueStore[ItemT]
-    pk: KeyFn[ItemT]
 
     def create(self, item: ItemT) -> ItemT:
         self._ensure_does_not_exist(item)
-        self.store.set(self.pk(item), item)
+        self.store.set(item.id, item)
 
         return item
 
     def _ensure_does_not_exist(self, new: ItemT) -> None:
         try:
-            existing = self.store.get(self.pk(new))
+            existing = self.store.get(new.id)
         except KeyError:
             return
 
-        ExistsError(existing).with_duplicate(self.pk).fire()
+        ExistsError(existing).with_duplicate(AttributeKey("id")).fire()
 
     def update(self, item: ItemT) -> None:
-        self.delete(self.pk(item))
+        self.delete(item.id)
         self.create(item)
 
     def delete(self, item_id: str) -> None:

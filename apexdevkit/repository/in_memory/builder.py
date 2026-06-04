@@ -5,7 +5,6 @@ from dataclasses import dataclass, field
 from typing import Generic
 
 from apexdevkit.error import ExistsError
-from apexdevkit.key_fn import AttributeKey
 from apexdevkit.repository.core.interface import ItemT, KeyFn, Repository
 
 from .multi_key import MultiKeyRepository
@@ -53,10 +52,7 @@ class InMemoryRepository(Generic[ItemT]):
         return repository
 
     def _create(self) -> Repository[ItemT]:
-        match len(self.keys):
-            case 0:
-                return SingleKeyRepository(self.store, pk=AttributeKey("id"))
-            case 1:
-                return SingleKeyRepository(self.store, pk=self.keys[0])
-            case _:
-                return MultiKeyRepository(self.store, keys=self.keys)
+        if len(self.keys) == 0:
+            return SingleKeyRepository(self.store)
+
+        return MultiKeyRepository(self.store, keys=self.keys)

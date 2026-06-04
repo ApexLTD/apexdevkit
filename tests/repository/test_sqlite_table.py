@@ -6,7 +6,7 @@ from _pytest.raises import raises
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
-from apexdevkit.repository import Database, DatabaseCommand
+from apexdevkit.repository import Database, DatabaseCommand, Entity
 from apexdevkit.repository.sql import SqlFieldBuilder
 from apexdevkit.repository.sql.connector import SqliteInMemoryConnector
 from apexdevkit.repository.sql.sqlite import (
@@ -15,10 +15,8 @@ from apexdevkit.repository.sql.sqlite import (
 )
 
 
-@dataclass(frozen=True)
-class _Item:
-    id: str
-
+@dataclass(frozen=True, kw_only=True)
+class _Item(Entity):
     name: str
     count: int
 
@@ -41,12 +39,12 @@ def setup() -> DatabaseCommand:
 
 @fixture
 def item() -> _Item:
-    return _Item(str(uuid4()), "item", 1)
+    return _Item(id=str(uuid4()), name="item", count=1)
 
 
 @fixture
 def item_with_parent(item: _Item) -> _Item:
-    return _Item(item.id, "item", 1, 0)
+    return _Item(id=item.id, name="item", count=1, parent=0)
 
 
 @fixture

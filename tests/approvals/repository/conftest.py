@@ -1,15 +1,14 @@
-from dataclasses import dataclass, field
-from uuid import uuid4
+from dataclasses import dataclass
 
 import pytest
 
+from apexdevkit.repository import Entity
 
-@dataclass
-class Apple:
+
+@dataclass(frozen=True, kw_only=True)
+class Apple(Entity):
     color: str
     parent: str | None
-
-    id: str = field(default_factory=lambda: str(uuid4()))
 
 
 @pytest.fixture

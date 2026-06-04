@@ -7,7 +7,7 @@ from .database import (
     DatabaseCommand,
 )
 from .decorator import BruteForceBatch, RepositoryDecorator
-from .interface import Repository, RepositoryBase
+from .interface import ItemT, Repository, RepositoryBase
 
 __all__ = [
     # Database
@@ -21,6 +21,7 @@ __all__ = [
     "RepositoryDecorator",
     "BruteForceBatch",
     # Interface
+    "ItemT",
     "Repository",
     "RepositoryBase",
 ]

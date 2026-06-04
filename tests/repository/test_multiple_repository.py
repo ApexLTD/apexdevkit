@@ -9,14 +9,19 @@ from typing import Any
 import pytest
 
 from apexdevkit.formatter import DataclassFormatter, PickleFormatter
-from apexdevkit.repository import InMemoryByteStore, InMemoryRepository, Repository
+from apexdevkit.repository import (
+    Entity,
+    InMemoryByteStore,
+    InMemoryRepository,
+    Repository,
+)
 from apexdevkit.repository.core.multi import (
     MultipleRepositoryBuilder,
 )
 
 
-@dataclass(frozen=True)
-class Animal:
+@dataclass(frozen=True, kw_only=True)
+class Animal(Entity):
     id: str
     type: AnimalType
     name: str
@@ -43,10 +48,10 @@ class AnimalFormatter:
     def load(self, data: bytes) -> Animal:
         raw = PickleFormatter[Mapping[str, Any]]().load(data)
         return Animal(
-            str(raw["id"]),
-            AnimalType[raw["type"]],
-            (raw["name"]),
-            int(raw["age"]),
+            id=str(raw["id"]),
+            type=AnimalType[raw["type"]],
+            name=raw["name"],
+            age=int(raw["age"]),
         )
 
 
@@ -172,12 +177,20 @@ def test_should_update(birds: Repository[Animal], multiple: Repository[Animal]) 
     multiple.update(updated)
 
     assert birds.read(bird.id.removeprefix("bird_")) == Animal(
-        "1", type=AnimalType.bird, name="Bird", age=2
+        id="1",
+        type=AnimalType.bird,
+        name="Bird",
+        age=2,
     )
 
 
 def test_should_delete(birds: Repository[Animal], multiple: Repository[Animal]) -> None:
-    bird = Animal(id="1", type=AnimalType.bird, name="Bird", age=1)
+    bird = Animal(
+        id="1",
+        type=AnimalType.bird,
+        name="Bird",
+        age=1,
+    )
     birds.create(bird)
 
     multiple.delete("bird_" + bird.id)

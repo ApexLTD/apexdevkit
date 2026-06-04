@@ -9,6 +9,7 @@ from apexdevkit.repository.core import (
     RepositoryBase,
     RepositoryDecorator,
 )
+from apexdevkit.repository.core.interface import Entity
 from apexdevkit.repository.in_memory import (
     InMemoryByteStore,
     InMemoryRepository,
@@ -17,6 +18,7 @@ from apexdevkit.repository.in_memory import (
 from apexdevkit.repository.sql import MsSqlRepository, SqliteRepository
 
 __all__ = [
+    "Entity",
     # Core
     "BruteForceBatch",
     "Connection",

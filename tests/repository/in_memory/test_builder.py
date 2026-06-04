@@ -8,13 +8,13 @@ from faker import Faker
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.key_fn import AttributeKey
+from apexdevkit.repository import Entity
 from apexdevkit.repository.in_memory import InMemoryRepository
 from apexdevkit.testing.fake import Fake
 
 
-@dataclass(frozen=True)
-class _Company:
-    id: str
+@dataclass(frozen=True, kw_only=True)
+class _Company(Entity):
     name: str
     code: str
     address: _Address

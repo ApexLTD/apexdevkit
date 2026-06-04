@@ -2,16 +2,14 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic
 
 from pymssql.exceptions import DatabaseError, OperationalError
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
-from apexdevkit.repository import Database, DatabaseCommand, RepositoryBase
+from apexdevkit.repository.core import Database, DatabaseCommand, ItemT, RepositoryBase
 from apexdevkit.repository.sql.field import NotNone, SqlFieldManager, _SqlField
-
-ItemT = TypeVar("ItemT")
 
 
 @dataclass
