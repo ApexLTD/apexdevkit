@@ -1,4 +1,4 @@
-from apexdevkit.repository.core.database import (
+from apexdevkit.repository.core import (
     Connection,
     Connector,
     Cursor,
@@ -7,9 +7,7 @@ from apexdevkit.repository.core.database import (
 )
 from apexdevkit.repository.core.decorator import BruteForceBatch, RepositoryDecorator
 from apexdevkit.repository.core.interface import Repository, RepositoryBase
-from apexdevkit.repository.in_memory.builder import (
-    InMemoryRepository,
-)
+from apexdevkit.repository.in_memory import InMemoryRepository
 from apexdevkit.repository.in_memory.store import InMemoryByteStore, KeyValueStore
 from apexdevkit.repository.sql.mssql import MsSqlRepository
 
