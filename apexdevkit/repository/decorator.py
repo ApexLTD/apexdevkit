@@ -1,6 +1,6 @@
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
-from typing import Any, Generic
+from typing import Generic
 
 from apexdevkit.repository.interface import ItemT, Repository
 
@@ -20,9 +20,6 @@ class RepositoryDecorator(Generic[ItemT]):  # pragma: no cover
 
     def delete(self, item_id: str) -> None:
         self.inner.delete(item_id)
-
-    def bind(self, **kwargs: Any) -> Repository[ItemT]:
-        return self.inner.bind(**kwargs)
 
     def __iter__(self) -> Iterator[ItemT]:
         return self.inner.__iter__()

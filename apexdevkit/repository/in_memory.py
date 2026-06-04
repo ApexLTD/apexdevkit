@@ -4,7 +4,7 @@ from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, MutableMapping
 from contextlib import suppress
 from dataclasses import dataclass, field
-from typing import Any, Generic, Protocol, Self
+from typing import Any, Generic, Protocol
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter, PickleFormatter
@@ -122,9 +122,6 @@ class _SingleKeyRepository(RepositoryBase[ItemT]):
     store: KeyValueStore[ItemT]
     pk: _KeyFunction[ItemT]
 
-    def bind(self, **_: Any) -> Self:  # pragma: no cover
-        return self
-
     def create(self, item: ItemT) -> ItemT:
         self._ensure_does_not_exist(item)
         self.store.set(self.pk(item), item)
@@ -167,9 +164,6 @@ class _ManyKeyRepository(RepositoryBase[ItemT]):
     store: KeyValueStore[ItemT]
 
     keys: list[_KeyFunction[ItemT]] = field(default_factory=list)
-
-    def bind(self, **_: Any) -> Self:  # pragma: no cover
-        return self
 
     def create(self, item: ItemT) -> ItemT:
         self._ensure_does_not_exist(item)
