@@ -72,11 +72,7 @@ def test_should_persist() -> None:
 
 def test_should_read_by_custom_field() -> None:
     company = _Company.fake()
-    repository = (
-        InMemoryRepository[_Company]()
-        .with_key(AttributeKey("id"))
-        .and_key(AttributeKey("code"))
-    )
+    repository = InMemoryRepository[_Company]().with_key(AttributeKey("code"))
 
     repository.create(company)
 
