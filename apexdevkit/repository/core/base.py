@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from typing import Generic, Protocol, TypeVar
 
 ItemT = TypeVar("ItemT")
+KeyFn = Callable[[ItemT], str]
 
 
 class Repository(Protocol[ItemT]):  # pragma: no cover

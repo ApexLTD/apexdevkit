@@ -7,11 +7,10 @@ from apexdevkit.repository.database import (
     Database,
     DatabaseCommand,
 )
-from apexdevkit.repository.in_memory import (
-    InMemoryByteStore,
+from apexdevkit.repository.in_memory.builder import (
     InMemoryRepository,
-    KeyValueStore,
 )
+from apexdevkit.repository.in_memory.store import InMemoryByteStore, KeyValueStore
 from apexdevkit.repository.sql.mssql import MsSqlRepository
 
 __all__ = [
