@@ -1,6 +1,6 @@
 [project]
 name = "apexdevkit"
-version = "1.28.2"
+version = "1.29.0"
 description = "Apex Development Tools for python."
 readme = "README.md"
 authors = [
@@ -30,7 +30,7 @@ faker = "*"
 
 
 [tool.poetry.group.lint.dependencies]
-apexcodexpy = "*"
+apexcodexpy = "0.3.1"
 
 [tool.mypy]
 ignore_missing_imports = true

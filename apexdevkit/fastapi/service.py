@@ -6,8 +6,7 @@ from functools import cached_property
 from typing import Any, Generic, TypeVar
 
 from apexdevkit.formatter import Formatter
-from apexdevkit.repository.decorator import BruteForceBatch
-from apexdevkit.repository.interface import Repository
+from apexdevkit.repository import BruteForceBatch, Repository
 
 RawItem = Mapping[str, Any]
 RawCollection = Iterable[RawItem]

@@ -8,17 +8,14 @@ from typing import Any, Generic
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
 from apexdevkit.repository import Database, DatabaseCommand, RepositoryBase
-from apexdevkit.repository.interface import ItemT
-from apexdevkit.repository.sql import NotNone, SqlFieldManager, _SqlField
+from apexdevkit.repository.core.interface import ItemT
+from apexdevkit.repository.sql.field import NotNone, SqlFieldManager, _SqlField
 
 
 @dataclass(frozen=True)
 class SqliteRepository(RepositoryBase[ItemT]):
     db: Database
     table: SqlTable[ItemT]
-
-    def bind(self, **kwargs: Any) -> SqliteRepository[ItemT]:
-        return SqliteRepository(self.db, self.table.bind(**kwargs))
 
     def __iter__(self) -> Iterator[ItemT]:
         for raw in self.db.execute(self.table.select_all()).fetch_all():
@@ -61,9 +58,6 @@ class SqliteRepository(RepositoryBase[ItemT]):
 
 
 class SqlTable(Generic[ItemT]):  # pragma: no cover
-    def bind(self, **_: Any) -> SqlTable[ItemT]:
-        return self
-
     def count_all(self) -> DatabaseCommand:
         raise NotImplementedError
 

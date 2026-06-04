@@ -97,3 +97,15 @@ class DatabaseCommand:
 
     def __str__(self) -> str:  # pragma: no cover
         return self.value % self.payload
+
+
+class ConnectionContextManager(AbstractContextManager[Connection]):
+    def __init__(self, connection: Connection) -> None:
+        self.connection = connection
+
+    def __enter__(self) -> Connection:
+        return self.connection
+
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
+        self.connection.cursor().close()
+        self.connection.close()
