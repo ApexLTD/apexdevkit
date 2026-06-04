@@ -3,27 +3,37 @@ from __future__ import annotations
 from collections.abc import Iterator
 from contextlib import suppress
 from dataclasses import dataclass, field
-from typing import Generic, TypeVar
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.key_fn import AttributeKey
-from apexdevkit.repository import Entity
-from apexdevkit.repository.core import ItemT, Repository, RepositoryBase
+from apexdevkit.repository.core import ItemT, RepositoryBase
 from apexdevkit.repository.core.interface import KeyFn
 
-from .store import KeyValueStore
-
-_T = TypeVar("_T", bound=Entity)
+from .store import InMemoryByteStore, KeyValueStore
 
 
 @dataclass(frozen=True)
 class InMemoryRepository(RepositoryBase[ItemT]):
-    store: KeyValueStore[ItemT]
-
+    store: KeyValueStore[ItemT] = field(default_factory=InMemoryByteStore)
     keys: list[KeyFn[ItemT]] = field(default_factory=lambda: [AttributeKey("id")])
 
-    def add_key(self, key: KeyFn[ItemT]) -> None:
-        self.keys.append(key)
+    def and_key(self, function: KeyFn[ItemT]) -> InMemoryRepository[ItemT]:
+        return self.with_key(function)
+
+    def with_key(self, function: KeyFn[ItemT]) -> InMemoryRepository[ItemT]:
+        self.keys.append(function)
+
+        return self
+
+    def and_seeded(self, *items: ItemT) -> InMemoryRepository[ItemT]:
+        return self.with_seeded(*items)
+
+    def with_seeded(self, *items: ItemT) -> InMemoryRepository[ItemT]:
+        for seed in items:
+            with suppress(ExistsError):
+                self.create(seed)
+
+        return self
 
     def create(self, item: ItemT) -> ItemT:
         self._ensure_does_not_exist(item)
@@ -58,34 +68,3 @@ class InMemoryRepository(RepositoryBase[ItemT]):
 
     def __len__(self) -> int:
         return self.store.count()
-
-    @dataclass(frozen=True)
-    class Builder(Generic[_T]):
-        repository: InMemoryRepository[_T]
-
-        def and_key(self, function: KeyFn[_T]) -> InMemoryRepository.Builder[_T]:
-            return self.with_key(function)
-
-        def with_key(self, function: KeyFn[_T]) -> InMemoryRepository.Builder[_T]:
-            self.repository.add_key(function)
-
-            return self
-
-        def and_seeded(self, *items: _T) -> InMemoryRepository.Builder[_T]:
-            return self.with_seeded(*items)
-
-        def with_seeded(self, *items: _T) -> InMemoryRepository.Builder[_T]:
-            for seed in items:
-                with suppress(ExistsError):
-                    self.repository.create(seed)
-
-            return self
-
-        def build(self) -> Repository[_T]:
-            return self.repository
-
-    @classmethod
-    def with_store(
-        cls, value: KeyValueStore[ItemT]
-    ) -> InMemoryRepository.Builder[ItemT]:
-        return InMemoryRepository.Builder(InMemoryRepository(value))

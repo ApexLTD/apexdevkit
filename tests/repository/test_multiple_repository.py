@@ -83,20 +83,12 @@ class FishFormatter:
 
 @pytest.fixture
 def birds() -> Repository[Animal]:
-    return (
-        InMemoryRepository[Animal]
-        .with_store(InMemoryByteStore(formatter=AnimalFormatter()))
-        .build()
-    )
+    return InMemoryRepository[Animal](InMemoryByteStore(formatter=AnimalFormatter()))
 
 
 @pytest.fixture
 def fishes() -> Repository[Animal]:
-    return (
-        InMemoryRepository[Animal]
-        .with_store(InMemoryByteStore(formatter=AnimalFormatter()))
-        .build()
-    )
+    return InMemoryRepository[Animal](InMemoryByteStore(formatter=AnimalFormatter()))
 
 
 @pytest.fixture
