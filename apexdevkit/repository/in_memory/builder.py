@@ -8,7 +8,6 @@ from apexdevkit.error import ExistsError
 from apexdevkit.repository.core.interface import ItemT, KeyFn, Repository
 
 from .multi_key import MultiKeyRepository
-from .single_key import SingleKeyRepository
 from .store import InMemoryByteStore, KeyValueStore
 
 
@@ -42,7 +41,7 @@ class InMemoryRepository(Generic[ItemT]):
         )
 
     def build(self) -> Repository[ItemT]:
-        return self._seed(self._create())
+        return self._seed(MultiKeyRepository(self.store, keys=self.keys))
 
     def _seed(self, repository: Repository[ItemT]) -> Repository[ItemT]:
         for seed in self.seeds:
@@ -50,9 +49,3 @@ class InMemoryRepository(Generic[ItemT]):
                 repository.create(seed)
 
         return repository
-
-    def _create(self) -> Repository[ItemT]:
-        if len(self.keys) == 0:
-            return SingleKeyRepository(self.store)
-
-        return MultiKeyRepository(self.store, keys=self.keys)
