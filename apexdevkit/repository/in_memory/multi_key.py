@@ -14,10 +14,7 @@ from .store import KeyValueStore
 class MultiKeyRepository(RepositoryBase[ItemT]):
     store: KeyValueStore[ItemT]
 
-    keys: list[KeyFn[ItemT]] = field(default_factory=list)
-
-    def __post_init__(self) -> None:
-        self.keys.insert(0, AttributeKey("id"))
+    keys: list[KeyFn[ItemT]] = field(default_factory=lambda: [AttributeKey("id")])
 
     def create(self, item: ItemT) -> ItemT:
         self._ensure_does_not_exist(item)
