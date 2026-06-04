@@ -14,7 +14,7 @@ from apexdevkit.repository.in_memory import (
     InMemoryRepository,
     KeyValueStore,
 )
-from apexdevkit.repository.sql import MsSqlRepository
+from apexdevkit.repository.sql import MsSqlRepository, SqliteRepository
 
 __all__ = [
     # Core
@@ -33,4 +33,5 @@ __all__ = [
     "KeyValueStore",
     # SQL
     "MsSqlRepository",
+    "SqliteRepository",
 ]
