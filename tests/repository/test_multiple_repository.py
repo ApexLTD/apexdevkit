@@ -35,18 +35,18 @@ class AnimalType(StrEnum):
 
 @dataclass(frozen=True)
 class AnimalFormatter:
-    def dump(self, animal: Animal) -> bytes:
+    def dump(self, target: Animal) -> bytes:
         return PickleFormatter[Mapping[str, Any]]().dump(
             {
-                "id": int(animal.id),
-                "type": animal.type.value,
-                "name": animal.name,
-                "age": animal.age,
+                "id": int(target.id),
+                "type": target.type.value,
+                "name": target.name,
+                "age": target.age,
             }
         )
 
-    def load(self, data: bytes) -> Animal:
-        raw = PickleFormatter[Mapping[str, Any]]().load(data)
+    def load(self, source: bytes) -> Animal:
+        raw = PickleFormatter[Mapping[str, Any]]().load(source)
         return Animal(
             id=str(raw["id"]),
             type=AnimalType[raw["type"]],
@@ -84,8 +84,8 @@ class FishFormatter:
 @pytest.fixture
 def birds() -> Repository[Animal]:
     return (
-        InMemoryRepository[Animal]()
-        .with_store(InMemoryByteStore[Animal](formatter=AnimalFormatter()))
+        InMemoryRepository[Animal]
+        .with_store(InMemoryByteStore(formatter=AnimalFormatter()))
         .build()
     )
 
@@ -93,8 +93,8 @@ def birds() -> Repository[Animal]:
 @pytest.fixture
 def fishes() -> Repository[Animal]:
     return (
-        InMemoryRepository[Animal]()
-        .with_store(InMemoryByteStore[Animal](formatter=AnimalFormatter()))
+        InMemoryRepository[Animal]
+        .with_store(InMemoryByteStore(formatter=AnimalFormatter()))
         .build()
     )
 

@@ -7,7 +7,12 @@ import pytest
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.fastapi.service import RestfulRepository, RestfulService
 from apexdevkit.formatter import DataclassFormatter
-from apexdevkit.repository import Entity, InMemoryRepository, Repository
+from apexdevkit.repository import (
+    Entity,
+    InMemoryByteStore,
+    InMemoryRepository,
+    Repository,
+)
 from apexdevkit.testing.fake import FakeResource
 
 
@@ -35,7 +40,7 @@ class FakeAnimal(FakeResource[Animal]):
 
 @pytest.fixture
 def repository() -> Repository[Animal]:
-    return InMemoryRepository[Animal]().build()
+    return InMemoryRepository[Animal](InMemoryByteStore())
 
 
 @pytest.fixture
