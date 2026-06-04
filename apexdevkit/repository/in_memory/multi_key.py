@@ -10,11 +10,14 @@ from apexdevkit.repository.core.interface import ItemT, KeyFn, RepositoryBase
 from .store import KeyValueStore
 
 
-@dataclass
+@dataclass(frozen=True)
 class MultiKeyRepository(RepositoryBase[ItemT]):
     store: KeyValueStore[ItemT]
 
     keys: list[KeyFn[ItemT]] = field(default_factory=lambda: [AttributeKey("id")])
+
+    def add_key(self, key: KeyFn[ItemT]) -> None:
+        self.keys.append(key)
 
     def create(self, item: ItemT) -> ItemT:
         self._ensure_does_not_exist(item)
