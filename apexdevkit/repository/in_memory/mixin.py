@@ -1,4 +1,7 @@
-from dataclasses import dataclass, field
+from collections import defaultdict
+from collections.abc import MutableMapping
+from dataclasses import dataclass
+from functools import cached_property
 from typing import Any
 
 from .store import InMemoryByteStore, KeyValueStore
@@ -6,7 +9,12 @@ from .store import InMemoryByteStore, KeyValueStore
 
 @dataclass(frozen=True)
 class CacheMixin:
-    cache: InMemoryByteStore.Cache = field(default_factory=InMemoryByteStore.Cache)
+    @cached_property
+    def _entries(self) -> MutableMapping[str, KeyValueStore[Any]]:
+        return defaultdict(InMemoryByteStore)
 
-    def store_for(self, resource: str) -> KeyValueStore[Any]:
-        return self.cache.store_for(resource)
+    def store_for(self, name: str) -> KeyValueStore[Any]:
+        return self._entries[name]
+
+    def clear(self) -> None:
+        self._entries.clear()
