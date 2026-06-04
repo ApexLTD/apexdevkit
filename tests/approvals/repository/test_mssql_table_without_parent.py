@@ -1,8 +1,8 @@
 import pytest
 
 from apexdevkit.formatter import AliasFormatter, AliasMapping, DataclassFormatter
-from apexdevkit.repository.mssql import MsSqlTableBuilder, SqlTable
-from apexdevkit.repository.sql import SqlFieldBuilder
+from apexdevkit.repository.sql.field import SqlFieldBuilder
+from apexdevkit.repository.sql.mssql import MsSqlTableBuilder, SqlTable
 from tests.approvals.conftest import Approver
 from tests.approvals.repository.conftest import Apple
 

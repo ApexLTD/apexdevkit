@@ -9,7 +9,7 @@ from pymssql.exceptions import DatabaseError
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.repository import Database, DatabaseCommand, MsSqlRepository
-from apexdevkit.repository.mssql import SqlTable, UnknownError
+from apexdevkit.repository.sql.mssql import SqlTable, UnknownError
 
 
 @dataclass

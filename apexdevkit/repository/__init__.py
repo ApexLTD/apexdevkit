@@ -11,7 +11,7 @@ from apexdevkit.repository.in_memory import (
     InMemoryRepository,
     KeyValueStore,
 )
-from apexdevkit.repository.mssql import MsSqlRepository
+from apexdevkit.repository.sql.mssql import MsSqlRepository
 
 __all__ = [
     "Connection",

@@ -9,7 +9,7 @@ from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
 from apexdevkit.repository import Database, DatabaseCommand, RepositoryBase
 from apexdevkit.repository.base import ItemT
-from apexdevkit.repository.sql import NotNone, SqlFieldManager, _SqlField
+from apexdevkit.repository.sql.field import NotNone, SqlFieldManager, _SqlField
 
 
 @dataclass(frozen=True)

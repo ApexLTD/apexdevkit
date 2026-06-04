@@ -9,7 +9,7 @@ from pymssql.exceptions import DatabaseError, OperationalError
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
 from apexdevkit.repository import Database, DatabaseCommand, RepositoryBase
-from apexdevkit.repository.sql import NotNone, SqlFieldManager, _SqlField
+from apexdevkit.repository.sql.field import NotNone, SqlFieldManager, _SqlField
 
 ItemT = TypeVar("ItemT")
 
