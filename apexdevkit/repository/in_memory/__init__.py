@@ -1,9 +1,9 @@
-from .mixin import InMemoryMixin
+from .mixin import CacheMixin
 from .repository import InMemoryRepository
 from .store import InMemoryByteStore, KeyValueStore
 
 __all__ = [
-    "InMemoryMixin",
+    "CacheMixin",
     "InMemoryRepository",
     "InMemoryByteStore",
     "KeyValueStore",

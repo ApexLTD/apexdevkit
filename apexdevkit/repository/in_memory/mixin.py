@@ -5,7 +5,7 @@ from .store import InMemoryByteStore, KeyValueStore
 
 
 @dataclass(frozen=True)
-class InMemoryMixin:
+class CacheMixin:
     cache: InMemoryByteStore.Cache = field(default_factory=InMemoryByteStore.Cache)
 
     def store_for(self, resource: str) -> KeyValueStore[Any]:

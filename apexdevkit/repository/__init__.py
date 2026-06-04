@@ -11,8 +11,8 @@ from .core import (
 )
 from .core.interface import Entity
 from .in_memory import (
+    CacheMixin,
     InMemoryByteStore,
-    InMemoryMixin,
     InMemoryRepository,
     KeyValueStore,
 )
@@ -31,8 +31,8 @@ __all__ = [
     "RepositoryBase",
     "RepositoryDecorator",
     # In-memory
+    "CacheMixin",
     "InMemoryByteStore",
-    "InMemoryMixin",
     "InMemoryRepository",
     "KeyValueStore",
     # SQL
