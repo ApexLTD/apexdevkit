@@ -8,7 +8,7 @@ from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.fastapi.service import RestfulRepository, RestfulService
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import InMemoryRepository
-from apexdevkit.repository.interface import Repository
+from apexdevkit.repository.base import Repository
 from apexdevkit.testing.fake import FakeResource
 
 
