@@ -1,4 +1,4 @@
-from apexdevkit.repository.core import (
+from .core import (
     BruteForceBatch,
     Connection,
     Connector,
@@ -9,13 +9,14 @@ from apexdevkit.repository.core import (
     RepositoryBase,
     RepositoryDecorator,
 )
-from apexdevkit.repository.core.interface import Entity
-from apexdevkit.repository.in_memory import (
+from .core.interface import Entity
+from .in_memory import (
     InMemoryByteStore,
+    InMemoryMixin,
     InMemoryRepository,
     KeyValueStore,
 )
-from apexdevkit.repository.sql import MsSqlRepository, SqliteRepository
+from .sql import MsSqlRepository, SqliteRepository
 
 __all__ = [
     "Entity",
@@ -31,6 +32,7 @@ __all__ = [
     "RepositoryDecorator",
     # In-memory
     "InMemoryByteStore",
+    "InMemoryMixin",
     "InMemoryRepository",
     "KeyValueStore",
     # SQL
