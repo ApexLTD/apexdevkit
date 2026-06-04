@@ -7,8 +7,8 @@ from _pytest.raises import raises
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Database, DatabaseCommand
-from apexdevkit.repository.connector import SqliteInMemoryConnector
 from apexdevkit.repository.sql import SqlFieldBuilder
+from apexdevkit.repository.sql.connector import SqliteInMemoryConnector
 from apexdevkit.repository.sql.sqlite import (
     SqliteRepository,
     SqliteTableBuilder,

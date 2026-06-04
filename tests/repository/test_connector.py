@@ -1,5 +1,8 @@
 from apexdevkit.repository import Connector, DatabaseCommand
-from apexdevkit.repository.connector import SqliteFileConnector, SqliteInMemoryConnector
+from apexdevkit.repository.sql.connector import (
+    SqliteFileConnector,
+    SqliteInMemoryConnector,
+)
 
 DSN = "test.db"
 command = DatabaseCommand("""
