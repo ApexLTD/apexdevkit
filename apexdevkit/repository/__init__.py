@@ -1,4 +1,3 @@
-from apexdevkit.repository.base import RepositoryBase
 from apexdevkit.repository.database import (
     Connection,
     Connector,
@@ -11,7 +10,7 @@ from apexdevkit.repository.in_memory import (
     InMemoryRepository,
     KeyValueStore,
 )
-from apexdevkit.repository.interface import Repository
+from apexdevkit.repository.interface import Repository, RepositoryBase
 from apexdevkit.repository.mssql import MsSqlRepository
 
 __all__ = [
