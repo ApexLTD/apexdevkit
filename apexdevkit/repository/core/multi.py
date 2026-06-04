@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
-from typing import Generic, TypeVar
+from typing import Generic
 
 from apexdevkit.error import DoesNotExistError
 from apexdevkit.formatter import Formatter
-from apexdevkit.repository import Repository, RepositoryBase
 
-ItemT = TypeVar("ItemT")
+from .interface import ItemT, Repository, RepositoryBase
 
 
 @dataclass(frozen=True)
