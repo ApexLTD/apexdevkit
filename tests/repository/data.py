@@ -10,12 +10,7 @@ from apexdevkit.testing.fake import Fake
 
 
 @dataclass(frozen=True, kw_only=True)
-class AppleMsSqlItem(Entity):
-    color: str
-
-
-@dataclass(frozen=True, kw_only=True)
-class SqliteItem(Entity):
+class AppleItem(Entity):
     color: str
 
 

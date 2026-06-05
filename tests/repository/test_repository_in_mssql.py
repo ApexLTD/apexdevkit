@@ -8,13 +8,13 @@ from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Database, MsSqlRepository
 from apexdevkit.repository.sql import SqlFieldBuilder
 from apexdevkit.repository.sql.mssql import MsSqlTableBuilder, UnknownError
-from tests.repository.data import AppleMsSqlItem
+from tests.repository.data import AppleItem
 
 TABLE = (
-    MsSqlTableBuilder[AppleMsSqlItem]()
+    MsSqlTableBuilder[AppleItem]()
     .with_schema("test")
     .with_table("apples")
-    .with_formatter(DataclassFormatter(AppleMsSqlItem))
+    .with_formatter(DataclassFormatter(AppleItem))
     .with_fields(
         [
             SqlFieldBuilder().with_name("id").as_id().build(),
@@ -26,11 +26,11 @@ TABLE = (
 
 
 @pytest.fixture
-def apple() -> AppleMsSqlItem:
-    return AppleMsSqlItem(color="red")
+def apple() -> AppleItem:
+    return AppleItem(color="red")
 
 
-def test_should_retrieve_all(apple: AppleMsSqlItem) -> None:
+def test_should_retrieve_all(apple: AppleItem) -> None:
     db = MagicMock(spec=Database)
     executor = MagicMock(spec=Database._CommandExecutor)
     db.execute.return_value = executor
@@ -41,7 +41,7 @@ def test_should_retrieve_all(apple: AppleMsSqlItem) -> None:
             "color": apple.color,
         }
     ]
-    result = list(iter(MsSqlRepository[AppleMsSqlItem](db, TABLE)))
+    result = list(iter(MsSqlRepository[AppleItem](db, TABLE)))
 
     db.execute.assert_called_once_with(TABLE.select_all())
     executor.fetch_all.assert_called_once()
@@ -54,7 +54,7 @@ def test_should_count_all() -> None:
     db.execute.return_value = executor
 
     executor.fetch_one.return_value = {"n_items": 1}
-    result = len(MsSqlRepository[AppleMsSqlItem](db, TABLE))
+    result = len(MsSqlRepository[AppleItem](db, TABLE))
 
     db.execute.assert_called_once_with(TABLE.count_all())
     executor.fetch_one.assert_called_once()
@@ -68,15 +68,15 @@ def test_should_not_count_all() -> None:
 
     executor.fetch_one.return_value = {}
     with pytest.raises(UnknownError):
-        len(MsSqlRepository[AppleMsSqlItem](db, TABLE))
+        len(MsSqlRepository[AppleItem](db, TABLE))
 
 
-def test_should_delete(apple: AppleMsSqlItem) -> None:
+def test_should_delete(apple: AppleItem) -> None:
     db = MagicMock(spec=Database)
     executor = MagicMock(spec=Database._CommandExecutor)
     db.execute.return_value = executor
 
-    MsSqlRepository[AppleMsSqlItem](db, TABLE).delete(apple.id)
+    MsSqlRepository[AppleItem](db, TABLE).delete(apple.id)
 
     db.execute.assert_called_once_with(TABLE.delete(apple.id))
     executor.fetch_none.assert_called_once()
@@ -87,13 +87,13 @@ def test_should_delete_all() -> None:
     executor = MagicMock(spec=Database._CommandExecutor)
     db.execute.return_value = executor
 
-    MsSqlRepository[AppleMsSqlItem](db, TABLE).delete_all()
+    MsSqlRepository[AppleItem](db, TABLE).delete_all()
 
     db.execute.assert_called_once_with(TABLE.delete_all())
     executor.fetch_none.assert_called_once()
 
 
-def test_should_create(apple: AppleMsSqlItem) -> None:
+def test_should_create(apple: AppleItem) -> None:
     db = MagicMock(spec=Database)
     executor = MagicMock(spec=Database._CommandExecutor)
     db.execute.return_value = executor
@@ -103,14 +103,14 @@ def test_should_create(apple: AppleMsSqlItem) -> None:
         "color": apple.color,
     }
 
-    result = MsSqlRepository[AppleMsSqlItem](db, TABLE).create(apple)
+    result = MsSqlRepository[AppleItem](db, TABLE).create(apple)
 
     db.execute.assert_called_once_with(TABLE.insert(apple))
     executor.fetch_one.assert_called_once()
     assert result == apple
 
 
-def test_should_not_duplicate(apple: AppleMsSqlItem) -> None:
+def test_should_not_duplicate(apple: AppleItem) -> None:
     db = MagicMock(spec=Database)
     executor = MagicMock(spec=Database._CommandExecutor)
     db.execute.return_value = executor
@@ -118,10 +118,10 @@ def test_should_not_duplicate(apple: AppleMsSqlItem) -> None:
     db.execute.side_effect = DatabaseError(2627, b"duplication")
 
     with pytest.raises(ExistsError):
-        MsSqlRepository[AppleMsSqlItem](db, TABLE).create(apple)
+        MsSqlRepository[AppleItem](db, TABLE).create(apple)
 
 
-def test_should_not_create(apple: AppleMsSqlItem) -> None:
+def test_should_not_create(apple: AppleItem) -> None:
     db = MagicMock(spec=Database)
     executor = MagicMock(spec=Database._CommandExecutor)
     db.execute.return_value = executor
@@ -129,10 +129,10 @@ def test_should_not_create(apple: AppleMsSqlItem) -> None:
     db.execute.side_effect = DatabaseError(0, b"error")
 
     with pytest.raises(UnknownError):
-        MsSqlRepository[AppleMsSqlItem](db, TABLE).create(apple)
+        MsSqlRepository[AppleItem](db, TABLE).create(apple)
 
 
-def test_should_read(apple: AppleMsSqlItem) -> None:
+def test_should_read(apple: AppleItem) -> None:
     db = MagicMock(spec=Database)
     executor = MagicMock(spec=Database._CommandExecutor)
     db.execute.return_value = executor
@@ -142,14 +142,14 @@ def test_should_read(apple: AppleMsSqlItem) -> None:
         "color": apple.color,
     }
 
-    result = MsSqlRepository[AppleMsSqlItem](db, TABLE).read(apple.id)
+    result = MsSqlRepository[AppleItem](db, TABLE).read(apple.id)
 
     db.execute.assert_called_once_with(TABLE.select(apple.id))
     executor.fetch_one.assert_called_once()
     assert result == apple
 
 
-def test_should_not_read_unknown(apple: AppleMsSqlItem) -> None:
+def test_should_not_read_unknown(apple: AppleItem) -> None:
     db = MagicMock(spec=Database)
     executor = MagicMock(spec=Database._CommandExecutor)
     db.execute.return_value = executor
@@ -157,15 +157,15 @@ def test_should_not_read_unknown(apple: AppleMsSqlItem) -> None:
     executor.fetch_one.return_value = None
 
     with pytest.raises(DoesNotExistError):
-        MsSqlRepository[AppleMsSqlItem](db, TABLE).read(apple.id)
+        MsSqlRepository[AppleItem](db, TABLE).read(apple.id)
 
 
-def test_should_update(apple: AppleMsSqlItem) -> None:
+def test_should_update(apple: AppleItem) -> None:
     db = MagicMock(spec=Database)
     executor = MagicMock(spec=Database._CommandExecutor)
     db.execute.return_value = executor
 
-    MsSqlRepository[AppleMsSqlItem](db, TABLE).update(apple)
+    MsSqlRepository[AppleItem](db, TABLE).update(apple)
 
     db.execute.assert_called_once_with(TABLE.update(apple))
     executor.fetch_none.assert_called_once()
