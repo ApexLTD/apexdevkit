@@ -18,14 +18,16 @@ from tests.repository.data import AppleItem
 def repository() -> SqliteRepository[AppleItem]:
     db = Database(SqliteInMemoryConnector())
     db.execute(
-        DatabaseCommand("""
+        DatabaseCommand(
+            """
             CREATE TABLE IF NOT EXISTS ITEM (
                 id              TEXT        NOT NULL    PRIMARY KEY,
                 color     TEXT        NOT NULL,
 
                 UNIQUE(id)
             );
-        """)
+            """
+        )
     ).fetch_none()
 
     return SqliteRepository(
