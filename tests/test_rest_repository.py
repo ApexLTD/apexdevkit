@@ -83,7 +83,7 @@ def test_should_create_many(
     assert list(repository) == [animal_1.entity(), animal_2.entity()]
 
 
-def test_should_not_create_many(
+def test_should_skip_existing_when_create_many(
     repository: Repository[Animal],
     service: RestfulService,
 ) -> None:
@@ -91,8 +91,7 @@ def test_should_not_create_many(
     animal_2 = FakeAnimal()
     repository.create(animal_1.entity())
 
-    with pytest.raises(ExistsError):
-        service.create_many([animal_1.json(), animal_2.json()])
+    assert service.create_many([animal_1.json(), animal_2.json()]) == [animal_2.json()]
 
 
 def test_should_read_one(
@@ -214,12 +213,15 @@ def test_should_replace_many(
     assert list(repository) == [replaced_1.entity(), replaced_2.entity()]
 
 
-def test_should_not_replace_unknown_many(service: RestfulService) -> None:
-    replaced_1 = FakeAnimal()
-    replaced_2 = FakeAnimal()
+def test_should_skip_unknown_when_updating_many(
+    repository: Repository[Animal],
+    service: RestfulService,
+) -> None:
+    animal_1 = FakeAnimal()
+    animal_2 = FakeAnimal()
+    repository.create(animal_1.entity())
 
-    with pytest.raises(DoesNotExistError):
-        service.replace_many([replaced_1.json(), replaced_2.json()])
+    assert service.replace_many([animal_1.json(), animal_2.json()]) == [animal_1.json()]
 
 
 def test_should_delete_one(
