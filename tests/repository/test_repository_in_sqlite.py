@@ -1,20 +1,24 @@
-from collections.abc import Mapping
-from typing import Any
 from uuid import uuid4
 
 import pytest
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
-from apexdevkit.repository import Database, DatabaseCommand
+from apexdevkit.repository import Database, DatabaseCommand, Repository
+from apexdevkit.repository.sql import SqlFieldBuilder
 from apexdevkit.repository.sql.connector import SqliteInMemoryConnector
-from apexdevkit.repository.sql.sqlite import SqliteRepository, SqlTable
+from apexdevkit.repository.sql.sqlite import (
+    SqliteRepository,
+    SqliteTableBuilder,
+)
 from tests.repository.data import SqliteItem
 
 
-class FakeTable(SqlTable[SqliteItem]):
-    def setup(self) -> DatabaseCommand:
-        return DatabaseCommand("""
+@pytest.fixture
+def repository() -> SqliteRepository[SqliteItem]:
+    db = Database(SqliteInMemoryConnector())
+    db.execute(
+        DatabaseCommand("""
             CREATE TABLE IF NOT EXISTS ITEM (
                 id              TEXT        NOT NULL    PRIMARY KEY,
                 external_id     TEXT        NOT NULL,
@@ -22,79 +26,50 @@ class FakeTable(SqlTable[SqliteItem]):
                 UNIQUE(id)
             );
         """)
+    ).fetch_none()
 
-    def count_all(self) -> DatabaseCommand:
-        return DatabaseCommand("SELECT COUNT(*) as n_items FROM ITEM;")
-
-    def select_all(self) -> DatabaseCommand:
-        return DatabaseCommand("SELECT * FROM ITEM;")
-
-    def select(self, item_id: str) -> DatabaseCommand:
-        return DatabaseCommand("SELECT * FROM ITEM WHERE id=:id").with_data(id=item_id)
-
-    def select_duplicate(self, item: SqliteItem) -> DatabaseCommand:
-        return self.select(item.id)
-
-    def insert(self, item: SqliteItem) -> DatabaseCommand:
-        return DatabaseCommand("""
-            INSERT INTO ITEM (id, external_id) VALUES (:id, :external_id)
-            RETURNING id, external_id;
-        """).with_data(DataclassFormatter[SqliteItem](SqliteItem).dump(item))
-
-    def update(self, item: SqliteItem) -> DatabaseCommand:
-        return DatabaseCommand("""
-            UPDATE ITEM SET id=:id, external_id=:external_id WHERE id=:id;
-        """).with_data(DataclassFormatter[SqliteItem](SqliteItem).dump(item))
-
-    def delete(self, item_id: str) -> DatabaseCommand:
-        return DatabaseCommand("DELETE FROM ITEM WHERE id=:id").with_data(id=item_id)
-
-    def load(self, data: Mapping[str, Any]) -> SqliteItem:
-        return DataclassFormatter[SqliteItem](SqliteItem).load(data)
-
-    def duplicate(self, item: SqliteItem) -> ExistsError:
-        return ExistsError(item).with_duplicate(
-            lambda i: f"_Item with id<{i.id}> already exists."
-        )
+    return SqliteRepository(
+        db=db,
+        table=(
+            SqliteTableBuilder[SqliteItem]()
+            .with_name("ITEM")
+            .with_formatter(DataclassFormatter(SqliteItem))
+            .with_fields(
+                [
+                    SqlFieldBuilder().with_name("id").as_id().build(),
+                    SqlFieldBuilder().with_name("external_id").build(),
+                ]
+            )
+            .build()
+        ),
+    )
 
 
-@pytest.fixture
-def repository() -> SqliteRepository[SqliteItem]:
-    db = Database(SqliteInMemoryConnector())
-    db.execute(FakeTable().setup()).fetch_none()
-
-    return SqliteRepository(table=FakeTable(), db=db)
-
-
-def test_should_list_nothing_when_empty(
-    repository: SqliteRepository[SqliteItem],
-) -> None:
+def test_should_list_nothing_when_empty(repository: Repository[SqliteItem]) -> None:
     assert len(repository) == 0
     assert list(repository) == []
 
 
-def test_should_not_read_unknown(repository: SqliteRepository[SqliteItem]) -> None:
+def test_should_not_read_unknown(repository: Repository[SqliteItem]) -> None:
     with pytest.raises(DoesNotExistError):
         repository.read(str(uuid4()))
 
 
-def test_should_create(repository: SqliteRepository[SqliteItem]) -> None:
+def test_should_create(repository: Repository[SqliteItem]) -> None:
     item = SqliteItem(id=str(uuid4()), external_id=str(uuid4()))
 
     assert repository.create(item) == item
 
 
-def test_should_not_duplicate_on_create(
-    repository: SqliteRepository[SqliteItem],
-) -> None:
+def test_should_not_duplicate_on_create(repository: Repository[SqliteItem]) -> None:
     item = SqliteItem(id=str(uuid4()), external_id=str(uuid4()))
     repository.create(item)
 
-    with pytest.raises(ExistsError, match=f"_Item with id<{item.id}> already exists."):
+    with pytest.raises(ExistsError, match=f"id<{item.id}>"):
         repository.create(item)
 
 
-def test_should_persist(repository: SqliteRepository[SqliteItem]) -> None:
+def test_should_persist(repository: Repository[SqliteItem]) -> None:
     item = SqliteItem(id=str(uuid4()), external_id=str(uuid4()))
     repository.create(item)
 
@@ -102,7 +77,7 @@ def test_should_persist(repository: SqliteRepository[SqliteItem]) -> None:
     assert repository.read(item.id) == item
 
 
-def test_should_persist_update(repository: SqliteRepository[SqliteItem]) -> None:
+def test_should_persist_update(repository: Repository[SqliteItem]) -> None:
     old_item = SqliteItem(id=str(uuid4()), external_id=str(uuid4()))
     repository.create(old_item)
 
@@ -112,7 +87,7 @@ def test_should_persist_update(repository: SqliteRepository[SqliteItem]) -> None
     assert repository.read(item.id) == item
 
 
-def test_should_persist_delete(repository: SqliteRepository[SqliteItem]) -> None:
+def test_should_persist_delete(repository: Repository[SqliteItem]) -> None:
     item = SqliteItem(id=str(uuid4()), external_id=str(uuid4()))
     repository.create(item)
 
