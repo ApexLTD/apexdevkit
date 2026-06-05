@@ -21,12 +21,12 @@ class RepositoryDecorator(Repository[ItemT]):  # pragma: no cover
         self.inner.delete(item_id)
 
     def __iter__(self) -> Iterator[ItemT]:
-        return self.inner.__iter__()
+        return iter(self.inner)
 
     def __len__(self) -> int:
-        return self.inner.__len__()
+        return len(self.inner)
 
-    def __contains__(self, item: ItemT) -> bool:
+    def __contains__(self, item: object) -> bool:
         return item in self.inner
 
 

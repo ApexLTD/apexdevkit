@@ -1,13 +1,21 @@
 from typing import Generic
 
 from apexdevkit.error import DoesNotExistError
+from apexdevkit.repository import Entity
 from apexdevkit.repository.core import ItemT
 
 
 class ContainsMixin(Generic[ItemT]):
-    def __contains__(self, item: ItemT) -> bool:
+    def __contains__(self, item: object) -> bool:
+        match item:
+            case Entity():
+                return self.contains_id(item.id)
+            case _:
+                return False
+
+    def contains_id(self, value: str) -> bool:
         try:
-            self.read(item.id)
+            self.read(value)
         except DoesNotExistError:
             return False
 

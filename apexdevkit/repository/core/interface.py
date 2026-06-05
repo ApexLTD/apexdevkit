@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Collection, Iterable, Iterator
 from dataclasses import dataclass, field
 from typing import Protocol, TypeVar
 from uuid import uuid4
@@ -20,7 +20,7 @@ ItemT = TypeVar("ItemT", bound=Entity)
 KeyFn = Callable[[ItemT], str]
 
 
-class Repository(Protocol[ItemT]):  # pragma: no cover
+class Repository(Collection[ItemT], Protocol[ItemT]):  # pragma: no cover
     def create(self, item: ItemT) -> ItemT:
         pass
 
@@ -31,15 +31,6 @@ class Repository(Protocol[ItemT]):  # pragma: no cover
         pass
 
     def delete(self, item_id: str) -> None:
-        pass
-
-    def __contains__(self, item: ItemT) -> bool:
-        pass
-
-    def __iter__(self) -> Iterator[ItemT]:
-        pass
-
-    def __len__(self) -> int:
         pass
 
 
@@ -70,5 +61,5 @@ class RepositoryBase(Repository[ItemT]):  # pragma: no cover
     def __len__(self) -> int:
         raise NotImplementedError
 
-    def __contains__(self, item: ItemT) -> bool:
+    def __contains__(self, item: object) -> bool:
         raise NotImplementedError
