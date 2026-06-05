@@ -1,8 +1,7 @@
 from typing import Generic
 
 from apexdevkit.error import DoesNotExistError
-from apexdevkit.repository import Entity
-from apexdevkit.repository.core import ItemT
+from apexdevkit.repository.core import Entity, ItemT
 
 
 class ContainsMixin(Generic[ItemT]):
