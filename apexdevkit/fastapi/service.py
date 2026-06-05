@@ -75,7 +75,7 @@ class RestfulRepository(RestfulService, Generic[ItemT]):
     def create_many(self, items: RawCollection) -> RawCollection:
         return [
             self.formatter.dump(item)
-            for item in self._batch.create_many(
+            for item in self._batch.load(
                 [self.formatter.load(fields) for fields in items]
             )
         ]
@@ -102,9 +102,7 @@ class RestfulRepository(RestfulService, Generic[ItemT]):
 
             updates.append(self.formatter.load(data))
 
-        self._batch.update_many(updates)
-
-        return [self.formatter.dump(item) for item in updates]
+        return [self.formatter.dump(item) for item in self._batch.renew(updates)]
 
     def replace_one(self, item: RawItem) -> RawItem:
         self.repository.update(self.formatter.load(item))
@@ -112,9 +110,9 @@ class RestfulRepository(RestfulService, Generic[ItemT]):
         return item
 
     def replace_many(self, items: RawCollection) -> RawCollection:
-        self._batch.update_many([self.formatter.load(item) for item in items])
+        updated = self._batch.renew([self.formatter.load(item) for item in items])
 
-        return items
+        return [self.formatter.dump(item) for item in updated]
 
     def delete_one(self, item_id: str) -> None:
         self.repository.delete(item_id)

@@ -75,10 +75,3 @@ class BruteForceBatch(RepositoryDecorator[ItemT]):
             with suppress(DoesNotExistError):
                 self.inner.update(item)
                 yield item
-
-    def create_many(self, items: Iterable[ItemT]) -> Iterable[ItemT]:
-        return [self.inner.create(item) for item in items]
-
-    def update_many(self, items: Iterable[ItemT]) -> None:
-        for item in items:
-            self.inner.update(item)

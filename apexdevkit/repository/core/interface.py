@@ -43,9 +43,3 @@ class BatchRepository(Repository[ItemT], Protocol[ItemT]):  # pragma: no cover
 
     def renew(self, source: Iterable[ItemT]) -> Iterable[ItemT]:
         pass
-
-    def create_many(self, items: Iterable[ItemT]) -> Iterable[ItemT]:
-        pass
-
-    def update_many(self, items: Iterable[ItemT]) -> None:
-        pass
