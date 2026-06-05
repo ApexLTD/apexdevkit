@@ -1,5 +1,5 @@
 from collections.abc import Iterable, Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from .interface import ItemT, Repository
 
@@ -29,7 +29,7 @@ class NoRepository(Repository[ItemT]):  # pragma: no cover
 
 @dataclass(frozen=True, kw_only=True)
 class RepositoryDecorator(Repository[ItemT]):  # pragma: no cover
-    inner: Repository[ItemT]
+    inner: Repository[ItemT] = field(default_factory=NoRepository)
 
     def create(self, item: ItemT) -> ItemT:
         return self.inner.create(item)
