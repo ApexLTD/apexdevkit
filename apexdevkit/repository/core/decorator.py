@@ -27,7 +27,7 @@ class NoRepository(Repository[ItemT]):  # pragma: no cover
         raise NotImplementedError
 
 
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class RepositoryDecorator(Repository[ItemT]):  # pragma: no cover
     inner: Repository[ItemT]
 
@@ -53,6 +53,7 @@ class RepositoryDecorator(Repository[ItemT]):  # pragma: no cover
         return item in self.inner
 
 
+@dataclass(frozen=True, kw_only=True)
 class BruteForceBatch(RepositoryDecorator[ItemT]):
     def create_many(self, items: Iterable[ItemT]) -> Iterable[ItemT]:
         return [self.inner.create(item) for item in items]

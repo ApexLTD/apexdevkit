@@ -67,7 +67,7 @@ class RestfulRepository(RestfulService, Generic[ItemT]):
 
     @cached_property
     def _batch(self) -> BruteForceBatch[ItemT]:
-        return BruteForceBatch(self.repository)
+        return BruteForceBatch(inner=self.repository)
 
     def create_one(self, item: RawItem) -> RawItem:
         return self.formatter.dump(self.repository.create(self.formatter.load(item)))
