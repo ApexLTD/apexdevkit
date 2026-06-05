@@ -59,19 +59,19 @@ class RepositoryDecorator(Repository[ItemT]):  # pragma: no cover
 @dataclass(frozen=True, kw_only=True)
 class BruteForceBatch(RepositoryDecorator[ItemT]):
     def load(self, source: Iterable[ItemT]) -> Iterable[ItemT]:
-        for item in source:
+        for item in list(source):
             with suppress(ExistsError):
                 yield self.inner.create(item)
 
     def prune(self, source: Container[ItemT]) -> Iterable[ItemT]:
-        for item in self.inner:
+        for item in list(self.inner):
             if item not in source:
                 with suppress(DoesNotExistError):
                     self.inner.delete(item.id)
                     yield item
 
     def renew(self, source: Iterable[ItemT]) -> Iterable[ItemT]:
-        for item in source:
+        for item in list(source):
             with suppress(DoesNotExistError):
                 self.inner.update(item)
                 yield item
