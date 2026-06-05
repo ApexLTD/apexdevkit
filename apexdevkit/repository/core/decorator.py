@@ -4,6 +4,29 @@ from dataclasses import dataclass
 from .interface import ItemT, Repository
 
 
+class NoRepository(Repository[ItemT]):  # pragma: no cover
+    def create(self, item: ItemT) -> ItemT:
+        raise NotImplementedError
+
+    def read(self, item_id: str) -> ItemT:
+        raise NotImplementedError
+
+    def update(self, item: ItemT) -> None:
+        raise NotImplementedError
+
+    def delete(self, item_id: str) -> None:
+        raise NotImplementedError
+
+    def __iter__(self) -> Iterator[ItemT]:
+        raise NotImplementedError
+
+    def __len__(self) -> int:
+        raise NotImplementedError
+
+    def __contains__(self, item: object) -> bool:
+        raise NotImplementedError
+
+
 @dataclass
 class RepositoryDecorator(Repository[ItemT]):  # pragma: no cover
     inner: Repository[ItemT]
