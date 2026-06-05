@@ -1,12 +1,11 @@
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
-from typing import Generic
 
 from .interface import ItemT, Repository
 
 
 @dataclass
-class RepositoryDecorator(Generic[ItemT]):  # pragma: no cover
+class RepositoryDecorator(Repository[ItemT]):  # pragma: no cover
     inner: Repository[ItemT]
 
     def create(self, item: ItemT) -> ItemT:
@@ -26,6 +25,9 @@ class RepositoryDecorator(Generic[ItemT]):  # pragma: no cover
 
     def __len__(self) -> int:
         return self.inner.__len__()
+
+    def __contains__(self, item: ItemT) -> bool:
+        return item in self.inner
 
 
 class BruteForceBatch(RepositoryDecorator[ItemT]):

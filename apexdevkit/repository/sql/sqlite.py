@@ -7,13 +7,19 @@ from typing import Any, Generic
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import Formatter
-from apexdevkit.repository import Database, DatabaseCommand, RepositoryBase
-from apexdevkit.repository.core.interface import ItemT
-from apexdevkit.repository.sql.field import NotNone, SqlFieldManager, _SqlField
+from apexdevkit.repository.core import (
+    ContainsMixin,
+    Database,
+    DatabaseCommand,
+    ItemT,
+    Repository,
+)
+
+from .field import NotNone, SqlFieldManager, _SqlField
 
 
 @dataclass(frozen=True)
-class SqliteRepository(RepositoryBase[ItemT]):
+class SqliteRepository(ContainsMixin[ItemT], Repository[ItemT]):
     db: Database
     table: SqlTable[ItemT]
 

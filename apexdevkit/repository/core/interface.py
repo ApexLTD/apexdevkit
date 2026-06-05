@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass, field
-from typing import Generic, Protocol, TypeVar
+from typing import Protocol, TypeVar
 from uuid import uuid4
 
 
@@ -33,6 +33,9 @@ class Repository(Protocol[ItemT]):  # pragma: no cover
     def delete(self, item_id: str) -> None:
         pass
 
+    def __contains__(self, item: ItemT) -> bool:
+        pass
+
     def __iter__(self) -> Iterator[ItemT]:
         pass
 
@@ -48,7 +51,7 @@ class BatchRepository(Repository[ItemT], Protocol[ItemT]):  # pragma: no cover
         pass
 
 
-class RepositoryBase(Generic[ItemT]):  # pragma: no cover
+class RepositoryBase(Repository[ItemT]):  # pragma: no cover
     def create(self, item: ItemT) -> ItemT:
         raise NotImplementedError
 
@@ -65,4 +68,7 @@ class RepositoryBase(Generic[ItemT]):  # pragma: no cover
         raise NotImplementedError
 
     def __len__(self) -> int:
+        raise NotImplementedError
+
+    def __contains__(self, item: ItemT) -> bool:
         raise NotImplementedError
