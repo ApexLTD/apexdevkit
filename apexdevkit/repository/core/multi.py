@@ -7,7 +7,8 @@ from typing import Generic
 from apexdevkit.error import DoesNotExistError
 from apexdevkit.formatter import Formatter
 
-from .interface import ItemT, Repository, RepositoryBase
+from . import ContainsMixin
+from .interface import ItemT, Repository
 
 
 @dataclass(frozen=True)
@@ -20,7 +21,7 @@ class NoFormatter(Generic[ItemT]):
 
 
 @dataclass(frozen=True)
-class MultipleRepository(RepositoryBase[ItemT]):
+class MultipleRepository(ContainsMixin[ItemT], Repository[ItemT]):
     repositories: list[_InnerRepository[ItemT]]
 
     def create(self, item: ItemT) -> ItemT:

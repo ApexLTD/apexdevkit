@@ -6,8 +6,9 @@ from .database import (
     Database,
     DatabaseCommand,
 )
-from .decorator import BruteForceBatch, RepositoryDecorator
-from .interface import ItemT, Repository, RepositoryBase
+from .decorator import BruteForceBatch, NoRepository, RepositoryDecorator
+from .interface import Entity, ItemT, KeyFn, Repository
+from .mixin import ContainsMixin
 
 __all__ = [
     # Database
@@ -21,7 +22,11 @@ __all__ = [
     "RepositoryDecorator",
     "BruteForceBatch",
     # Interface
+    "Entity",
     "ItemT",
+    "KeyFn",
     "Repository",
-    "RepositoryBase",
+    "NoRepository",
+    # Mixin
+    "ContainsMixin",
 ]

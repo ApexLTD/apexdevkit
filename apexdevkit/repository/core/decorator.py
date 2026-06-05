@@ -1,13 +1,35 @@
 from collections.abc import Iterable, Iterator
-from dataclasses import dataclass
-from typing import Generic
+from dataclasses import dataclass, field
 
 from .interface import ItemT, Repository
 
 
-@dataclass
-class RepositoryDecorator(Generic[ItemT]):  # pragma: no cover
-    inner: Repository[ItemT]
+class NoRepository(Repository[ItemT]):  # pragma: no cover
+    def create(self, item: ItemT) -> ItemT:
+        raise NotImplementedError
+
+    def read(self, item_id: str) -> ItemT:
+        raise NotImplementedError
+
+    def update(self, item: ItemT) -> None:
+        raise NotImplementedError
+
+    def delete(self, item_id: str) -> None:
+        raise NotImplementedError
+
+    def __iter__(self) -> Iterator[ItemT]:
+        raise NotImplementedError
+
+    def __len__(self) -> int:
+        raise NotImplementedError
+
+    def __contains__(self, item: object) -> bool:
+        raise NotImplementedError
+
+
+@dataclass(frozen=True, kw_only=True)
+class RepositoryDecorator(Repository[ItemT]):  # pragma: no cover
+    inner: Repository[ItemT] = field(default_factory=NoRepository)
 
     def create(self, item: ItemT) -> ItemT:
         return self.inner.create(item)
@@ -22,12 +44,16 @@ class RepositoryDecorator(Generic[ItemT]):  # pragma: no cover
         self.inner.delete(item_id)
 
     def __iter__(self) -> Iterator[ItemT]:
-        return self.inner.__iter__()
+        return iter(self.inner)
 
     def __len__(self) -> int:
-        return self.inner.__len__()
+        return len(self.inner)
+
+    def __contains__(self, item: object) -> bool:
+        return item in self.inner
 
 
+@dataclass(frozen=True, kw_only=True)
 class BruteForceBatch(RepositoryDecorator[ItemT]):
     def create_many(self, items: Iterable[ItemT]) -> Iterable[ItemT]:
         return [self.inner.create(item) for item in items]

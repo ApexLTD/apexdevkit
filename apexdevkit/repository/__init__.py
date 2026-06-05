@@ -5,8 +5,8 @@ from .core import (
     Cursor,
     Database,
     DatabaseCommand,
+    NoRepository,
     Repository,
-    RepositoryBase,
     RepositoryDecorator,
 )
 from .core.interface import Entity
@@ -27,8 +27,8 @@ __all__ = [
     "Cursor",
     "Database",
     "DatabaseCommand",
+    "NoRepository",
     "Repository",
-    "RepositoryBase",
     "RepositoryDecorator",
     # In-memory
     "CacheMixin",

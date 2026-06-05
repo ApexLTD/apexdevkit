@@ -6,14 +6,13 @@ from dataclasses import dataclass, field
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.key_fn import AttributeKey
-from apexdevkit.repository.core import ItemT, RepositoryBase
-from apexdevkit.repository.core.interface import KeyFn
+from apexdevkit.repository.core import ContainsMixin, ItemT, KeyFn, Repository
 
 from .store import InMemoryByteStore, KeyValueStore
 
 
 @dataclass(frozen=True)
-class InMemoryRepository(RepositoryBase[ItemT]):
+class InMemoryRepository(ContainsMixin[ItemT], Repository[ItemT]):
     store: KeyValueStore[ItemT] = field(default_factory=InMemoryByteStore)
     keys: list[KeyFn[ItemT]] = field(default_factory=lambda: [AttributeKey("id")])
 
