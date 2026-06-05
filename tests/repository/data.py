@@ -16,7 +16,7 @@ class AppleMsSqlItem(Entity):
 
 @dataclass(frozen=True, kw_only=True)
 class SqliteItem(Entity):
-    external_id: str
+    color: str
 
 
 @dataclass(frozen=True, kw_only=True)

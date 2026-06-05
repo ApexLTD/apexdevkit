@@ -21,7 +21,7 @@ def repository() -> SqliteRepository[SqliteItem]:
         DatabaseCommand("""
             CREATE TABLE IF NOT EXISTS ITEM (
                 id              TEXT        NOT NULL    PRIMARY KEY,
-                external_id     TEXT        NOT NULL,
+                color     TEXT        NOT NULL,
 
                 UNIQUE(id)
             );
@@ -37,7 +37,7 @@ def repository() -> SqliteRepository[SqliteItem]:
             .with_fields(
                 [
                     SqlFieldBuilder().with_name("id").as_id().build(),
-                    SqlFieldBuilder().with_name("external_id").build(),
+                    SqlFieldBuilder().with_name("color").build(),
                 ]
             )
             .build()
@@ -56,13 +56,13 @@ def test_should_not_read_unknown(repository: Repository[SqliteItem]) -> None:
 
 
 def test_should_create(repository: Repository[SqliteItem]) -> None:
-    item = SqliteItem(id=str(uuid4()), external_id=str(uuid4()))
+    item = SqliteItem(id=str(uuid4()), color=str(uuid4()))
 
     assert repository.create(item) == item
 
 
 def test_should_not_duplicate_on_create(repository: Repository[SqliteItem]) -> None:
-    item = SqliteItem(id=str(uuid4()), external_id=str(uuid4()))
+    item = SqliteItem(id=str(uuid4()), color=str(uuid4()))
     repository.create(item)
 
     with pytest.raises(ExistsError, match=f"id<{item.id}>"):
@@ -70,7 +70,7 @@ def test_should_not_duplicate_on_create(repository: Repository[SqliteItem]) -> N
 
 
 def test_should_persist(repository: Repository[SqliteItem]) -> None:
-    item = SqliteItem(id=str(uuid4()), external_id=str(uuid4()))
+    item = SqliteItem(id=str(uuid4()), color=str(uuid4()))
     repository.create(item)
 
     assert len(repository) == 1
@@ -78,17 +78,17 @@ def test_should_persist(repository: Repository[SqliteItem]) -> None:
 
 
 def test_should_persist_update(repository: Repository[SqliteItem]) -> None:
-    old_item = SqliteItem(id=str(uuid4()), external_id=str(uuid4()))
+    old_item = SqliteItem(id=str(uuid4()), color=str(uuid4()))
     repository.create(old_item)
 
-    item = SqliteItem(id=old_item.id, external_id=str(uuid4()))
+    item = SqliteItem(id=old_item.id, color=str(uuid4()))
     repository.update(item)
 
     assert repository.read(item.id) == item
 
 
 def test_should_persist_delete(repository: Repository[SqliteItem]) -> None:
-    item = SqliteItem(id=str(uuid4()), external_id=str(uuid4()))
+    item = SqliteItem(id=str(uuid4()), color=str(uuid4()))
     repository.create(item)
 
     repository.delete(item.id)
