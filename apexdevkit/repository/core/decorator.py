@@ -1,5 +1,8 @@
-from collections.abc import Iterable, Iterator
+from collections.abc import Container, Iterable, Iterator
+from contextlib import suppress
 from dataclasses import dataclass, field
+
+from apexdevkit.error import DoesNotExistError, ExistsError
 
 from .interface import ItemT, Repository
 
@@ -55,6 +58,24 @@ class RepositoryDecorator(Repository[ItemT]):  # pragma: no cover
 
 @dataclass(frozen=True, kw_only=True)
 class BruteForceBatch(RepositoryDecorator[ItemT]):
+    def load(self, source: Iterable[ItemT]) -> Iterable[ItemT]:
+        for item in source:
+            with suppress(ExistsError):
+                yield self.inner.create(item)
+
+    def prune(self, source: Container[ItemT]) -> Iterable[ItemT]:
+        for item in self.inner:
+            if item not in source:
+                with suppress(DoesNotExistError):
+                    self.inner.delete(item.id)
+                    yield item
+
+    def renew(self, source: Iterable[ItemT]) -> Iterable[ItemT]:
+        for item in source:
+            with suppress(DoesNotExistError):
+                self.inner.update(item)
+                yield item
+
     def create_many(self, items: Iterable[ItemT]) -> Iterable[ItemT]:
         return [self.inner.create(item) for item in items]
 
