@@ -28,17 +28,7 @@ def http() -> Httpx:
     )
 
 
-@pytest.mark.vcr(
-    match_on=[
-        "method",
-        "scheme",
-        "host",
-        "port",
-        "path",
-        "query",
-        "headers",
-    ]
-)
+@pytest.mark.vcr
 def test_should_hook_post_method(http: Httpx) -> None:
     payload = JsonDict().with_a(body="content")
 
