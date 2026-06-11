@@ -4,6 +4,9 @@ from dataclasses import dataclass
 from typing import Generic, Protocol, TypeVar
 
 import httpx
+from httpx import Request, SyncByteStream
+
+from apexdevkit.security import Authority
 
 ContextT = TypeVar("ContextT", contravariant=True)
 
@@ -70,3 +73,13 @@ class AfterResponseHook:
                 self.handler.on_delete(response)
             case _:
                 pass
+
+
+@dataclass(frozen=True)
+class SignPayloadWith(DefaultHandler[Request]):
+    authority: Authority
+
+    def on_post(self, context: Request) -> None:
+        assert isinstance(context.stream, SyncByteStream)
+        signature = self.authority.sign(next(iter(context.stream)).decode())
+        context.headers[signature.name] = signature.value
