@@ -24,6 +24,7 @@ approvaltests = "*"
 pytest = "*"
 pytest-approvaltests = "*"
 pytest-cov = "*"
+pytest-env = "^1.6.0"
 pytest-recording = "*"
 coverage = "*"
 faker = "*"
@@ -80,3 +81,8 @@ source = [
 skip_empty = true
 skip_covered = true
 show_missing = true
+
+[tool.pytest]
+env = [
+    "ECHO_SERVER=http://httpbin.org"
+]

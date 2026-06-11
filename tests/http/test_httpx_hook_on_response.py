@@ -3,9 +3,10 @@ from dataclasses import dataclass
 import httpx
 import pytest
 
+from apexdevkit.environment import value_of_env
 from apexdevkit.http import HttpMethod, Httpx
 
-ECHO_SERVER = "http://httpbin.org"
+ECHO_SERVER = value_of_env(variable="ECHO_SERVER")
 
 
 @pytest.fixture
