@@ -11,4 +11,4 @@ def test_hmac(faker: Faker) -> None:
     key_2 = faker.word()
 
     assert Hmac(key_0)(message) == Hmac(key_0)(message)
-    assert Hmac(key_1).hash(message) != Hmac(key_2).hash(message)
+    assert Hmac(key_1)(message) != Hmac(key_2)(message)
