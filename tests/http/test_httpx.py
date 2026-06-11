@@ -1,8 +1,9 @@
 import pytest
 
+from apexdevkit.environment import value_of_env
 from apexdevkit.http import Http, HttpMethod, Httpx, JsonDict
 
-ECHO_SERVER = "http://httpbin.org"
+ECHO_SERVER = value_of_env(variable="ECHO_SERVER")
 
 
 @pytest.fixture
