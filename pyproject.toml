@@ -10,14 +10,13 @@ dynamic = ["dependencies"]
 requires-python = ">=3.11,<4"
 
 [tool.poetry.dependencies]
-httpx = "*"
 fastapi = "*"
-uvicorn = "*"
-sentry-sdk = { extras = ["fastapi"], version = "*" }
+httpx = "*"
 python-dotenv = "*"
 pymssql = "2.*"
-typer = "*"
-tomlkit = "*"
+pydantic = "*"
+sentry-sdk = { extras = ["fastapi"], version = "*" }
+uvicorn = "*"
 
 [tool.poetry.group.dev.dependencies]
 apexcodexpy = "0.6.5"

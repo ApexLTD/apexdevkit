@@ -3,8 +3,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Union
 
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from starlette.responses import JSONResponse
 
 from apexdevkit.error import DoesNotExistError, ExistsError, ForbiddenError
 from apexdevkit.fastapi.response import RestfulResponse
