@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Annotated, Any, Protocol, Self, TypeVar
@@ -11,6 +12,38 @@ from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.schema import RestfulSchema, Schema, SchemaFields
 from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
 from apexdevkit.fluent import FluentDict
+
+
+class RouterWithHiddenUnderscoreRoutes(APIRouter):
+    def add_api_route(
+        self,
+        path: str,
+        endpoint: Callable[..., Any],
+        **kwargs: Any,
+    ) -> None:
+        super().add_api_route(path, endpoint, **kwargs)
+        self._add_underscored_api_route(path, endpoint, kwargs.copy())
+
+    def _add_underscored_api_route(
+        self,
+        path: str,
+        endpoint: Callable[..., Any],
+        kwargs: dict[str, Any],
+    ) -> None:
+        if "-" not in path:
+            return
+
+        op_id = kwargs.get("operation_id", endpoint.__name__) or endpoint.__name__
+        kwargs["operation_id"] = f"{op_id}_alias"
+        kwargs["include_in_schema"] = False
+
+        # Register the underscored route pointing to the same endpoint
+        super().add_api_route(
+            path=path.replace("-", "_"),
+            endpoint=endpoint,
+            **kwargs,
+        )
+
 
 _Response = JSONResponse | dict[str, Any]
 
@@ -27,7 +60,7 @@ class RestfulRouter:
     name: RestfulName
 
     parent: RestfulName | None = None
-    router: APIRouter = field(default_factory=APIRouter)
+    router: APIRouter = field(default_factory=RouterWithHiddenUnderscoreRoutes)
 
     _schema: RestfulSchema = field(init=False)
     _dependency: Dependency | None = field(init=False, default=None)
