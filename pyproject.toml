@@ -38,6 +38,11 @@ exclude = [
 show_error_codes = true
 pretty = true
 
+[tool.deptry]
+extend_exclude = [
+    "apexdevkit/testing",
+]
+
 [tool.ruff.lint]
 select = [
     "A",
