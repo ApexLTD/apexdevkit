@@ -20,7 +20,6 @@ typer = "*"
 tomlkit = "*"
 
 [tool.poetry.group.dev.dependencies]
-approvaltests = "*"
 pytest = "*"
 pytest-approvaltests = "*"
 pytest-cov = "*"
