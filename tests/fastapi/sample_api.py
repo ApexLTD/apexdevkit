@@ -8,9 +8,8 @@ from typing import Any
 
 from fastapi import FastAPI
 
-from apexdevkit.fastapi import FastApiBuilder, RestfulServiceBuilder
+from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.fastapi.schema import SchemaFields
 from apexdevkit.fastapi.service import (
     RawCollection,

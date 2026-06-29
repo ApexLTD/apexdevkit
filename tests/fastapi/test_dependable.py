@@ -1,13 +1,13 @@
 from unittest.mock import MagicMock
 
 from faker import Faker
-from starlette.testclient import TestClient
+from fastapi.testclient import TestClient
 
 from apexdevkit.error import DoesNotExistError
-from apexdevkit.fastapi import FastApiBuilder, RestfulServiceBuilder
+from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.fastapi.router import Dependency, RestfulRouter
+from apexdevkit.fastapi.router import Dependency
 from apexdevkit.http import Httpx
 from apexdevkit.testing import RestCollection
 from tests.fastapi.sample_api import AppleFields, PriceFields
