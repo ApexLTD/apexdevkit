@@ -1,37 +1,32 @@
 [project]
 name = "apexdevkit"
-version = "1.30.4"
+version = "1.31.0"
 description = "Apex Development Tools for python."
 readme = "README.md"
 authors = [
     { name = "Apex Dev", email = "dev@apex.ge" }
 ]
 dynamic = ["dependencies"]
-requires-python = ">=3.11"
+requires-python = ">=3.11,<4"
 
 [tool.poetry.dependencies]
-httpx = "*"
 fastapi = "*"
-uvicorn = "*"
-sentry-sdk = { extras = ["fastapi"], version = "*" }
+httpx = "*"
 python-dotenv = "*"
 pymssql = "2.*"
-typer = "*"
-tomlkit = "*"
+pydantic = "*"
+sentry-sdk = { extras = ["fastapi"], version = "*" }
+uvicorn = "*"
 
 [tool.poetry.group.dev.dependencies]
-approvaltests = "*"
+apexcodexpy = "0.6.5"
 pytest = "*"
 pytest-approvaltests = "*"
 pytest-cov = "*"
-pytest-env = "^1.6.0"
+pytest-env = "*"
 pytest-recording = "*"
 coverage = "*"
 faker = "*"
-
-
-[tool.poetry.group.lint.dependencies]
-apexcodexpy = "0.4.1"
 
 [tool.mypy]
 ignore_missing_imports = true
@@ -42,6 +37,11 @@ exclude = [
 ]
 show_error_codes = true
 pretty = true
+
+[tool.deptry]
+extend_exclude = [
+    "apexdevkit/testing",
+]
 
 [tool.ruff.lint]
 select = [

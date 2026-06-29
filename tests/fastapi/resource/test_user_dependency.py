@@ -4,12 +4,10 @@ from dataclasses import dataclass
 
 import pytest
 from fastapi import FastAPI
-from starlette.testclient import TestClient
+from fastapi.testclient import TestClient
 
-from apexdevkit.fastapi import FastApiBuilder
-from apexdevkit.fastapi.builder import RestfulServiceBuilder
+from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.http import Httpx
 from apexdevkit.testing import RestCollection
 from tests.fastapi.sample_api import AppleFields, FakeApple, SuccessfulService
