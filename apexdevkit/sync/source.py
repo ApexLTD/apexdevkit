@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from typing import Generic, Protocol, TypeVar
+
+from apexdevkit.key_fn import AttributeKey
 
 T = TypeVar("T")
 
@@ -97,3 +99,24 @@ class SourceFailing:
     class OnUpdate(SourceDecorator):
         def updates(self) -> Iterable[T]:  # pragma: no cover
             raise RuntimeError("Should not request updates!")
+
+
+@dataclass(frozen=True, kw_only=True)
+class SourceDiscriminator(Generic[T]):
+    current: Iterable[T]
+    latest: Iterable[T]
+
+    discriminator: Callable[[T], str] = AttributeKey("id")
+
+    def absent(self) -> Iterable[T]:
+        index = {self.discriminator(item): item for item in self.latest}
+
+        return [item for item in self.current if self.discriminator(item) not in index]
+
+    def new(self) -> Iterable[T]:
+        index = {self.discriminator(item): item for item in self.current}
+
+        return [item for item in self.latest if self.discriminator(item) not in index]
+
+    def updates(self) -> Iterable[T]:
+        return set(self.latest).difference(self.current)
