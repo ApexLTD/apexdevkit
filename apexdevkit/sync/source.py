@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from typing import Generic, Protocol, TypeVar
 
-from apexdevkit.key_fn import AttributeKey
+from apexdevkit.key_fn import AttributeKey, KeyFn
 
 T = TypeVar("T")
 
@@ -106,17 +106,17 @@ class SourceDiscriminator(Generic[T]):
     current: Iterable[T]
     latest: Iterable[T]
 
-    discriminator: Callable[[T], str] = AttributeKey("id")
+    key_fn: KeyFn = AttributeKey("id")
 
     def absent(self) -> Iterable[T]:
-        index = {self.discriminator(item): item for item in self.latest}
+        index = {self.key_fn(item) for item in self.latest}
 
-        return [item for item in self.current if self.discriminator(item) not in index]
+        return [item for item in self.current if self.key_fn(item) not in index]
 
     def new(self) -> Iterable[T]:
-        index = {self.discriminator(item): item for item in self.current}
+        index = {self.key_fn(item) for item in self.current}
 
-        return [item for item in self.latest if self.discriminator(item) not in index]
+        return [item for item in self.latest if self.key_fn(item) not in index]
 
     def updates(self) -> Iterable[T]:
         return set(self.latest).difference(self.current)
