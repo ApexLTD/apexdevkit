@@ -8,6 +8,7 @@ from typing import Any, Generic
 from apexdevkit.formatter import Formatter
 from apexdevkit.repository import BruteForceBatch, Repository
 from apexdevkit.repository.core import ItemT
+from apexdevkit.repository.core.interface import BatchRepository
 
 RawItem = Mapping[str, Any]
 RawCollection = Iterable[RawItem]
@@ -66,7 +67,7 @@ class RestfulRepository(RestfulService, Generic[ItemT]):
     formatter: Formatter[Mapping[str, Any], ItemT]
 
     @cached_property
-    def _batch(self) -> BruteForceBatch[ItemT]:
+    def _batch(self) -> BatchRepository[ItemT]:
         return BruteForceBatch(inner=self.repository)
 
     def create_one(self, item: RawItem) -> RawItem:
