@@ -41,7 +41,7 @@ def test_should_not_update(source: Source[Any]) -> None:
     )
 
 
-def test_should_dry_run(sync: Sync[Any]) -> None:
+def test_should_run_dry(sync: Sync[Any]) -> None:
     sync.with_target(TargetFailing.on_everything()).dry().run()
 
 
