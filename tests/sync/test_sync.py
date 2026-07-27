@@ -1,3 +1,4 @@
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -6,32 +7,32 @@ from faker import Faker
 from apexdevkit.sync import Source, SourceFailing, SourcePreSet, Sync, TargetFailing
 
 
-def test_should_not_prune(source: Source) -> None:
+def test_should_not_prune(source: Source[Any]) -> None:
     Sync(
         source=SourceFailing.on_absent(using=source),
         target=TargetFailing.on_prune(),
     ).run(prune=False)
 
 
-def test_should_not_load(source: Source) -> None:
+def test_should_not_load(source: Source[Any]) -> None:
     Sync(
         source=SourceFailing.on_new(using=source),
         target=TargetFailing.on_load(),
     ).run(load=False)
 
 
-def test_should_not_update(source: Source) -> None:
+def test_should_not_update(source: Source[Any]) -> None:
     Sync(
         source=SourceFailing.on_update(using=source),
         target=TargetFailing.on_update(),
     ).run(update=False)
 
 
-def test_should_dry_run(source: Source) -> None:
+def test_should_dry_run(source: Source[Any]) -> None:
     Sync(source=source, target=TargetFailing.on_everything(), dry_run=True).run()
 
 
-def test_should_run_all(source: Source) -> None:
+def test_should_run_all(source: Source[Any]) -> None:
     target = MagicMock()
 
     Sync(source=source, target=target).run(prune=True, load=True, update=True)
@@ -41,7 +42,7 @@ def test_should_run_all(source: Source) -> None:
     target.renew.assert_called_once_with(source.updates())
 
 
-def test_should_notify_observer(source: Source) -> None:
+def test_should_notify_observer(source: Source[Any]) -> None:
     target = MagicMock()
     observer = MagicMock()
 
@@ -57,7 +58,7 @@ def test_should_notify_observer(source: Source) -> None:
     observer.after_update.assert_called_once()
 
 
-def test_should_not_notify_observer(source: Source) -> None:
+def test_should_not_notify_observer(source: Source[Any]) -> None:
     target = MagicMock()
     observer = MagicMock()
 
@@ -73,7 +74,7 @@ def test_should_not_notify_observer(source: Source) -> None:
     observer.after_update.assert_not_called()
 
 
-def test_should_log(source: Source) -> None:
+def test_should_log(source: Source[Any]) -> None:
     log = []
 
     def log_fn(message: str) -> None:
@@ -92,7 +93,7 @@ def test_should_log(source: Source) -> None:
 
 
 @pytest.fixture
-def source(faker: Faker) -> SourcePreSet[str]:
+def source(faker: Faker) -> SourcePreSet[int | str]:
     return SourcePreSet(
         removals=faker.pyset(
             nb_elements=10,

@@ -2,30 +2,30 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Protocol, TypeVar
+from typing import Any, Protocol, TypeVar
 
 T = TypeVar("T")
 
 
 class Target(Protocol):  # pragma: no cover
-    def prune(self, source: Iterable[T]) -> None:
+    def prune(self, source: Iterable[T]) -> Any:
         pass
 
-    def load(self, source: Iterable[T]) -> None:
+    def load(self, source: Iterable[T]) -> Any:
         pass
 
-    def renew(self, source: Iterable[T]) -> None:
+    def renew(self, source: Iterable[T]) -> Any:
         pass
 
 
 class NoTarget:  # pragma: no cover
-    def prune(self, source: Iterable[T]) -> None:
+    def prune(self, source: Iterable[T]) -> Any:
         pass
 
-    def load(self, source: Iterable[T]) -> None:
+    def load(self, source: Iterable[T]) -> Any:
         pass
 
-    def renew(self, source: Iterable[T]) -> None:
+    def renew(self, source: Iterable[T]) -> Any:
         pass
 
 
@@ -33,13 +33,13 @@ class NoTarget:  # pragma: no cover
 class TargetDecorator:
     inner: Target = field(default_factory=NoTarget)
 
-    def prune(self, source: Iterable[T]) -> None:
+    def prune(self, source: Iterable[T]) -> Any:
         self.inner.prune(source)
 
-    def load(self, source: Iterable[T]) -> None:
+    def load(self, source: Iterable[T]) -> Any:
         self.inner.load(source)
 
-    def renew(self, source: Iterable[T]) -> None:
+    def renew(self, source: Iterable[T]) -> Any:
         self.inner.renew(source)
 
 
@@ -60,7 +60,7 @@ class TargetFailing:
 
     @dataclass(frozen=True, kw_only=True)
     class OnPrune(TargetDecorator):
-        def prune(self, source: Iterable[T]) -> None:  # pragma: no cover
+        def prune(self, source: Iterable[T]) -> Any:  # pragma: no cover
             raise RuntimeError(source)
 
     @staticmethod
@@ -69,7 +69,7 @@ class TargetFailing:
 
     @dataclass(frozen=True, kw_only=True)
     class OnLoad(TargetDecorator):
-        def load(self, source: Iterable[T]) -> None:  # pragma: no cover
+        def load(self, source: Iterable[T]) -> Any:  # pragma: no cover
             raise RuntimeError(source)
 
     @staticmethod
@@ -78,5 +78,5 @@ class TargetFailing:
 
     @dataclass(frozen=True, kw_only=True)
     class OnUpdate(TargetDecorator):
-        def renew(self, source: Iterable[T]) -> None:  # pragma: no cover
+        def renew(self, source: Iterable[T]) -> Any:  # pragma: no cover
             raise RuntimeError(source)
