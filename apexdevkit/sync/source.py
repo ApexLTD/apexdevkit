@@ -6,10 +6,10 @@ from typing import Generic, Protocol, TypeVar
 
 from apexdevkit.key_fn import AttributeKey, KeyFn
 
-T = TypeVar("T")
+T = TypeVar("T", covariant=True)
 
 
-class Source(Protocol):  # pragma: no cover
+class Source(Protocol[T]):  # pragma: no cover
     def absent(self) -> Iterable[T]:
         pass
 
@@ -21,7 +21,7 @@ class Source(Protocol):  # pragma: no cover
 
 
 @dataclass(frozen=True)
-class EmptySource:  # pragma: no cover
+class EmptySource(Generic[T]):  # pragma: no cover
     def absent(self) -> Iterable[T]:
         return []
 
@@ -33,8 +33,8 @@ class EmptySource:  # pragma: no cover
 
 
 @dataclass(frozen=True, kw_only=True)
-class SourceDecorator:  # pragma: no cover
-    inner: Source = field(default_factory=EmptySource)
+class SourceDecorator(Generic[T]):  # pragma: no cover
+    inner: Source[T] = field(default_factory=EmptySource)
 
     def absent(self) -> Iterable[T]:
         return self.inner.absent()
@@ -62,9 +62,9 @@ class SourcePreSet(Generic[T]):
         return self.changes
 
 
-class SourceFailing:
+class SourceFailing(Generic[T]):
     @staticmethod
-    def on_everything(using: Source | None = None) -> Source:
+    def on_everything(using: Source[T] | None = None) -> Source[T]:
         return SourceFailing.on_absent(
             using=SourceFailing.on_new(
                 using=SourceFailing.on_update(
@@ -74,31 +74,34 @@ class SourceFailing:
         )
 
     @staticmethod
-    def on_absent(using: Source | None = None) -> Source:
-        return SourceFailing.OnAbsent(inner=using or EmptySource())
-
-    @dataclass(frozen=True, kw_only=True)
-    class OnAbsent(SourceDecorator):
-        def absent(self) -> Iterable[T]:  # pragma: no cover
-            raise RuntimeError("Should not request absent!")
+    def on_absent(using: Source[T] | None = None) -> Source[T]:
+        return _FailOnAbsent(inner=using or EmptySource())
 
     @staticmethod
-    def on_new(using: Source | None = None) -> Source:
-        return SourceFailing.OnNew(inner=using or EmptySource())
-
-    @dataclass(frozen=True, kw_only=True)
-    class OnNew(SourceDecorator):
-        def new(self) -> Iterable[T]:  # pragma: no cover
-            raise RuntimeError("Should not request new!")
+    def on_new(using: Source[T] | None = None) -> Source[T]:
+        return _FailOnNew(inner=using or EmptySource())
 
     @staticmethod
-    def on_update(using: Source | None = None) -> Source:
-        return SourceFailing.OnUpdate(inner=using or EmptySource())
+    def on_update(using: Source[T] | None = None) -> Source[T]:
+        return _FailOnUpdate(inner=using or EmptySource())
 
-    @dataclass(frozen=True, kw_only=True)
-    class OnUpdate(SourceDecorator):
-        def updates(self) -> Iterable[T]:  # pragma: no cover
-            raise RuntimeError("Should not request updates!")
+
+@dataclass(frozen=True, kw_only=True)
+class _FailOnAbsent(SourceDecorator[T]):
+    def absent(self) -> Iterable[T]:  # pragma: no cover
+        raise RuntimeError("Should not request absent!")
+
+
+@dataclass(frozen=True, kw_only=True)
+class _FailOnNew(SourceDecorator[T]):
+    def new(self) -> Iterable[T]:  # pragma: no cover
+        raise RuntimeError("Should not request new!")
+
+
+@dataclass(frozen=True, kw_only=True)
+class _FailOnUpdate(SourceDecorator[T]):
+    def updates(self) -> Iterable[T]:  # pragma: no cover
+        raise RuntimeError("Should not request updates!")
 
 
 @dataclass(frozen=True, kw_only=True)

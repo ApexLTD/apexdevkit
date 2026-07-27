@@ -2,16 +2,18 @@ from __future__ import annotations
 
 from collections.abc import Callable, Collection, Iterable
 from dataclasses import dataclass
-from typing import Any, Self
+from typing import Any, Generic, Self, TypeVar
 
 from .observer import DefaultLog, ObservableSync
 from .source import Source
 from .target import Target
 
+T = TypeVar("T")
+
 
 @dataclass(frozen=True, kw_only=True)
-class Sync(ObservableSync):
-    source: Source
+class Sync(ObservableSync, Generic[T]):
+    source: Source[T]
     target: Target
 
     dry_run: bool = False
