@@ -9,6 +9,16 @@ class _Apple(Entity):
     name: str
 
 
+def test_should_not_discriminate_the_same() -> None:
+    items = [_Apple(name="Golden"), _Apple(name="Ambrosia")]
+
+    source = SourceDiscriminator[_Apple](current=items, latest=items)
+
+    assert list(source.absent()) == []
+    assert list(source.new()) == []
+    assert list(source.updates()) == []
+
+
 def test_should_discriminate_removals() -> None:
     current = [_Apple(name="Golden"), _Apple(name="Ambrosia")]
 
