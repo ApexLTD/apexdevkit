@@ -8,24 +8,30 @@ from apexdevkit.sync import Source, SourceFailing, SourcePreSet, Sync, TargetFai
 
 
 def test_should_not_prune(source: Source[Any]) -> None:
-    Sync(
-        source=SourceFailing.on_absent(using=source),
-        target=TargetFailing.on_prune(),
-    ).run(prune=False)
+    (
+        Sync()
+        .with_source(SourceFailing.on_absent(using=source))
+        .and_target(TargetFailing.on_prune())
+        .run(prune=False)
+    )
 
 
 def test_should_not_load(source: Source[Any]) -> None:
-    Sync(
-        source=SourceFailing.on_new(using=source),
-        target=TargetFailing.on_load(),
-    ).run(load=False)
+    (
+        Sync()
+        .with_source(SourceFailing.on_new(using=source))
+        .and_target(TargetFailing.on_load())
+        .run(load=False)
+    )
 
 
 def test_should_not_update(source: Source[Any]) -> None:
-    Sync(
-        source=SourceFailing.on_update(using=source),
-        target=TargetFailing.on_update(),
-    ).run(update=False)
+    (
+        Sync()
+        .with_source(SourceFailing.on_update(using=source))
+        .and_target(TargetFailing.on_update())
+        .run(update=False)
+    )
 
 
 def test_should_dry_run(source: Source[Any]) -> None:
