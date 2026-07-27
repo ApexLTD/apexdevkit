@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Collection, Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Generic, Self, TypeVar
 
+from . import NoTarget
 from .observer import DefaultLog, ObservableSync
-from .source import Source
+from .source import EmptySource, Source
 from .target import Target
 
 T = TypeVar("T")
@@ -13,8 +14,8 @@ T = TypeVar("T")
 
 @dataclass(frozen=True, kw_only=True)
 class Sync(ObservableSync, Generic[T]):
-    source: Source[T]
-    target: Target[T]
+    source: Source[T] = field(default_factory=EmptySource)
+    target: Target[T] = field(default_factory=NoTarget)
 
     dry_run: bool = False
 
