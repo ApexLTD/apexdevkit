@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Collection, Container, Iterable
+from collections.abc import Callable, Collection, Iterable
 from dataclasses import dataclass, field
 from typing import Protocol, TypeVar
 from uuid import uuid4
@@ -35,11 +35,11 @@ class Repository(Collection[ItemT], Protocol[ItemT]):  # pragma: no cover
 
 
 class BatchRepository(Repository[ItemT], Protocol[ItemT]):  # pragma: no cover
-    def load(self, source: Iterable[ItemT]) -> Iterable[ItemT]:
+    def load(self, source: Collection[ItemT]) -> Iterable[ItemT]:
         pass
 
-    def prune(self, source: Container[ItemT]) -> Iterable[ItemT]:
+    def prune(self, source: Collection[ItemT]) -> Iterable[ItemT]:
         pass
 
-    def renew(self, source: Iterable[ItemT]) -> Iterable[ItemT]:
+    def renew(self, source: Collection[ItemT]) -> Iterable[ItemT]:
         pass
