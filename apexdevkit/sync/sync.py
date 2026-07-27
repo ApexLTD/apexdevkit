@@ -1,25 +1,40 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Collection, Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from typing import Any, Generic, Self, TypeVar
 
 from .observer import DefaultLog, ObservableSync
-from .source import Source
-from .target import Target
+from .source import EmptySource, Source
+from .target import NoTarget, Target
 
 T = TypeVar("T")
 
 
 @dataclass(frozen=True, kw_only=True)
 class Sync(ObservableSync, Generic[T]):
-    source: Source[T]
-    target: Target
+    source: Source[T] = field(default_factory=EmptySource)
+    target: Target[T] = field(default_factory=NoTarget)
 
     dry_run: bool = False
 
+    def and_target(self, value: Target[T]) -> Sync[T]:
+        return self.with_target(value)
+
+    def with_target(self, value: Target[T]) -> Sync[T]:
+        return replace(self, target=value)
+
+    def and_source(self, value: Source[T]) -> Sync[T]:
+        return self.with_source(value)
+
+    def with_source(self, value: Source[T]) -> Sync[T]:
+        return replace(self, source=value)
+
     def with_log(self, using: Callable[[str], None]) -> Self:
         return self.attach(DefaultLog(echo=using))
+
+    def dry(self, *, when: bool = True) -> Sync[T]:
+        return replace(self, dry_run=when)
 
     def run(self, prune: bool = True, load: bool = True, update: bool = True) -> None:
         if prune:
