@@ -35,23 +35,27 @@ def test_should_not_load_existing() -> None:
 
 
 def test_should_prune_existing() -> None:
-    missing = [AppleItem(color="red")]
-    source = [AppleItem(color="green"), AppleItem(color="blue")]
-    batch = BruteForceBatch(
-        inner=InMemoryRepository[AppleItem]().with_seeded(*source, *missing)
-    )
+    current = [
+        AppleItem(color="red"),
+        AppleItem(color="green"),
+        AppleItem(color="blue"),
+    ]
+    *remaining, removed = current
 
-    pruned = batch.prune(source=source)
+    batch = BruteForceBatch(inner=InMemoryRepository[AppleItem]().with_seeded(*current))
 
-    assert list(pruned) == [replace(apple) for apple in missing]
-    assert list(batch) == [replace(apple) for apple in source]
+    pruned = batch.prune(source=[removed])
+
+    assert list(pruned) == [replace(removed)]
+    assert list(batch) == [replace(apple) for apple in remaining]
 
 
 def test_should_not_prune_missing() -> None:
-    source = [AppleItem(color="green"), AppleItem(color="blue")]
-    batch = BruteForceBatch(inner=InMemoryRepository[AppleItem]().with_seeded(*source))
+    current = [AppleItem(color="green"), AppleItem(color="blue")]
+    missing = [AppleItem(color="red")]
+    batch = BruteForceBatch(inner=InMemoryRepository[AppleItem]().with_seeded(*current))
 
-    pruned = batch.prune(source=source)
+    pruned = batch.prune(source=missing)
 
     assert list(pruned) == []
-    assert list(batch) == [replace(apple) for apple in source]
+    assert list(batch) == [replace(apple) for apple in current]
