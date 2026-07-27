@@ -1,4 +1,4 @@
-from collections.abc import Container, Iterable, Iterator
+from collections.abc import Collection, Iterable, Iterator
 from contextlib import suppress
 from dataclasses import dataclass, field
 
@@ -58,20 +58,20 @@ class RepositoryDecorator(Repository[ItemT]):  # pragma: no cover
 
 @dataclass(frozen=True, kw_only=True)
 class BruteForceBatch(RepositoryDecorator[ItemT]):
-    def load(self, source: Iterable[ItemT]) -> Iterable[ItemT]:
-        for item in list(source):
+    def load(self, source: Collection[ItemT]) -> Iterable[ItemT]:
+        for item in source:
             with suppress(ExistsError):
                 yield self.inner.create(item)
 
-    def prune(self, source: Container[ItemT]) -> Iterable[ItemT]:
+    def prune(self, source: Collection[ItemT]) -> Iterable[ItemT]:
         for item in list(self.inner):
             if item not in source:
                 with suppress(DoesNotExistError):
                     self.inner.delete(item.id)
                     yield item
 
-    def renew(self, source: Iterable[ItemT]) -> Iterable[ItemT]:
-        for item in list(source):
+    def renew(self, source: Collection[ItemT]) -> Iterable[ItemT]:
+        for item in source:
             with suppress(DoesNotExistError):
                 self.inner.update(item)
                 yield item
