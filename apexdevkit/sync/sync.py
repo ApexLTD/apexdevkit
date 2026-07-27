@@ -14,7 +14,7 @@ T = TypeVar("T")
 @dataclass(frozen=True, kw_only=True)
 class Sync(ObservableSync, Generic[T]):
     source: Source[T]
-    target: Target
+    target: Target[T]
 
     dry_run: bool = False
 
