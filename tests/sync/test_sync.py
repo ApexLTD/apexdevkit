@@ -35,7 +35,7 @@ def test_should_not_update(source: Source[Any]) -> None:
 
 
 def test_should_dry_run(source: Source[Any]) -> None:
-    Sync(source=source, target=TargetFailing.on_everything(), dry_run=True).run()
+    Sync(source=source, target=TargetFailing.on_everything()).dry().run()
 
 
 def test_should_run_all(source: Source[Any]) -> None:
@@ -52,7 +52,7 @@ def test_should_notify_observer(source: Source[Any]) -> None:
     target = MagicMock()
     observer = MagicMock()
 
-    Sync(source=source, target=target, dry_run=True).attach(observer).run()
+    Sync(source=source, target=target).attach(observer).dry().run()
 
     observer.before_prune.assert_called_once_with(len(list(source.absent())))
     observer.after_prune.assert_called_once()
@@ -68,7 +68,7 @@ def test_should_not_notify_observer(source: Source[Any]) -> None:
     target = MagicMock()
     observer = MagicMock()
 
-    Sync(source=source, target=target, dry_run=True).attach(observer, when=False).run()
+    Sync(source=source, target=target).attach(observer, when=False).dry().run()
 
     observer.before_prune.assert_not_called()
     observer.after_prune.assert_not_called()

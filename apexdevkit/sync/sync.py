@@ -33,6 +33,9 @@ class Sync(ObservableSync, Generic[T]):
     def with_log(self, using: Callable[[str], None]) -> Self:
         return self.attach(DefaultLog(echo=using))
 
+    def dry(self, *, when: bool = True) -> Sync[T]:
+        return replace(self, dry_run=when)
+
     def run(self, prune: bool = True, load: bool = True, update: bool = True) -> None:
         if prune:
             self.prune()
