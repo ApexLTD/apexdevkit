@@ -20,6 +20,9 @@ class Sync(ObservableSync, Generic[T]):
 
     dry_run: bool = False
 
+    def purge(self) -> _Purge[T]:
+        return _Purge[T](sync=self)
+
     def with_discriminated(
         self,
         target: IterableTarget[T],
@@ -51,13 +54,6 @@ class Sync(ObservableSync, Generic[T]):
 
     def dry(self, *, when: bool = True) -> Sync[T]:
         return replace(self, dry_run=when)
-
-    def purge(self, target: IterableTarget[T]) -> None:
-        (
-            self.with_target(target)
-            .and_source(SourcePreSet[T](removals=target))
-            .run(load=False, update=False)
-        )
 
     def run(self, prune: bool = True, load: bool = True, update: bool = True) -> None:
         if prune:
@@ -95,6 +91,26 @@ class Sync(ObservableSync, Generic[T]):
             .send(using=self.target.renew)
             .notify(using=self.after_update)
         )
+
+
+@dataclass(frozen=True, kw_only=True)
+class _Purge(Generic[T]):
+    sync: Sync[T]
+
+    def target(self, value: IterableTarget[T]) -> _Purge[T]:
+        return _Purge[T](
+            sync=replace(
+                self.sync,
+                target=value,
+                source=SourcePreSet[T](removals=list(value)),
+            )
+        )
+
+    def __call__(self) -> None:
+        self.run()
+
+    def run(self) -> None:
+        self.sync.prune()
 
 
 @dataclass(frozen=True, kw_only=True)
