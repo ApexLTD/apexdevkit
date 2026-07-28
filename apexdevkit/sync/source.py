@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Generic, Protocol, TypeVar
+from typing import Any, Generic, Protocol, TypeVar
 
 from apexdevkit.key_fn import AttributeKey, KeyFn
 
@@ -109,17 +109,28 @@ class SourceDiscriminator(Generic[T]):
     current: Iterable[T]
     latest: Iterable[T]
 
-    key_fn: KeyFn = AttributeKey("id")
+    key_fn: KeyFn | None = None
 
     def absent(self) -> Iterable[T]:
-        index = {self.key_fn(item) for item in self.latest}
+        index = {self.key_of(item) for item in self.latest}
 
-        return [item for item in self.current if self.key_fn(item) not in index]
+        return [item for item in self.current if self.key_of(item) not in index]
 
     def new(self) -> Iterable[T]:
-        index = {self.key_fn(item) for item in self.current}
+        index = {self.key_of(item) for item in self.current}
 
-        return [item for item in self.latest if self.key_fn(item) not in index]
+        return [item for item in self.latest if self.key_of(item) not in index]
 
     def updates(self) -> Iterable[T]:
-        return set(self.latest).difference(self.current)
+        index = {self.key_of(item) for item in self.current}
+
+        return [
+            item
+            for item in set(self.latest).difference(self.current)
+            if self.key_of(item) in index
+        ]
+
+    def key_of(self, item: Any) -> str:
+        key_fn = self.key_fn or AttributeKey("id")
+
+        return key_fn(item)

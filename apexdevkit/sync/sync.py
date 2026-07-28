@@ -4,8 +4,10 @@ from collections.abc import Callable, Collection, Iterable
 from dataclasses import dataclass, field, replace
 from typing import Any, Generic, Self, TypeVar
 
+from apexdevkit.key_fn import KeyFn
+
 from .observer import DefaultLog, ObservableSync
-from .source import EmptySource, Source, SourcePreSet
+from .source import EmptySource, Source, SourceDiscriminator, SourcePreSet
 from .target import IterableTarget, NoTarget, Target
 
 T = TypeVar("T")
@@ -17,6 +19,20 @@ class Sync(ObservableSync, Generic[T]):
     target: Target[T] = field(default_factory=NoTarget)
 
     dry_run: bool = False
+
+    def with_discriminated(
+        self,
+        target: IterableTarget[T],
+        source: Iterable[T],
+        using: KeyFn | None = None,
+    ) -> Sync[T]:
+        return self.with_target(target).and_source(
+            SourceDiscriminator(
+                current=list(target),
+                latest=source,
+                key_fn=using,
+            )
+        )
 
     def and_target(self, value: Target[T]) -> Sync[T]:
         return self.with_target(value)
