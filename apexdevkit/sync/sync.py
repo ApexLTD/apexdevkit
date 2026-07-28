@@ -5,8 +5,8 @@ from dataclasses import dataclass, field, replace
 from typing import Any, Generic, Self, TypeVar
 
 from .observer import DefaultLog, ObservableSync
-from .source import EmptySource, Source
-from .target import NoTarget, Target
+from .source import EmptySource, Source, SourcePreSet
+from .target import IterableTarget, NoTarget, Target
 
 T = TypeVar("T")
 
@@ -35,6 +35,13 @@ class Sync(ObservableSync, Generic[T]):
 
     def dry(self, *, when: bool = True) -> Sync[T]:
         return replace(self, dry_run=when)
+
+    def purge(self, target: IterableTarget[T]) -> None:
+        (
+            self.with_target(target)
+            .and_source(SourcePreSet[T](removals=target))
+            .run(load=False, update=False)
+        )
 
     def run(self, prune: bool = True, load: bool = True, update: bool = True) -> None:
         if prune:
@@ -88,8 +95,12 @@ class SyncProbe:
 
         return self
 
-    def send(self, using: Callable[[Iterable[Any]], None]) -> SyncProbe:
+    def send(self, using: Callable[[Iterable[Any]], Iterable[Any] | None]) -> SyncProbe:
+        result = None
         if self.is_enabled and len(self.source) > 0:
-            using(self.source)
+            result = using(self.source)
+
+        if result:
+            list(result)
 
         return self
