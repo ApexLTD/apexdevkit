@@ -48,9 +48,9 @@ class SourceDecorator(Generic[T]):  # pragma: no cover
 
 @dataclass(frozen=True, kw_only=True)
 class SourcePreSet(Generic[T]):
-    removals: Iterable[T]
-    additions: Iterable[T]
-    changes: Iterable[T]
+    removals: Iterable[T] = field(default_factory=list)
+    additions: Iterable[T] = field(default_factory=list)
+    changes: Iterable[T] = field(default_factory=list)
 
     def absent(self) -> Iterable[T]:
         return self.removals
