@@ -2,30 +2,34 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Any, Generic, Protocol, TypeVar
+from typing import Generic, Protocol, TypeVar
 
-T = TypeVar("T", contravariant=True)
+T = TypeVar("T")
 
 
 class Target(Protocol[T]):  # pragma: no cover
-    def prune(self, source: Iterable[T]) -> Any:
+    def prune(self, source: Iterable[T]) -> Iterable[T] | None:
         pass
 
-    def load(self, source: Iterable[T]) -> Any:
+    def load(self, source: Iterable[T]) -> Iterable[T] | None:
         pass
 
-    def renew(self, source: Iterable[T]) -> Any:
+    def renew(self, source: Iterable[T]) -> Iterable[T] | None:
         pass
+
+
+class IterableTarget(Target[T], Iterable[T], Protocol[T]):
+    pass
 
 
 class NoTarget(Generic[T]):  # pragma: no cover
-    def prune(self, source: Iterable[T]) -> Any:
+    def prune(self, source: Iterable[T]) -> Iterable[T] | None:
         pass
 
-    def load(self, source: Iterable[T]) -> Any:
+    def load(self, source: Iterable[T]) -> Iterable[T] | None:
         pass
 
-    def renew(self, source: Iterable[T]) -> Any:
+    def renew(self, source: Iterable[T]) -> Iterable[T] | None:
         pass
 
 
@@ -33,14 +37,14 @@ class NoTarget(Generic[T]):  # pragma: no cover
 class TargetDecorator(Generic[T]):
     inner: Target[T] = field(default_factory=NoTarget)
 
-    def prune(self, source: Iterable[T]) -> Any:
-        self.inner.prune(source)
+    def prune(self, source: Iterable[T]) -> Iterable[T] | None:
+        return self.inner.prune(source)
 
-    def load(self, source: Iterable[T]) -> Any:
-        self.inner.load(source)
+    def load(self, source: Iterable[T]) -> Iterable[T] | None:
+        return self.inner.load(source)
 
-    def renew(self, source: Iterable[T]) -> Any:
-        self.inner.renew(source)
+    def renew(self, source: Iterable[T]) -> Iterable[T] | None:
+        return self.inner.renew(source)
 
 
 class TargetFailing(Generic[T]):
@@ -69,17 +73,17 @@ class TargetFailing(Generic[T]):
 
 @dataclass(frozen=True, kw_only=True)
 class _FailOnPrune(TargetDecorator[T]):
-    def prune(self, source: Iterable[T]) -> Any:  # pragma: no cover
+    def prune(self, source: Iterable[T]) -> Iterable[T] | None:  # pragma: no cover
         raise RuntimeError(source)
 
 
 @dataclass(frozen=True, kw_only=True)
 class _FailOnLoad(TargetDecorator[T]):
-    def load(self, source: Iterable[T]) -> Any:  # pragma: no cover
+    def load(self, source: Iterable[T]) -> Iterable[T] | None:  # pragma: no cover
         raise RuntimeError(source)
 
 
 @dataclass(frozen=True, kw_only=True)
 class _FailOnUpdate(TargetDecorator[T]):
-    def renew(self, source: Iterable[T]) -> Any:  # pragma: no cover
+    def renew(self, source: Iterable[T]) -> Iterable[T] | None:  # pragma: no cover
         raise RuntimeError(source)
