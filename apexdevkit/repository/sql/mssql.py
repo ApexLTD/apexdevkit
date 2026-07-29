@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Iterator, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Generic
 
 from pymssql.exceptions import DatabaseError, OperationalError
@@ -16,13 +16,15 @@ from apexdevkit.repository.core import (
     Repository,
 )
 
+from .connector import MsSqlConnector
 from .field import NotNone, SqlFieldManager, _SqlField
 
 
 @dataclass(frozen=True, kw_only=True)
 class MsSqlRepository(ContainsMixin[ItemT], Repository[ItemT]):
-    db: Database
     table: SqlTable[ItemT]
+
+    db: Database = field(default_factory=lambda: Database(connector=MsSqlConnector()))
 
     def __iter__(self) -> Iterator[ItemT]:
         for raw in self.db.execute(self.table.select_all()).fetch_all():
