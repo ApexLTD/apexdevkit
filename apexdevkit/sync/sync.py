@@ -4,8 +4,10 @@ from collections.abc import Callable, Collection, Iterable
 from dataclasses import dataclass, field, replace
 from typing import Any, Generic, Self, TypeVar
 
+from apexdevkit.key_fn import AttributeKey, KeyFn
+
 from .observer import DefaultLog, ObservableSync
-from .source import EmptySource, Source, SourcePreSet
+from .source import EmptySource, Source, SourceDiscriminator, SourcePreSet
 from .target import IterableTarget, NoTarget, Target
 
 T = TypeVar("T")
@@ -17,6 +19,12 @@ class Sync(ObservableSync, Generic[T]):
     target: Target[T] = field(default_factory=NoTarget)
 
     dry_run: bool = False
+
+    def purge(self) -> _Purge[T]:
+        return _Purge[T](sync=self)
+
+    def discriminate(self, latest: Iterable[T]) -> _Discriminate[T]:
+        return _Discriminate[T](sync=self, latest=latest)
 
     def and_target(self, value: Target[T]) -> Sync[T]:
         return self.with_target(value)
@@ -30,18 +38,11 @@ class Sync(ObservableSync, Generic[T]):
     def with_source(self, value: Source[T]) -> Sync[T]:
         return replace(self, source=value)
 
-    def with_log(self, using: Callable[[str], None]) -> Self:
-        return self.attach(DefaultLog(echo=using))
+    def with_log(self, using: Callable[[str], None], named: str = "items") -> Self:
+        return self.attach(DefaultLog(name=named, echo=using))
 
     def dry(self, *, when: bool = True) -> Sync[T]:
         return replace(self, dry_run=when)
-
-    def purge(self, target: IterableTarget[T]) -> None:
-        (
-            self.with_target(target)
-            .and_source(SourcePreSet[T](removals=target))
-            .run(load=False, update=False)
-        )
 
     def run(self, prune: bool = True, load: bool = True, update: bool = True) -> None:
         if prune:
@@ -78,6 +79,58 @@ class Sync(ObservableSync, Generic[T]):
             .notify(using=self.before_update)
             .send(using=self.target.renew)
             .notify(using=self.after_update)
+        )
+
+
+@dataclass(frozen=True, kw_only=True)
+class _Purge(Generic[T]):
+    sync: Sync[T]
+
+    def target(self, value: IterableTarget[T]) -> _Purge[T]:
+        return _Purge[T](
+            sync=replace(
+                self.sync,
+                target=value,
+                source=SourcePreSet[T](removals=list(value)),
+            )
+        )
+
+    def __call__(self) -> None:
+        self.run()
+
+    def run(self) -> None:
+        self.sync.prune()
+
+
+@dataclass
+class _Discriminate(Generic[T]):
+    sync: Sync[T]
+    latest: Iterable[T]
+
+    current: Iterable[T] = field(default_factory=list)
+
+    def against(self, target: IterableTarget[T]) -> _Discriminate[T]:
+        return self.target(target).and_current(list(target))
+
+    def target(self, value: Target[T]) -> _Discriminate[T]:
+        return replace(self, sync=self.sync.with_target(value))
+
+    def and_current(self, value: Iterable[T]) -> _Discriminate[T]:
+        return replace(self, current=value)
+
+    def default(self) -> Sync[T]:
+        return self.using_attribute(name="id")
+
+    def using_attribute(self, name: str) -> Sync[T]:
+        return self.using(key_fn=AttributeKey(name))
+
+    def using(self, key_fn: KeyFn) -> Sync[T]:
+        return self.sync.with_source(
+            SourceDiscriminator(
+                current=self.current,
+                latest=self.latest,
+                key_fn=key_fn,
+            )
         )
 
 

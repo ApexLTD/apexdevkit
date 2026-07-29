@@ -1,6 +1,8 @@
 from dataclasses import dataclass, replace
+from unittest.mock import MagicMock
 
 from apexdevkit.repository import Entity
+from apexdevkit.sync import Sync
 from apexdevkit.sync.source import SourceDiscriminator
 
 
@@ -44,3 +46,23 @@ def test_should_discriminate_changes() -> None:
     assert list(source.updates()) == [latest[1]]
     assert list(source.absent()) == []
     assert list(source.new()) == []
+
+
+def test_should_discriminate_within_sync() -> None:
+    fuji = _Apple(name="fuji")
+    gala = _Apple(name="Gala")
+    golden = _Apple(name="Golden")
+    target_mock = MagicMock()
+    target_mock.__iter__.return_value = iter([gala, replace(fuji, name="Ambrosia")])
+
+    (
+        Sync[_Apple]()
+        .discriminate(latest=[golden, fuji])
+        .against(target=target_mock)
+        .default()
+        .run()
+    )
+
+    target_mock.prune.assert_called_once_with({gala})
+    target_mock.load.assert_called_once_with({golden})
+    target_mock.renew.assert_called_once_with({fuji})

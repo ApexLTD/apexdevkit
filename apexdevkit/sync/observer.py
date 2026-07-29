@@ -68,22 +68,23 @@ class SyncObserver(Protocol):  # pragma: no cover
 
 @dataclass(frozen=True)
 class DefaultLog:
+    name: str = "items"
     echo: Callable[[str], None] = print
 
     def before_prune(self, n_items: int) -> None:
-        self.echo(f"Total # of absent items: {n_items}")
+        self.echo(f"Total # of absent {self.name}: {n_items}")
 
     def after_prune(self) -> None:
         self.echo("Pruning completed")
 
     def before_load(self, n_items: int) -> None:
-        self.echo(f"Total # of new items: {n_items}")
+        self.echo(f"Total # of new {self.name}: {n_items}")
 
     def after_load(self) -> None:
         self.echo("Loading completed")
 
     def before_update(self, n_items: int) -> None:
-        self.echo(f"Total # of updates: {n_items}")
+        self.echo(f"Total # of changed {self.name}: {n_items}")
 
     def after_update(self) -> None:
         self.echo("Updating completed")

@@ -11,7 +11,7 @@ def test() -> None:
         .and_seeded(AppleItem(color="Blue"))
     )
 
-    Sync[AppleItem]().purge(repository)
+    Sync[AppleItem]().purge().target(repository).run()
 
     assert len(repository) == 0
     assert list(repository) == []

@@ -93,14 +93,14 @@ def test_should_log(sync: Sync[Any], source: Source[Any]) -> None:
     def log_fn(message: str) -> None:
         log.append(message)
 
-    sync.with_log(using=log_fn).run()
+    sync.with_log(using=log_fn, named="Apples").run()
 
     assert log == [
-        f"Total # of absent items: {len(list(source.absent()))}",
+        f"Total # of absent Apples: {len(list(source.absent()))}",
         "Pruning completed",
-        f"Total # of new items: {len(list(source.new()))}",
+        f"Total # of new Apples: {len(list(source.new()))}",
         "Loading completed",
-        f"Total # of updates: {len(list(source.updates()))}",
+        f"Total # of changed Apples: {len(list(source.updates()))}",
         "Updating completed",
     ]
 
