@@ -38,8 +38,8 @@ class Sync(ObservableSync, Generic[T]):
     def with_source(self, value: Source[T]) -> Sync[T]:
         return replace(self, source=value)
 
-    def with_log(self, using: Callable[[str], None]) -> Self:
-        return self.attach(DefaultLog(echo=using))
+    def with_log(self, using: Callable[[str], None], named: str = "items") -> Self:
+        return self.attach(DefaultLog(name=named, echo=using))
 
     def dry(self, *, when: bool = True) -> Sync[T]:
         return replace(self, dry_run=when)
