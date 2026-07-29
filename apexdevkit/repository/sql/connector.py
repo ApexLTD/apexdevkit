@@ -15,7 +15,7 @@ from apexdevkit.repository.core.database import ConnectionContextManager
 
 @dataclass(frozen=True)
 class SqliteFileConnector:
-    dsn: str
+    dsn: str = environment_variable("DSN")
 
     def connect(self) -> AbstractContextManager[Connection]:
         connection = sqlite3.connect(self.dsn)
