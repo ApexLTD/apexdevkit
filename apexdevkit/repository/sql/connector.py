@@ -8,6 +8,7 @@ from typing import Any
 
 import pymssql
 
+from apexdevkit.environment import environment_variable
 from apexdevkit.repository import Connection
 from apexdevkit.repository.core.database import ConnectionContextManager
 
@@ -40,12 +41,12 @@ class SqliteInMemoryConnector:
 
 @dataclass(frozen=True)
 class MsSqlConnector:
-    db_host: str
-    db_user: str
-    db_password: str
-    db_name: str
+    db_host: str = environment_variable("DB_HOST")
+    db_user: str = environment_variable("DB_USER")
+    db_password: str = environment_variable("DB_PASSWORD")
+    db_name: str = environment_variable("DB_NAME")
+    db_port: str = environment_variable("DB_PORT", default="1433")
     db_tds_version = "7.0"
-    db_port: str = "1433"
 
     def connect(self) -> AbstractContextManager[Connection]:
         return ConnectionContextManager(self._connection())
