@@ -19,7 +19,7 @@ from apexdevkit.repository.core import (
 from .field import NotNone, SqlFieldManager, _SqlField
 
 
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class MsSqlRepository(ContainsMixin[ItemT], Repository[ItemT]):
     db: Database
     table: SqlTable[ItemT]
