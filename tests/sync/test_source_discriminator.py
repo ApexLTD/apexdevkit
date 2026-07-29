@@ -52,11 +52,17 @@ def test_should_discriminate_within_sync() -> None:
     fuji = _Apple(name="fuji")
     gala = _Apple(name="Gala")
     golden = _Apple(name="Golden")
-    target = MagicMock()
-    target.__iter__.return_value = iter([gala, replace(fuji, name="Ambrosia")])
+    target_mock = MagicMock()
+    target_mock.__iter__.return_value = iter([gala, replace(fuji, name="Ambrosia")])
 
-    Sync[_Apple]().with_discriminated(target=target, source=[golden, fuji]).run()
+    (
+        Sync[_Apple]()
+        .discriminate(latest=[golden, fuji])
+        .against(target=target_mock)
+        .default()
+        .run()
+    )
 
-    target.prune.assert_called_once_with({gala})
-    target.load.assert_called_once_with({golden})
-    target.renew.assert_called_once_with({fuji})
+    target_mock.prune.assert_called_once_with({gala})
+    target_mock.load.assert_called_once_with({golden})
+    target_mock.renew.assert_called_once_with({fuji})

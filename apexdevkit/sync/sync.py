@@ -4,7 +4,7 @@ from collections.abc import Callable, Collection, Iterable
 from dataclasses import dataclass, field, replace
 from typing import Any, Generic, Self, TypeVar
 
-from apexdevkit.key_fn import KeyFn
+from apexdevkit.key_fn import AttributeKey, KeyFn
 
 from .observer import DefaultLog, ObservableSync
 from .source import EmptySource, Source, SourceDiscriminator, SourcePreSet
@@ -23,19 +23,8 @@ class Sync(ObservableSync, Generic[T]):
     def purge(self) -> _Purge[T]:
         return _Purge[T](sync=self)
 
-    def with_discriminated(
-        self,
-        target: IterableTarget[T],
-        source: Iterable[T],
-        using: KeyFn | None = None,
-    ) -> Sync[T]:
-        return self.with_target(target).and_source(
-            SourceDiscriminator(
-                current=list(target),
-                latest=source,
-                key_fn=using,
-            )
-        )
+    def discriminate(self, latest: Iterable[T]) -> _Discriminate[T]:
+        return _Discriminate[T](sync=self, latest=latest)
 
     def and_target(self, value: Target[T]) -> Sync[T]:
         return self.with_target(value)
@@ -111,6 +100,38 @@ class _Purge(Generic[T]):
 
     def run(self) -> None:
         self.sync.prune()
+
+
+@dataclass
+class _Discriminate(Generic[T]):
+    sync: Sync[T]
+    latest: Iterable[T]
+
+    current: Iterable[T] = field(default_factory=list)
+
+    def against(self, target: IterableTarget[T]) -> _Discriminate[T]:
+        return self.target(target).and_current(list(target))
+
+    def target(self, value: Target[T]) -> _Discriminate[T]:
+        return replace(self, sync=self.sync.with_target(value))
+
+    def and_current(self, value: Iterable[T]) -> _Discriminate[T]:
+        return replace(self, current=value)
+
+    def default(self) -> Sync[T]:
+        return self.using_attribute(name="id")
+
+    def using_attribute(self, name: str) -> Sync[T]:
+        return self.using(key_fn=AttributeKey(name))
+
+    def using(self, key_fn: KeyFn) -> Sync[T]:
+        return self.sync.with_source(
+            SourceDiscriminator(
+                current=self.current,
+                latest=self.latest,
+                key_fn=key_fn,
+            )
+        )
 
 
 @dataclass(frozen=True, kw_only=True)
