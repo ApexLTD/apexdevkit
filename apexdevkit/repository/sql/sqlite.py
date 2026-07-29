@@ -18,7 +18,7 @@ from apexdevkit.repository.core import (
 from .field import NotNone, SqlFieldManager, _SqlField
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class SqliteRepository(ContainsMixin[ItemT], Repository[ItemT]):
     db: Database
     table: SqlTable[ItemT]
