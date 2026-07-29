@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Iterator, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from sqlite3 import IntegrityError
 from typing import Any, Generic
 
@@ -15,13 +15,15 @@ from apexdevkit.repository.core import (
     Repository,
 )
 
+from .connector import SqliteFileConnector
 from .field import NotNone, SqlFieldManager, _SqlField
 
 
 @dataclass(frozen=True, kw_only=True)
 class SqliteRepository(ContainsMixin[ItemT], Repository[ItemT]):
-    db: Database
     table: SqlTable[ItemT]
+
+    db: Database = field(default_factory=lambda: Database(SqliteFileConnector()))
 
     def __iter__(self) -> Iterator[ItemT]:
         for raw in self.db.execute(self.table.select_all()).fetch_all():
