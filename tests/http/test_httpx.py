@@ -15,7 +15,7 @@ def test_should_post(http: Httpx) -> None:
 
     echo.assert_endpoint(expected="/post")
     echo.assert_user_agent(expected="hogwarts")
-    assert echo.content_type() == "application/json"
+    echo.assert_content_type(expected="application/json")
     assert echo.json() == json
 
 
@@ -28,7 +28,7 @@ def test_should_submit(http: Httpx) -> None:
 
     echo.assert_endpoint(expected="/post")
     echo.assert_user_agent(expected="hogwarts")
-    assert echo.content_type() == "application/x-www-form-urlencoded"
+    echo.assert_content_type(expected="application/x-www-form-urlencoded")
     assert echo.form() == json
 
 
@@ -60,7 +60,7 @@ def test_should_patch(http: Httpx) -> None:
 
     echo.assert_endpoint(expected="/patch")
     echo.assert_user_agent(expected="hogwarts")
-    assert echo.content_type() == "application/json"
+    echo.assert_content_type(expected="application/json")
     assert echo.json() == json
 
 
@@ -83,7 +83,7 @@ def test_should_put(http: Httpx) -> None:
 
     echo.assert_endpoint(expected="/put")
     echo.assert_user_agent(expected="hogwarts")
-    assert echo.content_type() == "application/json"
+    echo.assert_content_type(expected="application/json")
     assert echo.json() == json
 
 
@@ -117,6 +117,9 @@ class Echo:
 
     def user_agent(self) -> str:
         return self.header(name="User-Agent")
+
+    def assert_content_type(self, *, expected: str) -> None:
+        assert self.content_type() == expected
 
     def content_type(self) -> str:
         return self.header(name="Content-Type")
