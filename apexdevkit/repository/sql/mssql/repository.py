@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass, field
-from typing import Any, Generic
+from typing import Any
 
 from pymssql.exceptions import DatabaseError, OperationalError
 
@@ -15,9 +15,8 @@ from apexdevkit.repository.core import (
     ItemT,
     Repository,
 )
-
-from .connector import MsSqlConnector
-from .field import NotNone, SqlFieldManager, _SqlField
+from apexdevkit.repository.sql.connector import MsSqlConnector
+from apexdevkit.repository.sql.field import NotNone, SqlFieldManager, _SqlField
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -70,11 +69,11 @@ class MsSqlRepository(ContainsMixin, Repository[ItemT]):
         self.db.execute(self.table.update(item)).fetch_none()
 
 
-class SqlTable(Generic[ItemT]):  # pragma: no cover
+class SqlTable[T]:  # pragma: no cover
     def count_all(self) -> DatabaseCommand:
         raise NotImplementedError
 
-    def insert(self, item: ItemT) -> DatabaseCommand:
+    def insert(self, item: T) -> DatabaseCommand:
         raise NotImplementedError
 
     def select(self, item_id: str) -> DatabaseCommand:
@@ -89,24 +88,24 @@ class SqlTable(Generic[ItemT]):  # pragma: no cover
     def delete_all(self) -> DatabaseCommand:
         raise NotImplementedError
 
-    def update(self, item: ItemT) -> DatabaseCommand:
+    def update(self, item: T) -> DatabaseCommand:
         raise NotImplementedError
 
-    def load(self, data: Mapping[str, Any]) -> ItemT:
+    def load(self, data: Mapping[str, Any]) -> T:
         raise NotImplementedError
 
-    def exists(self, duplicate: ItemT) -> ExistsError:
+    def exists(self, duplicate: T) -> ExistsError:
         raise NotImplementedError
 
 
 @dataclass
-class SqlTableDecorator(Generic[ItemT]):
-    table: DefaultSqlTable[ItemT]
+class SqlTableDecorator[T]:
+    table: DefaultSqlTable[T]
 
     def count_all(self) -> DatabaseCommand:
         return self.table.count_all()
 
-    def insert(self, item: ItemT) -> DatabaseCommand:
+    def insert(self, item: T) -> DatabaseCommand:
         return self.table.insert(item)
 
     def select(self, item_id: str) -> DatabaseCommand:
@@ -121,13 +120,13 @@ class SqlTableDecorator(Generic[ItemT]):
     def delete_all(self) -> DatabaseCommand:
         return self.table.delete_all()
 
-    def update(self, item: ItemT) -> DatabaseCommand:
+    def update(self, item: T) -> DatabaseCommand:
         return self.table.update(item)
 
-    def load(self, data: dict[str, Any]) -> ItemT:
+    def load(self, data: dict[str, Any]) -> T:
         return self.table.load(data)
 
-    def exists(self, duplicate: ItemT) -> ExistsError:
+    def exists(self, duplicate: T) -> ExistsError:
         return self.table.exists(duplicate)
 
 
@@ -150,16 +149,16 @@ class UnknownError(Exception):
 
 
 @dataclass(frozen=True)
-class MsSqlTableBuilder(Generic[ItemT]):
+class MsSqlTableBuilder[T]:
     username: str | None = None
     schema: str | None = None
     table: str | None = None
-    formatter: Formatter[Mapping[str, Any], ItemT] | None = None
+    formatter: Formatter[Mapping[str, Any], T] | None = None
     fields: list[_SqlField] | None = None
     custom_filters: list[str] | None = None
 
-    def with_username(self, value: str) -> MsSqlTableBuilder[ItemT]:
-        return MsSqlTableBuilder[ItemT](
+    def with_username(self, value: str) -> MsSqlTableBuilder[T]:
+        return MsSqlTableBuilder[T](
             value,
             self.schema,
             self.table,
@@ -168,8 +167,8 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.custom_filters,
         )
 
-    def with_schema(self, value: str) -> MsSqlTableBuilder[ItemT]:
-        return MsSqlTableBuilder[ItemT](
+    def with_schema(self, value: str) -> MsSqlTableBuilder[T]:
+        return MsSqlTableBuilder[T](
             self.username,
             value,
             self.table,
@@ -178,8 +177,8 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.custom_filters,
         )
 
-    def with_table(self, value: str) -> MsSqlTableBuilder[ItemT]:
-        return MsSqlTableBuilder[ItemT](
+    def with_table(self, value: str) -> MsSqlTableBuilder[T]:
+        return MsSqlTableBuilder[T](
             self.username,
             self.schema,
             value,
@@ -189,9 +188,9 @@ class MsSqlTableBuilder(Generic[ItemT]):
         )
 
     def with_formatter(
-        self, value: Formatter[Mapping[str, Any], ItemT]
-    ) -> MsSqlTableBuilder[ItemT]:
-        return MsSqlTableBuilder[ItemT](
+        self, value: Formatter[Mapping[str, Any], T]
+    ) -> MsSqlTableBuilder[T]:
+        return MsSqlTableBuilder[T](
             self.username,
             self.schema,
             self.table,
@@ -200,7 +199,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.custom_filters,
         )
 
-    def with_fields(self, value: Iterable[_SqlField]) -> MsSqlTableBuilder[ItemT]:
+    def with_fields(self, value: Iterable[_SqlField]) -> MsSqlTableBuilder[T]:
         key_list = list(value)
         if len([key for key in key_list if key.is_id]) != 1:
             raise ValueError("Pass only one identifier key.")
@@ -217,7 +216,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
             > 0
         ):
             raise ValueError("Only filter fields can be 'not null'.")
-        return MsSqlTableBuilder[ItemT](
+        return MsSqlTableBuilder[T](
             self.username,
             self.schema,
             self.table,
@@ -226,8 +225,8 @@ class MsSqlTableBuilder(Generic[ItemT]):
             self.custom_filters,
         )
 
-    def with_custom_filters(self, filters: Iterable[str]) -> MsSqlTableBuilder[ItemT]:
-        return MsSqlTableBuilder[ItemT](
+    def with_custom_filters(self, filters: Iterable[str]) -> MsSqlTableBuilder[T]:
+        return MsSqlTableBuilder[T](
             self.username,
             self.schema,
             self.table,
@@ -236,7 +235,7 @@ class MsSqlTableBuilder(Generic[ItemT]):
             list(filters),
         )
 
-    def build(self) -> SqlTable[ItemT]:
+    def build(self) -> SqlTable[T]:
         if not self.schema or not self.table or not self.formatter or not self.fields:
             raise ValueError("Cannot build sql table.")
 
@@ -254,10 +253,10 @@ class MsSqlTableBuilder(Generic[ItemT]):
 
 
 @dataclass(frozen=True)
-class DefaultSqlTable(SqlTable[ItemT]):
+class DefaultSqlTable[T](SqlTable[T]):
     schema: str
     table: str
-    formatter: Formatter[Mapping[str, Any], ItemT]
+    formatter: Formatter[Mapping[str, Any], T]
     fields: SqlFieldManager
     username: str | None = None
 
@@ -270,7 +269,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
             REVERT
         """).with_data(self.fields.with_fixed({}))
 
-    def insert(self, item: ItemT) -> DatabaseCommand:
+    def insert(self, item: T) -> DatabaseCommand:
         columns = ", ".join(
             ["[" + field.name + "]" for field in self.fields if field.include_in_insert]
         )
@@ -331,7 +330,7 @@ class DefaultSqlTable(SqlTable[ItemT]):
             REVERT
         """).with_data(self.fields.with_fixed({}))
 
-    def update(self, item: ItemT) -> DatabaseCommand:
+    def update(self, item: T) -> DatabaseCommand:
         updates = ", ".join(
             [
                 f"{field.name} = %({field.name})s"
@@ -367,10 +366,10 @@ class DefaultSqlTable(SqlTable[ItemT]):
             REVERT
         """).with_data(self.fields.with_fixed({}))
 
-    def load(self, data: Mapping[str, Any]) -> ItemT:
+    def load(self, data: Mapping[str, Any]) -> T:
         return self.formatter.load(data)
 
-    def exists(self, duplicate: ItemT) -> ExistsError:
+    def exists(self, duplicate: T) -> ExistsError:
         raw = self.formatter.dump(duplicate)
         return ExistsError(duplicate).with_duplicate(
             lambda _: f"{self.fields.id}<{raw[self.fields.id]}>"
