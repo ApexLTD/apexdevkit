@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import random
 from dataclasses import dataclass, field
 from functools import cached_property
 from typing import Any, TypeVar
@@ -18,11 +17,9 @@ from apexdevkit.query.query import (
     Operation,
     Operator,
     Page,
-    QueryOptions,
     Sort,
     StringValue,
 )
-from apexdevkit.value import Value
 
 ItemT = TypeVar("ItemT")
 
@@ -64,7 +61,7 @@ class Fake:
     def address(self) -> str:
         return str(self.faker.address())
 
-    def bool(self) -> bool:
+    def boolean(self) -> bool:
         return bool(self.faker.boolean())
 
 
@@ -88,18 +85,6 @@ class FakeResource[ItemT]:
 
 
 @dataclass(frozen=True)
-class FakeValue(FakeResource[Value]):
-    item_type: type[Value] = field(default=Value)
-
-    @cached_property
-    def _raw(self) -> dict[str, Any]:
-        return {
-            "value": self.fake.number(),
-            "exponent": random.choice([10, 100, 1000]),
-        }
-
-
-@dataclass(frozen=True)
 class FakeNumericValue(FakeResource[NumericValue]):
     item_type: type[NumericValue] = field(default=NumericValue)
 
@@ -120,15 +105,6 @@ class FakeStringValue(FakeResource[StringValue]):
         return {
             "value": self.fake.text(length=6),
         }
-
-
-@dataclass(frozen=True)
-class FakeDateValue(FakeResource[DateValue]):
-    item_type: type[DateValue] = field(default=DateValue)
-
-    @cached_property
-    def _raw(self) -> dict[str, Any]:
-        return {"date": "2021/12/12T00:00:00"}
 
 
 @dataclass(frozen=True)
@@ -168,7 +144,7 @@ class FakeSort(FakeResource[Sort]):
             "name": self.fake.text(length=7),
             "is_descending": self.is_descending
             if self.is_descending is not None
-            else self.fake.bool(),
+            else self.fake.boolean(),
         }
 
 
@@ -194,24 +170,6 @@ class FakeFilter(FakeResource[Filter]):
     def _raw(self) -> dict[str, Any]:
         return {
             "args": self.args,
-        }
-
-
-@dataclass(frozen=True)
-class FakeQueryOptions(FakeResource[QueryOptions]):
-    filter: Filter | None = None
-    condition: Operator | None = None
-    ordering: list[Sort] = field(default_factory=list)
-    paging: Page | None = None
-    item_type: type[QueryOptions] = field(default=QueryOptions)
-
-    @cached_property
-    def _raw(self) -> dict[str, Any]:
-        return {
-            "filter": self.filter or FakeFilter().entity(),
-            "condition": self.condition,
-            "ordering": self.ordering,
-            "paging": self.paging or FakePage().entity(),
         }
 
 
