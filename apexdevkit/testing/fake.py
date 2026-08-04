@@ -2,13 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Any, TypeVar
+from typing import Any
 
 from faker import Faker
 
 from apexdevkit.http import JsonDict
-
-ItemT = TypeVar("ItemT")
 
 
 @dataclass(frozen=True)

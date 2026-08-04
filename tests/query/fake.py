@@ -5,17 +5,17 @@ from functools import cached_property
 from typing import Any
 
 from apexdevkit.query import (
-    NumericValue,
-    StringValue,
-    Leaf,
-    DateValue,
-    Operator,
-    Operation,
-    Sort,
-    Page,
-    Filter,
-    AggregationOption,
     Aggregation,
+    AggregationOption,
+    DateValue,
+    Filter,
+    Leaf,
+    NumericValue,
+    Operation,
+    Operator,
+    Page,
+    Sort,
+    StringValue,
 )
 from apexdevkit.testing.fake import FakeResource
 
