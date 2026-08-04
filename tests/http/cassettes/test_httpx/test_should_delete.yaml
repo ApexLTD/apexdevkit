@@ -5,36 +5,36 @@ interactions:
       accept:
       - '*/*'
       accept-encoding:
-      - gzip, deflate
+      - gzip, deflate, zstd
       connection:
       - keep-alive
       host:
-      - httpbin.org
+      - localhost:8080
       user-agent:
       - hogwarts
     method: DELETE
-    uri: http://httpbin.org/delete
+    uri: http://localhost:8080/delete
   response:
     body:
       string: "{\n  \"args\": {}, \n  \"data\": \"\", \n  \"files\": {}, \n  \"form\":
         {}, \n  \"headers\": {\n    \"Accept\": \"*/*\", \n    \"Accept-Encoding\":
-        \"gzip, deflate\", \n    \"Host\": \"httpbin.org\", \n    \"User-Agent\":
-        \"hogwarts\", \n    \"X-Amzn-Trace-Id\": \"Root=1-66ccef7f-43a9ebaa7480c62a48ccf73b\"\n
-        \ }, \n  \"json\": null, \n  \"origin\": \"5.178.149.253\", \n  \"url\": \"http://httpbin.org/delete\"\n}\n"
+        \"gzip, deflate, zstd\", \n    \"Connection\": \"keep-alive\", \n    \"Host\":
+        \"localhost:8080\", \n    \"User-Agent\": \"hogwarts\"\n  }, \n  \"json\":
+        null, \n  \"origin\": \"11.10.0.17\", \n  \"url\": \"http://localhost:8080/delete\"\n}\n"
     headers:
-      Access-Control-Allow-Credentials:
+      access-control-allow-credentials:
       - 'true'
-      Access-Control-Allow-Origin:
+      access-control-allow-origin:
       - '*'
-      Connection:
+      connection:
       - keep-alive
-      Content-Length:
-      - '358'
-      Content-Type:
+      content-length:
+      - '332'
+      content-type:
       - application/json
-      Date:
-      - Mon, 26 Aug 2024 21:11:29 GMT
-      Server:
+      date:
+      - Tue, 04 Aug 2026 18:33:46 GMT
+      server:
       - gunicorn/19.9.0
     status:
       code: 200

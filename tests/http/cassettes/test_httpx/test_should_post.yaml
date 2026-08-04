@@ -1,46 +1,46 @@
 interactions:
 - request:
-    body: '{"Harry": "Potter"}'
+    body: '{"Harry":"Potter"}'
     headers:
       accept:
       - '*/*'
       accept-encoding:
-      - gzip, deflate
+      - gzip, deflate, zstd
       connection:
       - keep-alive
       content-length:
-      - '19'
+      - '18'
       content-type:
       - application/json
       host:
-      - httpbin.org
+      - localhost:8080
       user-agent:
       - hogwarts
     method: POST
-    uri: http://httpbin.org/post
+    uri: http://localhost:8080/post
   response:
     body:
-      string: "{\n  \"args\": {}, \n  \"data\": \"{\\\"Harry\\\": \\\"Potter\\\"}\",
+      string: "{\n  \"args\": {}, \n  \"data\": \"{\\\"Harry\\\":\\\"Potter\\\"}\",
         \n  \"files\": {}, \n  \"form\": {}, \n  \"headers\": {\n    \"Accept\": \"*/*\",
-        \n    \"Accept-Encoding\": \"gzip, deflate\", \n    \"Content-Length\": \"19\",
-        \n    \"Content-Type\": \"application/json\", \n    \"Host\": \"httpbin.org\",
-        \n    \"User-Agent\": \"hogwarts\", \n    \"X-Amzn-Trace-Id\": \"Root=1-66ccef7a-52e8f09f28af2cba0ff4a227\"\n
-        \ }, \n  \"json\": {\n    \"Harry\": \"Potter\"\n  }, \n  \"origin\": \"5.178.149.253\",
-        \n  \"url\": \"http://httpbin.org/post\"\n}\n"
+        \n    \"Accept-Encoding\": \"gzip, deflate, zstd\", \n    \"Connection\":
+        \"keep-alive\", \n    \"Content-Length\": \"18\", \n    \"Content-Type\":
+        \"application/json\", \n    \"Host\": \"localhost:8080\", \n    \"User-Agent\":
+        \"hogwarts\"\n  }, \n  \"json\": {\n    \"Harry\": \"Potter\"\n  }, \n  \"origin\":
+        \"11.10.0.17\", \n  \"url\": \"http://localhost:8080/post\"\n}\n"
     headers:
-      Access-Control-Allow-Credentials:
+      access-control-allow-credentials:
       - 'true'
-      Access-Control-Allow-Origin:
+      access-control-allow-origin:
       - '*'
-      Connection:
+      connection:
       - keep-alive
-      Content-Length:
-      - '472'
-      Content-Type:
+      content-length:
+      - '445'
+      content-type:
       - application/json
-      Date:
-      - Mon, 26 Aug 2024 21:11:23 GMT
-      Server:
+      date:
+      - Tue, 04 Aug 2026 18:33:35 GMT
+      server:
       - gunicorn/19.9.0
     status:
       code: 200

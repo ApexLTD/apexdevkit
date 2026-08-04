@@ -5,39 +5,38 @@ interactions:
       accept:
       - '*/*'
       accept-encoding:
-      - gzip, deflate
+      - gzip, deflate, zstd
       connection:
       - keep-alive
       content-length:
       - '0'
       host:
-      - httpbin.org
+      - localhost:8080
       user-agent:
       - Hogwarts
     method: PATCH
-    uri: http://httpbin.org/patch
+    uri: http://localhost:8080/patch
   response:
     body:
       string: "{\n  \"args\": {}, \n  \"data\": \"\", \n  \"files\": {}, \n  \"form\":
         {}, \n  \"headers\": {\n    \"Accept\": \"*/*\", \n    \"Accept-Encoding\":
-        \"gzip, deflate\", \n    \"Content-Length\": \"0\", \n    \"Host\": \"httpbin.org\",
-        \n    \"User-Agent\": \"Hogwarts\", \n    \"X-Amzn-Trace-Id\": \"Root=1-678e2b5b-2fff302f4125ff134605d20a\"\n
-        \ }, \n  \"json\": null, \n  \"origin\": \"95.104.119.242\", \n  \"url\":
-        \"http://httpbin.org/patch\"\n}\n"
+        \"gzip, deflate, zstd\", \n    \"Connection\": \"keep-alive\", \n    \"Content-Length\":
+        \"0\", \n    \"Host\": \"localhost:8080\", \n    \"User-Agent\": \"Hogwarts\"\n
+        \ }, \n  \"json\": null, \n  \"origin\": \"11.10.0.17\", \n  \"url\": \"http://localhost:8080/patch\"\n}\n"
     headers:
-      Access-Control-Allow-Credentials:
+      access-control-allow-credentials:
       - 'true'
-      Access-Control-Allow-Origin:
+      access-control-allow-origin:
       - '*'
-      Connection:
+      connection:
       - keep-alive
-      Content-Length:
-      - '386'
-      Content-Type:
+      content-length:
+      - '359'
+      content-type:
       - application/json
-      Date:
-      - Mon, 20 Jan 2025 10:54:19 GMT
-      Server:
+      date:
+      - Tue, 04 Aug 2026 18:34:04 GMT
+      server:
       - gunicorn/19.9.0
     status:
       code: 200

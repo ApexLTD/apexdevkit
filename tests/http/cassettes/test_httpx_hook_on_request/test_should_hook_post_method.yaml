@@ -5,7 +5,7 @@ interactions:
       accept:
       - '*/*'
       accept-encoding:
-      - gzip, deflate
+      - gzip, deflate, zstd
       connection:
       - keep-alive
       content-length:
@@ -13,34 +13,33 @@ interactions:
       handler:
       - on_post
       host:
-      - httpbin.org
+      - localhost:8080
       user-agent:
       - python-httpx/0.28.1
     method: POST
-    uri: http://httpbin.org/post
+    uri: http://localhost:8080/post
   response:
     body:
       string: "{\n  \"args\": {}, \n  \"data\": \"\", \n  \"files\": {}, \n  \"form\":
         {}, \n  \"headers\": {\n    \"Accept\": \"*/*\", \n    \"Accept-Encoding\":
-        \"gzip, deflate\", \n    \"Content-Length\": \"0\", \n    \"Handler\": \"on_post\",
-        \n    \"Host\": \"httpbin.org\", \n    \"User-Agent\": \"python-httpx/0.28.1\",
-        \n    \"X-Amzn-Trace-Id\": \"Root=1-678e2b55-3b46ec9f0bd3e8aa22d69f7d\"\n
-        \ }, \n  \"json\": null, \n  \"origin\": \"95.104.119.242\", \n  \"url\":
-        \"http://httpbin.org/post\"\n}\n"
+        \"gzip, deflate, zstd\", \n    \"Connection\": \"keep-alive\", \n    \"Content-Length\":
+        \"0\", \n    \"Handler\": \"on_post\", \n    \"Host\": \"localhost:8080\",
+        \n    \"User-Agent\": \"python-httpx/0.28.1\"\n  }, \n  \"json\": null, \n
+        \ \"origin\": \"11.10.0.17\", \n  \"url\": \"http://localhost:8080/post\"\n}\n"
     headers:
-      Access-Control-Allow-Credentials:
+      access-control-allow-credentials:
       - 'true'
-      Access-Control-Allow-Origin:
+      access-control-allow-origin:
       - '*'
-      Connection:
+      connection:
       - keep-alive
-      Content-Length:
-      - '423'
-      Content-Type:
+      content-length:
+      - '396'
+      content-type:
       - application/json
-      Date:
-      - Mon, 20 Jan 2025 10:54:13 GMT
-      Server:
+      date:
+      - Tue, 04 Aug 2026 18:33:53 GMT
+      server:
       - gunicorn/19.9.0
     status:
       code: 200

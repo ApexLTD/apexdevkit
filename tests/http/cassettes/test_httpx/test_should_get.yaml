@@ -5,35 +5,35 @@ interactions:
       accept:
       - '*/*'
       accept-encoding:
-      - gzip, deflate
+      - gzip, deflate, zstd
       connection:
       - keep-alive
       host:
-      - httpbin.org
+      - localhost:8080
       user-agent:
       - hogwarts
     method: GET
-    uri: http://httpbin.org/get
+    uri: http://localhost:8080/get
   response:
     body:
       string: "{\n  \"args\": {}, \n  \"headers\": {\n    \"Accept\": \"*/*\", \n
-        \   \"Accept-Encoding\": \"gzip, deflate\", \n    \"Host\": \"httpbin.org\",
-        \n    \"User-Agent\": \"hogwarts\", \n    \"X-Amzn-Trace-Id\": \"Root=1-66ccef7b-0faf88ad043a1610159a00a2\"\n
-        \ }, \n  \"origin\": \"5.178.149.253\", \n  \"url\": \"http://httpbin.org/get\"\n}\n"
+        \   \"Accept-Encoding\": \"gzip, deflate, zstd\", \n    \"Connection\": \"keep-alive\",
+        \n    \"Host\": \"localhost:8080\", \n    \"User-Agent\": \"hogwarts\"\n  },
+        \n  \"origin\": \"11.10.0.17\", \n  \"url\": \"http://localhost:8080/get\"\n}\n"
     headers:
-      Access-Control-Allow-Credentials:
+      access-control-allow-credentials:
       - 'true'
-      Access-Control-Allow-Origin:
+      access-control-allow-origin:
       - '*'
-      Connection:
+      connection:
       - keep-alive
-      Content-Length:
-      - '292'
-      Content-Type:
+      content-length:
+      - '266'
+      content-type:
       - application/json
-      Date:
-      - Mon, 26 Aug 2024 21:11:23 GMT
-      Server:
+      date:
+      - Tue, 04 Aug 2026 18:33:39 GMT
+      server:
       - gunicorn/19.9.0
     status:
       code: 200
