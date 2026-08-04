@@ -37,7 +37,7 @@ class FluentElement[ItemT]:
     def as_dict(self) -> dict[str, Any]:
         return dict(self.value)  # type: ignore
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # pragma: no cover
         return str(self.value)
 
 

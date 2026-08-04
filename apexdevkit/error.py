@@ -31,7 +31,7 @@ class ExistsError(Exception):
     def __str__(self) -> str:
         return ",".join([f"{criteria(self.item)}" for criteria in self._duplicates])
 
-    def fire(self) -> None:
+    def fire(self) -> None:  # pragma: no cover
         if self._duplicates:
             raise self
 

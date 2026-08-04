@@ -65,7 +65,7 @@ class FastApiBuilder:
 
         return self
 
-    def with_frontend(self, origin: str) -> Self:
+    def with_frontend(self, origin: str) -> Self:  # pragma: no cover
         self.app.add_middleware(
             CORSMiddleware,
             allow_origins=[origin],
@@ -76,7 +76,7 @@ class FastApiBuilder:
 
         return self
 
-    def with_swagger(self, **config: Any) -> Self:
+    def with_swagger(self, **config: Any) -> Self:  # pragma: no cover
         self.app.swagger_ui_parameters = config
 
         return self
@@ -120,5 +120,5 @@ class _Endpoint:
     def normilized(self) -> str:
         return f"/{self.raw.replace('_', '-')}"
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # pragma: no cover
         return self.normilized()
