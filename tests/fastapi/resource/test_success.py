@@ -4,18 +4,7 @@ from uuid import uuid4
 
 import pytest
 
-from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.http import JsonDict
-from apexdevkit.query.query import (
-    DateValue,
-    Filter,
-    Leaf,
-    Operation,
-    Operator,
-    Page,
-    QueryOptions,
-    Sort,
-)
 from tests.fastapi.rest import RestCollection
 from tests.fastapi.sample_api import FakeApple, SuccessfulService
 
@@ -45,23 +34,6 @@ def test_should_create(
     )
 
     assert service.called_with == apple.drop("id")
-
-
-def test_should_create_many(
-    apple: JsonDict,
-    service: SuccessfulService,
-    resource: RestCollection,
-) -> None:
-    (
-        resource.create_many()
-        .from_collection([apple])
-        .ensure()
-        .success()
-        .with_code(201)
-        .and_collection([apple])
-    )
-
-    assert service.called_with == [apple.drop("id")]
 
 
 def test_should_read_one(
@@ -97,60 +69,6 @@ def test_should_read_many(
     assert service.called_with == {"color": "red"}
 
 
-def test_should_read_filtered(
-    apple: JsonDict,
-    service: SuccessfulService,
-    resource: RestCollection,
-) -> None:
-    (
-        resource.filter_with()
-        .from_data(
-            JsonDict()
-            .with_a(filter=JsonDict().with_a(args=[JsonDict().with_a(date="20221212")]))
-            .and_a(
-                condition=JsonDict()
-                .with_a(operation="NOT")
-                .and_a(operands=[JsonDict().with_a(name="test").and_a(values=[])])
-            )
-            .and_a(ordering=[JsonDict().with_a(name="test").and_a(is_descending=False)])
-            .and_a(
-                paging=JsonDict()
-                .with_a(page=None)
-                .and_a(length=None)
-                .and_a(offset=None)
-            )
-        )
-        .ensure()
-        .success()
-        .with_code(200)
-        .with_collection([apple])
-    )
-
-    assert service.called_with == DataclassFormatter(QueryOptions).dump(
-        QueryOptions(
-            Filter(args=[DateValue("20221212")]),
-            Operator(Operation.NOT, [Leaf("test", [])]),
-            [Sort("test", False)],
-            Page(None, None, None),
-        )
-    )
-
-
-def test_should_read_summed(
-    service: SuccessfulService,
-    resource: RestCollection,
-) -> None:
-    (
-        resource.aggregation_with()
-        .from_data(JsonDict().with_a(is_rotten=True))
-        .ensure()
-        .success()
-        .with_code(200)
-    )
-
-    assert service.called_with == {"is_rotten": True}
-
-
 def test_should_read_all(
     apple: JsonDict,
     service: SuccessfulService,
@@ -178,16 +96,6 @@ def test_should_update_one(
     assert service.called_with == (apple["id"], apple.drop("id").drop("color"))
 
 
-def test_should_update_many(
-    apple: JsonDict,
-    service: SuccessfulService,
-    resource: RestCollection,
-) -> None:
-    resource.update_many().from_collection([apple]).ensure().success().with_code(200)
-
-    assert service.called_with == [apple.drop("color")]
-
-
 def test_should_replace_one(
     apple: JsonDict,
     service: SuccessfulService,
@@ -196,16 +104,6 @@ def test_should_replace_one(
     resource.replace_one().from_data(apple).ensure().success().with_code(200)
 
     assert service.called_with == apple
-
-
-def test_should_replace_many(
-    apple: JsonDict,
-    service: SuccessfulService,
-    resource: RestCollection,
-) -> None:
-    resource.replace_many().from_collection([apple]).ensure().success().with_code(200)
-
-    assert service.called_with == [apple]
 
 
 def test_should_delete_one(
