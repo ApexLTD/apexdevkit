@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Generic, Protocol
+from typing import Protocol
 
 from apexdevkit.formatter import Formatter, PickleFormatter
-from apexdevkit.repository.core.interface import ItemT
 
 
-class KeyValueStore(Protocol[ItemT]):  # pragma: no cover
+class KeyValueStore[ItemT](Protocol):  # pragma: no cover
     def count(self) -> int:
         pass
 
@@ -25,8 +24,8 @@ class KeyValueStore(Protocol[ItemT]):  # pragma: no cover
         pass
 
 
-@dataclass
-class InMemoryByteStore(Generic[ItemT]):
+@dataclass(frozen=True)
+class InMemoryByteStore[ItemT]:
     formatter: Formatter[bytes, ItemT] = field(default_factory=PickleFormatter)
 
     items: dict[str, bytes] = field(default_factory=dict)
