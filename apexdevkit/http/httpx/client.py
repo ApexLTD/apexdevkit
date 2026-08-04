@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterator, Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 import httpx
@@ -130,49 +130,19 @@ class HttpxConfig(Mapping[str, Any]):
     data: Any | None = None
 
     def with_endpoint(self, endpoint: str) -> HttpxConfig:
-        return HttpxConfig(
-            endpoint=HttpUrl(self.endpoint) + endpoint,
-            headers=self.headers,
-            params=self.params,
-            json=self.json,
-            data=self.data,
-        )
+        return replace(self, endpoint=HttpUrl(self.endpoint) + endpoint)
 
     def with_header(self, key: str, value: str) -> HttpxConfig:
-        return HttpxConfig(
-            endpoint=self.endpoint,
-            headers=self.headers.merge(JsonDict({key: value})),
-            params=self.params,
-            json=self.json,
-            data=self.data,
-        )
+        return replace(self, headers=self.headers.merge(JsonDict({key: value})))
 
     def with_param(self, key: str, value: str) -> HttpxConfig:
-        return HttpxConfig(
-            endpoint=self.endpoint,
-            headers=self.headers,
-            params=self.params.merge(JsonDict({key: value})),
-            json=self.json,
-            data=self.data,
-        )
+        return replace(self, params=self.params.merge(JsonDict({key: value})))
 
     def with_data(self, value: Any) -> HttpxConfig:
-        return HttpxConfig(
-            endpoint=self.endpoint,
-            headers=self.headers,
-            params=self.params,
-            json=self.json,
-            data=value,
-        )
+        return replace(self, data=value)
 
     def with_json(self, value: JsonDict) -> HttpxConfig:
-        return HttpxConfig(
-            endpoint=self.endpoint,
-            headers=self.headers,
-            params=self.params,
-            json=value,
-            data=self.data,
-        )
+        return replace(self, json=value)
 
     def as_dict(self) -> dict[str, Any]:
         return {
