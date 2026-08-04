@@ -20,14 +20,14 @@ def test_should_post(http: Httpx) -> None:
 
 @pytest.mark.vcr
 def test_should_submit(http: Httpx) -> None:
-    json = JsonDict().with_a(Harry="Potter")
-    response = http.with_data(json).request(HttpMethod.post, "/post")
+    form = JsonDict().with_a(Harry="Potter")
+    response = http.with_data(form).request(HttpMethod.post, "/post")
 
     echo = Echo(response.json())
     echo.assert_endpoint(expected="/post")
     echo.assert_user_agent(expected="hogwarts")
     echo.assert_content_type(expected="application/x-www-form-urlencoded")
-    echo.assert_form(expected=json)
+    echo.assert_form(expected=form)
 
 
 @pytest.mark.vcr
