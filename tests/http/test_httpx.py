@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from apexdevkit.environment import value_of_env
+from apexdevkit.environment import environment_variable, value_of_env
 from apexdevkit.http import Http, HttpMethod, Httpx, JsonDict
 
 
@@ -13,7 +13,7 @@ def test_should_post(http: Httpx) -> None:
 
     echo = Echo(response.json())
 
-    assert echo.url() == ECHO_SERVER + "/post"
+    echo.asser_url(expected="/post")
     assert echo.user_agent() == "hogwarts"
     assert echo.content_type() == "application/json"
     assert echo.json() == json
@@ -26,7 +26,7 @@ def test_should_submit(http: Httpx) -> None:
 
     echo = Echo(response.json())
 
-    assert echo.url() == ECHO_SERVER + "/post"
+    echo.asser_url(expected="/post")
     assert echo.user_agent() == "hogwarts"
     assert echo.content_type() == "application/x-www-form-urlencoded"
     assert echo.form() == json
@@ -38,7 +38,7 @@ def test_should_get(http: Httpx) -> None:
 
     echo = Echo(response.json())
 
-    assert echo.url() == ECHO_SERVER + "/get"
+    echo.asser_url(expected="/get")
     assert echo.user_agent() == "hogwarts"
 
 
@@ -48,7 +48,7 @@ def test_should_get_with_params(http: Httpx) -> None:
 
     echo = Echo(response.json())
 
-    assert echo.url() == ECHO_SERVER + "/get?Color=Yellow"
+    echo.asser_url(expected="/get?Color=Yellow")
 
 
 @pytest.mark.vcr
@@ -58,7 +58,7 @@ def test_should_patch(http: Httpx) -> None:
 
     echo = Echo(response.json())
 
-    assert echo.url() == ECHO_SERVER + "/patch"
+    echo.asser_url(expected="/patch")
     assert echo.user_agent() == "hogwarts"
     assert echo.content_type() == "application/json"
     assert echo.json() == json
@@ -70,7 +70,7 @@ def test_should_delete(http: Httpx) -> None:
 
     echo = Echo(response.json())
 
-    assert echo.url() == ECHO_SERVER + "/delete"
+    echo.asser_url(expected="/delete")
     assert echo.user_agent() == "hogwarts"
 
 
@@ -81,20 +81,17 @@ def test_should_put(http: Httpx) -> None:
 
     echo = Echo(response.json())
 
-    assert echo.url() == ECHO_SERVER + "/put"
+    echo.asser_url(expected="/put")
     assert echo.user_agent() == "hogwarts"
     assert echo.content_type() == "application/json"
     assert echo.json() == json
-
-
-ECHO_SERVER = value_of_env(variable="ECHO_SERVER")
 
 
 @pytest.fixture
 def http() -> Http:
     return (
         Httpx.Builder()
-        .with_url(ECHO_SERVER)
+        .with_url(value_of_env(variable="ECHO_SERVER"))
         .build()
         .with_header("User-Agent", "hogwarts")
     )
@@ -103,6 +100,14 @@ def http() -> Http:
 @dataclass(frozen=True)
 class Echo:
     raw: JsonDict
+
+    server: str = environment_variable(
+        name="ECHO_SERVER",
+        default="http://localhost:8080",
+    )
+
+    def asser_url(self, expected: str) -> None:
+        assert self.url() == self.server + "/" + expected.strip("/")
 
     def url(self) -> str:
         return self.raw.value_of("url").to(str)

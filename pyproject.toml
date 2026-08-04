@@ -79,5 +79,5 @@ show_missing = true
 
 [tool.pytest]
 env = [
-    "ECHO_SERVER=http://httpbin.org"
+    "ECHO_SERVER=http://localhost:8080"
 ]
