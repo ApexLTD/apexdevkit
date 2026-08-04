@@ -1,4 +1,5 @@
-from .repository import MsSqlRepository, MsSqlTableBuilder, SqlTable, UnknownError
+from .repository import MsSqlRepository, UnknownError
+from .table import MsSqlTableBuilder, SqlTable
 
 __all__ = [
     "MsSqlTableBuilder",
