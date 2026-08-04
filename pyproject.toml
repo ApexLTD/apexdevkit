@@ -7,7 +7,7 @@ authors = [
     { name = "Apex Dev", email = "dev@apex.ge" }
 ]
 dynamic = ["dependencies"]
-requires-python = ">=3.11,<4"
+requires-python = ">=3.12,<4"
 
 [tool.poetry.dependencies]
 fastapi = "*"
