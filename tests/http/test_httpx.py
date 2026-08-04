@@ -105,34 +105,22 @@ class Echo:
         return str(self.raw.value_of("headers").to(dict)[name])
 
     def assert_endpoint(self, *, expected: str) -> None:
-        assert self.url() == self.server + "/" + expected.strip("/")
+        assert self.raw.value_of("url").to(str) == self._url_for(expected)
 
-    def url(self) -> str:
-        return self.raw.value_of("url").to(str)
+    def _url_for(self, endpoint: str) -> str:
+        return self.server + "/" + endpoint.strip("/")
 
     def assert_user_agent(self, *, expected: str) -> None:
-        assert self.user_agent() == expected
-
-    def user_agent(self) -> str:
-        return self.header(name="User-Agent")
+        assert self.header(name="User-Agent") == expected
 
     def assert_content_type(self, *, expected: str) -> None:
-        assert self.content_type() == expected
-
-    def content_type(self) -> str:
-        return self.header(name="Content-Type")
+        assert self.header(name="Content-Type") == expected
 
     def assert_json(self, *, expected: JsonDict) -> None:
-        assert self.json() == expected
-
-    def json(self) -> JsonDict:
-        return self._sub_object_of(key="json")
+        assert self._sub_object_of(key="json") == expected
 
     def assert_form(self, *, expected: JsonDict) -> None:
-        assert self.form() == expected
-
-    def form(self) -> JsonDict:
-        return self._sub_object_of(key="form")
+        assert self._sub_object_of(key="form") == expected
 
     def _sub_object_of(self, key: str) -> FluentDict[Any]:
         return JsonDict(self.raw.value_of(key).to(dict))
