@@ -15,7 +15,7 @@ def test_should_post(http: Httpx) -> None:
     echo.assert_endpoint(expected="/post")
     echo.assert_user_agent(expected="hogwarts")
     echo.assert_content_type(expected="application/json")
-    assert echo.json() == json
+    echo.assert_json(expected=json)
 
 
 @pytest.mark.vcr
@@ -27,7 +27,7 @@ def test_should_submit(http: Httpx) -> None:
     echo.assert_endpoint(expected="/post")
     echo.assert_user_agent(expected="hogwarts")
     echo.assert_content_type(expected="application/x-www-form-urlencoded")
-    assert echo.form() == json
+    echo.assert_form(expected=json)
 
 
 @pytest.mark.vcr
@@ -56,7 +56,7 @@ def test_should_patch(http: Httpx) -> None:
     echo.assert_endpoint(expected="/patch")
     echo.assert_user_agent(expected="hogwarts")
     echo.assert_content_type(expected="application/json")
-    assert echo.json() == json
+    echo.assert_json(expected=json)
 
 
 @pytest.mark.vcr
@@ -77,7 +77,7 @@ def test_should_put(http: Httpx) -> None:
     echo.assert_endpoint(expected="/put")
     echo.assert_user_agent(expected="hogwarts")
     echo.assert_content_type(expected="application/json")
-    assert echo.json() == json
+    echo.assert_json(expected=json)
 
 
 @pytest.fixture
@@ -99,6 +99,9 @@ class Echo:
         default="http://localhost:8080",
     )
 
+    def header(self, name: str) -> str:
+        return str(self.raw.value_of("headers").to(dict)[name])
+
     def assert_endpoint(self, *, expected: str) -> None:
         assert self.url() == self.server + "/" + expected.strip("/")
 
@@ -117,11 +120,14 @@ class Echo:
     def content_type(self) -> str:
         return self.header(name="Content-Type")
 
-    def header(self, name: str) -> str:
-        return self.raw.value_of("headers").to(dict)[name]
+    def assert_json(self, *, expected: JsonDict) -> None:
+        assert self.json() == expected
 
     def json(self) -> JsonDict:
         return JsonDict(self.raw.value_of("json").to(dict))
+
+    def assert_form(self, *, expected: JsonDict) -> None:
+        assert self.form() == expected
 
     def form(self) -> JsonDict:
         return JsonDict(self.raw.value_of("form").to(dict))
