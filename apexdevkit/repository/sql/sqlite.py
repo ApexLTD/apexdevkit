@@ -20,7 +20,7 @@ from .field import NotNone, SqlFieldManager, _SqlField
 
 
 @dataclass(frozen=True, kw_only=True)
-class SqliteRepository(ContainsMixin[ItemT], Repository[ItemT]):
+class SqliteRepository(ContainsMixin, Repository[ItemT]):
     table: SqlTable[ItemT]
 
     db: Database = field(default_factory=lambda: Database(SqliteFileConnector()))

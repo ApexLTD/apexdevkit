@@ -21,7 +21,7 @@ class NoFormatter(Generic[ItemT]):
 
 
 @dataclass(frozen=True)
-class MultipleRepository(ContainsMixin[ItemT], Repository[ItemT]):
+class MultipleRepository(ContainsMixin, Repository[ItemT]):
     repositories: list[_InnerRepository[ItemT]]
 
     def create(self, item: ItemT) -> ItemT:

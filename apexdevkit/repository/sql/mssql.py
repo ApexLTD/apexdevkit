@@ -21,7 +21,7 @@ from .field import NotNone, SqlFieldManager, _SqlField
 
 
 @dataclass(frozen=True, kw_only=True)
-class MsSqlRepository(ContainsMixin[ItemT], Repository[ItemT]):
+class MsSqlRepository(ContainsMixin, Repository[ItemT]):
     table: SqlTable[ItemT]
 
     db: Database = field(default_factory=lambda: Database(connector=MsSqlConnector()))
