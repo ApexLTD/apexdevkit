@@ -2,17 +2,16 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
-from typing import Generic
 
 from apexdevkit.error import DoesNotExistError
 from apexdevkit.formatter import Formatter
 
-from . import ContainsMixin
-from .interface import ItemT, Repository
+from .interface import Entity, Repository
+from .mixin import ContainsMixin
 
 
 @dataclass(frozen=True)
-class NoFormatter(Generic[ItemT]):
+class NoFormatter[ItemT: Entity]:
     def load(self, item: ItemT) -> ItemT:
         return item
 
@@ -21,7 +20,7 @@ class NoFormatter(Generic[ItemT]):
 
 
 @dataclass(frozen=True)
-class MultipleRepository(ContainsMixin, Repository[ItemT]):
+class MultipleRepository[ItemT: Entity](ContainsMixin, Repository[ItemT]):
     repositories: list[_InnerRepository[ItemT]]
 
     def create(self, item: ItemT) -> ItemT:
@@ -69,7 +68,7 @@ class MultipleRepository(ContainsMixin, Repository[ItemT]):
 
 
 @dataclass(frozen=True)
-class MultipleRepositoryBuilder(Generic[ItemT]):
+class MultipleRepositoryBuilder[ItemT: Entity]:
     repositories: list[_InnerRepository[ItemT]] = field(default_factory=list)
 
     def with_repository(
@@ -110,10 +109,8 @@ class MultipleRepositoryBuilder(Generic[ItemT]):
 
 
 @dataclass(frozen=True)
-class _InnerRepository(Generic[ItemT]):
+class _InnerRepository[ItemT: Entity]:
     inner: Repository[ItemT]
     condition: Callable[[ItemT], bool] = lambda _: True
-    formatter: Formatter[ItemT, ItemT] = field(
-        default_factory=lambda: NoFormatter[ItemT]()
-    )
+    formatter: Formatter[ItemT, ItemT] = field(default_factory=NoFormatter[ItemT])
     id_prefix: str = ""
