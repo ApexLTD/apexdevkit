@@ -4,34 +4,30 @@ import pickle
 from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import asdict, dataclass, field, fields, is_dataclass
-from typing import Any, Protocol, Self, TypeVar, get_args, get_type_hints
+from typing import Any, Protocol, Self, get_args, get_type_hints
 
 from apexdevkit.fluent import FluentDict
 from apexdevkit.value import Value
 
-_SourceT = TypeVar("_SourceT")
-_TargetT = TypeVar("_TargetT")
-_ItemT = TypeVar("_ItemT")
 
-
-class Formatter(Protocol[_SourceT, _TargetT]):  # pragma: no cover
-    def load(self, source: _SourceT) -> _TargetT:
+class Formatter[SourceT, TargetT](Protocol):  # pragma: no cover
+    def load(self, source: SourceT) -> TargetT:
         pass
 
-    def dump(self, target: _TargetT) -> _SourceT:
+    def dump(self, target: TargetT) -> SourceT:
         pass
 
 
 @dataclass(frozen=True)
-class AliasFormatter(Formatter[Mapping[str, Any], _TargetT]):
-    inner: Formatter[Mapping[str, Any], _TargetT]
+class AliasFormatter[TargetT](Formatter[Mapping[str, Any], TargetT]):
+    inner: Formatter[Mapping[str, Any], TargetT]
 
     alias: AliasMapping
 
-    def load(self, source: Mapping[str, Any]) -> _TargetT:
+    def load(self, source: Mapping[str, Any]) -> TargetT:
         return self.inner.load(self.alias.reverse().translate(source))
 
-    def dump(self, target: _TargetT) -> Mapping[str, Any]:
+    def dump(self, target: TargetT) -> Mapping[str, Any]:
         return self.alias.translate(self.inner.dump(target))
 
 
@@ -54,27 +50,27 @@ class AliasMapping:
 
 
 class PickleFormatter[ItemT]:
-    def dump(self, item: _ItemT) -> bytes:
+    def dump(self, item: ItemT) -> bytes:
         return pickle.dumps(item)
 
-    def load(self, raw: bytes) -> _ItemT:
+    def load(self, raw: bytes) -> ItemT:
         return pickle.loads(raw)  # type: ignore
 
 
 @dataclass
 class ListFormatter[SourceT, TargetT]:
-    inner: Formatter[_SourceT, _TargetT]
+    inner: Formatter[SourceT, TargetT]
 
-    def load(self, source: list[_SourceT]) -> list[_TargetT]:
+    def load(self, source: list[SourceT]) -> list[TargetT]:
         return [self.inner.load(item) for item in source]
 
-    def dump(self, target: list[_TargetT]) -> list[_SourceT]:
+    def dump(self, target: list[TargetT]) -> list[SourceT]:
         return [self.inner.dump(item) for item in target]
 
 
 @dataclass
 class DataclassFormatter[TargetT]:
-    resource: type[_TargetT]
+    resource: type[TargetT]
     sub_formatters: dict[str, Formatter[Any, Any]] = field(default_factory=dict)
 
     def and_nested(self, **formatters: Formatter[Any, Any]) -> Self:
@@ -85,7 +81,7 @@ class DataclassFormatter[TargetT]:
 
         return self
 
-    def load(self, source: Mapping[str, Any]) -> _TargetT:
+    def load(self, source: Mapping[str, Any]) -> TargetT:
         source = FluentDict[Any](deepcopy(source)).select(
             *self.resource.__annotations__.keys(),
             "id",
@@ -114,7 +110,7 @@ class DataclassFormatter[TargetT]:
 
         return self.resource(**source)
 
-    def dump(self, target: _TargetT) -> Mapping[str, Any]:
+    def dump(self, target: TargetT) -> Mapping[str, Any]:
         return asdict(target)  # type: ignore
 
 
