@@ -39,16 +39,11 @@ class DateTime:
         if time_zone is None:
             time_zone = ZoneInfo("UTC")
 
-        try:
-            dt = datetime.strptime(date, "%Y-%m-%d")
-            dt = dt.replace(tzinfo=time_zone)
-            timestamp_ms = int(dt.timestamp() * 1000)
-            return cls(timestamp_ms=timestamp_ms)
+        dt = datetime.strptime(date, "%Y-%m-%d")
+        dt = dt.replace(tzinfo=time_zone)
+        timestamp_ms = int(dt.timestamp() * 1000)
 
-        except ValueError as e:
-            raise ValueError(
-                f"Invalid date format: '{date}'. Expected 'yyyy-mm-dd'."
-            ) from e
+        return cls(timestamp_ms=timestamp_ms)
 
     # Date in format of "yyyy-mm-ddTHH:MM:SS"
     @classmethod
@@ -58,16 +53,11 @@ class DateTime:
         if time_zone is None:
             time_zone = ZoneInfo("UTC")
 
-        try:
-            dt = datetime.strptime(date_time, "%Y-%m-%dT%H:%M:%S")
-            dt = dt.replace(tzinfo=time_zone)
-            timestamp_ms = int(dt.timestamp() * 1000)
-            return cls(timestamp_ms=timestamp_ms)
-        except ValueError as e:
-            raise ValueError(
-                f"Invalid datetime format: '{date_time}'."
-                f" Expected 'yyyy-mm-ddTHH:MM:SS'."
-            ) from e
+        dt = datetime.strptime(date_time, "%Y-%m-%dT%H:%M:%S")
+        dt = dt.replace(tzinfo=time_zone)
+        timestamp_ms = int(dt.timestamp() * 1000)
+
+        return cls(timestamp_ms=timestamp_ms)
 
     @classmethod
     def from_timestamp(cls, timestamp: float) -> DateTime:
