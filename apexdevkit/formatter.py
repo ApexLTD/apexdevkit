@@ -7,7 +7,6 @@ from dataclasses import asdict, dataclass, field, fields, is_dataclass
 from typing import Any, Protocol, Self, get_args, get_type_hints
 
 from apexdevkit.fluent import FluentDict
-from apexdevkit.value import Value
 
 
 class Formatter[SourceT, TargetT](Protocol):  # pragma: no cover
@@ -112,11 +111,3 @@ class DataclassFormatter[TargetT]:
 
     def dump(self, target: TargetT) -> Mapping[str, Any]:
         return asdict(target)  # type: ignore
-
-
-class ValueFormatter:
-    def load(self, raw: Mapping[str, Any]) -> Value:
-        return DataclassFormatter(Value).load(raw)
-
-    def dump(self, value: Value) -> Mapping[str, Any]:
-        return DataclassFormatter(Value).dump(value)
