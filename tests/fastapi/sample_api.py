@@ -20,7 +20,7 @@ from apexdevkit.fastapi.service import (
 from apexdevkit.http import JsonDict
 from apexdevkit.query import Filter
 from apexdevkit.query.query import Operator, Page, Sort
-from apexdevkit.testing.fake import FakeResource
+from tests.fake import FakeResource
 
 
 def setup(infra: RestfulServiceBuilder) -> FastAPI:

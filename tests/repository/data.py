@@ -6,7 +6,7 @@ from typing import Any
 from faker import Faker
 
 from apexdevkit.repository import Entity
-from apexdevkit.testing.fake import Fake
+from tests.fake import Fake
 
 
 @dataclass(frozen=True, kw_only=True)

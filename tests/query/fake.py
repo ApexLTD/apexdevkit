@@ -17,7 +17,7 @@ from apexdevkit.query import (
     Sort,
     StringValue,
 )
-from apexdevkit.testing.fake import FakeResource
+from tests.fake import FakeResource
 
 
 @dataclass(frozen=True)
