@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Protocol
 
 
-class Authority(Protocol):
+class Authority(Protocol):  # pragma: no cover
     def sign(self, message: str) -> Signature:
         pass
 

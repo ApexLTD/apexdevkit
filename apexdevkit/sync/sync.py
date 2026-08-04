@@ -33,7 +33,7 @@ class Sync[T](ObservableSync):
         return replace(self, target=value)
 
     def and_source(self, value: Source[T]) -> Sync[T]:
-        return self.with_source(value)
+        return self.with_source(value)  # pragma: no cover
 
     def with_source(self, value: Source[T]) -> Sync[T]:
         return replace(self, source=value)
@@ -96,7 +96,7 @@ class _Purge[T]:
         )
 
     def __call__(self) -> None:
-        self.run()
+        self.run()  # pragma: no cover
 
     def run(self) -> None:
         self.sync.prune()

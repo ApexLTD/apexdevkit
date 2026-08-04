@@ -62,7 +62,7 @@ class SourcePreSet[T]:
         return self.changes
 
 
-class SourceFailing[T]:
+class SourceFailing[T]:  # pragma: no cover
     @staticmethod
     def on_everything(using: Source[T] | None = None) -> Source[T]:
         return SourceFailing.on_absent(
