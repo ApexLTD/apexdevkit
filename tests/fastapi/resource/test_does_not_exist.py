@@ -4,7 +4,7 @@ import pytest
 
 from apexdevkit.error import DoesNotExistError
 from apexdevkit.http import JsonDict
-from apexdevkit.testing import RestCollection
+from tests.fastapi.rest import RestCollection
 from tests.fastapi.sample_api import FailingService, FakeApple
 
 

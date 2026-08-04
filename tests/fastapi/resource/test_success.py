@@ -16,7 +16,7 @@ from apexdevkit.query.query import (
     QueryOptions,
     Sort,
 )
-from apexdevkit.testing import RestCollection
+from tests.fastapi.rest import RestCollection
 from tests.fastapi.sample_api import FakeApple, SuccessfulService
 
 
