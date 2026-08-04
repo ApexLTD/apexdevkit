@@ -14,10 +14,6 @@ from sentry_sdk.types import Event, Hint
 from apexdevkit.environment import environment_variable
 
 
-def _do_nothing() -> None:
-    pass
-
-
 @dataclass
 class UvicornServer:
     logging_config: dict[str, Any]
