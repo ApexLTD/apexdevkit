@@ -1,7 +1,91 @@
+from dataclasses import dataclass
+
 import pytest
 
 from apexdevkit.environment import value_of_env
 from apexdevkit.http import Http, HttpMethod, Httpx, JsonDict
+
+
+@pytest.mark.vcr
+def test_should_post(http: Httpx) -> None:
+    json = JsonDict().with_a(Harry="Potter")
+    response = http.with_json(json).request(HttpMethod.post, "/post")
+
+    echo = Echo(response.json())
+
+    assert echo.url() == ECHO_SERVER + "/post"
+    assert echo.user_agent() == "hogwarts"
+    assert echo.content_type() == "application/json"
+    assert echo.json() == json
+
+
+@pytest.mark.vcr
+def test_should_submit(http: Httpx) -> None:
+    json = JsonDict().with_a(Harry="Potter")
+    response = http.with_data(json).request(HttpMethod.post, "/post")
+
+    echo = Echo(response.json())
+
+    assert echo.url() == ECHO_SERVER + "/post"
+    assert echo.user_agent() == "hogwarts"
+    assert echo.content_type() == "application/x-www-form-urlencoded"
+    assert echo.form() == json
+
+
+@pytest.mark.vcr
+def test_should_get(http: Httpx) -> None:
+    response = http.request(HttpMethod.get, "/get")
+
+    echo = Echo(response.json())
+
+    assert echo.url() == ECHO_SERVER + "/get"
+    assert echo.user_agent() == "hogwarts"
+
+
+@pytest.mark.vcr
+def test_should_get_with_params(http: Httpx) -> None:
+    response = http.with_param("Color", "Yellow").request(HttpMethod.get, "/get")
+
+    echo = Echo(response.json())
+
+    assert echo.url() == ECHO_SERVER + "/get?Color=Yellow"
+
+
+@pytest.mark.vcr
+def test_should_patch(http: Httpx) -> None:
+    json = JsonDict().with_a(Harry="Potter")
+    response = http.with_json(json).request(HttpMethod.patch, "/patch")
+
+    echo = Echo(response.json())
+
+    assert echo.url() == ECHO_SERVER + "/patch"
+    assert echo.user_agent() == "hogwarts"
+    assert echo.content_type() == "application/json"
+    assert echo.json() == json
+
+
+@pytest.mark.vcr
+def test_should_delete(http: Httpx) -> None:
+    response = http.request(HttpMethod.delete, "/delete")
+
+    echo = Echo(response.json())
+
+    assert echo.url() == ECHO_SERVER + "/delete"
+    assert echo.user_agent() == "hogwarts"
+
+
+@pytest.mark.vcr
+def test_should_put(http: Httpx) -> None:
+    json = JsonDict().with_a(Harry="Potter")
+    response = http.with_json(json).request(HttpMethod.put, "/put")
+
+    echo = Echo(response.json())
+
+    assert echo.url() == ECHO_SERVER + "/put"
+    assert echo.user_agent() == "hogwarts"
+    assert echo.content_type() == "application/json"
+    assert echo.json() == json
+
 
 ECHO_SERVER = value_of_env(variable="ECHO_SERVER")
 
@@ -16,69 +100,24 @@ def http() -> Http:
     )
 
 
-@pytest.mark.vcr
-def test_should_post(http: Httpx) -> None:
-    json = JsonDict().with_a(Harry="Potter")
-    response = http.with_json(json).request(HttpMethod.post, "/post")
+@dataclass(frozen=True)
+class Echo:
+    raw: JsonDict
 
-    echo = response.json().select("headers", "json", "url")
+    def url(self) -> str:
+        return self.raw.value_of("url").to(str)
 
-    assert echo.value_of("url").to(str) == ECHO_SERVER + "/post"
-    assert echo.value_of("headers").to(dict)["User-Agent"] == "hogwarts"
-    assert echo.value_of("headers").to(dict)["Content-Type"] == "application/json"
-    assert echo.value_of("json").to(dict) == json
+    def user_agent(self) -> str:
+        return self.header(name="User-Agent")
 
+    def content_type(self) -> str:
+        return self.header(name="Content-Type")
 
-@pytest.mark.vcr
-def test_should_get(http: Httpx) -> None:
-    response = http.request(HttpMethod.get, "/get")
+    def header(self, name: str) -> str:
+        return self.raw.value_of("headers").to(dict)[name]
 
-    echo = response.json().select("headers", "json", "url")
+    def json(self) -> JsonDict:
+        return JsonDict(self.raw.value_of("json").to(dict))
 
-    assert echo.value_of("url").to(str) == ECHO_SERVER + "/get"
-    assert echo.value_of("headers").to(dict)["User-Agent"] == "hogwarts"
-
-
-@pytest.mark.vcr
-def test_should_get_with_params(http: Httpx) -> None:
-    response = http.with_param("Color", "Yellow").request(HttpMethod.get, "/get")
-
-    echo = response.json().select("url")
-
-    assert echo.value_of("url").to(str) == ECHO_SERVER + "/get?Color=Yellow"
-
-
-@pytest.mark.vcr
-def test_should_patch(http: Httpx) -> None:
-    json = JsonDict().with_a(Harry="Potter")
-    response = http.with_json(json).request(HttpMethod.patch, "/patch")
-
-    echo = response.json().select("headers", "json", "url")
-
-    assert echo.value_of("url").to(str) == ECHO_SERVER + "/patch"
-    assert echo.value_of("headers").to(dict)["User-Agent"] == "hogwarts"
-    assert echo.value_of("headers").to(dict)["Content-Type"] == "application/json"
-    assert echo.value_of("json").to(dict) == json
-
-
-@pytest.mark.vcr
-def test_should_delete(http: Httpx) -> None:
-    response = http.request(HttpMethod.delete, "/delete")
-
-    echo = response.json().select("headers", "json", "url")
-
-    assert echo.value_of("url").to(str) == ECHO_SERVER + "/delete"
-    assert echo.value_of("headers").to(dict)["User-Agent"] == "hogwarts"
-
-
-@pytest.mark.vcr
-def test_should_put(http: Httpx) -> None:
-    json = JsonDict().with_a(Harry="Potter")
-    response = http.with_json(json).request(HttpMethod.put, "/put")
-
-    echo = response.json().select("headers", "json", "url")
-
-    assert echo.value_of("url").to(str) == ECHO_SERVER + "/put"
-    assert echo.value_of("headers").to(dict)["User-Agent"] == "hogwarts"
-    assert echo.value_of("headers").to(dict)["Content-Type"] == "application/json"
-    assert echo.value_of("json").to(dict) == json
+    def form(self) -> JsonDict:
+        return JsonDict(self.raw.value_of("form").to(dict))
