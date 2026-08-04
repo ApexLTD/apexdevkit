@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, Self
@@ -24,15 +23,6 @@ class _RestResource:
             ),
         )
 
-    def create_many(self) -> _TestRequest:
-        return _TestRequest(
-            self.name,
-            HttpRequest(
-                HttpMethod.post,
-                self.http.with_endpoint(self.name.plural).with_endpoint("batch"),
-            ),
-        )
-
     def read_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
@@ -48,24 +38,6 @@ class _RestResource:
             http = http.with_param(p, v)
 
         return _TestRequest(self.name, HttpRequest(HttpMethod.get, http))
-
-    def filter_with(self) -> _TestRequest:
-        return _TestRequest(
-            self.name,
-            HttpRequest(
-                HttpMethod.post,
-                self.http.with_endpoint(self.name.plural).with_endpoint("filter"),
-            ),
-        )
-
-    def aggregation_with(self) -> _TestRequest:
-        return _TestRequest(
-            self.name,
-            HttpRequest(
-                HttpMethod.post,
-                self.http.with_endpoint(self.name.plural).with_endpoint("aggregation"),
-            ),
-        )
 
     def read_all(self) -> _TestRequest:
         return _TestRequest(
@@ -85,30 +57,12 @@ class _RestResource:
             ),
         )
 
-    def update_many(self) -> _TestRequest:
-        return _TestRequest(
-            self.name,
-            HttpRequest(
-                HttpMethod.patch,
-                self.http.with_endpoint(self.name.plural),
-            ),
-        )
-
     def replace_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
             HttpRequest(
                 HttpMethod.put,
                 self.http.with_endpoint(self.name.plural),
-            ),
-        )
-
-    def replace_many(self) -> _TestRequest:
-        return _TestRequest(
-            self.name,
-            HttpRequest(
-                HttpMethod.put,
-                self.http.with_endpoint(self.name.plural).with_endpoint("batch"),
             ),
         )
 
@@ -133,11 +87,6 @@ class _TestRequest:
             request=self.request.with_endpoint(value),
         )
 
-    def from_collection(self, value: list[JsonDict]) -> _TestRequest:
-        return self.with_data(
-            JsonDict({self.resource.plural: [dict(item) for item in value]})
-        )
-
     def and_data(self, value: JsonDict) -> _TestRequest:
         return self.with_data(value)
 
@@ -150,26 +99,9 @@ class _TestRequest:
             request=self.request.with_json(value),
         )
 
-    def and_param(self, name: str, value: Any) -> _TestRequest:
-        return self.with_param(name, value)
-
-    def with_param(self, name: str, value: Any) -> _TestRequest:
-        return _TestRequest(
-            resource=self.resource,
-            request=self.request.with_param(name, str(value)),
-        )
-
     @cached_property
     def response(self) -> HttpResponse:
         return self.request()
-
-    def unpack(self) -> JsonDict:
-        return JsonDict(self.response.json()["data"][self.resource.singular])
-
-    def unpack_many(self) -> Iterable[JsonDict]:
-        items = self.response.json()["data"][self.resource.plural]
-
-        return [JsonDict(item) for item in items]
 
     def ensure(self) -> _Response:
         return _Response(
@@ -190,12 +122,6 @@ class HttpRequest:
             http=self.http.with_endpoint(str(value)),
         )
 
-    def with_param(self, name: str, value: Any) -> HttpRequest:
-        return HttpRequest(
-            method=self.method,
-            http=self.http.with_param(name, value),
-        )
-
     def with_json(self, value: JsonDict) -> HttpRequest:
         return HttpRequest(
             method=self.method,
@@ -213,9 +139,6 @@ class _Response:
     http_code: int
 
     def fail(self) -> Self:
-        if self.http_code == 422:
-            return self
-
         return self.with_status("fail")
 
     def success(self) -> Self:
@@ -228,14 +151,9 @@ class _Response:
 
     def with_code(self, value: int) -> Self:
         assert self.http_code == value
-
-        if self.http_code != 422:
-            assert self.json.value_of("code").to(int) == value
+        assert self.json.value_of("code").to(int) == value
 
         return self
-
-    def message(self, value: str) -> Self:
-        return self.with_message(value)
 
     def and_message(self, value: str) -> Self:
         return self.with_message(value)
@@ -256,12 +174,6 @@ class _Response:
 
     def with_collection(self, values: list[Any]) -> Self:
         return self.with_data(**{self.resource.plural: values}, count=len(values))
-
-    def and_no_data(self) -> Self:
-        return self.no_data()
-
-    def no_data(self) -> Self:
-        return self.with_data()
 
     def with_data(self, **kwargs: Any) -> Self:
         assert self.json.value_of("data").as_dict() == {**kwargs}, self.json
