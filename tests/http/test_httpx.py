@@ -1,8 +1,10 @@
 from dataclasses import dataclass
+from typing import Any
 
 import pytest
 
 from apexdevkit.environment import environment_variable, value_of_env
+from apexdevkit.fluent import FluentDict
 from apexdevkit.http import Http, HttpMethod, Httpx, JsonDict
 
 
@@ -124,10 +126,13 @@ class Echo:
         assert self.json() == expected
 
     def json(self) -> JsonDict:
-        return JsonDict(self.raw.value_of("json").to(dict))
+        return self._sub_object_of(key="json")
 
     def assert_form(self, *, expected: JsonDict) -> None:
         assert self.form() == expected
 
     def form(self) -> JsonDict:
-        return JsonDict(self.raw.value_of("form").to(dict))
+        return self._sub_object_of(key="form")
+
+    def _sub_object_of(self, key: str) -> FluentDict[Any]:
+        return JsonDict(self.raw.value_of(key).to(dict))
