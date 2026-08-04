@@ -3,11 +3,10 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Generic
+from typing import Any
 
 from apexdevkit.formatter import Formatter
-from apexdevkit.repository import BruteForceBatch, Repository
-from apexdevkit.repository.core import ItemT
+from apexdevkit.repository import BruteForceBatch, Entity, Repository
 from apexdevkit.repository.core.interface import BatchRepository
 
 RawItem = Mapping[str, Any]
@@ -61,7 +60,7 @@ class RestfulService:  # pragma: no cover
 
 
 @dataclass(frozen=True)
-class RestfulRepository(RestfulService, Generic[ItemT]):
+class RestfulRepository[ItemT: Entity](RestfulService):
     repository: Repository[ItemT]
 
     formatter: Formatter[Mapping[str, Any], ItemT]
