@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Generic, Protocol, TypeVar
+from typing import Protocol, TypeVar
 
 import httpx
 from httpx import Request, SyncByteStream
@@ -25,7 +25,7 @@ class HttpxHandler(Protocol[ContextT]):
         pass
 
 
-class DefaultHandler(Generic[ContextT]):
+class DefaultHandler[ContextT]:
     def on_get(self, context: ContextT) -> None:
         pass
 

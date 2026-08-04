@@ -4,7 +4,7 @@ import pickle
 from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import asdict, dataclass, field, fields, is_dataclass
-from typing import Any, Generic, Protocol, Self, TypeVar, get_args, get_type_hints
+from typing import Any, Protocol, Self, TypeVar, get_args, get_type_hints
 
 from apexdevkit.fluent import FluentDict
 from apexdevkit.value import Value
@@ -53,7 +53,7 @@ class AliasMapping:
         return self.alias.get(key, key)
 
 
-class PickleFormatter(Generic[_ItemT]):
+class PickleFormatter[ItemT]:
     def dump(self, item: _ItemT) -> bytes:
         return pickle.dumps(item)
 
@@ -62,7 +62,7 @@ class PickleFormatter(Generic[_ItemT]):
 
 
 @dataclass
-class ListFormatter(Generic[_SourceT, _TargetT]):
+class ListFormatter[SourceT, TargetT]:
     inner: Formatter[_SourceT, _TargetT]
 
     def load(self, source: list[_SourceT]) -> list[_TargetT]:
@@ -73,7 +73,7 @@ class ListFormatter(Generic[_SourceT, _TargetT]):
 
 
 @dataclass
-class DataclassFormatter(Generic[_TargetT]):
+class DataclassFormatter[TargetT]:
     resource: type[_TargetT]
     sub_formatters: dict[str, Formatter[Any, Any]] = field(default_factory=dict)
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
-from typing import Any, ClassVar, Generic, Protocol, TypeVar
+from typing import Any, ClassVar, Protocol, TypeVar
 
 from apexdevkit.annotation import deprecated
 from apexdevkit.error import ForbiddenError
@@ -33,7 +33,7 @@ class _Loader(Protocol[ItemT]):
 
 
 @dataclass
-class DefaultMsSqlFilter(Generic[ItemT]):
+class DefaultMsSqlFilter[ItemT]:
     _database: Database = field(init=False)
     _query_builder: MsSqlQueryBuilder = field(init=False)
     _options: QueryOptions = field(init=False)

@@ -3,7 +3,7 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 from faker import Faker
 
@@ -69,7 +69,7 @@ class Fake:
 
 
 @dataclass(frozen=True)
-class FakeResource(Generic[ItemT]):
+class FakeResource[ItemT]:
     item_type: type[ItemT] = field()
     fake: Fake = field(default_factory=Fake)
 

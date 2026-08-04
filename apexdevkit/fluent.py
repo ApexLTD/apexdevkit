@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 ItemT = TypeVar("ItemT")
 
@@ -28,7 +28,7 @@ class FluentDict(dict[str, ItemT]):
 
 
 @dataclass(frozen=True)
-class FluentElement(Generic[ItemT]):
+class FluentElement[ItemT]:
     value: ItemT
 
     def to(self, a_type: Callable[[ItemT], ConvertedT]) -> ConvertedT:
