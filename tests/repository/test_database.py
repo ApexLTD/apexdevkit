@@ -1,7 +1,8 @@
 from faker import Faker
 
 from apexdevkit.repository import Database, DatabaseCommand
-from apexdevkit.testing import FakeConnector
+
+from .fake import FakeConnector
 
 
 def test_should_execute(faker: Faker) -> None:
