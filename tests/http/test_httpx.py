@@ -14,7 +14,7 @@ def test_should_post(http: Httpx) -> None:
     echo = Echo(response.json())
 
     echo.assert_endpoint(expected="/post")
-    assert echo.user_agent() == "hogwarts"
+    echo.assert_user_agent(expected="hogwarts")
     assert echo.content_type() == "application/json"
     assert echo.json() == json
 
@@ -27,7 +27,7 @@ def test_should_submit(http: Httpx) -> None:
     echo = Echo(response.json())
 
     echo.assert_endpoint(expected="/post")
-    assert echo.user_agent() == "hogwarts"
+    echo.assert_user_agent(expected="hogwarts")
     assert echo.content_type() == "application/x-www-form-urlencoded"
     assert echo.form() == json
 
@@ -39,7 +39,7 @@ def test_should_get(http: Httpx) -> None:
     echo = Echo(response.json())
 
     echo.assert_endpoint(expected="/get")
-    assert echo.user_agent() == "hogwarts"
+    echo.assert_user_agent(expected="hogwarts")
 
 
 @pytest.mark.vcr
@@ -59,7 +59,7 @@ def test_should_patch(http: Httpx) -> None:
     echo = Echo(response.json())
 
     echo.assert_endpoint(expected="/patch")
-    assert echo.user_agent() == "hogwarts"
+    echo.assert_user_agent(expected="hogwarts")
     assert echo.content_type() == "application/json"
     assert echo.json() == json
 
@@ -71,7 +71,7 @@ def test_should_delete(http: Httpx) -> None:
     echo = Echo(response.json())
 
     echo.assert_endpoint(expected="/delete")
-    assert echo.user_agent() == "hogwarts"
+    echo.assert_user_agent(expected="hogwarts")
 
 
 @pytest.mark.vcr
@@ -82,7 +82,7 @@ def test_should_put(http: Httpx) -> None:
     echo = Echo(response.json())
 
     echo.assert_endpoint(expected="/put")
-    assert echo.user_agent() == "hogwarts"
+    echo.assert_user_agent(expected="hogwarts")
     assert echo.content_type() == "application/json"
     assert echo.json() == json
 
@@ -106,11 +106,14 @@ class Echo:
         default="http://localhost:8080",
     )
 
-    def assert_endpoint(self, expected: str) -> None:
+    def assert_endpoint(self, *, expected: str) -> None:
         assert self.url() == self.server + "/" + expected.strip("/")
 
     def url(self) -> str:
         return self.raw.value_of("url").to(str)
+
+    def assert_user_agent(self, *, expected: str) -> None:
+        assert self.user_agent() == expected
 
     def user_agent(self) -> str:
         return self.header(name="User-Agent")
