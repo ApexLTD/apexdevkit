@@ -13,7 +13,7 @@ def test_should_post(http: Httpx) -> None:
 
     echo = Echo(response.json())
 
-    echo.asser_url(expected="/post")
+    echo.endpoint(expected="/post")
     assert echo.user_agent() == "hogwarts"
     assert echo.content_type() == "application/json"
     assert echo.json() == json
@@ -26,7 +26,7 @@ def test_should_submit(http: Httpx) -> None:
 
     echo = Echo(response.json())
 
-    echo.asser_url(expected="/post")
+    echo.endpoint(expected="/post")
     assert echo.user_agent() == "hogwarts"
     assert echo.content_type() == "application/x-www-form-urlencoded"
     assert echo.form() == json
@@ -38,7 +38,7 @@ def test_should_get(http: Httpx) -> None:
 
     echo = Echo(response.json())
 
-    echo.asser_url(expected="/get")
+    echo.endpoint(expected="/get")
     assert echo.user_agent() == "hogwarts"
 
 
@@ -48,7 +48,7 @@ def test_should_get_with_params(http: Httpx) -> None:
 
     echo = Echo(response.json())
 
-    echo.asser_url(expected="/get?Color=Yellow")
+    echo.endpoint(expected="/get?Color=Yellow")
 
 
 @pytest.mark.vcr
@@ -58,7 +58,7 @@ def test_should_patch(http: Httpx) -> None:
 
     echo = Echo(response.json())
 
-    echo.asser_url(expected="/patch")
+    echo.endpoint(expected="/patch")
     assert echo.user_agent() == "hogwarts"
     assert echo.content_type() == "application/json"
     assert echo.json() == json
@@ -70,7 +70,7 @@ def test_should_delete(http: Httpx) -> None:
 
     echo = Echo(response.json())
 
-    echo.asser_url(expected="/delete")
+    echo.endpoint(expected="/delete")
     assert echo.user_agent() == "hogwarts"
 
 
@@ -81,7 +81,7 @@ def test_should_put(http: Httpx) -> None:
 
     echo = Echo(response.json())
 
-    echo.asser_url(expected="/put")
+    echo.endpoint(expected="/put")
     assert echo.user_agent() == "hogwarts"
     assert echo.content_type() == "application/json"
     assert echo.json() == json
@@ -106,7 +106,7 @@ class Echo:
         default="http://localhost:8080",
     )
 
-    def asser_url(self, expected: str) -> None:
+    def endpoint(self, expected: str) -> None:
         assert self.url() == self.server + "/" + expected.strip("/")
 
     def url(self) -> str:
