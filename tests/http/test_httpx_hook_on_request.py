@@ -5,6 +5,7 @@ import pytest
 
 from apexdevkit.environment import value_of_env
 from apexdevkit.http import HttpMethod, Httpx
+from tests.http.echo import Echo
 
 ECHO_SERVER = value_of_env(variable="ECHO_SERVER")
 
@@ -40,33 +41,29 @@ class FakeRequestHandler:
 def test_should_hook_get_method(http: Httpx) -> None:
     response = http.request(HttpMethod.get, "/get")
 
-    headers = response.json().value_of("headers").as_dict()
-
-    assert headers["Handler"] == "on_get"
+    echo = Echo(response.json())
+    assert echo.header(name="Handler") == "on_get"
 
 
 @pytest.mark.vcr
 def test_should_hook_post_method(http: Httpx) -> None:
     response = http.request(HttpMethod.post, "/post")
 
-    headers = response.json().value_of("headers").as_dict()
-
-    assert headers["Handler"] == "on_post"
+    echo = Echo(response.json())
+    assert echo.header(name="Handler") == "on_post"
 
 
 @pytest.mark.vcr
 def test_should_hook_patch_method(http: Httpx) -> None:
     response = http.request(HttpMethod.patch, "/patch")
 
-    headers = response.json().value_of("headers").as_dict()
-
-    assert headers["Handler"] == "on_patch"
+    echo = Echo(response.json())
+    assert echo.header(name="Handler") == "on_patch"
 
 
 @pytest.mark.vcr
 def test_should_hook_delete_method(http: Httpx) -> None:
     response = http.request(HttpMethod.delete, "/delete")
 
-    headers = response.json().value_of("headers").as_dict()
-
-    assert headers["Handler"] == "on_delete"
+    echo = Echo(response.json())
+    assert echo.header(name="Handler") == "on_delete"
