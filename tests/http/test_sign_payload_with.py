@@ -15,7 +15,7 @@ class FakeAuthority:
         return Signature(name=self.HEADER, value=message)
 
     def verify(self, message: str, signature: Signature) -> bool:
-        return signature.value == message
+        raise NotImplementedError  # pragma: no cover
 
 
 @pytest.fixture

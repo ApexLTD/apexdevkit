@@ -13,7 +13,6 @@ from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.schema import SchemaFields
 from apexdevkit.fastapi.service import (
     RawCollection,
-    RawCollectionWithId,
     RawItem,
     RestfulService,
 )
@@ -175,10 +174,6 @@ class SuccessfulService(RestfulServiceBuilder, RestfulService):
         self.called_with = item
         return self.always_return
 
-    def create_many(self, items: RawCollection) -> RawCollection:
-        self.called_with = items
-        return [self.always_return]
-
     def read_one(self, item_id: str) -> RawItem:
         self.called_with = item_id
         return self.always_return
@@ -186,14 +181,6 @@ class SuccessfulService(RestfulServiceBuilder, RestfulService):
     def read_many(self, **params: Any) -> RawCollection:
         self.called_with = params
         return [self.always_return]
-
-    def filter_with(self, options: RawItem) -> RawCollection:
-        self.called_with = options
-        return [self.always_return]
-
-    def aggregation_with(self, options: RawItem) -> RawItem:
-        self.called_with = options
-        return {"count": 1, "sums": []}
 
     def read_all(self) -> RawCollection:
         self.called_with = None
@@ -203,17 +190,9 @@ class SuccessfulService(RestfulServiceBuilder, RestfulService):
         self.called_with = (item_id, with_fields)
         return self.always_return
 
-    def update_many(self, items: RawCollectionWithId) -> RawCollection:
-        self.called_with = items
-        return [self.always_return]
-
     def replace_one(self, item: RawItem) -> RawItem:
         self.called_with = item
         return self.always_return
-
-    def replace_many(self, items: RawCollection) -> RawCollection:
-        self.called_with = items
-        return [self.always_return]
 
     def delete_one(self, item_id: str) -> None:
         self.called_with = item_id
