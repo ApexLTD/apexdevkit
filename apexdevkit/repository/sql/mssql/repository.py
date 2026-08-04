@@ -8,7 +8,7 @@ from apexdevkit.error import DoesNotExistError
 from apexdevkit.repository import Database, Repository
 from apexdevkit.repository.core import ContainsMixin, ItemT
 from apexdevkit.repository.sql.connector import MsSqlConnector
-from apexdevkit.repository.sql.mssql import SqlTable
+from apexdevkit.repository.sql.mssql.table import SqlTable
 
 
 @dataclass(frozen=True, kw_only=True)
