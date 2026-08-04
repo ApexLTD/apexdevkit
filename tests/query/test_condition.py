@@ -4,7 +4,7 @@ from apexdevkit.query.generator import (
     MsSqlField,
     OperationEvaluator,
 )
-from apexdevkit.testing.fake import FakeLeaf, FakeOperator
+from tests.query.fake import FakeLeaf, FakeOperator
 
 
 def test_should_not_apply_condition() -> None:

@@ -1,7 +1,7 @@
 from faker import Faker
 
 from apexdevkit.query.generator import MsSqlSourceGenerator
-from apexdevkit.testing.fake import FakeFilter, FakeNumericValue, FakeStringValue
+from tests.query.fake import FakeNumericValue, FakeStringValue, FakeFilter
 
 
 def test_should_generate_filter() -> None:
