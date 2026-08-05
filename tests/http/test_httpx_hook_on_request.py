@@ -39,7 +39,7 @@ class FakeRequestHandler:
 
 @pytest.mark.vcr
 def test_should_hook_get_method(http: Httpx) -> None:
-    response = http.request(HttpMethod.get, "/get")
+    response = http.request(HttpMethod.get, "get")
 
     echo = Echo(response.json())
     assert echo.header(name="Handler") == "on_get"
@@ -47,7 +47,7 @@ def test_should_hook_get_method(http: Httpx) -> None:
 
 @pytest.mark.vcr
 def test_should_hook_post_method(http: Httpx) -> None:
-    response = http.request(HttpMethod.post, "/post")
+    response = http.request(HttpMethod.post, "post")
 
     echo = Echo(response.json())
     assert echo.header(name="Handler") == "on_post"
@@ -55,7 +55,7 @@ def test_should_hook_post_method(http: Httpx) -> None:
 
 @pytest.mark.vcr
 def test_should_hook_patch_method(http: Httpx) -> None:
-    response = http.request(HttpMethod.patch, "/patch")
+    response = http.request(HttpMethod.patch, "patch")
 
     echo = Echo(response.json())
     assert echo.header(name="Handler") == "on_patch"
@@ -63,7 +63,7 @@ def test_should_hook_patch_method(http: Httpx) -> None:
 
 @pytest.mark.vcr
 def test_should_hook_delete_method(http: Httpx) -> None:
-    response = http.request(HttpMethod.delete, "/delete")
+    response = http.request(HttpMethod.delete, "delete")
 
     echo = Echo(response.json())
     assert echo.header(name="Handler") == "on_delete"

@@ -38,22 +38,22 @@ class FakeResponseHandler:
 @pytest.mark.vcr
 def test_should_hook_get_method(http: Httpx) -> None:
     with pytest.raises(ValueError, match="get"):
-        http.request(HttpMethod.get, "/get")
+        http.request(HttpMethod.get, "get")
 
 
 @pytest.mark.vcr
 def test_should_hook_post_method(http: Httpx) -> None:
     with pytest.raises(ValueError, match="post"):
-        http.request(HttpMethod.post, "/post")
+        http.request(HttpMethod.post, "post")
 
 
 @pytest.mark.vcr
 def test_should_hook_patch_method(http: Httpx) -> None:
     with pytest.raises(ValueError, match="patch"):
-        http.request(HttpMethod.patch, "/patch")
+        http.request(HttpMethod.patch, "patch")
 
 
 @pytest.mark.vcr
 def test_should_hook_delete_method(http: Httpx) -> None:
     with pytest.raises(ValueError, match="delete"):
-        http.request(HttpMethod.delete, "/delete")
+        http.request(HttpMethod.delete, "delete")
