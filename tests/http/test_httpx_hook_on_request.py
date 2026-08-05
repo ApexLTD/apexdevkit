@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-import httpx
 import pytest
+from httpx2 import Request
 
 from apexdevkit.environment import value_of_env
 from apexdevkit.http import HttpMethod, Httpx
@@ -24,16 +24,16 @@ def http() -> Httpx:
 class FakeRequestHandler:
     name: str = "Handler"
 
-    def on_get(self, request: httpx.Request) -> None:
+    def on_get(self, request: Request) -> None:
         request.headers[self.name] = "on_get"
 
-    def on_post(self, request: httpx.Request) -> None:
+    def on_post(self, request: Request) -> None:
         request.headers[self.name] = "on_post"
 
-    def on_patch(self, request: httpx.Request) -> None:
+    def on_patch(self, request: Request) -> None:
         request.headers[self.name] = "on_patch"
 
-    def on_delete(self, request: httpx.Request) -> None:
+    def on_delete(self, request: Request) -> None:
         request.headers[self.name] = "on_delete"
 
 

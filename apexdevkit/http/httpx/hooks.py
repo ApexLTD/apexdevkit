@@ -3,8 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol, TypeVar
 
-import httpx
-from httpx import Request, SyncByteStream
+from httpx2 import Request, Response, SyncByteStream
 
 from apexdevkit.security import Authority
 
@@ -41,9 +40,9 @@ class DefaultHandler[ContextT]:
 
 @dataclass(frozen=True)
 class BeforeRequestHook:
-    handler: HttpxHandler[httpx.Request]
+    handler: HttpxHandler[Request]
 
-    def __call__(self, request: httpx.Request) -> None:
+    def __call__(self, request: Request) -> None:
         match request.method.upper():
             case "GET":
                 self.handler.on_get(request)
@@ -59,9 +58,9 @@ class BeforeRequestHook:
 
 @dataclass(frozen=True)
 class AfterResponseHook:
-    handler: HttpxHandler[httpx.Response]
+    handler: HttpxHandler[Response]
 
-    def __call__(self, response: httpx.Response) -> None:
+    def __call__(self, response: Response) -> None:
         match response.request.method.upper():
             case "GET":
                 self.handler.on_get(response)

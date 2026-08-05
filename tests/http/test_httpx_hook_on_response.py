@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-import httpx
 import pytest
+from httpx2 import Response
 
 from apexdevkit.environment import value_of_env
 from apexdevkit.http import HttpMethod, Httpx
@@ -22,16 +22,16 @@ def http() -> Httpx:
 
 @dataclass
 class FakeResponseHandler:
-    def on_get(self, _: httpx.Response) -> None:
+    def on_get(self, _: Response) -> None:
         raise ValueError("on_get")
 
-    def on_post(self, _: httpx.Response) -> None:
+    def on_post(self, _: Response) -> None:
         raise ValueError("on_post")
 
-    def on_patch(self, _: httpx.Response) -> None:
+    def on_patch(self, _: Response) -> None:
         raise ValueError("on_patch")
 
-    def on_delete(self, _: httpx.Response) -> None:
+    def on_delete(self, _: Response) -> None:
         raise ValueError("on_delete")
 
 

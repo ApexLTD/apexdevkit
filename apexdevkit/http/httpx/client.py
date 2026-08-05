@@ -4,7 +4,7 @@ from collections.abc import Callable, Iterator, Mapping
 from dataclasses import dataclass, field, replace
 from typing import Any
 
-import httpx
+from httpx2 import Client, Request, Response
 
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
 from apexdevkit.http.httpx.hooks import (
@@ -15,8 +15,8 @@ from apexdevkit.http.httpx.hooks import (
 from apexdevkit.http.json import JsonDict
 from apexdevkit.http.url import HttpUrl
 
-_RequestHandler = HttpxHandler[httpx.Request]
-_ResponseHandler = HttpxHandler[httpx.Response]
+_RequestHandler = HttpxHandler[Request]
+_ResponseHandler = HttpxHandler[Response]
 
 
 def default_config() -> HttpxConfig:
@@ -25,7 +25,7 @@ def default_config() -> HttpxConfig:
 
 @dataclass(frozen=True)
 class Httpx:
-    client: httpx.Client
+    client: Client
 
     config: HttpxConfig = field(default_factory=default_config)
 
@@ -90,8 +90,8 @@ class Httpx:
         def build(self) -> Httpx:
             return Httpx(self._build_client(), self.config)
 
-        def _build_client(self) -> httpx.Client:
-            return httpx.Client(
+        def _build_client(self) -> Client:
+            return Client(
                 base_url=self.url,
                 timeout=self.timeout_s,
                 event_hooks={
@@ -109,7 +109,7 @@ class Httpx:
 
 @dataclass(frozen=True)
 class _HttpxResponse:
-    inner: httpx.Response
+    inner: Response
 
     def code(self) -> int:
         return self.inner.status_code
