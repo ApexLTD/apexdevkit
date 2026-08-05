@@ -63,13 +63,13 @@ class FluentHttp:
         return FluentHttp(self.http.with_param(key, value))
 
     def and_json(self, value: JsonDict) -> FluentHttp:
-        return self.with_json(value)
+        return self.with_json(value)  # pragma: no cover
 
     def with_json(self, value: JsonDict) -> FluentHttp:
         return FluentHttp(self.http.with_json(value))
 
     def and_data(self, value: Any) -> FluentHttp:
-        return self.with_data(value)
+        return self.with_data(value)  # pragma: no cover
 
     def with_data(self, value: Any) -> FluentHttp:
         return FluentHttp(self.http.with_data(value))

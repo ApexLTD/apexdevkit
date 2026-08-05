@@ -1,9 +1,10 @@
-import pytest
 from pathlib import Path
+
+import pytest
 
 
 @pytest.fixture(scope="module")
-def vcr_cassette_dir(request):
+def vcr_cassette_dir(request: pytest.FixtureRequest) -> str:
     module_path = Path(request.module.__file__)
     module_name = module_path.stem.removeprefix("test_")
 
@@ -11,9 +12,5 @@ def vcr_cassette_dir(request):
 
 
 @pytest.fixture
-def default_cassette_name(request):
-    raw = str(request.node.name)
-    raw = raw.removeprefix("test_")
-    cassette_name = raw.removeprefix("should_")
-
-    return cassette_name
+def default_cassette_name(request: pytest.FixtureRequest) -> str:
+    return str(request.node.name).removeprefix("test_").removeprefix("should_")
