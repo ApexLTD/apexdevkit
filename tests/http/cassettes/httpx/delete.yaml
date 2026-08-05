@@ -8,21 +8,19 @@ interactions:
       - gzip, deflate, zstd
       connection:
       - keep-alive
-      handler:
-      - on_delete
       host:
       - localhost:8080
       user-agent:
-      - python-httpx/0.28.1
+      - hogwarts
     method: DELETE
     uri: http://localhost:8080/delete
   response:
     body:
       string: "{\n  \"args\": {}, \n  \"data\": \"\", \n  \"files\": {}, \n  \"form\":
         {}, \n  \"headers\": {\n    \"Accept\": \"*/*\", \n    \"Accept-Encoding\":
-        \"gzip, deflate, zstd\", \n    \"Connection\": \"keep-alive\", \n    \"Handler\":
-        \"on_delete\", \n    \"Host\": \"localhost:8080\", \n    \"User-Agent\": \"python-httpx/0.28.1\"\n
-        \ }, \n  \"json\": null, \n  \"origin\": \"11.10.0.17\", \n  \"url\": \"http://localhost:8080/delete\"\n}\n"
+        \"gzip, deflate, zstd\", \n    \"Connection\": \"keep-alive\", \n    \"Host\":
+        \"localhost:8080\", \n    \"User-Agent\": \"hogwarts\"\n  }, \n  \"json\":
+        null, \n  \"origin\": \"10.10.0.75\", \n  \"url\": \"http://localhost:8080/delete\"\n}\n"
     headers:
       access-control-allow-credentials:
       - 'true'
@@ -31,11 +29,11 @@ interactions:
       connection:
       - keep-alive
       content-length:
-      - '372'
+      - '332'
       content-type:
       - application/json
       date:
-      - Tue, 04 Aug 2026 18:33:57 GMT
+      - Wed, 05 Aug 2026 06:59:42 GMT
       server:
       - gunicorn/19.9.0
     status:

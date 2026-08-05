@@ -16,8 +16,8 @@ interactions:
       - localhost:8080
       user-agent:
       - hogwarts
-    method: PUT
-    uri: http://localhost:8080/put
+    method: POST
+    uri: http://localhost:8080/post
   response:
     body:
       string: "{\n  \"args\": {}, \n  \"data\": \"{\\\"Harry\\\":\\\"Potter\\\"}\",
@@ -26,7 +26,7 @@ interactions:
         \"keep-alive\", \n    \"Content-Length\": \"18\", \n    \"Content-Type\":
         \"application/json\", \n    \"Host\": \"localhost:8080\", \n    \"User-Agent\":
         \"hogwarts\"\n  }, \n  \"json\": {\n    \"Harry\": \"Potter\"\n  }, \n  \"origin\":
-        \"11.10.0.17\", \n  \"url\": \"http://localhost:8080/put\"\n}\n"
+        \"10.10.0.75\", \n  \"url\": \"http://localhost:8080/post\"\n}\n"
     headers:
       access-control-allow-credentials:
       - 'true'
@@ -35,11 +35,11 @@ interactions:
       connection:
       - keep-alive
       content-length:
-      - '444'
+      - '445'
       content-type:
       - application/json
       date:
-      - Tue, 04 Aug 2026 18:33:48 GMT
+      - Wed, 05 Aug 2026 06:59:31 GMT
       server:
       - gunicorn/19.9.0
     status:

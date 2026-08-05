@@ -1,6 +1,6 @@
 interactions:
 - request:
-    body: Harry=Potter
+    body: '{"Harry":"Potter"}'
     headers:
       accept:
       - '*/*'
@@ -9,24 +9,24 @@ interactions:
       connection:
       - keep-alive
       content-length:
-      - '12'
+      - '18'
       content-type:
-      - application/x-www-form-urlencoded
+      - application/json
       host:
       - localhost:8080
       user-agent:
       - hogwarts
-    method: POST
-    uri: http://localhost:8080/post
+    method: PUT
+    uri: http://localhost:8080/put
   response:
     body:
-      string: "{\n  \"args\": {}, \n  \"data\": \"\", \n  \"files\": {}, \n  \"form\":
-        {\n    \"Harry\": \"Potter\"\n  }, \n  \"headers\": {\n    \"Accept\": \"*/*\",
+      string: "{\n  \"args\": {}, \n  \"data\": \"{\\\"Harry\\\":\\\"Potter\\\"}\",
+        \n  \"files\": {}, \n  \"form\": {}, \n  \"headers\": {\n    \"Accept\": \"*/*\",
         \n    \"Accept-Encoding\": \"gzip, deflate, zstd\", \n    \"Connection\":
-        \"keep-alive\", \n    \"Content-Length\": \"12\", \n    \"Content-Type\":
-        \"application/x-www-form-urlencoded\", \n    \"Host\": \"localhost:8080\",
-        \n    \"User-Agent\": \"hogwarts\"\n  }, \n  \"json\": null, \n  \"origin\":
-        \"11.10.0.17\", \n  \"url\": \"http://localhost:8080/post\"\n}\n"
+        \"keep-alive\", \n    \"Content-Length\": \"18\", \n    \"Content-Type\":
+        \"application/json\", \n    \"Host\": \"localhost:8080\", \n    \"User-Agent\":
+        \"hogwarts\"\n  }, \n  \"json\": {\n    \"Harry\": \"Potter\"\n  }, \n  \"origin\":
+        \"10.10.0.75\", \n  \"url\": \"http://localhost:8080/put\"\n}\n"
     headers:
       access-control-allow-credentials:
       - 'true'
@@ -35,11 +35,11 @@ interactions:
       connection:
       - keep-alive
       content-length:
-      - '442'
+      - '444'
       content-type:
       - application/json
       date:
-      - Tue, 04 Aug 2026 18:33:37 GMT
+      - Wed, 05 Aug 2026 06:59:44 GMT
       server:
       - gunicorn/19.9.0
     status:

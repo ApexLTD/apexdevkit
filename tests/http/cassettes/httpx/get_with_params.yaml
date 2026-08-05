@@ -19,7 +19,7 @@ interactions:
       string: "{\n  \"args\": {\n    \"Color\": \"Yellow\"\n  }, \n  \"headers\":
         {\n    \"Accept\": \"*/*\", \n    \"Accept-Encoding\": \"gzip, deflate, zstd\",
         \n    \"Connection\": \"keep-alive\", \n    \"Host\": \"localhost:8080\",
-        \n    \"User-Agent\": \"hogwarts\"\n  }, \n  \"origin\": \"11.10.0.17\", \n
+        \n    \"User-Agent\": \"hogwarts\"\n  }, \n  \"origin\": \"10.10.0.75\", \n
         \ \"url\": \"http://localhost:8080/get?Color=Yellow\"\n}\n"
     headers:
       access-control-allow-credentials:
@@ -33,7 +33,7 @@ interactions:
       content-type:
       - application/json
       date:
-      - Tue, 04 Aug 2026 18:33:42 GMT
+      - Wed, 05 Aug 2026 06:59:38 GMT
       server:
       - gunicorn/19.9.0
     status:

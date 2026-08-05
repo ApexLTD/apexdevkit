@@ -1,6 +1,6 @@
 interactions:
 - request:
-    body: '{"Harry":"Potter"}'
+    body: '{"body":"content"}'
     headers:
       accept:
       - '*/*'
@@ -15,18 +15,21 @@ interactions:
       host:
       - localhost:8080
       user-agent:
-      - hogwarts
+      - python-httpx/0.28.1
+      x-header:
+      - '{"body":"content"}'
     method: POST
     uri: http://localhost:8080/post
   response:
     body:
-      string: "{\n  \"args\": {}, \n  \"data\": \"{\\\"Harry\\\":\\\"Potter\\\"}\",
+      string: "{\n  \"args\": {}, \n  \"data\": \"{\\\"body\\\":\\\"content\\\"}\",
         \n  \"files\": {}, \n  \"form\": {}, \n  \"headers\": {\n    \"Accept\": \"*/*\",
         \n    \"Accept-Encoding\": \"gzip, deflate, zstd\", \n    \"Connection\":
         \"keep-alive\", \n    \"Content-Length\": \"18\", \n    \"Content-Type\":
         \"application/json\", \n    \"Host\": \"localhost:8080\", \n    \"User-Agent\":
-        \"hogwarts\"\n  }, \n  \"json\": {\n    \"Harry\": \"Potter\"\n  }, \n  \"origin\":
-        \"11.10.0.17\", \n  \"url\": \"http://localhost:8080/post\"\n}\n"
+        \"python-httpx/0.28.1\", \n    \"X-Header\": \"{\\\"body\\\":\\\"content\\\"}\"\n
+        \ }, \n  \"json\": {\n    \"body\": \"content\"\n  }, \n  \"origin\": \"10.10.0.75\",
+        \n  \"url\": \"http://localhost:8080/post\"\n}\n"
     headers:
       access-control-allow-credentials:
       - 'true'
@@ -35,11 +38,11 @@ interactions:
       connection:
       - keep-alive
       content-length:
-      - '445'
+      - '499'
       content-type:
       - application/json
       date:
-      - Tue, 04 Aug 2026 18:33:35 GMT
+      - Wed, 05 Aug 2026 07:00:04 GMT
       server:
       - gunicorn/19.9.0
     status:

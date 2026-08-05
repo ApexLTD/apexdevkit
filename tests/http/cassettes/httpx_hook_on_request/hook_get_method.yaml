@@ -8,18 +8,21 @@ interactions:
       - gzip, deflate, zstd
       connection:
       - keep-alive
+      handler:
+      - on_get
       host:
       - localhost:8080
       user-agent:
-      - hogwarts
+      - python-httpx/0.28.1
     method: GET
     uri: http://localhost:8080/get
   response:
     body:
       string: "{\n  \"args\": {}, \n  \"headers\": {\n    \"Accept\": \"*/*\", \n
         \   \"Accept-Encoding\": \"gzip, deflate, zstd\", \n    \"Connection\": \"keep-alive\",
-        \n    \"Host\": \"localhost:8080\", \n    \"User-Agent\": \"hogwarts\"\n  },
-        \n  \"origin\": \"11.10.0.17\", \n  \"url\": \"http://localhost:8080/get\"\n}\n"
+        \n    \"Handler\": \"on_get\", \n    \"Host\": \"localhost:8080\", \n    \"User-Agent\":
+        \"python-httpx/0.28.1\"\n  }, \n  \"origin\": \"10.10.0.75\", \n  \"url\":
+        \"http://localhost:8080/get\"\n}\n"
     headers:
       access-control-allow-credentials:
       - 'true'
@@ -28,11 +31,11 @@ interactions:
       connection:
       - keep-alive
       content-length:
-      - '266'
+      - '303'
       content-type:
       - application/json
       date:
-      - Tue, 04 Aug 2026 18:33:39 GMT
+      - Wed, 05 Aug 2026 06:59:47 GMT
       server:
       - gunicorn/19.9.0
     status:

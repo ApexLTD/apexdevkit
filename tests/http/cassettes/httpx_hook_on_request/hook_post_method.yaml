@@ -11,21 +11,21 @@ interactions:
       content-length:
       - '0'
       handler:
-      - on_patch
+      - on_post
       host:
       - localhost:8080
       user-agent:
       - python-httpx/0.28.1
-    method: PATCH
-    uri: http://localhost:8080/patch
+    method: POST
+    uri: http://localhost:8080/post
   response:
     body:
       string: "{\n  \"args\": {}, \n  \"data\": \"\", \n  \"files\": {}, \n  \"form\":
         {}, \n  \"headers\": {\n    \"Accept\": \"*/*\", \n    \"Accept-Encoding\":
         \"gzip, deflate, zstd\", \n    \"Connection\": \"keep-alive\", \n    \"Content-Length\":
-        \"0\", \n    \"Handler\": \"on_patch\", \n    \"Host\": \"localhost:8080\",
+        \"0\", \n    \"Handler\": \"on_post\", \n    \"Host\": \"localhost:8080\",
         \n    \"User-Agent\": \"python-httpx/0.28.1\"\n  }, \n  \"json\": null, \n
-        \ \"origin\": \"11.10.0.17\", \n  \"url\": \"http://localhost:8080/patch\"\n}\n"
+        \ \"origin\": \"10.10.0.75\", \n  \"url\": \"http://localhost:8080/post\"\n}\n"
     headers:
       access-control-allow-credentials:
       - 'true'
@@ -34,11 +34,11 @@ interactions:
       connection:
       - keep-alive
       content-length:
-      - '398'
+      - '396'
       content-type:
       - application/json
       date:
-      - Tue, 04 Aug 2026 18:33:55 GMT
+      - Wed, 05 Aug 2026 06:59:49 GMT
       server:
       - gunicorn/19.9.0
     status:
