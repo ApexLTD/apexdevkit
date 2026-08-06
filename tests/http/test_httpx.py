@@ -1,6 +1,6 @@
 import pytest
+from pypebbles.runtime import Environment
 
-from apexdevkit.environment import value_of_env
 from apexdevkit.http import Http, HttpMethod, Httpx, JsonDict
 
 from .echo import Echo
@@ -84,7 +84,7 @@ def test_should_put(http: Httpx) -> None:
 def http() -> Http:
     return (
         Httpx.Builder()
-        .with_url(value_of_env(variable="ECHO_SERVER"))
+        .with_url(Environment().value_of("ECHO_SERVER"))
         .build()
         .with_header("User-Agent", "hogwarts")
     )

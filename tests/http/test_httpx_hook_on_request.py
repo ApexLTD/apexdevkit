@@ -2,12 +2,12 @@ from dataclasses import dataclass
 
 import pytest
 from httpx2 import Request
+from pypebbles.runtime import Environment
 
-from apexdevkit.environment import value_of_env
 from apexdevkit.http import HttpMethod, Httpx
 from tests.http.echo import Echo
 
-ECHO_SERVER = value_of_env(variable="ECHO_SERVER")
+ECHO_SERVER = Environment().value_of("ECHO_SERVER")
 
 
 @pytest.fixture

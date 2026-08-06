@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from typing import Any
 
-from apexdevkit.environment import environment_variable
+from pypebbles.runtime import Environment
+
 from apexdevkit.fluent import FluentDict
 from apexdevkit.http import JsonDict
 
@@ -10,8 +11,8 @@ from apexdevkit.http import JsonDict
 class Echo:
     raw: JsonDict
 
-    server: str = environment_variable(
-        name="ECHO_SERVER",
+    server: str = Environment().inject(
+        variable="ECHO_SERVER",
         default="http://localhost:8080",
     )
 

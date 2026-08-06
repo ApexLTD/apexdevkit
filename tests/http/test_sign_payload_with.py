@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 import pytest
+from pypebbles.runtime import Environment
 
-from apexdevkit.environment import value_of_env
 from apexdevkit.http import HttpMethod, Httpx, JsonDict, SignPayloadWith
 from apexdevkit.security import Signature
 
@@ -22,7 +22,7 @@ class FakeAuthority:
 def http() -> Httpx:
     return (
         Httpx.Builder()
-        .with_url(value_of_env(variable="ECHO_SERVER"))
+        .with_url(Environment().value_of("ECHO_SERVER"))
         .before_request(SignPayloadWith(FakeAuthority()))
         .build()
     )
