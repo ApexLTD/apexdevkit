@@ -1153,6 +1153,18 @@ files = [
 ]
 
 [[package]]
+name = "pypebbles"
+version = "0.1.5"
+description = "Python Pebbles"
+optional = false
+python-versions = "<4,>=3.12"
+groups = ["main"]
+files = [
+    {file = "pypebbles-0.1.5-py3-none-any.whl", hash = "sha256:809062871d9a36944e4cf83549c2c3cfb4f4a8082c910b2a33abfc24ba0e4bb5"},
+    {file = "pypebbles-0.1.5.tar.gz", hash = "sha256:865332c3b0d2b91bce7be77c7f24617369a1b28d98a8b9454cf416d1e8bf39e8"},
+]
+
+[[package]]
 name = "pyperclip"
 version = "1.11.0"
 description = "A cross-platform clipboard module for Python. (Only handles plain text for now.)"
@@ -1549,14 +1561,14 @@ files = [
 
 [[package]]
 name = "starlette"
-version = "1.3.1"
+version = "1.4.1"
 description = "The little ASGI library that shines."
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "starlette-1.3.1-py3-none-any.whl", hash = "sha256:c7372aae11c3c3f26a42df7bd626cec2f47d03483d261d369516a615a53714c6"},
-    {file = "starlette-1.3.1.tar.gz", hash = "sha256:05d0213193f2fbaae60e2ecb593b4add4262ad4e46536b54abe36f11a71724e0"},
+    {file = "starlette-1.4.1-py3-none-any.whl", hash = "sha256:7d078e0fbefae0d2cecfb80a799d6fb84b1c0c6acd4f14ac79d17d0e7ec27f19"},
+    {file = "starlette-1.4.1.tar.gz", hash = "sha256:b7332de6e9375593a29ba9eee1e6ecfeb3eb2043e2e19a13b4b71da73ff35540"},
 ]
 
 [package.dependencies]
@@ -1889,4 +1901,4 @@ dev = ["pytest", "setuptools"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4"
-content-hash = "0a4e941785e39ab244941d4b3ea47ecaa269ed638971b8ca5a208ce42d655387"
+content-hash = "f213f0992ebf82674c04de9757cae3a9cddd557a44f2eb11d09372bd6d5307f9"

@@ -17,6 +17,7 @@ pymssql = "2.*"
 pydantic = "*"
 sentry-sdk = { extras = ["fastapi"], version = "*" }
 uvicorn = "*"
+pypebbles = "0.1.*"
 
 [tool.poetry.group.dev.dependencies]
 apexcodexpy = "0.6.6"
