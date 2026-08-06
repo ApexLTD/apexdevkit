@@ -5,13 +5,13 @@ from typing import Annotated, Any, Protocol, Self, TypeVar
 
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.responses import JSONResponse
+from pypebbles import FluentDict
 
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.resource import RestfulResource
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.schema import RestfulSchema, Schema, SchemaFields
 from apexdevkit.fastapi.service import RawItem, RestfulService
-from apexdevkit.fluent import FluentDict
 
 
 class RouterWithHiddenUnderscoreRoutes(APIRouter):

@@ -37,7 +37,7 @@ def test_should_hook_post_method(http: Httpx) -> None:
         .request(HttpMethod.post, "/post")
         .json()
         .value_of("headers")
-        .as_dict()
+        .to(dict)
     )
 
     assert headers[FakeAuthority.HEADER] == '{"body":"content"}'

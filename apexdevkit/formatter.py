@@ -6,7 +6,7 @@ from copy import deepcopy
 from dataclasses import asdict, dataclass, field, fields, is_dataclass
 from typing import Any, Protocol, Self, get_args, get_type_hints
 
-from apexdevkit.fluent import FluentDict
+from pypebbles import FluentDict
 
 
 class Formatter[SourceT, TargetT](Protocol):  # pragma: no cover

@@ -159,7 +159,7 @@ class _Response:
         return self.with_message(value)
 
     def with_message(self, value: str) -> Self:
-        assert self.json.value_of("error").as_dict() == {"message": value}, self.json
+        assert self.json.value_of("error").to(dict) == {"message": value}, self.json
 
         return self
 
@@ -176,7 +176,7 @@ class _Response:
         return self.with_data(**{self.resource.plural: values}, count=len(values))
 
     def with_data(self, **kwargs: Any) -> Self:
-        assert self.json.value_of("data").as_dict() == {**kwargs}, self.json
+        assert self.json.value_of("data").to(dict) == {**kwargs}, self.json
 
         return self
 

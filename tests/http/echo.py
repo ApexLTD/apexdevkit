@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from typing import Any
 
+from pypebbles import FluentDict
 from pypebbles.runtime import Environment
 
-from apexdevkit.fluent import FluentDict
 from apexdevkit.http import JsonDict
 
 

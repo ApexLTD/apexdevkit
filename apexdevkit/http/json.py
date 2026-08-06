@@ -1,5 +1,3 @@
-from typing import Any
+from pypebbles import JsonDict
 
-from apexdevkit.fluent import FluentDict
-
-JsonDict = FluentDict[Any]
+__all__ = ["JsonDict"]
