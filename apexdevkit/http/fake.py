@@ -3,8 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Self
 
+from pypebbles import JsonDict
+
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
-from apexdevkit.http.json import JsonDict
 
 
 @dataclass(frozen=True)

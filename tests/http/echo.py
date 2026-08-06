@@ -1,10 +1,7 @@
 from dataclasses import dataclass
-from typing import Any
 
-from pypebbles import FluentDict
+from pypebbles import JsonDict
 from pypebbles.runtime import Environment
-
-from apexdevkit.http import JsonDict
 
 
 @dataclass(frozen=True)
@@ -37,5 +34,5 @@ class Echo:
     def assert_form(self, *, expected: JsonDict) -> None:
         assert self._sub_object_of(key="form") == expected
 
-    def _sub_object_of(self, key: str) -> FluentDict[Any]:
+    def _sub_object_of(self, key: str) -> JsonDict:
         return JsonDict(self.raw.value_of(key).to(dict))

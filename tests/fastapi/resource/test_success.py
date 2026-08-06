@@ -3,8 +3,8 @@ from __future__ import annotations
 from uuid import uuid4
 
 import pytest
+from pypebbles import JsonDict
 
-from apexdevkit.http import JsonDict
 from tests.fastapi.rest import RestCollection
 from tests.fastapi.sample_api import FakeApple, SuccessfulService
 

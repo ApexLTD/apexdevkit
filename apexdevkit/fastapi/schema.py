@@ -5,10 +5,9 @@ from functools import cached_property
 from typing import Any
 
 from pydantic import BaseModel, create_model
-from pypebbles import FluentDict
+from pypebbles import FluentDict, JsonDict
 
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.http import JsonDict
 from apexdevkit.value import Value
 
 

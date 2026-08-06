@@ -1,7 +1,8 @@
 import pytest
+from pypebbles import JsonDict
 from pypebbles.runtime import Environment
 
-from apexdevkit.http import Http, HttpMethod, Httpx, JsonDict
+from apexdevkit.http import Http, HttpMethod, Httpx
 
 from .echo import Echo
 

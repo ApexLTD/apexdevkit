@@ -5,6 +5,7 @@ from dataclasses import dataclass, field, replace
 from typing import Any
 
 from httpx2 import Client, Request, Response
+from pypebbles import JsonDict
 
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
 from apexdevkit.http.httpx.hooks import (
@@ -12,7 +13,6 @@ from apexdevkit.http.httpx.hooks import (
     BeforeRequestHook,
     HttpxHandler,
 )
-from apexdevkit.http.json import JsonDict
 from apexdevkit.http.url import HttpUrl
 
 _RequestHandler = HttpxHandler[Request]

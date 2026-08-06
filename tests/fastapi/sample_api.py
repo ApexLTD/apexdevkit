@@ -7,6 +7,7 @@ from functools import cached_property
 from typing import Any
 
 from fastapi import FastAPI
+from pypebbles import JsonDict
 
 from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
 from apexdevkit.fastapi.name import RestfulName
@@ -16,7 +17,6 @@ from apexdevkit.fastapi.service import (
     RawItem,
     RestfulService,
 )
-from apexdevkit.http import JsonDict
 from apexdevkit.query import Filter
 from apexdevkit.query.query import Operator, Page, Sort
 from tests.fake import FakeResource

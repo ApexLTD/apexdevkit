@@ -1,4 +1,6 @@
-from apexdevkit.http import FakeHttp, FluentHttp, JsonDict
+from pypebbles import JsonDict
+
+from apexdevkit.http import FakeHttp, FluentHttp
 from apexdevkit.http.fluent import HttpMethod
 
 

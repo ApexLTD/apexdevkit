@@ -5,8 +5,7 @@ from functools import cached_property
 from typing import Any
 
 from faker import Faker
-
-from apexdevkit.http import JsonDict
+from pypebbles import JsonDict
 
 
 @dataclass(frozen=True)

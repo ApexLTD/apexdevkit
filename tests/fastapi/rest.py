@@ -4,8 +4,10 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, Self
 
+from pypebbles import JsonDict
+
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.http import Http, HttpMethod, JsonDict
+from apexdevkit.http import Http, HttpMethod
 from apexdevkit.http.fluent import HttpResponse
 
 

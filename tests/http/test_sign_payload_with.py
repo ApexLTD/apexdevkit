@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 
 import pytest
+from pypebbles import JsonDict
 from pypebbles.runtime import Environment
 
-from apexdevkit.http import HttpMethod, Httpx, JsonDict, SignPayloadWith
+from apexdevkit.http import HttpMethod, Httpx, SignPayloadWith
 from apexdevkit.security import Signature
 
 

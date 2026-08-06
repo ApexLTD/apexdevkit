@@ -1,9 +1,10 @@
 import pytest
+from pypebbles import JsonDict
 
 from apexdevkit.error import ExistsError
-from apexdevkit.http import JsonDict
-from tests.fastapi.rest import RestCollection
-from tests.fastapi.sample_api import FailingService, FakeApple
+
+from ..rest import RestCollection
+from ..sample_api import FailingService, FakeApple
 
 
 @pytest.fixture
