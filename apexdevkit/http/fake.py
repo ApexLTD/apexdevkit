@@ -1,11 +1,31 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Self
+from dataclasses import dataclass, field, replace
+from typing import Any
 
 from pypebbles import JsonDict
 
-from .domain import HttpMethod, HttpResponse
+from .domain import HttpMethod, HttpRequest, HttpResponse
+
+
+@dataclass(frozen=True)
+class InternalEcho:
+    _request: HttpRequest = field(default_factory=HttpRequest)
+
+    def transport(self, request: HttpRequest) -> InternalEcho:
+        return replace(self, _request=request)
+
+    def over(self, method: HttpMethod) -> HttpResponse:
+        return FakeResponse(
+            content={
+                "method": method.name,
+                "endpoint": self._request.endpoint,
+                "headers": self._request.headers,
+                "params": self._request.params,
+                "json": self._request.json,
+                "data": self._request.data,
+            }
+        )
 
 
 @dataclass(frozen=True)
@@ -40,57 +60,3 @@ class FakeResponse:
 
     def to[T](self, a_type: type[T]) -> T:
         return a_type(self)
-
-
-@dataclass
-class FakeHttp:
-    response: FakeResponse = field(default_factory=FakeResponse)
-
-    headers: dict[str, str] = field(default_factory=dict)
-    params: dict[str, str] = field(default_factory=dict)
-    json: JsonDict = field(default_factory=JsonDict)
-    data: Any = field(default_factory=JsonDict)
-
-    _request: InterceptedRequest = field(init=False)
-
-    def with_endpoint(self, value: str) -> Self:  # pragma: no cover
-        raise NotImplementedError
-
-    def with_header(self, key: str, value: str) -> Self:
-        self.headers[key] = value
-
-        return self
-
-    def with_param(self, key: str, value: str) -> Self:
-        self.params[key] = value
-
-        return self
-
-    def with_json(self, value: JsonDict) -> Self:
-        self.json = value
-
-        return self
-
-    def with_data(self, value: Any) -> Self:
-        self.data = value
-
-        return self
-
-    def request(self, method: HttpMethod, endpoint: str = "") -> HttpResponse:
-        self._request = InterceptedRequest(method, endpoint)
-
-        return self.response
-
-    def intercepted(self, method: HttpMethod) -> InterceptedRequest:
-        assert self._request.method == method
-
-        return self._request
-
-
-@dataclass
-class InterceptedRequest:
-    method: HttpMethod
-    endpoint: str
-
-    def on_endpoint(self, value: str) -> None:
-        assert self.endpoint == value

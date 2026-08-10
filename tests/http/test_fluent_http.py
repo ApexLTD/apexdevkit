@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field, replace
-
 from pypebbles import JsonDict
 
-from apexdevkit.http import FakeHttp, FluentHttp, Http, HttpMethod
-from apexdevkit.http.domain import HttpRequest, HttpResponse
-from apexdevkit.http.fake import FakeResponse
+from apexdevkit.http import FluentHttp, HttpMethod
+from apexdevkit.http.fake import InternalEcho
 
 
 def test_should_attach_headers() -> None:
@@ -64,13 +61,14 @@ def test_should_attach_data() -> None:
 
 
 def test_should_form_post_response() -> None:
-    http = FakeHttp()
-
-    response = (
-        FluentHttp(channel=InternalEcho(http)).on_endpoint(HttpMethod.post.name).post()
+    echo = (
+        FluentHttp(channel=InternalEcho())
+        .on_endpoint(HttpMethod.post.name)
+        .post()
+        .json()
     )
 
-    assert response.json() == (
+    assert echo == (
         JsonDict()
         .with_a(method="post")
         .and_a(endpoint="post")
@@ -81,50 +79,40 @@ def test_should_form_post_response() -> None:
     )
 
 
-def test_should_post_with_defaults() -> None:
-    http = FakeHttp()
-
-    FluentHttp(channel=InternalEcho(http)).on_endpoint(HttpMethod.post.name).post()
-
-    assert http.json == JsonDict()
-
-
 def test_should_post_with_json() -> None:
-    http = FakeHttp()
-    value = JsonDict().with_a(Harry="Potter")
+    expected = JsonDict().with_a(Harry="Potter")
 
-    (
-        FluentHttp(channel=InternalEcho(http))
-        .with_json(value)
+    echo = (
+        FluentHttp(channel=InternalEcho())
+        .with_json(expected)
         .on_endpoint(HttpMethod.post.name)
         .post()
+        .json()
     )
 
-    assert http.json == value
+    assert echo["json"] == expected
 
 
 def test_should_post_with_data() -> None:
-    http = FakeHttp()
-    value = JsonDict().with_a(Harry="Potter")
+    expected = JsonDict().with_a(Harry="Potter")
 
-    (
-        FluentHttp(channel=InternalEcho(http))
-        .with_data(value)
+    echo = (
+        FluentHttp(channel=InternalEcho())
+        .with_data(expected)
         .on_endpoint(HttpMethod.post.name)
         .post()
+        .json()
     )
 
-    assert http.data == value
+    assert echo["data"] == expected
 
 
 def test_should_form_get_response() -> None:
-    http = FakeHttp()
-
-    response = (
-        FluentHttp(channel=InternalEcho(http)).on_endpoint(HttpMethod.get.name).get()
+    echo = (
+        FluentHttp(channel=InternalEcho()).on_endpoint(HttpMethod.get.name).get().json()
     )
 
-    assert response.json() == (
+    assert echo == (
         JsonDict()
         .with_a(method="get")
         .and_a(endpoint="get")
@@ -136,23 +124,26 @@ def test_should_form_get_response() -> None:
 
 
 def test_should_get() -> None:
-    http = FakeHttp()
+    echo = (
+        FluentHttp(channel=InternalEcho())
+        .on_endpoint(HttpMethod.get.name)
+        .get()
+        .json()
+        .select("method", "endpoint")
+    )
 
-    FluentHttp(channel=InternalEcho(http)).on_endpoint(HttpMethod.get.name).get()
-
-    http.intercepted(HttpMethod.get).on_endpoint(HttpMethod.get.name)
+    assert echo == {"method": "get", "endpoint": "get"}
 
 
 def test_should_form_patch_response() -> None:
-    http = FakeHttp()
-
-    response = (
-        FluentHttp(channel=InternalEcho(http))
+    echo = (
+        FluentHttp(channel=InternalEcho())
         .on_endpoint(HttpMethod.patch.name)
         .patch()
+        .json()
     )
 
-    assert response.json() == (
+    assert echo == (
         JsonDict()
         .with_a(method="patch")
         .and_a(endpoint="patch")
@@ -163,64 +154,55 @@ def test_should_form_patch_response() -> None:
     )
 
 
-def test_should_patch_with_defaults() -> None:
-    http = FakeHttp()
-
-    (FluentHttp(channel=InternalEcho(http)).on_endpoint(HttpMethod.patch.name).patch())
-
-    assert http.json == JsonDict()
-
-
 def test_should_patch_with_json() -> None:
-    http = FakeHttp()
     value = JsonDict().with_a(Harry="Potter")
 
-    (
-        FluentHttp(channel=InternalEcho(http))
+    echo = (
+        FluentHttp(channel=InternalEcho())
         .with_json(value)
         .on_endpoint(HttpMethod.patch.name)
         .patch()
+        .json()
     )
 
-    assert http.json == value
+    assert echo["json"] == value
 
 
 def test_should_patch_with_data() -> None:
-    http = FakeHttp()
     value = JsonDict().with_a(Harry="Potter")
 
-    (
-        FluentHttp(channel=InternalEcho(http))
+    echo = (
+        FluentHttp(channel=InternalEcho())
         .with_data(value)
         .on_endpoint(HttpMethod.patch.name)
         .patch()
+        .json()
     )
 
-    assert http.data == value
+    assert echo["data"] == value
 
 
 def test_should_delete() -> None:
-    http = FakeHttp()
-
-    (
-        FluentHttp(channel=InternalEcho(http))
+    echo = (
+        FluentHttp(channel=InternalEcho())
         .on_endpoint(HttpMethod.delete.name)
         .delete()
+        .json()
+        .select("method", "endpoint")
     )
 
-    http.intercepted(HttpMethod.delete).on_endpoint(HttpMethod.delete.name)
+    assert echo == {"method": "delete", "endpoint": "delete"}
 
 
 def test_should_form_delete_response() -> None:
-    http = FakeHttp()
-
-    response = (
-        FluentHttp(channel=InternalEcho(http))
+    echo = (
+        FluentHttp(channel=InternalEcho())
         .on_endpoint(HttpMethod.delete.name)
         .delete()
+        .json()
     )
 
-    assert response.json() == (
+    assert echo == (
         JsonDict()
         .with_a(method="delete")
         .and_a(endpoint="delete")
@@ -232,13 +214,11 @@ def test_should_form_delete_response() -> None:
 
 
 def test_should_form_put_response() -> None:
-    http = FakeHttp()
-
-    response = (
-        FluentHttp(channel=InternalEcho(http)).on_endpoint(HttpMethod.put.name).put()
+    echo = (
+        FluentHttp(channel=InternalEcho()).on_endpoint(HttpMethod.put.name).put().json()
     )
 
-    assert response.json() == (
+    assert echo == (
         JsonDict()
         .with_a(method="put")
         .and_a(endpoint="put")
@@ -249,75 +229,29 @@ def test_should_form_put_response() -> None:
     )
 
 
-def test_should_put_with_defaults() -> None:
-    http = FakeHttp()
-
-    FluentHttp(channel=InternalEcho(http)).on_endpoint(HttpMethod.put.name).put()
-
-    assert http.json == JsonDict()
-
-
 def test_should_put_with_json() -> None:
-    http = FakeHttp()
     value = JsonDict().with_a(Harry="Potter")
 
-    (
-        FluentHttp(channel=InternalEcho(http))
+    echo = (
+        FluentHttp(channel=InternalEcho())
         .with_json(value)
         .on_endpoint(HttpMethod.put.name)
         .put()
+        .json()
     )
 
-    assert http.json == value
+    assert echo["json"] == value
 
 
 def test_should_put_with_data() -> None:
-    http = FakeHttp()
     value = JsonDict().with_a(Harry="Potter")
 
-    (
-        FluentHttp(channel=InternalEcho(http))
+    echo = (
+        FluentHttp(channel=InternalEcho())
         .with_data(value)
         .on_endpoint(HttpMethod.put.name)
         .put()
+        .json()
     )
 
-    assert http.data == value
-
-
-@dataclass(frozen=True)
-class InternalEcho:
-    http: Http = field(default_factory=FakeHttp)
-
-    _request: HttpRequest = field(default_factory=HttpRequest)
-
-    def transport(self, request: HttpRequest) -> InternalEcho:
-        return replace(self, _request=request)
-
-    def over(self, method: HttpMethod) -> HttpResponse:
-        http = self.http
-
-        for key, value in self._request.headers.items():
-            http = http.with_header(key, value)
-
-        for key, value in self._request.params.items():
-            http = http.with_param(key, value)
-
-        if self._request.data is not None:
-            http = http.with_data(self._request.data)
-
-        if self._request.json is not None:
-            http = http.with_json(self._request.json)
-
-        http.request(method, endpoint=self._request.endpoint)
-
-        return FakeResponse(
-            content={
-                "method": method.name,
-                "endpoint": self._request.endpoint,
-                "headers": self._request.headers,
-                "params": self._request.params,
-                "json": self._request.json,
-                "data": self._request.data,
-            }
-        )
+    assert echo["data"] == value
