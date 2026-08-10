@@ -2,7 +2,7 @@ import pytest
 from pypebbles import JsonDict
 from pypebbles.runtime import Environment
 
-from apexdevkit.http import Http, HttpMethod, Httpx
+from apexdevkit.http import HttpMethod, Httpx
 
 from .echo import Echo
 
@@ -82,7 +82,7 @@ def test_should_put(http: Httpx) -> None:
 
 
 @pytest.fixture
-def http() -> Http:
+def http() -> Httpx:
     return (
         Httpx.Builder()
         .with_url(Environment().value_of("ECHO_SERVER"))
