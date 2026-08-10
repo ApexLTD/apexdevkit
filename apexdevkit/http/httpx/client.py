@@ -46,14 +46,7 @@ class Httpx:
 
     def request(self, method: HttpMethod, endpoint: str = "") -> HttpResponse:
         return _HttpxResponse(
-            self.client.request(
-                method.name,
-                url=self.config.with_endpoint(endpoint).endpoint,
-                headers=self.config.headers,
-                params=self.config.params,
-                json=self.config.json if self.config.json is not None else None,
-                data=self.config.data if self.config.data is not None else None,
-            )
+            self.config.with_endpoint(endpoint).send(method, using=self.client)
         )
 
     @dataclass
@@ -147,3 +140,13 @@ class HttpxConfig:
 
     def with_json(self, value: JsonDict) -> HttpxConfig:
         return replace(self, json=value)
+
+    def send(self, method: HttpMethod, using: Client) -> Response:
+        return using.request(
+            method.name,
+            url=self.endpoint,
+            headers=self.headers,
+            params=self.params,
+            json=self.json if self.json is not None else None,
+            data=self.data if self.data is not None else None,
+        )
