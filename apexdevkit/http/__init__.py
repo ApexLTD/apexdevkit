@@ -1,6 +1,6 @@
 from .fake import FakeHttp
 from .fluent import FluentHttp, FluentHttpRequest, FluentHttpResponse, Http, HttpMethod
-from .httpx import Httpx, HttpxConfig, SignPayloadWith
+from .httpx import Httpx, SignPayloadWith
 from .url import HttpUrl
 
 __all__ = [
@@ -11,7 +11,6 @@ __all__ = [
     "Http",
     "HttpMethod",
     "Httpx",
-    "HttpxConfig",
     "SignPayloadWith",
     "HttpUrl",
 ]
