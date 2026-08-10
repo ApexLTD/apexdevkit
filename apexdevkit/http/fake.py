@@ -6,7 +6,7 @@ from typing import Any
 
 from pypebbles import JsonDict
 
-from .domain import HttpMethod, HttpRequest, HttpResponse
+from .domain import HttpMethod, HttpRequest
 
 
 @dataclass(frozen=True)
@@ -16,7 +16,7 @@ class InternalEcho:
     def transport(self, request: HttpRequest) -> InternalEcho:
         return replace(self, _request=request)
 
-    def over(self, method: HttpMethod) -> HttpResponse:
+    def over(self, method: HttpMethod) -> FakeResponse:
         return FakeResponse(
             content={
                 "method": method.name,
