@@ -10,49 +10,57 @@ from apexdevkit.http.fake import FakeResponse
 
 
 def test_should_attach_headers() -> None:
-    http = FakeHttp()
-
-    (
-        FluentHttp(channel=InternalEcho(http))
+    echo = (
+        FluentHttp(channel=InternalEcho())
         .with_header("Harry", "Potter")
         .and_header("Ronald", "Weasley")
         .on_endpoint("")
         .get()
+        .json()
     )
 
-    assert http.headers == {"Harry": "Potter", "Ronald": "Weasley"}
+    assert echo["headers"] == {"Harry": "Potter", "Ronald": "Weasley"}
 
 
 def test_should_attach_params() -> None:
-    http = FakeHttp()
-
-    (
-        FluentHttp(channel=InternalEcho(http))
+    echo = (
+        FluentHttp(channel=InternalEcho())
         .with_param("Color", "Yellow")
         .and_param("Shape", "Square")
         .on_endpoint("")
         .get()
+        .json()
     )
 
-    assert http.params == {"Color": "Yellow", "Shape": "Square"}
+    assert echo["params"] == {"Color": "Yellow", "Shape": "Square"}
 
 
 def test_should_attach_json() -> None:
-    http = FakeHttp()
-    value = JsonDict().with_a(Harry="Potter")
+    expected = JsonDict().with_a(Harry="Potter")
 
-    FluentHttp(channel=InternalEcho(http)).with_json(value).on_endpoint("").post()
+    echo = (
+        FluentHttp(channel=InternalEcho())
+        .with_json(expected)
+        .on_endpoint("")
+        .post()
+        .json()
+    )
 
-    assert http.json == value
+    assert echo["json"] == expected
 
 
 def test_should_attach_data() -> None:
-    http = FakeHttp()
-    value = JsonDict().with_a(Harry="Potter")
+    expected = JsonDict().with_a(Harry="Potter")
 
-    FluentHttp(channel=InternalEcho(http)).with_data(value).on_endpoint("").post()
+    echo = (
+        FluentHttp(channel=InternalEcho())
+        .with_data(expected)
+        .on_endpoint("")
+        .post()
+        .json()
+    )
 
-    assert http.data == value
+    assert echo["data"] == expected
 
 
 def test_should_form_post_response() -> None:
@@ -279,7 +287,7 @@ def test_should_put_with_data() -> None:
 
 @dataclass(frozen=True)
 class InternalEcho:
-    http: Http
+    http: Http = field(default_factory=FakeHttp)
 
     _request: HttpRequest = field(default_factory=HttpRequest)
 
