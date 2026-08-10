@@ -140,19 +140,19 @@ class Httpx:
     Builder = HttpxBuilder
 
     def with_endpoint(self, value: str) -> Httpx:
-        return Httpx(self.client, self._request.with_endpoint(value))
+        return replace(self, _request=self._request.with_endpoint(value))
 
     def with_header(self, key: str, value: str) -> Httpx:
-        return Httpx(self.client, self._request.with_header(key, value))
+        return replace(self, _request=self._request.with_header(key, value))
 
     def with_param(self, key: str, value: str) -> Httpx:
-        return Httpx(self.client, self._request.with_param(key, value))
+        return replace(self, _request=self._request.with_param(key, value))
 
     def with_data(self, value: Any) -> Httpx:
-        return Httpx(self.client, self._request.with_data(value))
+        return replace(self, _request=self._request.with_data(value))
 
     def with_json(self, value: JsonDict) -> Httpx:
-        return Httpx(self.client, self._request.with_json(value))
+        return replace(self, _request=self._request.with_json(value))
 
     def request(self, method: HttpMethod, endpoint: str = "") -> HttpResponse:
         return _HttpxResponse(
