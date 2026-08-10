@@ -83,7 +83,7 @@ def test_should_form_get_response() -> None:
 def test_should_get() -> None:
     http = FakeHttp()
 
-    FluentHttp(http).get().on_endpoint(HttpMethod.get.name)
+    FluentHttp(http).on_endpoint(HttpMethod.get.name).get()
 
     http.intercepted(HttpMethod.get).on_endpoint(HttpMethod.get.name)
 
@@ -125,7 +125,7 @@ def test_should_patch_with_data() -> None:
 def test_should_delete() -> None:
     http = FakeHttp()
 
-    FluentHttp(http).delete().on_endpoint(HttpMethod.delete.name)
+    FluentHttp(http).on_endpoint(HttpMethod.delete.name).delete()
 
     http.intercepted(HttpMethod.delete).on_endpoint(HttpMethod.delete.name)
 

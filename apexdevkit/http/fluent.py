@@ -38,7 +38,7 @@ class _WorkaroundChannel:
         return replace(self, _request=request)
 
     def over(self, method: HttpMethod) -> HttpResponse:
-        return self.http.request(method)
+        return self.http.request(method, endpoint=self._request.endpoint)
 
 
 @dataclass(frozen=True)
