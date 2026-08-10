@@ -2,7 +2,8 @@ import pytest
 from pypebbles import JsonDict
 from pypebbles.runtime import Environment
 
-from apexdevkit.http import FluentHttp, Httpx
+from apexdevkit.http import FluentHttp
+from apexdevkit.http.httpx.client import HttpxBuilder
 
 from .echo import Echo
 
@@ -84,7 +85,7 @@ def test_should_put(http: FluentHttp) -> None:
 @pytest.fixture
 def http() -> FluentHttp:
     return FluentHttp(
-        Httpx.Builder()
+        HttpxBuilder()
         .with_url(Environment().value_of("ECHO_SERVER"))
         .channel()
         .with_header("User-Agent", "hogwarts")

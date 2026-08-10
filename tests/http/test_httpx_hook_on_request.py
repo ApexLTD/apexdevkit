@@ -4,7 +4,8 @@ import pytest
 from httpx2 import Request
 from pypebbles.runtime import Environment
 
-from apexdevkit.http import FluentHttp, HttpMethod, Httpx
+from apexdevkit.http import FluentHttp, HttpMethod
+from apexdevkit.http.httpx.client import HttpxBuilder
 from tests.http.echo import Echo
 
 ECHO_SERVER = Environment().value_of("ECHO_SERVER")
@@ -13,7 +14,7 @@ ECHO_SERVER = Environment().value_of("ECHO_SERVER")
 @pytest.fixture
 def http() -> FluentHttp:
     return FluentHttp(
-        Httpx.Builder()
+        HttpxBuilder()
         .with_url(ECHO_SERVER)
         .before_request(FakeRequestHandler())
         .channel()
