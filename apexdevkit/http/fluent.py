@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from typing import Any, Protocol
 
 from pypebbles import JsonDict
 
-from .domain import HttpMethod, HttpResponse
+from .domain import HttpChannel, HttpMethod, HttpRequest, HttpResponse
 
 
 class Http(Protocol):  # pragma: no cover
@@ -29,8 +29,27 @@ class Http(Protocol):  # pragma: no cover
 
 
 @dataclass(frozen=True)
+class _WorkaroundChannel:
+    http: Http
+
+    _request: HttpRequest = field(default_factory=HttpRequest)
+
+    def transport(self, request: HttpRequest) -> _WorkaroundChannel:
+        return replace(self, _request=request)
+
+    def over(self, method: HttpMethod) -> HttpResponse:
+        return self.http.request(method)
+
+
+@dataclass(frozen=True)
 class FluentHttp:
     http: Http
+
+    def on_endpoint(self, value: str) -> _RequestAlt:
+        return _RequestAlt(
+            channel=_WorkaroundChannel(self.http),
+            inner=HttpRequest(endpoint=value),
+        )
 
     def and_header(self, key: str, value: str) -> FluentHttp:
         return self.with_header(key, value)
@@ -79,6 +98,37 @@ class FluentHttpRequest:
 
     def on_endpoint(self, value: str) -> FluentHttpResponse:
         return FluentHttpResponse(self.http.request(self.method, value))
+
+
+@dataclass(frozen=True)
+class _RequestAlt:
+    inner: HttpRequest
+    channel: HttpChannel
+
+    def post(self) -> FluentHttpResponse:
+        return FluentHttpResponse(
+            self.channel.transport(self.inner).over(HttpMethod.post)
+        )
+
+    def get(self) -> FluentHttpResponse:
+        return FluentHttpResponse(
+            self.channel.transport(self.inner).over(HttpMethod.get)
+        )
+
+    def patch(self) -> FluentHttpResponse:
+        return FluentHttpResponse(
+            self.channel.transport(self.inner).over(HttpMethod.patch)
+        )
+
+    def delete(self) -> FluentHttpResponse:
+        return FluentHttpResponse(
+            self.channel.transport(self.inner).over(HttpMethod.delete)
+        )
+
+    def put(self) -> FluentHttpResponse:
+        return FluentHttpResponse(
+            self.channel.transport(self.inner).over(HttpMethod.put)
+        )
 
 
 @dataclass(frozen=True)
