@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace
-from typing import Any
+from typing import Any, Protocol
 
 from httpx2 import Client, Request, Response
 from pypebbles import JsonDict
@@ -72,8 +72,18 @@ class HttpxBuilder:
 class HttpxChannel:
     client: Client
 
-    def transport(self, request: HttpRequest) -> HttpxTransporter:
+    def transport(self, request: HttpRequest) -> HttpTransport:
         return HttpxTransporter(client=self.client, request=request)
+
+
+class HttpChannel(Protocol):
+    def transport(self, request: HttpRequest) -> HttpTransport:
+        pass
+
+
+class HttpTransport(Protocol):
+    def over(self, method: HttpMethod) -> HttpResponse:
+        pass
 
 
 @dataclass(frozen=True)
