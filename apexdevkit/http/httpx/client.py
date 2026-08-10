@@ -19,11 +19,68 @@ _RequestHandler = HttpxHandler[Request]
 _ResponseHandler = HttpxHandler[Response]
 
 
+@dataclass
+class HttpxBuilder:
+    timeout_s: int = field(default_factory=lambda: 30)
+    config: HttpxRequest = field(default_factory=lambda: HttpxRequest())
+
+    request_handlers: list[_RequestHandler] = field(default_factory=list)
+    response_handlers: list[_ResponseHandler] = field(default_factory=list)
+
+    url: str = field(init=False)
+
+    def with_url(self, value: str) -> HttpxBuilder:
+        self.url = value
+
+        return self
+
+    def with_timeout(self, timeout_s: int) -> HttpxBuilder:
+        self.timeout_s = timeout_s
+
+        return self
+
+    def and_config(self, value: HttpxRequest) -> HttpxBuilder:
+        self.config = value
+
+        return self
+
+    def before_request(self, handler: _RequestHandler) -> HttpxBuilder:
+        self.request_handlers.append(handler)
+
+        return self
+
+    def after_response(self, handler: _ResponseHandler) -> HttpxBuilder:
+        self.response_handlers.append(handler)
+
+        return self
+
+    def build(self) -> Httpx:
+        return Httpx(self._build_client(), self.config)
+
+    def _build_client(self) -> Client:
+        return Client(
+            base_url=self.url,
+            timeout=self.timeout_s,
+            event_hooks={
+                "request": self._build_before_request_hooks(),
+                "response": self._build_after_response_hooks(),
+            },
+        )
+
+    def _build_before_request_hooks(self) -> list[Callable[..., Any]]:
+        return [BeforeRequestHook(handler) for handler in self.request_handlers]
+
+    def _build_after_response_hooks(self) -> list[Callable[..., Any]]:
+        return [AfterResponseHook(handler) for handler in self.response_handlers]
+
+
 @dataclass(frozen=True)
 class Httpx:
     client: Client
 
     _request: HttpxRequest = field(default_factory=lambda: HttpxRequest())
+
+    Builder = HttpxBuilder
 
     def with_endpoint(self, value: str) -> Httpx:
         return Httpx(self.client, self._request.with_endpoint(value))
@@ -44,60 +101,6 @@ class Httpx:
         return _HttpxResponse(
             self._request.with_endpoint(endpoint).send(method, using=self.client)
         )
-
-    @dataclass
-    class Builder:
-        timeout_s: int = field(default_factory=lambda: 30)
-        config: HttpxRequest = field(default_factory=lambda: HttpxRequest())
-
-        request_handlers: list[_RequestHandler] = field(default_factory=list)
-        response_handlers: list[_ResponseHandler] = field(default_factory=list)
-
-        url: str = field(init=False)
-
-        def with_url(self, value: str) -> Httpx.Builder:
-            self.url = value
-
-            return self
-
-        def with_timeout(self, timeout_s: int) -> Httpx.Builder:
-            self.timeout_s = timeout_s
-
-            return self
-
-        def and_config(self, value: HttpxRequest) -> Httpx.Builder:
-            self.config = value
-
-            return self
-
-        def before_request(self, handler: _RequestHandler) -> Httpx.Builder:
-            self.request_handlers.append(handler)
-
-            return self
-
-        def after_response(self, handler: _ResponseHandler) -> Httpx.Builder:
-            self.response_handlers.append(handler)
-
-            return self
-
-        def build(self) -> Httpx:
-            return Httpx(self._build_client(), self.config)
-
-        def _build_client(self) -> Client:
-            return Client(
-                base_url=self.url,
-                timeout=self.timeout_s,
-                event_hooks={
-                    "request": self._build_before_request_hooks(),
-                    "response": self._build_after_response_hooks(),
-                },
-            )
-
-        def _build_before_request_hooks(self) -> list[Callable[..., Any]]:
-            return [BeforeRequestHook(handler) for handler in self.request_handlers]
-
-        def _build_after_response_hooks(self) -> list[Callable[..., Any]]:
-            return [AfterResponseHook(handler) for handler in self.response_handlers]
 
 
 @dataclass(frozen=True)
