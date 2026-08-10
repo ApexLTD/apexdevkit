@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
-from typing import Any
+from typing import Any, Protocol
 
 from httpx2 import Client, Request, Response
 from pypebbles import JsonDict
@@ -91,14 +91,29 @@ class HttpxRequest:
     def with_json(self, value: JsonDict) -> HttpxRequest:
         return replace(self, json=value)
 
-    def send(self, using: HttpxTransport) -> Response:
-        return using.request(
+    def send(self, using: HttpTransport) -> HttpResponse:
+        return using.transport(
             url=self.endpoint,
             headers=self.headers,
             params=self.params,
             json=self.json,
             data=self.data,
         )
+
+
+class HttpTransport(Protocol):
+    def over(self, method: HttpMethod) -> HttpTransport:
+        pass
+
+    def transport(
+        self,
+        url: str,
+        headers: Mapping[str, str],
+        params: Mapping[str, str],
+        json: JsonDict | None,
+        data: JsonDict | None,
+    ) -> HttpResponse:
+        pass
 
 
 @dataclass(frozen=True)
@@ -110,21 +125,23 @@ class HttpxTransport:
     def over(self, method: HttpMethod) -> HttpxTransport:
         return replace(self, method=method)
 
-    def request(
+    def transport(
         self,
         url: str,
         headers: Mapping[str, str],
         params: Mapping[str, str],
         json: JsonDict | None,
         data: JsonDict | None,
-    ) -> Response:
-        return self.client.request(
-            method=self.method.name,
-            url=url,
-            headers=headers,
-            params=params,
-            json=json,
-            data=data,
+    ) -> HttpResponse:
+        return _HttpxResponse(
+            self.client.request(
+                method=self.method.name,
+                url=url,
+                headers=headers,
+                params=params,
+                json=json,
+                data=data,
+            )
         )
 
 
@@ -156,10 +173,8 @@ class Httpx:
         return replace(self, _request=self._request.with_json(value))
 
     def request(self, method: HttpMethod, endpoint: str = "") -> HttpResponse:
-        return _HttpxResponse(
-            self._request.with_endpoint(endpoint).send(
-                using=self.transport.over(method)
-            )
+        return self._request.with_endpoint(endpoint).send(
+            using=self.transport.over(method)
         )
 
 
