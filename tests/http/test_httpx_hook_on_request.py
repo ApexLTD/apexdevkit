@@ -4,19 +4,19 @@ import pytest
 from httpx2 import Request
 from pypebbles.runtime import Environment
 
-from apexdevkit.http import HttpMethod, Httpx
+from apexdevkit.http import FluentHttp, HttpMethod, Httpx
 from tests.http.echo import Echo
 
 ECHO_SERVER = Environment().value_of("ECHO_SERVER")
 
 
 @pytest.fixture
-def http() -> Httpx:
-    return (
+def http() -> FluentHttp:
+    return FluentHttp(
         Httpx.Builder()
         .with_url(ECHO_SERVER)
         .before_request(FakeRequestHandler())
-        .build()
+        .channel()
     )
 
 
@@ -38,32 +38,32 @@ class FakeRequestHandler:
 
 
 @pytest.mark.vcr
-def test_should_hook_get_method(http: Httpx) -> None:
-    response = http.request(HttpMethod.get, "get")
+def test_should_hook_get_method(http: FluentHttp) -> None:
+    response = http.on_endpoint("get").request(HttpMethod.get)
 
     echo = Echo(response.json())
     assert echo.header(name="Handler") == "on_get"
 
 
 @pytest.mark.vcr
-def test_should_hook_post_method(http: Httpx) -> None:
-    response = http.request(HttpMethod.post, "post")
+def test_should_hook_post_method(http: FluentHttp) -> None:
+    response = http.on_endpoint("post").request(HttpMethod.post)
 
     echo = Echo(response.json())
     assert echo.header(name="Handler") == "on_post"
 
 
 @pytest.mark.vcr
-def test_should_hook_patch_method(http: Httpx) -> None:
-    response = http.request(HttpMethod.patch, "patch")
+def test_should_hook_patch_method(http: FluentHttp) -> None:
+    response = http.on_endpoint("patch").request(HttpMethod.patch)
 
     echo = Echo(response.json())
     assert echo.header(name="Handler") == "on_patch"
 
 
 @pytest.mark.vcr
-def test_should_hook_delete_method(http: Httpx) -> None:
-    response = http.request(HttpMethod.delete, "delete")
+def test_should_hook_delete_method(http: FluentHttp) -> None:
+    response = http.on_endpoint("delete").request(HttpMethod.delete)
 
     echo = Echo(response.json())
     assert echo.header(name="Handler") == "on_delete"
