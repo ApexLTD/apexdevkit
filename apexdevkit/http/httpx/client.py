@@ -19,15 +19,11 @@ _RequestHandler = HttpxHandler[Request]
 _ResponseHandler = HttpxHandler[Response]
 
 
-def default_config() -> HttpxRequest:
-    return HttpxRequest()
-
-
 @dataclass(frozen=True)
 class Httpx:
     client: Client
 
-    _request: HttpxRequest = field(default_factory=default_config)
+    _request: HttpxRequest = field(default_factory=lambda: HttpxRequest())
 
     def with_endpoint(self, value: str) -> Httpx:
         return Httpx(self.client, self._request.with_endpoint(value))
@@ -52,7 +48,7 @@ class Httpx:
     @dataclass
     class Builder:
         timeout_s: int = field(default_factory=lambda: 30)
-        config: HttpxRequest = field(default_factory=default_config)
+        config: HttpxRequest = field(default_factory=lambda: HttpxRequest())
 
         request_handlers: list[_RequestHandler] = field(default_factory=list)
         response_handlers: list[_ResponseHandler] = field(default_factory=list)
