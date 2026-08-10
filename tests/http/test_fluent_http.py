@@ -7,7 +7,13 @@ from apexdevkit.http.fluent import HttpMethod
 def test_should_attach_headers() -> None:
     http = FakeHttp()
 
-    FluentHttp(http).with_header("Harry", "Potter").and_header("Ronald", "Weasley")
+    (
+        FluentHttp(http)
+        .with_header("Harry", "Potter")
+        .and_header("Ronald", "Weasley")
+        .on_endpoint("")
+        .get()
+    )
 
     assert http.headers == {"Harry": "Potter", "Ronald": "Weasley"}
 

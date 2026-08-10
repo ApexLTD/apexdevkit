@@ -38,7 +38,12 @@ class _WorkaroundChannel:
         return replace(self, _request=request)
 
     def over(self, method: HttpMethod) -> HttpResponse:
-        return self.http.request(method, endpoint=self._request.endpoint)
+        http = self.http
+
+        for key, value in self._request.headers.items():
+            http = http.with_header(key, value)
+
+        return http.request(method, endpoint=self._request.endpoint)
 
 
 @dataclass(frozen=True)
@@ -57,7 +62,7 @@ class FluentHttp:
         return self.with_header(key, value)
 
     def with_header(self, key: str, value: str) -> FluentHttp:
-        return FluentHttp(self.http.with_header(key, value))
+        return replace(self, _request=self._request.with_header(key, value))
 
     def and_param(self, key: str, value: str) -> FluentHttp:
         return self.with_param(key, value)
