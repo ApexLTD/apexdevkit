@@ -75,12 +75,6 @@ class FluentHttp:
     def with_data(self, value: Any) -> FluentHttp:
         return FluentHttp(self.http.with_data(value))
 
-    def get(self) -> FluentHttpRequest:
-        return FluentHttpRequest(HttpMethod.get, self.http)
-
-    def delete(self) -> FluentHttpRequest:
-        return FluentHttpRequest(HttpMethod.delete, self.http)
-
 
 @dataclass(frozen=True)
 class FluentHttpRequest:
