@@ -1,5 +1,7 @@
+from apexdevkit.http.domain.method import HttpMethod
+
 from .fake import FakeHttp
-from .fluent import FluentHttp, FluentHttpRequest, FluentHttpResponse, Http, HttpMethod
+from .fluent import FluentHttp, FluentHttpRequest, FluentHttpResponse, Http
 from .httpx import Httpx, SignPayloadWith
 from .url import HttpUrl
 

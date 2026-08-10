@@ -8,7 +8,7 @@ from pypebbles import JsonDict
 
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.http import Http, HttpMethod
-from apexdevkit.http.fluent import HttpResponse
+from apexdevkit.http.domain.response import HttpResponse
 
 
 @dataclass(frozen=True)

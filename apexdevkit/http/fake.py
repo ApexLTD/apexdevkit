@@ -5,7 +5,7 @@ from typing import Any, Self
 
 from pypebbles import JsonDict
 
-from apexdevkit.http.fluent import HttpMethod, HttpResponse
+from .domain import HttpMethod, HttpResponse
 
 
 @dataclass(frozen=True)

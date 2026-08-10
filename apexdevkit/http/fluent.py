@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum, auto
 from typing import Any, Protocol
 
 from pypebbles import JsonDict
+
+from .domain import HttpMethod, HttpResponse
 
 
 class Http(Protocol):  # pragma: no cover
@@ -24,25 +25,6 @@ class Http(Protocol):  # pragma: no cover
         pass
 
     def request(self, method: HttpMethod, endpoint: str = "") -> HttpResponse:
-        pass
-
-
-class HttpMethod(Enum):
-    post = auto()
-    get = auto()
-    patch = auto()
-    delete = auto()
-    put = auto()
-
-
-class HttpResponse(Protocol):  # pragma: no cover
-    def code(self) -> int:
-        pass
-
-    def raw(self) -> Any:
-        pass
-
-    def json(self) -> JsonDict:
         pass
 
 
