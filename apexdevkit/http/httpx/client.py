@@ -142,6 +142,10 @@ class Httpx:
 
     Builder = HttpxBuilder
 
+    @property
+    def transport(self) -> HttpxTransport:
+        return HttpxTransport(self.client)
+
     def with_endpoint(self, value: str) -> Httpx:
         return replace(self, _request=self._request.with_endpoint(value))
 
@@ -160,7 +164,7 @@ class Httpx:
     def request(self, method: HttpMethod, endpoint: str = "") -> HttpResponse:
         return _HttpxResponse(
             self._request.with_endpoint(endpoint).send(
-                using=HttpxTransport(self.client).over(method)
+                using=self.transport.over(method)
             )
         )
 
