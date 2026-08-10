@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Any, Protocol
@@ -24,6 +25,21 @@ class Http(Protocol):  # pragma: no cover
         pass
 
     def request(self, method: HttpMethod, endpoint: str = "") -> HttpResponse:
+        pass
+
+
+class HttpTransport(Protocol):
+    def over(self, method: HttpMethod) -> HttpTransport:
+        pass
+
+    def transport(
+        self,
+        url: str,
+        headers: Mapping[str, str],
+        params: Mapping[str, str],
+        json: JsonDict | None,
+        data: JsonDict | None,
+    ) -> HttpResponse:
         pass
 
 

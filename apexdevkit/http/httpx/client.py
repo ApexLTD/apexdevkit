@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
-from typing import Any, Protocol
+from typing import Any
 
 from httpx2 import Client, Request, Response
 from pypebbles import JsonDict
 
-from apexdevkit.http.fluent import HttpMethod, HttpResponse
+from apexdevkit.http.fluent import HttpMethod, HttpResponse, HttpTransport
 from apexdevkit.http.httpx.hooks import (
     AfterResponseHook,
     BeforeRequestHook,
@@ -99,21 +99,6 @@ class HttpxRequest:
             json=self.json,
             data=self.data,
         )
-
-
-class HttpTransport(Protocol):
-    def over(self, method: HttpMethod) -> HttpTransport:
-        pass
-
-    def transport(
-        self,
-        url: str,
-        headers: Mapping[str, str],
-        params: Mapping[str, str],
-        json: JsonDict | None,
-        data: JsonDict | None,
-    ) -> HttpResponse:
-        pass
 
 
 @dataclass(frozen=True)
