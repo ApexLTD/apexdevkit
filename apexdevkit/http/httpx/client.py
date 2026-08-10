@@ -81,7 +81,7 @@ class HttpxTransport:
     request: HttpRequest
 
     def over(self, method: HttpMethod) -> HttpResponse:
-        return HttpxResponseAdapter(
+        return self.parse(
             self.client.request(
                 method=method.name,
                 url=self.request.endpoint,
@@ -90,6 +90,13 @@ class HttpxTransport:
                 json=self.request.json,
                 data=self.request.data,
             )
+        )
+
+    @staticmethod
+    def parse(response: Response) -> HttpResponse:
+        return HttpResponse(
+            status=response.status_code,
+            content=response.content,
         )
 
 
@@ -122,17 +129,3 @@ class Httpx:
             .transport(self._request.with_endpoint(endpoint))
             .over(method)
         )
-
-
-@dataclass(frozen=True)
-class HttpxResponseAdapter(HttpResponse):
-    inner: Response
-
-    def code(self) -> int:
-        return self.inner.status_code
-
-    def raw(self) -> bytes:
-        return self.inner.content
-
-    def json(self) -> JsonDict:
-        return JsonDict(self.inner.json())

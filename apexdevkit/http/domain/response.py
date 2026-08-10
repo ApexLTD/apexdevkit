@@ -1,44 +1,45 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+import json
+from collections.abc import Mapping
+from dataclasses import dataclass
 from typing import Any
 
 from pypebbles import JsonDict
 
 
-class HttpResponse(ABC):  # pragma: no cover
-    @abstractmethod
-    def code(self) -> int:
-        pass
+@dataclass(frozen=True)
+class HttpResponse:  # pragma: no cover
+    status: int
 
-    @abstractmethod
-    def raw(self) -> Any:
-        pass
+    content: bytes = b""
 
-    @abstractmethod
     def json(self) -> JsonDict:
-        pass
+        return JsonDict(json.loads(self.content))
+
+    def set_json(self, content: Mapping[str, Any]) -> HttpResponse:
+        return HttpResponse(self.status, json.dumps(content).encode())
 
     def on_bad_request(self, raises: Exception | type[Exception]) -> HttpResponse:
-        if self.code() == 400:
+        if self.status == 400:
             raise raises
 
         return self
 
     def on_conflict(self, raises: Exception | type[Exception]) -> HttpResponse:
-        if self.code() == 409:
+        if self.status == 409:
             raise raises
 
         return self
 
     def on_not_found(self, raises: Exception | type[Exception]) -> HttpResponse:
-        if self.code() == 404:
+        if self.status == 404:
             raise raises
 
         return self
 
     def on_failure(self, raises: type[Exception]) -> HttpResponse:
-        if self.code() < 200 or self.code() > 299:
-            raise raises(self.raw(), self.code())
+        if self.status < 200 or self.status > 299:
+            raise raises(self.content, self.status)
 
         return self
