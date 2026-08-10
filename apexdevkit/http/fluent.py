@@ -45,8 +45,8 @@ class _WorkaroundChannel:
 class FluentHttp:
     http: Http
 
-    def on_endpoint(self, value: str) -> _RequestAlt:
-        return _RequestAlt(
+    def on_endpoint(self, value: str) -> FluentHttpRequest:
+        return FluentHttpRequest(
             channel=_WorkaroundChannel(self.http),
             inner=HttpRequest(endpoint=value),
         )
@@ -78,15 +78,6 @@ class FluentHttp:
 
 @dataclass(frozen=True)
 class FluentHttpRequest:
-    method: HttpMethod
-    http: Http
-
-    def on_endpoint(self, value: str) -> FluentHttpResponse:
-        return FluentHttpResponse(self.http.request(self.method, value))
-
-
-@dataclass(frozen=True)
-class _RequestAlt:
     inner: HttpRequest
     channel: HttpChannel
 
