@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from typing import Any
 
@@ -58,5 +59,5 @@ class FakeResponse:
     def not_found(cls) -> FakeResponse:
         return FakeResponse(status_code=404)
 
-    def to[T](self, a_type: type[T]) -> T:
+    def to[T](self, a_type: Callable[[FakeResponse], T]) -> T:
         return a_type(self)
