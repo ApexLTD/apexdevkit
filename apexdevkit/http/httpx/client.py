@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
 from typing import Any
 
@@ -97,14 +97,37 @@ class HttpxRequest:
     def with_json(self, value: JsonDict) -> HttpxRequest:
         return replace(self, json=value)
 
-    def send(self, method: HttpMethod, using: Client) -> Response:
+    def send(self, using: HttpxTransport) -> Response:
         return using.request(
-            method.name,
             url=self.endpoint,
             headers=self.headers,
             params=self.params,
             json=self.json,
             data=self.data,
+        )
+
+
+@dataclass(frozen=True)
+class HttpxTransport:
+    client: Client
+
+    method: HttpMethod = HttpMethod.get
+
+    def request(
+        self,
+        url: str,
+        headers: Mapping[str, str],
+        params: Mapping[str, str],
+        json: JsonDict | None,
+        data: JsonDict | None,
+    ) -> Response:
+        return self.client.request(
+            method=self.method.name,
+            url=url,
+            headers=headers,
+            params=params,
+            json=json,
+            data=data,
         )
 
 
@@ -133,7 +156,9 @@ class Httpx:
 
     def request(self, method: HttpMethod, endpoint: str = "") -> HttpResponse:
         return _HttpxResponse(
-            self._request.with_endpoint(endpoint).send(method, using=self.client)
+            self._request.with_endpoint(endpoint).send(
+                using=HttpxTransport(self.client, method)
+            )
         )
 
 
