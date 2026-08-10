@@ -103,8 +103,8 @@ class HttpxRequest:
             url=self.endpoint,
             headers=self.headers,
             params=self.params,
-            json=self.json if self.json is not None else None,
-            data=self.data if self.data is not None else None,
+            json=self.json,
+            data=self.data,
         )
 
 
