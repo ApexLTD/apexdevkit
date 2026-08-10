@@ -131,7 +131,7 @@ class HttpxConfig:
     headers: JsonDict = field(default_factory=JsonDict)
     params: JsonDict = field(default_factory=JsonDict)
     json: JsonDict | None = None
-    data: Any | None = None
+    data: JsonDict | None = None
 
     def with_endpoint(self, endpoint: str) -> HttpxConfig:
         return replace(self, endpoint=HttpUrl(self.endpoint) + endpoint)
@@ -142,7 +142,7 @@ class HttpxConfig:
     def with_param(self, key: str, value: str) -> HttpxConfig:
         return replace(self, params=self.params.merge(JsonDict({key: value})))
 
-    def with_data(self, value: Any) -> HttpxConfig:
+    def with_data(self, value: JsonDict) -> HttpxConfig:
         return replace(self, data=value)
 
     def with_json(self, value: JsonDict) -> HttpxConfig:
