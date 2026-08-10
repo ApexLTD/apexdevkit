@@ -43,21 +43,5 @@ class FakeResponse:
     def json(self) -> Any:
         return JsonDict(self.content)
 
-    @classmethod
-    def bad_request(cls) -> FakeResponse:
-        return FakeResponse(status_code=400)
-
-    @classmethod
-    def conflict(cls) -> FakeResponse:
-        return FakeResponse(status_code=409)
-
-    @classmethod
-    def fail(cls) -> FakeResponse:
-        return FakeResponse(status_code=500)
-
-    @classmethod
-    def not_found(cls) -> FakeResponse:
-        return FakeResponse(status_code=404)
-
     def to[T](self, a_type: Callable[[FakeResponse], T]) -> T:
         return a_type(self)
