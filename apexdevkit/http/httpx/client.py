@@ -113,6 +113,9 @@ class HttpxTransport:
 
     method: HttpMethod = HttpMethod.get
 
+    def over(self, method: HttpMethod) -> HttpxTransport:
+        return replace(self, method=method)
+
     def request(
         self,
         url: str,
@@ -157,7 +160,7 @@ class Httpx:
     def request(self, method: HttpMethod, endpoint: str = "") -> HttpResponse:
         return _HttpxResponse(
             self._request.with_endpoint(endpoint).send(
-                using=HttpxTransport(self.client, method)
+                using=HttpxTransport(self.client).over(method)
             )
         )
 
