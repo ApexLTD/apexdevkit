@@ -6,6 +6,7 @@ from pypebbles import JsonDict
 
 from apexdevkit.http import FakeHttp, FluentHttp, Http, HttpMethod
 from apexdevkit.http.domain import HttpRequest, HttpResponse
+from apexdevkit.http.fake import FakeResponse
 
 
 def test_should_attach_headers() -> None:
@@ -61,7 +62,15 @@ def test_should_form_post_response() -> None:
         FluentHttp(channel=FakeChannel(http)).on_endpoint(HttpMethod.post.name).post()
     )
 
-    assert response.json() == JsonDict()
+    assert response.json() == (
+        JsonDict()
+        .with_a(method="post")
+        .and_a(endpoint="post")
+        .and_a(headers={})
+        .and_a(params={})
+        .and_a(json=None)
+        .and_a(data=None)
+    )
 
 
 def test_should_post_with_defaults() -> None:
@@ -107,7 +116,15 @@ def test_should_form_get_response() -> None:
         FluentHttp(channel=FakeChannel(http)).on_endpoint(HttpMethod.get.name).get()
     )
 
-    assert response.json() == JsonDict()
+    assert response.json() == (
+        JsonDict()
+        .with_a(method="get")
+        .and_a(endpoint="get")
+        .and_a(headers={})
+        .and_a(params={})
+        .and_a(json=None)
+        .and_a(data=None)
+    )
 
 
 def test_should_get() -> None:
@@ -125,7 +142,15 @@ def test_should_form_patch_response() -> None:
         FluentHttp(channel=FakeChannel(http)).on_endpoint(HttpMethod.patch.name).patch()
     )
 
-    assert response.json() == JsonDict()
+    assert response.json() == (
+        JsonDict()
+        .with_a(method="patch")
+        .and_a(endpoint="patch")
+        .and_a(headers={})
+        .and_a(params={})
+        .and_a(json=None)
+        .and_a(data=None)
+    )
 
 
 def test_should_patch_with_defaults() -> None:
@@ -181,7 +206,15 @@ def test_should_form_delete_response() -> None:
         .delete()
     )
 
-    assert response.json() == JsonDict({})
+    assert response.json() == (
+        JsonDict()
+        .with_a(method="delete")
+        .and_a(endpoint="delete")
+        .and_a(headers={})
+        .and_a(params={})
+        .and_a(json=None)
+        .and_a(data=None)
+    )
 
 
 def test_should_form_put_response() -> None:
@@ -191,7 +224,15 @@ def test_should_form_put_response() -> None:
         FluentHttp(channel=FakeChannel(http)).on_endpoint(HttpMethod.put.name).put()
     )
 
-    assert response.json() == JsonDict()
+    assert response.json() == (
+        JsonDict()
+        .with_a(method="put")
+        .and_a(endpoint="put")
+        .and_a(headers={})
+        .and_a(params={})
+        .and_a(json=None)
+        .and_a(data=None)
+    )
 
 
 def test_should_put_with_defaults() -> None:
@@ -254,4 +295,15 @@ class FakeChannel:
         if self._request.json is not None:
             http = http.with_json(self._request.json)
 
-        return http.request(method, endpoint=self._request.endpoint)
+        http.request(method, endpoint=self._request.endpoint)
+
+        return FakeResponse(
+            content={
+                "method": method.name,
+                "endpoint": self._request.endpoint,
+                "headers": self._request.headers,
+                "params": self._request.params,
+                "json": self._request.json,
+                "data": self._request.data,
+            }
+        )
