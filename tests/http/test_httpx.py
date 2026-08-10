@@ -2,15 +2,15 @@ import pytest
 from pypebbles import JsonDict
 from pypebbles.runtime import Environment
 
-from apexdevkit.http import HttpMethod, Httpx
+from apexdevkit.http import FluentHttp, Httpx
 
 from .echo import Echo
 
 
 @pytest.mark.vcr
-def test_should_post(http: Httpx) -> None:
+def test_should_post(http: FluentHttp) -> None:
     json = JsonDict().with_a(Harry="Potter")
-    response = http.with_json(json).request(HttpMethod.post, "post")
+    response = http.with_json(json).on_endpoint("post").post()
 
     echo = Echo(response.json())
     echo.assert_endpoint(expected="post")
@@ -20,9 +20,9 @@ def test_should_post(http: Httpx) -> None:
 
 
 @pytest.mark.vcr
-def test_should_submit(http: Httpx) -> None:
+def test_should_submit(http: FluentHttp) -> None:
     form = JsonDict().with_a(Harry="Potter")
-    response = http.with_data(form).request(HttpMethod.post, "post")
+    response = http.with_data(form).on_endpoint("post").post()
 
     echo = Echo(response.json())
     echo.assert_endpoint(expected="post")
@@ -32,8 +32,8 @@ def test_should_submit(http: Httpx) -> None:
 
 
 @pytest.mark.vcr
-def test_should_get(http: Httpx) -> None:
-    response = http.request(HttpMethod.get, "get")
+def test_should_get(http: FluentHttp) -> None:
+    response = http.on_endpoint("get").get()
 
     echo = Echo(response.json())
     echo.assert_endpoint(expected="get")
@@ -41,17 +41,17 @@ def test_should_get(http: Httpx) -> None:
 
 
 @pytest.mark.vcr
-def test_should_get_with_params(http: Httpx) -> None:
-    response = http.with_param("Color", "Yellow").request(HttpMethod.get, "get")
+def test_should_get_with_params(http: FluentHttp) -> None:
+    response = http.with_param("Color", "Yellow").on_endpoint("get").get()
 
     echo = Echo(response.json())
     echo.assert_endpoint(expected="get?Color=Yellow")
 
 
 @pytest.mark.vcr
-def test_should_patch(http: Httpx) -> None:
+def test_should_patch(http: FluentHttp) -> None:
     json = JsonDict().with_a(Harry="Potter")
-    response = http.with_json(json).request(HttpMethod.patch, "patch")
+    response = http.with_json(json).on_endpoint("patch").patch()
 
     echo = Echo(response.json())
     echo.assert_endpoint(expected="patch")
@@ -61,8 +61,8 @@ def test_should_patch(http: Httpx) -> None:
 
 
 @pytest.mark.vcr
-def test_should_delete(http: Httpx) -> None:
-    response = http.request(HttpMethod.delete, "delete")
+def test_should_delete(http: FluentHttp) -> None:
+    response = http.on_endpoint("delete").delete()
 
     echo = Echo(response.json())
     echo.assert_endpoint(expected="delete")
@@ -70,9 +70,9 @@ def test_should_delete(http: Httpx) -> None:
 
 
 @pytest.mark.vcr
-def test_should_put(http: Httpx) -> None:
+def test_should_put(http: FluentHttp) -> None:
     json = JsonDict().with_a(Harry="Potter")
-    response = http.with_json(json).request(HttpMethod.put, "put")
+    response = http.with_json(json).on_endpoint("put").put()
 
     echo = Echo(response.json())
     echo.assert_endpoint(expected="put")
@@ -82,10 +82,10 @@ def test_should_put(http: Httpx) -> None:
 
 
 @pytest.fixture
-def http() -> Httpx:
-    return (
+def http() -> FluentHttp:
+    return FluentHttp(
         Httpx.Builder()
         .with_url(Environment().value_of("ECHO_SERVER"))
-        .build()
+        .channel()
         .with_header("User-Agent", "hogwarts")
     )

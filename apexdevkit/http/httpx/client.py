@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
 from typing import Any
 
@@ -47,6 +47,9 @@ class HttpxBuilder:
 
         return self
 
+    def channel(self) -> HttpxChannel:
+        return HttpxChannel(client=self._build_client())
+
     def build(self) -> Httpx:
         return Httpx(self._build_client())
 
@@ -70,6 +73,11 @@ class HttpxBuilder:
 @dataclass(frozen=True)
 class HttpxChannel:
     client: Client
+
+    headers: Mapping[str, str] = field(default_factory=dict)
+
+    def with_header(self, key: str, value: str) -> HttpxChannel:
+        return replace(self, headers=JsonDict(self.headers).merge({key: value}))
 
     def transport(self, request: HttpRequest) -> HttpxTransport:
         return HttpxTransport(client=self.client, request=request)
