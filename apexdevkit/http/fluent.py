@@ -82,29 +82,22 @@ class FluentHttpRequest:
     channel: HttpChannel
 
     def post(self) -> FluentHttpResponse:
-        return FluentHttpResponse(
-            self.channel.transport(self.inner).over(HttpMethod.post)
-        )
+        return self.request(HttpMethod.post)
 
     def get(self) -> FluentHttpResponse:
-        return FluentHttpResponse(
-            self.channel.transport(self.inner).over(HttpMethod.get)
-        )
+        return self.request(HttpMethod.get)
 
     def patch(self) -> FluentHttpResponse:
-        return FluentHttpResponse(
-            self.channel.transport(self.inner).over(HttpMethod.patch)
-        )
+        return self.request(HttpMethod.patch)
 
     def delete(self) -> FluentHttpResponse:
-        return FluentHttpResponse(
-            self.channel.transport(self.inner).over(HttpMethod.delete)
-        )
+        return self.request(HttpMethod.delete)
 
     def put(self) -> FluentHttpResponse:
-        return FluentHttpResponse(
-            self.channel.transport(self.inner).over(HttpMethod.put)
-        )
+        return self.request(HttpMethod.put)
+
+    def request(self, method: HttpMethod) -> FluentHttpResponse:
+        return self.channel.transport(self.inner).over(method).to(FluentHttpResponse)
 
 
 @dataclass(frozen=True)

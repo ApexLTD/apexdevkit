@@ -38,6 +38,9 @@ class FakeResponse:
     def not_found(cls) -> FakeResponse:
         return FakeResponse(status_code=404)
 
+    def to[T](self, a_type: type[T]) -> T:
+        return a_type(self)
+
 
 @dataclass
 class FakeHttp:

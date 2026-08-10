@@ -14,3 +14,6 @@ class HttpResponse(Protocol):  # pragma: no cover
 
     def json(self) -> JsonDict:
         pass
+
+    def to[T](self, a_type: type[T]) -> T:
+        pass

@@ -136,3 +136,6 @@ class _HttpxResponse:
 
     def json(self) -> JsonDict:
         return JsonDict(self.inner.json())
+
+    def to[T](self, a_type: Callable[[Response], T]) -> T:
+        return a_type(self.inner)
