@@ -75,10 +75,44 @@ class HttpxBuilder:
 
 
 @dataclass(frozen=True)
+class HttpxRequest:
+    endpoint: str = ""
+    headers: JsonDict = field(default_factory=JsonDict)
+    params: JsonDict = field(default_factory=JsonDict)
+    json: JsonDict | None = None
+    data: JsonDict | None = None
+
+    def with_endpoint(self, endpoint: str) -> HttpxRequest:
+        return replace(self, endpoint=HttpUrl(self.endpoint) + endpoint)
+
+    def with_header(self, key: str, value: str) -> HttpxRequest:
+        return replace(self, headers=self.headers.merge(JsonDict({key: value})))
+
+    def with_param(self, key: str, value: str) -> HttpxRequest:
+        return replace(self, params=self.params.merge(JsonDict({key: value})))
+
+    def with_data(self, value: JsonDict) -> HttpxRequest:
+        return replace(self, data=value)
+
+    def with_json(self, value: JsonDict) -> HttpxRequest:
+        return replace(self, json=value)
+
+    def send(self, method: HttpMethod, using: Client) -> Response:
+        return using.request(
+            method.name,
+            url=self.endpoint,
+            headers=self.headers,
+            params=self.params,
+            json=self.json if self.json is not None else None,
+            data=self.data if self.data is not None else None,
+        )
+
+
+@dataclass(frozen=True)
 class Httpx:
     client: Client
 
-    _request: HttpxRequest = field(default_factory=lambda: HttpxRequest())
+    _request: HttpxRequest = field(default_factory=HttpxRequest)
 
     Builder = HttpxBuilder
 
@@ -115,37 +149,3 @@ class _HttpxResponse:
 
     def json(self) -> JsonDict:
         return JsonDict(self.inner.json())
-
-
-@dataclass(frozen=True)
-class HttpxRequest:
-    endpoint: str = ""
-    headers: JsonDict = field(default_factory=JsonDict)
-    params: JsonDict = field(default_factory=JsonDict)
-    json: JsonDict | None = None
-    data: JsonDict | None = None
-
-    def with_endpoint(self, endpoint: str) -> HttpxRequest:
-        return replace(self, endpoint=HttpUrl(self.endpoint) + endpoint)
-
-    def with_header(self, key: str, value: str) -> HttpxRequest:
-        return replace(self, headers=self.headers.merge(JsonDict({key: value})))
-
-    def with_param(self, key: str, value: str) -> HttpxRequest:
-        return replace(self, params=self.params.merge(JsonDict({key: value})))
-
-    def with_data(self, value: JsonDict) -> HttpxRequest:
-        return replace(self, data=value)
-
-    def with_json(self, value: JsonDict) -> HttpxRequest:
-        return replace(self, json=value)
-
-    def send(self, method: HttpMethod, using: Client) -> Response:
-        return using.request(
-            method.name,
-            url=self.endpoint,
-            headers=self.headers,
-            params=self.params,
-            json=self.json if self.json is not None else None,
-            data=self.data if self.data is not None else None,
-        )
