@@ -46,6 +46,12 @@ class _WorkaroundChannel:
         for key, value in self._request.params.items():
             http = http.with_param(key, value)
 
+        if self._request.data is not None:
+            http = http.with_data(self._request.data)
+
+        if self._request.json is not None:
+            http = http.with_json(self._request.json)
+
         return http.request(method, endpoint=self._request.endpoint)
 
 
@@ -77,13 +83,13 @@ class FluentHttp:
         return self.with_json(value)  # pragma: no cover
 
     def with_json(self, value: JsonDict) -> FluentHttp:
-        return FluentHttp(self.http.with_json(value))
+        return replace(self, _request=self._request.with_json(value))
 
     def and_data(self, value: Any) -> FluentHttp:
         return self.with_data(value)  # pragma: no cover
 
     def with_data(self, value: Any) -> FluentHttp:
-        return FluentHttp(self.http.with_data(value))
+        return replace(self, _request=self._request.with_data(value))
 
 
 @dataclass(frozen=True)

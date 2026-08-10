@@ -36,7 +36,7 @@ def test_should_attach_json() -> None:
     http = FakeHttp()
     value = JsonDict().with_a(Harry="Potter")
 
-    FluentHttp(http).with_json(value)
+    FluentHttp(http).with_json(value).on_endpoint("").post()
 
     assert http.json == value
 
@@ -45,7 +45,7 @@ def test_should_attach_data() -> None:
     http = FakeHttp()
     value = JsonDict().with_a(Harry="Potter")
 
-    FluentHttp(http).with_data(value)
+    FluentHttp(http).with_data(value).on_endpoint("").post()
 
     assert http.data == value
 
