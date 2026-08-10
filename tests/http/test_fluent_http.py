@@ -21,7 +21,13 @@ def test_should_attach_headers() -> None:
 def test_should_attach_params() -> None:
     http = FakeHttp()
 
-    FluentHttp(http).with_param("Color", "Yellow").and_param("Shape", "Square")
+    (
+        FluentHttp(http)
+        .with_param("Color", "Yellow")
+        .and_param("Shape", "Square")
+        .on_endpoint("")
+        .get()
+    )
 
     assert http.params == {"Color": "Yellow", "Shape": "Square"}
 
