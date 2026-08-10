@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from typing import Any
 
 from pypebbles import JsonDict
 
-from .domain import HttpMethod, HttpRequest
+from .domain import HttpMethod, HttpRequest, HttpResponse
 
 
 @dataclass(frozen=True)
@@ -30,7 +29,7 @@ class InternalEcho:
 
 
 @dataclass(frozen=True)
-class FakeResponse:
+class FakeResponse(HttpResponse):
     content: Any = field(default_factory=dict)
     status_code: int = 200
 
@@ -42,6 +41,3 @@ class FakeResponse:
 
     def json(self) -> Any:
         return JsonDict(self.content)
-
-    def to[T](self, a_type: Callable[[FakeResponse], T]) -> T:
-        return a_type(self)

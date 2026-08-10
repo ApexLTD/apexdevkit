@@ -50,52 +50,20 @@ class FluentHttpRequest:
     inner: HttpRequest
     channel: HttpChannel
 
-    def post(self) -> FluentHttpResponse:
+    def post(self) -> HttpResponse:
         return self.request(HttpMethod.post)
 
-    def get(self) -> FluentHttpResponse:
+    def get(self) -> HttpResponse:
         return self.request(HttpMethod.get)
 
-    def patch(self) -> FluentHttpResponse:
+    def patch(self) -> HttpResponse:
         return self.request(HttpMethod.patch)
 
-    def delete(self) -> FluentHttpResponse:
+    def delete(self) -> HttpResponse:
         return self.request(HttpMethod.delete)
 
-    def put(self) -> FluentHttpResponse:
+    def put(self) -> HttpResponse:
         return self.request(HttpMethod.put)
 
-    def request(self, method: HttpMethod) -> FluentHttpResponse:
-        return self.channel.transport(self.inner).over(method).to(FluentHttpResponse)
-
-
-@dataclass(frozen=True)
-class FluentHttpResponse:
-    response: HttpResponse
-
-    def on_bad_request(self, raises: Exception | type[Exception]) -> FluentHttpResponse:
-        if self.response.code() == 400:
-            raise raises
-
-        return self
-
-    def on_conflict(self, raises: Exception | type[Exception]) -> FluentHttpResponse:
-        if self.response.code() == 409:
-            raise raises
-
-        return self
-
-    def on_not_found(self, raises: Exception | type[Exception]) -> FluentHttpResponse:
-        if self.response.code() == 404:
-            raise raises
-
-        return self
-
-    def on_failure(self, raises: type[Exception]) -> FluentHttpResponse:
-        if self.response.code() < 200 or self.response.code() > 299:
-            raise raises(self.response.raw(), self.response.code())
-
-        return self
-
-    def json(self) -> JsonDict:
-        return self.response.json()
+    def request(self, method: HttpMethod) -> HttpResponse:
+        return self.channel.transport(self.inner).over(method)
