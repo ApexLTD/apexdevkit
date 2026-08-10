@@ -75,20 +75,11 @@ class FluentHttp:
     def with_data(self, value: Any) -> FluentHttp:
         return FluentHttp(self.http.with_data(value))
 
-    def post(self) -> FluentHttpRequest:
-        return FluentHttpRequest(HttpMethod.post, self.http)
-
     def get(self) -> FluentHttpRequest:
         return FluentHttpRequest(HttpMethod.get, self.http)
 
-    def patch(self) -> FluentHttpRequest:
-        return FluentHttpRequest(HttpMethod.patch, self.http)
-
     def delete(self) -> FluentHttpRequest:
         return FluentHttpRequest(HttpMethod.delete, self.http)
-
-    def put(self) -> FluentHttpRequest:
-        return FluentHttpRequest(HttpMethod.put, self.http)
 
 
 @dataclass(frozen=True)
