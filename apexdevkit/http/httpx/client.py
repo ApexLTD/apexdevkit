@@ -27,26 +27,26 @@ def default_config() -> HttpxRequest:
 class Httpx:
     client: Client
 
-    config: HttpxRequest = field(default_factory=default_config)
+    _request: HttpxRequest = field(default_factory=default_config)
 
     def with_endpoint(self, value: str) -> Httpx:
-        return Httpx(self.client, self.config.with_endpoint(value))
+        return Httpx(self.client, self._request.with_endpoint(value))
 
     def with_header(self, key: str, value: str) -> Httpx:
-        return Httpx(self.client, self.config.with_header(key, value))
+        return Httpx(self.client, self._request.with_header(key, value))
 
     def with_param(self, key: str, value: str) -> Httpx:
-        return Httpx(self.client, self.config.with_param(key, value))
+        return Httpx(self.client, self._request.with_param(key, value))
 
     def with_data(self, value: Any) -> Httpx:
-        return Httpx(self.client, self.config.with_data(value))
+        return Httpx(self.client, self._request.with_data(value))
 
     def with_json(self, value: JsonDict) -> Httpx:
-        return Httpx(self.client, self.config.with_json(value))
+        return Httpx(self.client, self._request.with_json(value))
 
     def request(self, method: HttpMethod, endpoint: str = "") -> HttpResponse:
         return _HttpxResponse(
-            self.config.with_endpoint(endpoint).send(method, using=self.client)
+            self._request.with_endpoint(endpoint).send(method, using=self.client)
         )
 
     @dataclass
