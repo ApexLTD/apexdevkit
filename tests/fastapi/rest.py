@@ -7,13 +7,13 @@ from typing import Any, Self
 from pypebbles import JsonDict
 
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.http import Http, HttpMethod
+from apexdevkit.http import HttpMethod, Httpx
 from apexdevkit.http.domain.response import HttpResponse
 
 
 @dataclass(frozen=True)
 class _RestResource:
-    http: Http
+    http: Httpx
     name: RestfulName
 
     def create_one(self) -> _TestRequest:
@@ -116,7 +116,7 @@ class _TestRequest:
 @dataclass(frozen=True)
 class HttpRequest:
     method: HttpMethod
-    http: Http
+    http: Httpx
 
     def with_endpoint(self, value: Any) -> HttpRequest:
         return HttpRequest(
