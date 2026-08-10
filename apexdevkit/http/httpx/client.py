@@ -81,7 +81,7 @@ class HttpxTransporter:
     request: HttpRequest
 
     def over(self, method: HttpMethod) -> HttpResponse:
-        return _HttpxResponse(
+        return HttpxResponseAdapter(
             self.client.request(
                 method=method.name,
                 url=self.request.endpoint,
@@ -125,7 +125,7 @@ class Httpx:
 
 
 @dataclass(frozen=True)
-class _HttpxResponse:
+class HttpxResponseAdapter(HttpResponse):
     inner: Response
 
     def code(self) -> int:
@@ -136,6 +136,3 @@ class _HttpxResponse:
 
     def json(self) -> JsonDict:
         return JsonDict(self.inner.json())
-
-    def to[T](self, a_type: Callable[[_HttpxResponse], T]) -> T:
-        return a_type(self)
