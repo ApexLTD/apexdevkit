@@ -45,10 +45,12 @@ class _WorkaroundChannel:
 class FluentHttp:
     http: Http
 
+    _request: HttpRequest = field(default_factory=HttpRequest)
+
     def on_endpoint(self, value: str) -> FluentHttpRequest:
         return FluentHttpRequest(
             channel=_WorkaroundChannel(self.http),
-            inner=HttpRequest().with_endpoint(value),
+            inner=self._request.with_endpoint(value),
         )
 
     def and_header(self, key: str, value: str) -> FluentHttp:
