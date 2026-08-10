@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterator, Mapping
+from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from typing import Any
 
@@ -48,7 +48,11 @@ class Httpx:
         return _HttpxResponse(
             self.client.request(
                 method.name,
-                **self.config.with_endpoint(endpoint),
+                url=self.config.with_endpoint(endpoint).endpoint,
+                headers=self.config.headers,
+                params=self.config.params,
+                json=self.config.json if self.config.json is not None else None,
+                data=self.config.data if self.config.data is not None else None,
             )
         )
 
@@ -122,7 +126,7 @@ class _HttpxResponse:
 
 
 @dataclass(frozen=True)
-class HttpxConfig(Mapping[str, Any]):
+class HttpxConfig:
     endpoint: str = ""
     headers: JsonDict = field(default_factory=JsonDict)
     params: JsonDict = field(default_factory=JsonDict)
@@ -143,28 +147,3 @@ class HttpxConfig(Mapping[str, Any]):
 
     def with_json(self, value: JsonDict) -> HttpxConfig:
         return replace(self, json=value)
-
-    def as_dict(self) -> dict[str, Any]:
-        return (
-            JsonDict()
-            .with_a(url=self.endpoint)
-            .and_a(headers=self.headers)
-            .and_a(params=self.params)
-            .and_a(json=self.json if self.json is not None else None)
-            .and_a(data=self._data() if self.data is not None else None)
-        )
-
-    def _data(self) -> Any:
-        if isinstance(self.data, Mapping):
-            return dict(self.data)
-
-        return str(self.data)
-
-    def __len__(self) -> int:
-        return len(self.as_dict())
-
-    def __iter__(self) -> Iterator[str]:
-        return iter(self.as_dict())
-
-    def __getitem__(self, key: str) -> Any:
-        return self.as_dict().__getitem__(key)
