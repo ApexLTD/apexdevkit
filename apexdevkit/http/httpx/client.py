@@ -7,13 +7,13 @@ from typing import Any
 from httpx2 import Client, Request, Response
 from pypebbles import JsonDict
 
+from apexdevkit.http.domain.request import HttpRequest
 from apexdevkit.http.fluent import HttpMethod, HttpResponse
 from apexdevkit.http.httpx.hooks import (
     AfterResponseHook,
     BeforeRequestHook,
     HttpxHandler,
 )
-from apexdevkit.http.url import HttpUrl
 
 _RequestHandler = HttpxHandler[Request]
 _ResponseHandler = HttpxHandler[Response]
@@ -66,30 +66,6 @@ class HttpxBuilder:
 
     def _build_after_response_hooks(self) -> list[Callable[..., Any]]:
         return [AfterResponseHook(handler) for handler in self.response_handlers]
-
-
-@dataclass(frozen=True)
-class HttpRequest:
-    endpoint: str = ""
-    headers: JsonDict = field(default_factory=JsonDict)
-    params: JsonDict = field(default_factory=JsonDict)
-    json: JsonDict | None = None
-    data: JsonDict | None = None
-
-    def with_endpoint(self, endpoint: str) -> HttpRequest:
-        return replace(self, endpoint=HttpUrl(self.endpoint) + endpoint)
-
-    def with_header(self, key: str, value: str) -> HttpRequest:
-        return replace(self, headers=self.headers.merge(JsonDict({key: value})))
-
-    def with_param(self, key: str, value: str) -> HttpRequest:
-        return replace(self, params=self.params.merge(JsonDict({key: value})))
-
-    def with_data(self, value: JsonDict) -> HttpRequest:
-        return replace(self, data=value)
-
-    def with_json(self, value: JsonDict) -> HttpRequest:
-        return replace(self, json=value)
 
 
 @dataclass(frozen=True)
