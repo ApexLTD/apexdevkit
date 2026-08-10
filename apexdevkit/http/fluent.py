@@ -29,41 +29,14 @@ class Http(Protocol):  # pragma: no cover
 
 
 @dataclass(frozen=True)
-class _WorkaroundChannel:
-    http: Http
-
-    _request: HttpRequest = field(default_factory=HttpRequest)
-
-    def transport(self, request: HttpRequest) -> _WorkaroundChannel:
-        return replace(self, _request=request)
-
-    def over(self, method: HttpMethod) -> HttpResponse:
-        http = self.http
-
-        for key, value in self._request.headers.items():
-            http = http.with_header(key, value)
-
-        for key, value in self._request.params.items():
-            http = http.with_param(key, value)
-
-        if self._request.data is not None:
-            http = http.with_data(self._request.data)
-
-        if self._request.json is not None:
-            http = http.with_json(self._request.json)
-
-        return http.request(method, endpoint=self._request.endpoint)
-
-
-@dataclass(frozen=True)
 class FluentHttp:
-    http: Http
+    channel: HttpChannel
 
     _request: HttpRequest = field(default_factory=HttpRequest)
 
     def on_endpoint(self, value: str) -> FluentHttpRequest:
         return FluentHttpRequest(
-            channel=_WorkaroundChannel(self.http),
+            channel=self.channel,
             inner=self._request.with_endpoint(value),
         )
 
