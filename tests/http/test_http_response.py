@@ -1,3 +1,7 @@
+from collections.abc import Mapping
+from dataclasses import asdict, dataclass
+from typing import Any
+
 import pytest
 
 from apexdevkit.http.domain import HttpResponse
@@ -30,16 +34,29 @@ def test_should_raise_on_not_found() -> None:
 
 
 def test_should_respond_with_json() -> None:
-    expected = {"Harry": "Potter"}
+    apple = _Apple(name="Ambrosia", color="red")
 
     actual = (
         HttpResponse(status=200)
-        .set_json(content=expected)
+        .set_json(content=apple.dump())
         .on_bad_request(raises=AssertionError)
         .on_not_found(raises=AssertionError)
         .on_conflict(raises=AssertionError)
         .on_failure(raises=AssertionError)
-        .json()
+        .load(using=_Apple.load)
     )
 
-    assert actual == expected
+    assert actual == apple
+
+
+@dataclass(frozen=True, kw_only=True)
+class _Apple:
+    name: str
+    color: str
+
+    @classmethod
+    def load(cls, data: Mapping[str, Any]) -> "_Apple":
+        return cls(name=data["name"], color=data["color"])
+
+    def dump(self) -> Mapping[str, Any]:
+        return asdict(self)

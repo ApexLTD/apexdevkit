@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Any
 
@@ -13,6 +13,9 @@ class HttpResponse:  # pragma: no cover
     status: int
 
     content: bytes = b""
+
+    def load[T](self, using: Callable[[JsonDict], T]) -> T:
+        return using(self.json())
 
     def json(self) -> JsonDict:
         return JsonDict(json.loads(self.content))
