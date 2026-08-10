@@ -22,7 +22,6 @@ _ResponseHandler = HttpxHandler[Response]
 @dataclass
 class HttpxBuilder:
     timeout_s: int = field(default_factory=lambda: 30)
-    config: HttpxRequest = field(default_factory=lambda: HttpxRequest())
 
     request_handlers: list[_RequestHandler] = field(default_factory=list)
     response_handlers: list[_ResponseHandler] = field(default_factory=list)
@@ -39,11 +38,6 @@ class HttpxBuilder:
 
         return self
 
-    def and_config(self, value: HttpxRequest) -> HttpxBuilder:
-        self.config = value
-
-        return self
-
     def before_request(self, handler: _RequestHandler) -> HttpxBuilder:
         self.request_handlers.append(handler)
 
@@ -55,7 +49,7 @@ class HttpxBuilder:
         return self
 
     def build(self) -> Httpx:
-        return Httpx(self._build_client(), self.config)
+        return Httpx(self._build_client())
 
     def _build_client(self) -> Client:
         return Client(
