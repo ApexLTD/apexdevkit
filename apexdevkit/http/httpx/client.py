@@ -71,12 +71,12 @@ class HttpxBuilder:
 class HttpxChannel:
     client: Client
 
-    def transport(self, request: HttpRequest) -> HttpxTransporter:
-        return HttpxTransporter(client=self.client, request=request)
+    def transport(self, request: HttpRequest) -> HttpxTransport:
+        return HttpxTransport(client=self.client, request=request)
 
 
 @dataclass(frozen=True)
-class HttpxTransporter:
+class HttpxTransport:
     client: Client
     request: HttpRequest
 
