@@ -124,11 +124,10 @@ class _TestRequest:
         return self.request()
 
     def ensure(self) -> _Response:
-        response = self.response
         return _Response(
             resource=self.resource,
             json=JsonDict(self.response.json()),
-            http_code=response.status,
+            http_code=self.response.status,
         )
 
 
