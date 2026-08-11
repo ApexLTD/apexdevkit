@@ -118,8 +118,7 @@ def test_should_delete_one(
 
 def test_should_sub_resource(resource: RestCollection) -> None:
     (
-        resource.sub_resource(str(uuid4()))
-        .sub_resource("price")
+        resource.sub_resource(name="price", item_id=str(uuid4()))
         .delete_one()
         .with_id(str(uuid4()))
         .ensure()

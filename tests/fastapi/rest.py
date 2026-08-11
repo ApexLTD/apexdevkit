@@ -205,8 +205,11 @@ class _Response:
 
 @dataclass(frozen=True)
 class RestCollection(_RestResource):
-    def sub_resource(self, name: str) -> RestItem:
-        return RestItem(self.http.with_endpoint(self.name.plural), RestfulName(name))
+    def sub_resource(self, name: str, *, item_id: str) -> RestCollection:
+        return RestCollection(
+            self.http.with_endpoint(self.name.plural).with_endpoint(item_id),
+            RestfulName(name),
+        )
 
 
 @dataclass(frozen=True)

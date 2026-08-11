@@ -67,8 +67,7 @@ def test_should_build_dependable_with_parent(faker: Faker) -> None:
 
     (
         _resource(DependableBuilder.from_builder(builder).with_parent(_PARENT))
-        .sub_resource(parent_id)
-        .sub_resource(_CHILD.singular)
+        .sub_resource(name=_CHILD.singular, item_id=parent_id)
         .read_all()
         .ensure()
         .success()
@@ -85,8 +84,7 @@ def test_should_not_build_dependable_when_no_parent(faker: Faker) -> None:
 
     (
         _resource(DependableBuilder.from_builder(builder).with_parent(_PARENT))
-        .sub_resource(parent_id)
-        .sub_resource(_CHILD.singular)
+        .sub_resource(name=_CHILD.singular, item_id=parent_id)
         .read_all()
         .ensure()
         .fail()
