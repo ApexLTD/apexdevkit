@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
-from typing import Any
 
 from httpx2 import Client, Request, Response
 from pypebbles import JsonDict
@@ -96,33 +95,4 @@ class HttpxTransport:
         return HttpResponse(
             status=response.status_code,
             content=response.content,
-        )
-
-
-@dataclass(frozen=True)
-class Httpx:
-    client: Client
-
-    _request: HttpRequest = field(default_factory=HttpRequest)
-
-    def with_endpoint(self, value: str) -> Httpx:
-        return replace(self, _request=self._request.with_endpoint(value))
-
-    def with_header(self, key: str, value: str) -> Httpx:
-        return replace(self, _request=self._request.with_header(key, value))
-
-    def with_param(self, key: str, value: str) -> Httpx:
-        return replace(self, _request=self._request.with_param(key, value))
-
-    def with_data(self, value: Any) -> Httpx:
-        return replace(self, _request=self._request.with_data(value))
-
-    def with_json(self, value: JsonDict) -> Httpx:
-        return replace(self, _request=self._request.with_json(value))
-
-    def request(self, method: HttpMethod, endpoint: str = "") -> HttpResponse:
-        return (
-            HttpxChannel(self.client)
-            .transport(self._request.with_endpoint(endpoint))
-            .over(method)
         )
