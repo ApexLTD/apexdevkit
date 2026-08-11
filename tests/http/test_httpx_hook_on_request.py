@@ -4,21 +4,10 @@ import pytest
 from httpx2 import Request
 from pypebbles.runtime import Environment
 
-from apexdevkit.http import FluentHttp, HttpMethod
+from apexdevkit.http import HttpMethod
+from apexdevkit.http.domain import HttpRequest, HttpTransport
 from apexdevkit.http.httpx.client import HttpxBuilder
 from tests.http.echo import Echo
-
-ECHO_SERVER = Environment().value_of("ECHO_SERVER")
-
-
-@pytest.fixture
-def http() -> FluentHttp:
-    return (
-        HttpxBuilder()
-        .with_url(ECHO_SERVER)
-        .before_request(FakeRequestHandler())
-        .build()
-    )
 
 
 @dataclass
@@ -39,32 +28,53 @@ class FakeRequestHandler:
 
 
 @pytest.mark.vcr
-def test_should_hook_get_method(http: FluentHttp) -> None:
-    response = http.on_endpoint("get").dispatch(HttpMethod.get)
+def test_should_hook_get_method(transport: HttpTransport) -> None:
+    response = (
+        HttpRequest().with_endpoint("get").using(transport).dispatch(HttpMethod.get)
+    )
 
     echo = Echo(response.json())
     assert echo.header(name="Handler") == "on_get"
 
 
 @pytest.mark.vcr
-def test_should_hook_post_method(http: FluentHttp) -> None:
-    response = http.on_endpoint("post").dispatch(HttpMethod.post)
+def test_should_hook_post_method(transport: HttpTransport) -> None:
+    response = (
+        HttpRequest().with_endpoint("post").using(transport).dispatch(HttpMethod.post)
+    )
 
     echo = Echo(response.json())
     assert echo.header(name="Handler") == "on_post"
 
 
 @pytest.mark.vcr
-def test_should_hook_patch_method(http: FluentHttp) -> None:
-    response = http.on_endpoint("patch").dispatch(HttpMethod.patch)
+def test_should_hook_patch_method(transport: HttpTransport) -> None:
+    response = (
+        HttpRequest().with_endpoint("patch").using(transport).dispatch(HttpMethod.patch)
+    )
 
     echo = Echo(response.json())
     assert echo.header(name="Handler") == "on_patch"
 
 
 @pytest.mark.vcr
-def test_should_hook_delete_method(http: FluentHttp) -> None:
-    response = http.on_endpoint("delete").dispatch(HttpMethod.delete)
+def test_should_hook_delete_method(transport: HttpTransport) -> None:
+    response = (
+        HttpRequest()
+        .with_endpoint("delete")
+        .using(transport)
+        .dispatch(HttpMethod.delete)
+    )
 
     echo = Echo(response.json())
     assert echo.header(name="Handler") == "on_delete"
+
+
+@pytest.fixture
+def transport() -> HttpTransport:
+    return (
+        HttpxBuilder()
+        .with_url(Environment().value_of("ECHO_SERVER"))
+        .before_request(FakeRequestHandler())
+        .transport()
+    )
