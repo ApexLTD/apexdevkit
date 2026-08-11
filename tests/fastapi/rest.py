@@ -30,21 +30,17 @@ class RestCollection:
     def create_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            LazyHttpRequest(
-                HttpMethod.post,
-                self.request.with_endpoint(self.name.plural),
-                HttpxChannel(self.http.client),
-            ),
+            HttpMethod.post,
+            self.request.with_endpoint(self.name.plural),
+            HttpxChannel(self.http.client),
         )
 
     def read_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            LazyHttpRequest(
-                HttpMethod.get,
-                self.request.with_endpoint(self.name.plural),
-                HttpxChannel(self.http.client),
-            ),
+            HttpMethod.get,
+            self.request.with_endpoint(self.name.plural),
+            HttpxChannel(self.http.client),
         )
 
     def read_many(self, **params: Any) -> _TestRequest:
@@ -54,61 +50,53 @@ class RestCollection:
 
         return _TestRequest(
             self.name,
-            LazyHttpRequest(
-                HttpMethod.get,
-                request,
-                HttpxChannel(self.http.client),
-            ),
+            HttpMethod.get,
+            request,
+            HttpxChannel(self.http.client),
         )
 
     def read_all(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            LazyHttpRequest(
-                HttpMethod.get,
-                self.request.with_endpoint(self.name.plural),
-                HttpxChannel(self.http.client),
-            ),
+            HttpMethod.get,
+            self.request.with_endpoint(self.name.plural),
+            HttpxChannel(self.http.client),
         )
 
     def update_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            LazyHttpRequest(
-                HttpMethod.patch,
-                self.request.with_endpoint(self.name.plural),
-                HttpxChannel(self.http.client),
-            ),
+            HttpMethod.patch,
+            self.request.with_endpoint(self.name.plural),
+            HttpxChannel(self.http.client),
         )
 
     def replace_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            LazyHttpRequest(
-                HttpMethod.put,
-                self.request.with_endpoint(self.name.plural),
-                HttpxChannel(self.http.client),
-            ),
+            HttpMethod.put,
+            self.request.with_endpoint(self.name.plural),
+            HttpxChannel(self.http.client),
         )
 
     def delete_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            LazyHttpRequest(
-                HttpMethod.delete,
-                self.request.with_endpoint(self.name.plural),
-                HttpxChannel(self.http.client),
-            ),
+            HttpMethod.delete,
+            self.request.with_endpoint(self.name.plural),
+            HttpxChannel(self.http.client),
         )
 
 
 @dataclass(frozen=True)
 class _TestRequest:
     resource: RestfulName
-    request: LazyHttpRequest
+    method: HttpMethod
+    request: HttpRequest
+    channel: HttpChannel
 
     def with_id(self, value: Any) -> _TestRequest:
-        return replace(self, request=self.request.with_endpoint(value))
+        return replace(self, request=self.request.with_endpoint(str(value)))
 
     def and_data(self, value: JsonDict) -> _TestRequest:
         return self.with_data(value)
@@ -121,7 +109,7 @@ class _TestRequest:
 
     @cached_property
     def response(self) -> HttpResponse:
-        return self.request()
+        return self.channel.transport(self.request).over(self.method)
 
     def ensure(self) -> _Response:
         return _Response(
@@ -129,22 +117,6 @@ class _TestRequest:
             json=self.response.json(),
             http_code=self.response.status,
         )
-
-
-@dataclass(frozen=True)
-class LazyHttpRequest:
-    method: HttpMethod
-    request: HttpRequest
-    channel: HttpChannel
-
-    def with_endpoint(self, value: Any) -> LazyHttpRequest:
-        return replace(self, request=self.request.with_endpoint(str(value)))
-
-    def with_json(self, value: JsonDict) -> LazyHttpRequest:
-        return replace(self, request=self.request.with_json(value))
-
-    def __call__(self) -> HttpResponse:
-        return self.channel.transport(self.request).over(self.method)
 
 
 @dataclass
