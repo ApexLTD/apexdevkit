@@ -112,18 +112,13 @@ class _TestRequest:
         return self.channel.transport(self.request).over(self.method)
 
     def ensure(self) -> ResponseProbe:
-        return ResponseProbe(
-            resource=self.resource,
-            json=self.response.json(),
-            http_code=self.response.status,
-        )
+        return ResponseProbe(resource=self.resource, response=self.response)
 
 
 @dataclass(frozen=True)
 class ResponseProbe:
     resource: RestfulName
-    json: JsonDict
-    http_code: int
+    response: HttpResponse
 
     def fail(self) -> Self:
         return self.with_status("fail")
@@ -132,13 +127,13 @@ class ResponseProbe:
         return self.with_status("success")
 
     def with_status(self, value: str) -> Self:
-        assert self.json.value_of("status").to(str) == value
+        assert self.response.json().value_of("status").to(str) == value
 
         return self
 
     def with_code(self, value: int) -> Self:
-        assert self.http_code == value
-        assert self.json.value_of("code").to(int) == value
+        assert self.response.status == value
+        assert self.response.json().value_of("code").to(int) == value
 
         return self
 
@@ -146,7 +141,8 @@ class ResponseProbe:
         return self.with_message(value)
 
     def with_message(self, value: str) -> Self:
-        assert self.json.value_of("error").to(dict) == {"message": value}, self.json
+        actual = self.response.json().value_of("error").to(dict)
+        assert actual == {"message": value}, self.response.json()
 
         return self
 
@@ -163,6 +159,7 @@ class ResponseProbe:
         return self.with_data(**{self.resource.plural: values}, count=len(values))
 
     def with_data(self, **kwargs: Any) -> Self:
-        assert self.json.value_of("data").to(dict) == {**kwargs}, self.json
+        actual = self.response.json().value_of("data").to(dict)
+        assert actual == {**kwargs}, self.response.json()
 
         return self
