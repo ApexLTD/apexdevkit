@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 
 from httpx2 import Client, Request, Response
-from pypebbles import JsonDict
+from pypebbles import FluentDict
 
 from apexdevkit.http.domain import HttpMethod, HttpRequest, HttpResponse
 from apexdevkit.http.httpx.hooks import (
@@ -64,13 +63,16 @@ class HttpxBuilder:
 class HttpxChannel:
     client: Client
 
-    headers: Mapping[str, str] = field(default_factory=dict)
+    headers: FluentDict[str] = field(default_factory=FluentDict[str])
 
     def with_header(self, key: str, value: str) -> HttpxChannel:
-        return replace(self, headers=JsonDict(self.headers).merge({key: value}))
+        return replace(self, headers=self.headers.merge(FluentDict[str]({key: value})))
 
     def transport(self, request: HttpRequest) -> HttpxTransport:
-        return HttpxTransport(client=self.client, request=request)
+        return HttpxTransport(
+            client=self.client,
+            request=request.with_headers(self.headers),
+        )
 
 
 @dataclass(frozen=True)
