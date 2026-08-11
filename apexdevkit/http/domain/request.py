@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from typing import Protocol
+from urllib.parse import urlencode
 
 from pypebbles import FluentDict, JsonDict
 
@@ -20,6 +21,10 @@ class HttpRequest:
     json: JsonDict | None = None
     data: JsonDict | None = None
 
+    @property
+    def query(self) -> str:
+        return f"{self.endpoint}?{urlencode(self.params)}".strip("?")
+
     def with_endpoint(self, endpoint: str) -> HttpRequest:
         return replace(self, endpoint=HttpUrl(self.endpoint) + endpoint)
 
@@ -36,10 +41,22 @@ class HttpRequest:
         return replace(self, params=self.params.merge(FluentDict[str](value)))
 
     def with_data(self, value: JsonDict) -> HttpRequest:
-        return replace(self, data=value)
+        return replace(
+            self,
+            data=value,
+            headers=self.headers.merge(
+                FluentDict[str]({"Content-Type": "application/x-www-form-urlencoded"})
+            ),
+        )
 
     def with_json(self, value: JsonDict) -> HttpRequest:
-        return replace(self, json=value)
+        return replace(
+            self,
+            json=value,
+            headers=self.headers.merge(
+                FluentDict[str]({"Content-Type": "application/json"})
+            ),
+        )
 
     def using(self, transporter: HttpTransport) -> HttpDispatcher:
         return HttpDispatcher(request=self, transporter=transporter)

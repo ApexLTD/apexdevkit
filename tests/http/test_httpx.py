@@ -4,6 +4,7 @@ from pypebbles.runtime import Environment
 
 from apexdevkit.http import HttpMethod
 from apexdevkit.http.domain import HttpRequest, HttpTransport
+from apexdevkit.http.fake import InternalEcho
 from apexdevkit.http.httpx.client import HttpxBuilder
 
 from .echo import Echo
@@ -112,8 +113,11 @@ def test_should_put(transport: HttpTransport, a_json: JsonDict) -> None:
     )
 
 
-@pytest.fixture(params=["external"])
+@pytest.fixture(params=["internal", "external"])
 def transport(request: pytest.FixtureRequest) -> HttpTransport:
+    if request.param == "internal":
+        return InternalEcho(headers={"User-Agent": "hogwarts"})
+
     return (
         HttpxBuilder()
         .with_url(Environment().value_of("ECHO_SERVER"))
