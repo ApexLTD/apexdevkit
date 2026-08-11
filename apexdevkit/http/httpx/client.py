@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from typing import Any
 
@@ -55,16 +55,10 @@ class HttpxBuilder:
             base_url=self.url,
             timeout=self.timeout_s,
             event_hooks={
-                "request": self._build_before_request_hooks(),
-                "response": self._build_after_response_hooks(),
+                "request": [BeforeRequestHook(h) for h in self.request_handlers],
+                "response": [AfterResponseHook(h) for h in self.response_handlers],
             },
         )
-
-    def _build_before_request_hooks(self) -> list[Callable[..., Any]]:
-        return [BeforeRequestHook(handler) for handler in self.request_handlers]
-
-    def _build_after_response_hooks(self) -> list[Callable[..., Any]]:
-        return [AfterResponseHook(handler) for handler in self.response_handlers]
 
 
 @dataclass(frozen=True)
