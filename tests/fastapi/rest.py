@@ -86,7 +86,7 @@ class RestCollection:
 class _TestRequest:
     resource: RestfulName
     request: HttpRequest
-    channel: HttpTransporter
+    transporter: HttpTransporter
 
     def with_id(self, value: Any) -> _TestRequest:
         return replace(self, request=self.request.with_endpoint(str(value)))
@@ -105,7 +105,7 @@ class _TestRequest:
 
     @cached_property
     def response(self) -> HttpResponse:
-        return self.channel.transport(self.request)
+        return self.transporter.transport(self.request)
 
 
 @dataclass(frozen=True)
