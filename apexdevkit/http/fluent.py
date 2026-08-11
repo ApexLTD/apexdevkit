@@ -14,8 +14,8 @@ class FluentHttp:
 
     _request: HttpRequest = field(default_factory=HttpRequest)
 
-    def on_endpoint(self, value: str) -> FluentHttpRequest:
-        return FluentHttpRequest(
+    def on_endpoint(self, value: str) -> HttpRequestDispatcher:
+        return HttpRequestDispatcher(
             transporter=self.transporter,
             inner=self._request.with_endpoint(value),
         )
@@ -46,24 +46,24 @@ class FluentHttp:
 
 
 @dataclass(frozen=True)
-class FluentHttpRequest:
+class HttpRequestDispatcher:
     inner: HttpRequest
     transporter: HttpTransport
 
     def post(self) -> HttpResponse:
-        return self.request(HttpMethod.post)
+        return self.dispatch(HttpMethod.post)
 
     def get(self) -> HttpResponse:
-        return self.request(HttpMethod.get)
+        return self.dispatch(HttpMethod.get)
 
     def patch(self) -> HttpResponse:
-        return self.request(HttpMethod.patch)
+        return self.dispatch(HttpMethod.patch)
 
     def delete(self) -> HttpResponse:
-        return self.request(HttpMethod.delete)
+        return self.dispatch(HttpMethod.delete)
 
     def put(self) -> HttpResponse:
-        return self.request(HttpMethod.put)
+        return self.dispatch(HttpMethod.put)
 
-    def request(self, method: HttpMethod) -> HttpResponse:
+    def dispatch(self, method: HttpMethod) -> HttpResponse:
         return self.transporter.over(method).transport(self.inner)

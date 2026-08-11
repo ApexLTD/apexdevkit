@@ -40,7 +40,7 @@ class FakeRequestHandler:
 
 @pytest.mark.vcr
 def test_should_hook_get_method(http: FluentHttp) -> None:
-    response = http.on_endpoint("get").request(HttpMethod.get)
+    response = http.on_endpoint("get").dispatch(HttpMethod.get)
 
     echo = Echo(response.json())
     assert echo.header(name="Handler") == "on_get"
@@ -48,7 +48,7 @@ def test_should_hook_get_method(http: FluentHttp) -> None:
 
 @pytest.mark.vcr
 def test_should_hook_post_method(http: FluentHttp) -> None:
-    response = http.on_endpoint("post").request(HttpMethod.post)
+    response = http.on_endpoint("post").dispatch(HttpMethod.post)
 
     echo = Echo(response.json())
     assert echo.header(name="Handler") == "on_post"
@@ -56,7 +56,7 @@ def test_should_hook_post_method(http: FluentHttp) -> None:
 
 @pytest.mark.vcr
 def test_should_hook_patch_method(http: FluentHttp) -> None:
-    response = http.on_endpoint("patch").request(HttpMethod.patch)
+    response = http.on_endpoint("patch").dispatch(HttpMethod.patch)
 
     echo = Echo(response.json())
     assert echo.header(name="Handler") == "on_patch"
@@ -64,7 +64,7 @@ def test_should_hook_patch_method(http: FluentHttp) -> None:
 
 @pytest.mark.vcr
 def test_should_hook_delete_method(http: FluentHttp) -> None:
-    response = http.on_endpoint("delete").request(HttpMethod.delete)
+    response = http.on_endpoint("delete").dispatch(HttpMethod.delete)
 
     echo = Echo(response.json())
     assert echo.header(name="Handler") == "on_delete"
