@@ -4,8 +4,9 @@ import pytest
 from pypebbles import JsonDict
 from pypebbles.runtime import Environment
 
-from apexdevkit.http import HttpMethod, Httpx, SignPayloadWith
+from apexdevkit.http import FluentHttp, Httpx, SignPayloadWith
 from apexdevkit.security import Signature
+from tests.http.echo import Echo
 
 
 @dataclass(frozen=True)
@@ -20,25 +21,19 @@ class FakeAuthority:
 
 
 @pytest.fixture
-def http() -> Httpx:
-    return (
+def http() -> FluentHttp:
+    return FluentHttp(
         Httpx.Builder()
         .with_url(Environment().value_of("ECHO_SERVER"))
         .before_request(SignPayloadWith(FakeAuthority()))
-        .build()
+        .channel()
     )
 
 
 @pytest.mark.vcr
-def test_should_hook_post_method(http: Httpx) -> None:
+def test_should_hook_post_method(http: FluentHttp) -> None:
     payload = JsonDict().with_a(body="content")
 
-    headers = (
-        http.with_json(payload)
-        .request(HttpMethod.post, "/post")
-        .json()
-        .value_of("headers")
-        .to(dict)
-    )
+    echo = Echo(http.with_json(payload).on_endpoint("post").post().json())
 
-    assert headers[FakeAuthority.HEADER] == '{"body":"content"}'
+    assert echo.header(FakeAuthority.HEADER) == '{"body":"content"}'
