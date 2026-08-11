@@ -4,42 +4,42 @@ import pytest
 from httpx2 import Response
 from pypebbles.runtime import Environment
 
-from apexdevkit.http import FluentHttp
+from apexdevkit.http.domain import HttpRequest, HttpTransport
 from apexdevkit.http.httpx.client import HttpxBuilder
 
 
 @pytest.mark.vcr
-def test_should_hook_get_method(http: FluentHttp) -> None:
+def test_should_hook_get_method(transport: HttpTransport) -> None:
     with pytest.raises(ValueError, match="get"):
-        http.on_endpoint("get").get()
+        HttpRequest().with_endpoint("get").using(transport).get()
 
 
 @pytest.mark.vcr
-def test_should_hook_post_method(http: FluentHttp) -> None:
+def test_should_hook_post_method(transport: HttpTransport) -> None:
     with pytest.raises(ValueError, match="post"):
-        http.on_endpoint("post").post()
+        HttpRequest().with_endpoint("post").using(transport).post()
 
 
 @pytest.mark.vcr
-def test_should_hook_patch_method(http: FluentHttp) -> None:
+def test_should_hook_patch_method(transport: HttpTransport) -> None:
     with pytest.raises(ValueError, match="patch"):
-        http.on_endpoint("patch").patch()
+        HttpRequest().with_endpoint("patch").using(transport).patch()
 
 
 @pytest.mark.vcr
-def test_should_hook_delete_method(http: FluentHttp) -> None:
+def test_should_hook_delete_method(transport: HttpTransport) -> None:
     with pytest.raises(ValueError, match="delete"):
-        http.on_endpoint("delete").delete()
+        HttpRequest().with_endpoint("delete").using(transport).delete()
 
 
 @pytest.fixture
-def http() -> FluentHttp:
+def transport() -> HttpTransport:
     return (
         HttpxBuilder()
         .with_url(Environment().value_of("ECHO_SERVER"))
-        .after_response(_Handler())
-        .build()
         .with_header("User-Agent", "Hogwarts")
+        .after_response(_Handler())
+        .transport()
     )
 
 
