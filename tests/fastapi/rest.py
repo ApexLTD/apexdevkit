@@ -59,7 +59,8 @@ class _RestResource:
             self.name,
             LazyHttpRequest(
                 HttpMethod.patch,
-                self.http.with_endpoint(self.name.plural),
+                self.http,
+                HttpRequest().with_endpoint(self.name.plural),
             ),
         )
 
@@ -68,7 +69,8 @@ class _RestResource:
             self.name,
             LazyHttpRequest(
                 HttpMethod.put,
-                self.http.with_endpoint(self.name.plural),
+                self.http,
+                HttpRequest().with_endpoint(self.name.plural),
             ),
         )
 
