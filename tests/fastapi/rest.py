@@ -14,12 +14,12 @@ from apexdevkit.http.httpx.client import HttpxChannel
 
 
 @dataclass(frozen=True)
-class _RestResource:
+class RestCollection:
     http: Httpx
     name: RestfulName
 
-    def sub_resource(self, name: str, *, item_id: str) -> _RestResource:
-        return _RestResource(
+    def sub_resource(self, name: str, *, item_id: str) -> RestCollection:
+        return RestCollection(
             self.http.with_endpoint(self.name.plural).with_endpoint(item_id),
             RestfulName(name),
         )
@@ -207,8 +207,3 @@ class _Response:
         assert self.json.value_of("data").to(dict) == {**kwargs}, self.json
 
         return self
-
-
-@dataclass(frozen=True)
-class RestCollection(_RestResource):
-    pass
