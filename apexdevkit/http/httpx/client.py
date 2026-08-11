@@ -50,9 +50,6 @@ class HttpxBuilder:
     def channel(self) -> HttpxChannel:
         return HttpxChannel(client=self._build_client())
 
-    def build(self) -> Httpx:
-        return Httpx(self._build_client())
-
     def _build_client(self) -> Client:
         return Client(
             base_url=self.url,
