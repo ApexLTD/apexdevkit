@@ -105,8 +105,6 @@ class Httpx:
 
     _request: HttpRequest = field(default_factory=HttpRequest)
 
-    Builder = HttpxBuilder
-
     def with_endpoint(self, value: str) -> Httpx:
         return replace(self, _request=self._request.with_endpoint(value))
 

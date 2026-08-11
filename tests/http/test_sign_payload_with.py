@@ -4,7 +4,8 @@ import pytest
 from pypebbles import JsonDict
 from pypebbles.runtime import Environment
 
-from apexdevkit.http import FluentHttp, Httpx, SignPayloadWith
+from apexdevkit.http import FluentHttp, SignPayloadWith
+from apexdevkit.http.httpx.client import HttpxBuilder
 from apexdevkit.security import Signature
 from tests.http.echo import Echo
 
@@ -23,7 +24,7 @@ class FakeAuthority:
 @pytest.fixture
 def http() -> FluentHttp:
     return FluentHttp(
-        Httpx.Builder()
+        HttpxBuilder()
         .with_url(Environment().value_of("ECHO_SERVER"))
         .before_request(SignPayloadWith(FakeAuthority()))
         .channel()
