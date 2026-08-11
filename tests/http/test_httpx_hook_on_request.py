@@ -10,23 +10,6 @@ from apexdevkit.http.httpx.client import HttpxBuilder
 from tests.http.echo import Echo
 
 
-@dataclass
-class FakeRequestHandler:
-    name: str = "Handler"
-
-    def on_get(self, request: Request) -> None:
-        request.headers[self.name] = "on_get"
-
-    def on_post(self, request: Request) -> None:
-        request.headers[self.name] = "on_post"
-
-    def on_patch(self, request: Request) -> None:
-        request.headers[self.name] = "on_patch"
-
-    def on_delete(self, request: Request) -> None:
-        request.headers[self.name] = "on_delete"
-
-
 @pytest.mark.vcr
 def test_should_hook_get_method(transport: HttpTransport) -> None:
     (
@@ -80,6 +63,23 @@ def transport() -> HttpTransport:
     return (
         HttpxBuilder()
         .with_url(Environment().value_of("ECHO_SERVER"))
-        .before_request(FakeRequestHandler())
+        .before_request(_Handler())
         .transport()
     )
+
+
+@dataclass(frozen=True)
+class _Handler:
+    name: str = "Handler"
+
+    def on_get(self, request: Request) -> None:
+        request.headers[self.name] = "on_get"
+
+    def on_post(self, request: Request) -> None:
+        request.headers[self.name] = "on_post"
+
+    def on_patch(self, request: Request) -> None:
+        request.headers[self.name] = "on_patch"
+
+    def on_delete(self, request: Request) -> None:
+        request.headers[self.name] = "on_delete"
