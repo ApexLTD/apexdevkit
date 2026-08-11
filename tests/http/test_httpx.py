@@ -10,13 +10,11 @@ from .echo import Echo
 
 
 @pytest.mark.vcr
-def test_should_post(transport: HttpTransport) -> None:
-    json = JsonDict().with_a(Harry="Potter")
-
+def test_should_post(transport: HttpTransport, a_json: JsonDict) -> None:
     echo = (
         HttpRequest()
         .with_endpoint("post")
-        .with_json(value=json)
+        .with_json(value=a_json)
         .using(transport)
         .post()
         .load(Echo)
@@ -25,17 +23,15 @@ def test_should_post(transport: HttpTransport) -> None:
     echo.assert_endpoint(expected="post")
     echo.assert_user_agent(expected="hogwarts")
     echo.assert_content_type(expected="application/json")
-    echo.assert_json(expected=json)
+    echo.assert_json(expected=a_json)
 
 
 @pytest.mark.vcr
-def test_should_submit(transport: HttpTransport) -> None:
-    form = JsonDict().with_a(Harry="Potter")
-
+def test_should_submit(transport: HttpTransport, a_json: JsonDict) -> None:
     echo = (
         HttpRequest()
         .with_endpoint("post")
-        .with_data(value=form)
+        .with_data(value=a_json)
         .using(transport)
         .post()
         .load(Echo)
@@ -44,7 +40,7 @@ def test_should_submit(transport: HttpTransport) -> None:
     echo.assert_endpoint(expected="post")
     echo.assert_user_agent(expected="hogwarts")
     echo.assert_content_type(expected="application/x-www-form-urlencoded")
-    echo.assert_form(expected=form)
+    echo.assert_form(expected=a_json)
 
 
 @pytest.mark.vcr
@@ -75,13 +71,11 @@ def test_should_get_with_params(transport: HttpTransport) -> None:
 
 
 @pytest.mark.vcr
-def test_should_patch(transport: HttpTransport) -> None:
-    json = JsonDict().with_a(Harry="Potter")
-
+def test_should_patch(transport: HttpTransport, a_json: JsonDict) -> None:
     echo = (
         HttpRequest()
         .with_endpoint("patch")
-        .with_json(value=json)
+        .with_json(value=a_json)
         .using(transport)
         .patch()
         .load(Echo)
@@ -90,7 +84,7 @@ def test_should_patch(transport: HttpTransport) -> None:
     echo.assert_endpoint(expected="patch")
     echo.assert_user_agent(expected="hogwarts")
     echo.assert_content_type(expected="application/json")
-    echo.assert_json(expected=json)
+    echo.assert_json(expected=a_json)
 
 
 @pytest.mark.vcr
@@ -102,13 +96,11 @@ def test_should_delete(transport: HttpTransport) -> None:
 
 
 @pytest.mark.vcr
-def test_should_put(transport: HttpTransport) -> None:
-    json = JsonDict().with_a(Harry="Potter")
-
+def test_should_put(transport: HttpTransport, a_json: JsonDict) -> None:
     echo = (
         HttpRequest()
         .with_endpoint("put")
-        .with_json(value=json)
+        .with_json(value=a_json)
         .using(transport)
         .put()
         .load(Echo)
@@ -117,7 +109,7 @@ def test_should_put(transport: HttpTransport) -> None:
     echo.assert_endpoint(expected="put")
     echo.assert_user_agent(expected="hogwarts")
     echo.assert_content_type(expected="application/json")
-    echo.assert_json(expected=json)
+    echo.assert_json(expected=a_json)
 
 
 @pytest.fixture
@@ -128,3 +120,8 @@ def transport() -> HttpTransport:
         .with_header("User-Agent", "hogwarts")
         .transport()
     )
+
+
+@pytest.fixture
+def a_json() -> JsonDict:
+    return JsonDict().with_a(Harry="Potter")
