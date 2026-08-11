@@ -15,7 +15,7 @@ interactions:
       host:
       - localhost:8080
       user-agent:
-      - python-httpx/0.28.1
+      - python-httpx2/2.9.1
       x-header:
       - '{"body":"content"}'
     method: POST
@@ -27,7 +27,7 @@ interactions:
         \n    \"Accept-Encoding\": \"gzip, deflate, zstd\", \n    \"Connection\":
         \"keep-alive\", \n    \"Content-Length\": \"18\", \n    \"Content-Type\":
         \"application/json\", \n    \"Host\": \"localhost:8080\", \n    \"User-Agent\":
-        \"python-httpx/0.28.1\", \n    \"X-Header\": \"{\\\"body\\\":\\\"content\\\"}\"\n
+        \"python-httpx2/2.9.1\", \n    \"X-Header\": \"{\\\"body\\\":\\\"content\\\"}\"\n
         \ }, \n  \"json\": {\n    \"body\": \"content\"\n  }, \n  \"origin\": \"10.10.0.75\",
         \n  \"url\": \"http://localhost:8080/post\"\n}\n"
     headers:
@@ -42,7 +42,7 @@ interactions:
       content-type:
       - application/json
       date:
-      - Wed, 05 Aug 2026 07:00:04 GMT
+      - Tue, 11 Aug 2026 10:10:29 GMT
       server:
       - gunicorn/19.9.0
     status:
