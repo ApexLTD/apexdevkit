@@ -21,16 +21,15 @@ def test_should_attach_headers() -> None:
 
 
 def test_should_attach_params() -> None:
-    echo = (
+    (
         FluentHttp(transporter=InternalEcho())
         .with_param("Color", "Yellow")
         .and_param("Shape", "Square")
         .on_endpoint("get")
         .get()
-        .json()
+        .load(Echo)
+        .assert_endpoint(expected="get?Color=Yellow&Shape=Square")
     )
-
-    assert echo["params"] == {"Color": "Yellow", "Shape": "Square"}
 
 
 def test_should_attach_json() -> None:

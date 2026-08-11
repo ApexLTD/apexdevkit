@@ -33,7 +33,6 @@ class InternalEcho:
             {
                 "url": HttpUrl(self.server) + request.query,
                 "headers": request.headers.merge(self.headers),
-                "params": request.params,
                 "json": request.json,
                 "form": request.data,
             }
