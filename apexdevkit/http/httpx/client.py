@@ -54,7 +54,10 @@ class HttpxBuilder:
         return self
 
     def build(self) -> FluentHttp:
-        return FluentHttp(HttpxTransporter(self.client()))
+        return FluentHttp(self.transport())
+
+    def transport(self) -> HttpxTransporter:
+        return HttpxTransporter(self.client())
 
     def client(self) -> Client:
         return Client(
