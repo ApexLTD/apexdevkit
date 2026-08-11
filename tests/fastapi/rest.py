@@ -8,14 +8,14 @@ from pypebbles import JsonDict
 
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.http import HttpMethod
-from apexdevkit.http.domain import HttpRequest, HttpTransporter
+from apexdevkit.http.domain import HttpRequest, HttpTransport
 from apexdevkit.http.domain.response import HttpResponse
 
 
 @dataclass(frozen=True)
 class RestCollection:
     name: RestfulName
-    transport: HttpTransporter
+    transport: HttpTransport
 
     request: HttpRequest = HttpRequest()
 
@@ -86,7 +86,7 @@ class RestCollection:
 class _TestRequest:
     resource: RestfulName
     request: HttpRequest
-    transporter: HttpTransporter
+    transporter: HttpTransport
 
     def with_id(self, value: Any) -> _TestRequest:
         return replace(self, request=self.request.with_endpoint(str(value)))

@@ -5,12 +5,12 @@ from typing import Any
 
 from pypebbles import JsonDict
 
-from .domain import HttpMethod, HttpRequest, HttpResponse, HttpTransporter
+from .domain import HttpMethod, HttpRequest, HttpResponse, HttpTransport
 
 
 @dataclass(frozen=True)
 class FluentHttp:
-    transporter: HttpTransporter
+    transporter: HttpTransport
 
     _request: HttpRequest = field(default_factory=HttpRequest)
 
@@ -48,7 +48,7 @@ class FluentHttp:
 @dataclass(frozen=True)
 class FluentHttpRequest:
     inner: HttpRequest
-    transporter: HttpTransporter
+    transporter: HttpTransport
 
     def post(self) -> HttpResponse:
         return self.request(HttpMethod.post)
