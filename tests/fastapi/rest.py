@@ -210,9 +210,3 @@ class RestCollection(_RestResource):
             self.http.with_endpoint(self.name.plural).with_endpoint(item_id),
             RestfulName(name),
         )
-
-
-@dataclass(frozen=True)
-class RestItem(_RestResource):
-    def sub_resource(self, name: str) -> RestItem:
-        return RestItem(self.http.with_endpoint(self.name.singular), RestfulName(name))
