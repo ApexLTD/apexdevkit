@@ -41,6 +41,9 @@ class HttpRequest:
     def with_json(self, value: JsonDict) -> HttpRequest:
         return replace(self, json=value)
 
+    def using(self, transporter: HttpTransport) -> HttpDispatcher:
+        return HttpDispatcher(inner=self, transporter=transporter)
+
 
 @dataclass(frozen=True)
 class HttpDispatcher:

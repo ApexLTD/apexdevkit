@@ -15,10 +15,7 @@ class FluentHttp:
     _request: HttpRequest = field(default_factory=HttpRequest)
 
     def on_endpoint(self, value: str) -> HttpDispatcher:
-        return HttpDispatcher(
-            transporter=self.transporter,
-            inner=self._request.with_endpoint(value),
-        )
+        return self._request.with_endpoint(value).using(self.transporter)
 
     def and_header(self, key: str, value: str) -> FluentHttp:
         return self.with_header(key, value)
