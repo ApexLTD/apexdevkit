@@ -112,8 +112,8 @@ def test_should_put(transport: HttpTransport, a_json: JsonDict) -> None:
     )
 
 
-@pytest.fixture
-def transport() -> HttpTransport:
+@pytest.fixture(params=["external"])
+def transport(request: pytest.FixtureRequest) -> HttpTransport:
     return (
         HttpxBuilder()
         .with_url(Environment().value_of("ECHO_SERVER"))
