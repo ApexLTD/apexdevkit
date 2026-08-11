@@ -8,7 +8,7 @@ from pypebbles import JsonDict
 
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.http import HttpMethod, Httpx
-from apexdevkit.http.domain import HttpRequest
+from apexdevkit.http.domain import HttpChannel, HttpRequest
 from apexdevkit.http.domain.response import HttpResponse
 from apexdevkit.http.httpx.client import HttpxChannel
 
@@ -32,8 +32,8 @@ class RestCollection:
             self.name,
             LazyHttpRequest(
                 HttpMethod.post,
-                self.http,
                 self.request.with_endpoint(self.name.plural),
+                HttpxChannel(self.http.client),
             ),
         )
 
@@ -42,8 +42,8 @@ class RestCollection:
             self.name,
             LazyHttpRequest(
                 HttpMethod.get,
-                self.http,
                 self.request.with_endpoint(self.name.plural),
+                HttpxChannel(self.http.client),
             ),
         )
 
@@ -56,8 +56,8 @@ class RestCollection:
             self.name,
             LazyHttpRequest(
                 HttpMethod.get,
-                self.http,
                 request,
+                HttpxChannel(self.http.client),
             ),
         )
 
@@ -66,8 +66,8 @@ class RestCollection:
             self.name,
             LazyHttpRequest(
                 HttpMethod.get,
-                self.http,
                 self.request.with_endpoint(self.name.plural),
+                HttpxChannel(self.http.client),
             ),
         )
 
@@ -76,8 +76,8 @@ class RestCollection:
             self.name,
             LazyHttpRequest(
                 HttpMethod.patch,
-                self.http,
                 self.request.with_endpoint(self.name.plural),
+                HttpxChannel(self.http.client),
             ),
         )
 
@@ -86,8 +86,8 @@ class RestCollection:
             self.name,
             LazyHttpRequest(
                 HttpMethod.put,
-                self.http,
                 self.request.with_endpoint(self.name.plural),
+                HttpxChannel(self.http.client),
             ),
         )
 
@@ -96,8 +96,8 @@ class RestCollection:
             self.name,
             LazyHttpRequest(
                 HttpMethod.delete,
-                self.http,
                 self.request.with_endpoint(self.name.plural),
+                HttpxChannel(self.http.client),
             ),
         )
 
@@ -141,25 +141,21 @@ class _TestRequest:
 @dataclass(frozen=True)
 class LazyHttpRequest:
     method: HttpMethod
-    http: Httpx
     request: HttpRequest
-
-    @property
-    def channel(self) -> HttpxChannel:
-        return HttpxChannel(self.http.client)
+    channel: HttpChannel
 
     def with_endpoint(self, value: Any) -> LazyHttpRequest:
         return LazyHttpRequest(
             method=self.method,
-            http=self.http,
             request=self.request.with_endpoint(str(value)),
+            channel=self.channel,
         )
 
     def with_json(self, value: JsonDict) -> LazyHttpRequest:
         return LazyHttpRequest(
             method=self.method,
-            http=self.http,
             request=self.request.with_json(value),
+            channel=self.channel,
         )
 
     def __call__(self) -> HttpResponse:
