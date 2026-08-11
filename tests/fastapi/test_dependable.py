@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
 from faker import Faker
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from apexdevkit.error import DoesNotExistError
@@ -8,6 +9,7 @@ from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuil
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.router import Dependency
+from apexdevkit.http.httpx.client import HttpxChannel
 from tests.fastapi.rest import RestCollection
 from tests.fastapi.sample_api import AppleFields, PriceFields
 
@@ -18,29 +20,33 @@ _CHILD = RestfulName("price")
 def _resource(dependency: Dependency) -> RestCollection:
     return RestCollection(
         name=_PARENT,
-        http=TestClient(
-            FastApiBuilder()
-            .with_route(
-                apples=(
-                    RestfulRouter.named(_PARENT.singular)
-                    .with_fields(AppleFields())
-                    .with_default_dependency(dependency)
-                    .with_sub_resource(
-                        prices=(
-                            RestfulRouter.named(_CHILD.singular)
-                            .child_of(_PARENT.singular)
-                            .with_fields(PriceFields())
-                            .with_default_dependency(dependency)
-                            .default()
-                            .build()
-                        )
+        channel=HttpxChannel(TestClient(_setup(dependency))),
+    )
+
+
+def _setup(using: Dependency) -> FastAPI:
+    return (
+        FastApiBuilder()
+        .with_route(
+            apples=(
+                RestfulRouter.named(_PARENT.singular)
+                .with_fields(AppleFields())
+                .with_default_dependency(using)
+                .with_sub_resource(
+                    prices=(
+                        RestfulRouter.named(_CHILD.singular)
+                        .child_of(_PARENT.singular)
+                        .with_fields(PriceFields())
+                        .with_default_dependency(using)
+                        .default()
+                        .build()
                     )
-                    .default()
-                    .build()
                 )
+                .default()
+                .build()
             )
-            .build()
-        ),
+        )
+        .build()
     )
 
 

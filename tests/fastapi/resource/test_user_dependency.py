@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 
 from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
 from apexdevkit.fastapi.name import RestfulName
+from apexdevkit.http.httpx.client import HttpxChannel
 from tests.fastapi.rest import RestCollection
 from tests.fastapi.sample_api import AppleFields, FakeApple, SuccessfulService
 
@@ -26,7 +27,7 @@ def fake_user() -> FakeUser:
 def resource(infra: RestfulServiceBuilder, fake_user: FakeUser) -> RestCollection:
     return RestCollection(
         RestfulName("apple"),
-        http=TestClient(setup(infra, fake_user)),
+        channel=HttpxChannel(TestClient(setup(infra, fake_user))),
     )
 
 
