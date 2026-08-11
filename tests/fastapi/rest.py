@@ -33,7 +33,8 @@ class _RestResource:
             self.name,
             LazyHttpRequest(
                 HttpMethod.get,
-                self.http.with_endpoint(self.name.plural),
+                self.http,
+                HttpRequest().with_endpoint(self.name.plural),
             ),
         )
 
