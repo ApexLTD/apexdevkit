@@ -8,7 +8,9 @@ from pypebbles import JsonDict
 
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.http import HttpMethod, Httpx
+from apexdevkit.http.domain import HttpRequest
 from apexdevkit.http.domain.response import HttpResponse
+from apexdevkit.http.httpx.client import HttpxChannel
 
 
 @dataclass(frozen=True)
@@ -118,21 +120,27 @@ class _TestRequest:
 class LazyHttpRequest:
     method: HttpMethod
     http: Httpx
+    request: HttpRequest | None = None
 
     def with_endpoint(self, value: Any) -> LazyHttpRequest:
         return LazyHttpRequest(
             method=self.method,
-            http=self.http.with_endpoint(str(value)),
+            http=self.http.with_endpoint(str(value)) if not self.request else self.http,
+            request=self.request and self.request.with_endpoint(str(value)),
         )
 
     def with_json(self, value: JsonDict) -> LazyHttpRequest:
         return LazyHttpRequest(
             method=self.method,
-            http=self.http.with_json(value),
+            http=self.http.with_json(value) if not self.request else self.http,
+            request=self.request and self.request.with_json(value),
         )
 
     def __call__(self) -> HttpResponse:
-        return self.http.request(self.method)
+        if not self.request:
+            return self.http.request(self.method)
+
+        return HttpxChannel(self.http.client).transport(self.request).over(self.method)
 
 
 @dataclass
