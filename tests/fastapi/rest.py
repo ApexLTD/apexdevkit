@@ -4,10 +4,11 @@ from dataclasses import dataclass, replace
 from functools import cached_property
 from typing import Any, Self
 
+import httpx2
 from pypebbles import JsonDict
 
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.http import HttpMethod, Httpx
+from apexdevkit.http import HttpMethod
 from apexdevkit.http.domain import HttpChannel, HttpRequest
 from apexdevkit.http.domain.response import HttpResponse
 from apexdevkit.http.httpx.client import HttpxChannel
@@ -16,7 +17,7 @@ from apexdevkit.http.httpx.client import HttpxChannel
 @dataclass(frozen=True)
 class RestCollection:
     name: RestfulName
-    http: Httpx
+    http: httpx2.Client
 
     request: HttpRequest = HttpRequest()
 
@@ -34,7 +35,7 @@ class RestCollection:
             self.name,
             HttpMethod.post,
             self.request.with_endpoint(self.name.plural),
-            HttpxChannel(self.http.client),
+            HttpxChannel(self.http),
         )
 
     def read_one(self) -> _TestRequest:
@@ -42,7 +43,7 @@ class RestCollection:
             self.name,
             HttpMethod.get,
             self.request.with_endpoint(self.name.plural),
-            HttpxChannel(self.http.client),
+            HttpxChannel(self.http),
         )
 
     def read_many(self, **params: Any) -> _TestRequest:
@@ -54,7 +55,7 @@ class RestCollection:
             self.name,
             HttpMethod.get,
             request,
-            HttpxChannel(self.http.client),
+            HttpxChannel(self.http),
         )
 
     def read_all(self) -> _TestRequest:
@@ -62,7 +63,7 @@ class RestCollection:
             self.name,
             HttpMethod.get,
             self.request.with_endpoint(self.name.plural),
-            HttpxChannel(self.http.client),
+            HttpxChannel(self.http),
         )
 
     def update_one(self) -> _TestRequest:
@@ -70,7 +71,7 @@ class RestCollection:
             self.name,
             HttpMethod.patch,
             self.request.with_endpoint(self.name.plural),
-            HttpxChannel(self.http.client),
+            HttpxChannel(self.http),
         )
 
     def replace_one(self) -> _TestRequest:
@@ -78,7 +79,7 @@ class RestCollection:
             self.name,
             HttpMethod.put,
             self.request.with_endpoint(self.name.plural),
-            HttpxChannel(self.http.client),
+            HttpxChannel(self.http),
         )
 
     def delete_one(self) -> _TestRequest:
@@ -86,7 +87,7 @@ class RestCollection:
             self.name,
             HttpMethod.delete,
             self.request.with_endpoint(self.name.plural),
-            HttpxChannel(self.http.client),
+            HttpxChannel(self.http),
         )
 
 

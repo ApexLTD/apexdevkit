@@ -8,7 +8,6 @@ from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuil
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.router import Dependency
-from apexdevkit.http import Httpx
 from tests.fastapi.rest import RestCollection
 from tests.fastapi.sample_api import AppleFields, PriceFields
 
@@ -19,30 +18,28 @@ _CHILD = RestfulName("price")
 def _resource(dependency: Dependency) -> RestCollection:
     return RestCollection(
         name=_PARENT,
-        http=Httpx(
-            TestClient(
-                FastApiBuilder()
-                .with_route(
-                    apples=(
-                        RestfulRouter.named(_PARENT.singular)
-                        .with_fields(AppleFields())
-                        .with_default_dependency(dependency)
-                        .with_sub_resource(
-                            prices=(
-                                RestfulRouter.named(_CHILD.singular)
-                                .child_of(_PARENT.singular)
-                                .with_fields(PriceFields())
-                                .with_default_dependency(dependency)
-                                .default()
-                                .build()
-                            )
+        http=TestClient(
+            FastApiBuilder()
+            .with_route(
+                apples=(
+                    RestfulRouter.named(_PARENT.singular)
+                    .with_fields(AppleFields())
+                    .with_default_dependency(dependency)
+                    .with_sub_resource(
+                        prices=(
+                            RestfulRouter.named(_CHILD.singular)
+                            .child_of(_PARENT.singular)
+                            .with_fields(PriceFields())
+                            .with_default_dependency(dependency)
+                            .default()
+                            .build()
                         )
-                        .default()
-                        .build()
                     )
+                    .default()
+                    .build()
                 )
-                .build()
             )
+            .build()
         ),
     )
 

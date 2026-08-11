@@ -8,7 +8,6 @@ from fastapi.testclient import TestClient
 
 from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.http import Httpx
 from tests.fastapi.rest import RestCollection
 from tests.fastapi.sample_api import AppleFields, FakeApple, SuccessfulService
 
@@ -26,8 +25,8 @@ def fake_user() -> FakeUser:
 @pytest.fixture
 def resource(infra: RestfulServiceBuilder, fake_user: FakeUser) -> RestCollection:
     return RestCollection(
-        name=RestfulName("apple"),
-        http=Httpx(TestClient(setup(infra, fake_user))),
+        RestfulName("apple"),
+        http=TestClient(setup(infra, fake_user)),
     )
 
 
