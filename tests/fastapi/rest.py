@@ -22,7 +22,7 @@ class RestCollection:
 
     def sub_resource(self, name: str, *, item_id: str) -> RestCollection:
         return RestCollection(
-            self.http.with_endpoint(self.name.plural).with_endpoint(item_id),
+            self.http,
             RestfulName(name),
             self.request.with_endpoint(self.name.plural).with_endpoint(item_id),
         )
