@@ -15,16 +15,18 @@ from apexdevkit.http.httpx.client import HttpxChannel
 
 @dataclass(frozen=True)
 class RestCollection:
-    http: Httpx
     name: RestfulName
+    http: Httpx
 
     request: HttpRequest = HttpRequest()
 
     def sub_resource(self, name: str, *, parent_id: str) -> RestCollection:
         return RestCollection(
-            self.http,
-            RestfulName(name),
-            self.request.with_endpoint(self.name.plural).with_endpoint(parent_id),
+            name=RestfulName(name),
+            http=self.http,
+            request=(
+                self.request.with_endpoint(self.name.plural).with_endpoint(parent_id)
+            ),
         )
 
     def create_one(self) -> _TestRequest:
