@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from functools import cached_property
 from typing import Any, Self
 
@@ -145,18 +145,10 @@ class LazyHttpRequest:
     channel: HttpChannel
 
     def with_endpoint(self, value: Any) -> LazyHttpRequest:
-        return LazyHttpRequest(
-            method=self.method,
-            request=self.request.with_endpoint(str(value)),
-            channel=self.channel,
-        )
+        return replace(self, request=self.request.with_endpoint(str(value)))
 
     def with_json(self, value: JsonDict) -> LazyHttpRequest:
-        return LazyHttpRequest(
-            method=self.method,
-            request=self.request.with_json(value),
-            channel=self.channel,
-        )
+        return replace(self, request=self.request.with_json(value))
 
     def __call__(self) -> HttpResponse:
         return self.channel.transport(self.request).over(self.method)
