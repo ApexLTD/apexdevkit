@@ -110,15 +110,13 @@ def test_should_form_get_response() -> None:
 
 
 def test_should_get() -> None:
-    echo = (
+    (
         FluentHttp(transporter=InternalEcho())
         .on_endpoint(HttpMethod.get.name)
         .get()
-        .json()
-        .select("method", "endpoint")
+        .load(Echo)
+        .assert_endpoint(expected="get")
     )
-
-    assert echo == {"method": "get", "endpoint": "get"}
 
 
 def test_should_form_patch_response() -> None:
@@ -160,18 +158,6 @@ def test_should_patch_with_data() -> None:
 
 
 def test_should_delete() -> None:
-    echo = (
-        FluentHttp(transporter=InternalEcho())
-        .on_endpoint(HttpMethod.delete.name)
-        .delete()
-        .json()
-        .select("method", "endpoint")
-    )
-
-    assert echo == {"method": "delete", "endpoint": "delete"}
-
-
-def test_should_form_delete_response() -> None:
     (
         FluentHttp(transporter=InternalEcho())
         .on_endpoint(HttpMethod.delete.name)

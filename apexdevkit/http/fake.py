@@ -31,8 +31,6 @@ class InternalEcho:
 
         return HttpResponse(status=200).set_json(
             {
-                "method": self.method.name,
-                "endpoint": request.endpoint,
                 "url": HttpUrl(self.server) + request.query,
                 "headers": request.headers.merge(self.headers),
                 "params": request.params,
