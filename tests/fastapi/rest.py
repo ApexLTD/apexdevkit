@@ -108,10 +108,7 @@ class _TestRequest:
     request: LazyHttpRequest
 
     def with_id(self, value: Any) -> _TestRequest:
-        return _TestRequest(
-            resource=self.resource,
-            request=self.request.with_endpoint(value),
-        )
+        return replace(self, request=self.request.with_endpoint(value))
 
     def and_data(self, value: JsonDict) -> _TestRequest:
         return self.with_data(value)
@@ -120,10 +117,7 @@ class _TestRequest:
         return self.with_data(value)
 
     def with_data(self, value: JsonDict) -> _TestRequest:
-        return _TestRequest(
-            resource=self.resource,
-            request=self.request.with_json(value),
-        )
+        return replace(self, request=self.request.with_json(value))
 
     @cached_property
     def response(self) -> HttpResponse:
