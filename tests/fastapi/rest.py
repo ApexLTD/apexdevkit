@@ -15,14 +15,14 @@ from apexdevkit.http.domain.response import HttpResponse
 @dataclass(frozen=True)
 class RestCollection:
     name: RestfulName
-    channel: HttpTransporter
+    transport: HttpTransporter
 
     request: HttpRequest = HttpRequest()
 
     def sub_resource(self, name: str, *, parent_id: str) -> RestCollection:
         return RestCollection(
             name=RestfulName(name),
-            channel=self.channel,
+            transport=self.transport,
             request=(
                 self.request.with_endpoint(self.name.plural).with_endpoint(parent_id)
             ),
@@ -32,14 +32,14 @@ class RestCollection:
         return _TestRequest(
             self.name,
             self.request.with_endpoint(self.name.plural),
-            transporter=self.channel.over(HttpMethod.post),
+            transporter=self.transport.over(HttpMethod.post),
         )
 
     def read_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
             self.request.with_endpoint(self.name.plural),
-            transporter=self.channel.over(HttpMethod.get),
+            transporter=self.transport.over(HttpMethod.get),
         )
 
     def read_many(self, **params: Any) -> _TestRequest:
@@ -50,35 +50,35 @@ class RestCollection:
         return _TestRequest(
             self.name,
             request,
-            transporter=self.channel.over(HttpMethod.get),
+            transporter=self.transport.over(HttpMethod.get),
         )
 
     def read_all(self) -> _TestRequest:
         return _TestRequest(
             self.name,
             self.request.with_endpoint(self.name.plural),
-            transporter=self.channel.over(HttpMethod.get),
+            transporter=self.transport.over(HttpMethod.get),
         )
 
     def update_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
             self.request.with_endpoint(self.name.plural),
-            transporter=self.channel.over(HttpMethod.patch),
+            transporter=self.transport.over(HttpMethod.patch),
         )
 
     def replace_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
             self.request.with_endpoint(self.name.plural),
-            transporter=self.channel.over(HttpMethod.put),
+            transporter=self.transport.over(HttpMethod.put),
         )
 
     def delete_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
             self.request.with_endpoint(self.name.plural),
-            transporter=self.channel.over(HttpMethod.delete),
+            transporter=self.transport.over(HttpMethod.delete),
         )
 
 

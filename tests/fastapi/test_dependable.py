@@ -20,7 +20,7 @@ _CHILD = RestfulName("price")
 def _resource(dependency: Dependency) -> RestCollection:
     return RestCollection(
         name=_PARENT,
-        channel=HttpxTransporter(TestClient(_setup(dependency))),
+        transport=HttpxTransporter(TestClient(_setup(dependency))),
     )
 
 

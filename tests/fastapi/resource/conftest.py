@@ -12,7 +12,7 @@ from tests.fastapi.sample_api import setup
 def resource(service: RestfulServiceBuilder) -> RestCollection:
     return RestCollection(
         name=RestfulName("market-apple"),
-        channel=HttpxTransporter(TestClient(setup(service))),
+        transport=HttpxTransporter(TestClient(setup(service))),
     )
 
 
@@ -20,5 +20,5 @@ def resource(service: RestfulServiceBuilder) -> RestCollection:
 def read_many_resource(service: RestfulServiceBuilder) -> RestCollection:
     return RestCollection(
         name=RestfulName("apple"),
-        channel=HttpxTransporter(TestClient(setup(service))),
+        transport=HttpxTransporter(TestClient(setup(service))),
     )

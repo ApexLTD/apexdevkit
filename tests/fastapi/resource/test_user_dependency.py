@@ -27,7 +27,7 @@ def fake_user() -> FakeUser:
 def resource(infra: RestfulServiceBuilder, fake_user: FakeUser) -> RestCollection:
     return RestCollection(
         RestfulName("apple"),
-        channel=HttpxTransporter(TestClient(setup(infra, fake_user))),
+        transport=HttpxTransporter(TestClient(setup(infra, fake_user))),
     )
 
 
