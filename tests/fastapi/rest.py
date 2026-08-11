@@ -32,14 +32,14 @@ class RestCollection:
         return _TestRequest(
             self.name,
             self.request.with_endpoint(self.name.plural),
-            self.channel.over(HttpMethod.post),
+            transporter=self.channel.over(HttpMethod.post),
         )
 
     def read_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
             self.request.with_endpoint(self.name.plural),
-            self.channel.over(HttpMethod.get),
+            transporter=self.channel.over(HttpMethod.get),
         )
 
     def read_many(self, **params: Any) -> _TestRequest:
@@ -50,35 +50,35 @@ class RestCollection:
         return _TestRequest(
             self.name,
             request,
-            self.channel.over(HttpMethod.get),
+            transporter=self.channel.over(HttpMethod.get),
         )
 
     def read_all(self) -> _TestRequest:
         return _TestRequest(
             self.name,
             self.request.with_endpoint(self.name.plural),
-            self.channel.over(HttpMethod.get),
+            transporter=self.channel.over(HttpMethod.get),
         )
 
     def update_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
             self.request.with_endpoint(self.name.plural),
-            self.channel.over(HttpMethod.patch),
+            transporter=self.channel.over(HttpMethod.patch),
         )
 
     def replace_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
             self.request.with_endpoint(self.name.plural),
-            self.channel.over(HttpMethod.put),
+            transporter=self.channel.over(HttpMethod.put),
         )
 
     def delete_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
             self.request.with_endpoint(self.name.plural),
-            self.channel.over(HttpMethod.delete),
+            transporter=self.channel.over(HttpMethod.delete),
         )
 
 
