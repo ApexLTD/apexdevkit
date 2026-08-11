@@ -26,6 +26,9 @@ class InternalEcho:
         return replace(self, method=method)
 
     def transport(self, request: HttpRequest) -> HttpResponse:
+        if request.endpoint != self.method.name:
+            return HttpResponse(status=403).set_json({"method": request.endpoint})
+
         return HttpResponse(status=200).set_json(
             {
                 "method": self.method.name,
@@ -34,7 +37,6 @@ class InternalEcho:
                 "headers": request.headers.merge(self.headers),
                 "params": request.params,
                 "json": request.json,
-                "data": request.data,
                 "form": request.data,
             }
         )
