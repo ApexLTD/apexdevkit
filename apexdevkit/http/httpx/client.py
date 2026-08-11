@@ -5,7 +5,6 @@ from dataclasses import dataclass, field, replace
 from httpx2 import Client, Request, Response
 from pypebbles import FluentDict
 
-from apexdevkit.http import FluentHttp
 from apexdevkit.http.domain import HttpMethod, HttpRequest, HttpResponse
 from apexdevkit.http.httpx.hooks import (
     AfterResponseHook,
@@ -52,9 +51,6 @@ class HttpxBuilder:
         self.response_handlers.append(handler)
 
         return self
-
-    def build(self) -> FluentHttp:
-        return FluentHttp(self.transport())
 
     def transport(self) -> HttpxTransporter:
         return HttpxTransporter(self.client())
