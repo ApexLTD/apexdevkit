@@ -144,6 +144,10 @@ class LazyHttpRequest:
     http: Httpx
     request: HttpRequest
 
+    @property
+    def channel(self) -> HttpxChannel:
+        return HttpxChannel(self.http.client)
+
     def with_endpoint(self, value: Any) -> LazyHttpRequest:
         return LazyHttpRequest(
             method=self.method,
@@ -159,7 +163,7 @@ class LazyHttpRequest:
         )
 
     def __call__(self) -> HttpResponse:
-        return HttpxChannel(self.http.client).transport(self.request).over(self.method)
+        return self.channel.transport(self.request).over(self.method)
 
 
 @dataclass
