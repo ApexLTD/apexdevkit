@@ -19,7 +19,7 @@ class _RestResource:
     def create_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            HttpRequest(
+            LazyHttpRequest(
                 HttpMethod.post,
                 self.http.with_endpoint(self.name.plural),
             ),
@@ -28,7 +28,7 @@ class _RestResource:
     def read_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            HttpRequest(
+            LazyHttpRequest(
                 HttpMethod.get,
                 self.http.with_endpoint(self.name.plural),
             ),
@@ -39,12 +39,12 @@ class _RestResource:
         for p, v in params.items():
             http = http.with_param(p, v)
 
-        return _TestRequest(self.name, HttpRequest(HttpMethod.get, http))
+        return _TestRequest(self.name, LazyHttpRequest(HttpMethod.get, http))
 
     def read_all(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            HttpRequest(
+            LazyHttpRequest(
                 HttpMethod.get,
                 self.http.with_endpoint(self.name.plural),
             ),
@@ -53,7 +53,7 @@ class _RestResource:
     def update_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            HttpRequest(
+            LazyHttpRequest(
                 HttpMethod.patch,
                 self.http.with_endpoint(self.name.plural),
             ),
@@ -62,7 +62,7 @@ class _RestResource:
     def replace_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            HttpRequest(
+            LazyHttpRequest(
                 HttpMethod.put,
                 self.http.with_endpoint(self.name.plural),
             ),
@@ -71,7 +71,7 @@ class _RestResource:
     def delete_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            HttpRequest(
+            LazyHttpRequest(
                 HttpMethod.delete,
                 self.http.with_endpoint(self.name.plural),
             ),
@@ -81,7 +81,7 @@ class _RestResource:
 @dataclass(frozen=True)
 class _TestRequest:
     resource: RestfulName
-    request: HttpRequest
+    request: LazyHttpRequest
 
     def with_id(self, value: Any) -> _TestRequest:
         return _TestRequest(
@@ -115,18 +115,18 @@ class _TestRequest:
 
 
 @dataclass(frozen=True)
-class HttpRequest:
+class LazyHttpRequest:
     method: HttpMethod
     http: Httpx
 
-    def with_endpoint(self, value: Any) -> HttpRequest:
-        return HttpRequest(
+    def with_endpoint(self, value: Any) -> LazyHttpRequest:
+        return LazyHttpRequest(
             method=self.method,
             http=self.http.with_endpoint(str(value)),
         )
 
-    def with_json(self, value: JsonDict) -> HttpRequest:
-        return HttpRequest(
+    def with_json(self, value: JsonDict) -> LazyHttpRequest:
+        return LazyHttpRequest(
             method=self.method,
             http=self.http.with_json(value),
         )
