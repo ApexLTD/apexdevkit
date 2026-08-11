@@ -42,12 +42,12 @@ class HttpRequest:
         return replace(self, json=value)
 
     def using(self, transporter: HttpTransport) -> HttpDispatcher:
-        return HttpDispatcher(inner=self, transporter=transporter)
+        return HttpDispatcher(request=self, transporter=transporter)
 
 
 @dataclass(frozen=True)
 class HttpDispatcher:
-    inner: HttpRequest
+    request: HttpRequest
     transporter: HttpTransport
 
     def post(self) -> HttpResponse:
@@ -66,7 +66,7 @@ class HttpDispatcher:
         return self.dispatch(HttpMethod.put)
 
     def dispatch(self, method: HttpMethod) -> HttpResponse:
-        return self.transporter.over(method).transport(self.inner)
+        return self.transporter.over(method).transport(self.request)
 
 
 class HttpTransport(Protocol):
