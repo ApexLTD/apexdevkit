@@ -8,6 +8,30 @@ from apexdevkit.http import FluentHttp
 from apexdevkit.http.httpx.client import HttpxBuilder
 
 
+@pytest.mark.vcr
+def test_should_hook_get_method(http: FluentHttp) -> None:
+    with pytest.raises(ValueError, match="get"):
+        http.on_endpoint("get").get()
+
+
+@pytest.mark.vcr
+def test_should_hook_post_method(http: FluentHttp) -> None:
+    with pytest.raises(ValueError, match="post"):
+        http.on_endpoint("post").post()
+
+
+@pytest.mark.vcr
+def test_should_hook_patch_method(http: FluentHttp) -> None:
+    with pytest.raises(ValueError, match="patch"):
+        http.on_endpoint("patch").patch()
+
+
+@pytest.mark.vcr
+def test_should_hook_delete_method(http: FluentHttp) -> None:
+    with pytest.raises(ValueError, match="delete"):
+        http.on_endpoint("delete").delete()
+
+
 @pytest.fixture
 def http() -> FluentHttp:
     return (
@@ -32,27 +56,3 @@ class FakeResponseHandler:
 
     def on_delete(self, _: Response) -> None:
         raise ValueError("on_delete")
-
-
-@pytest.mark.vcr
-def test_should_hook_get_method(http: FluentHttp) -> None:
-    with pytest.raises(ValueError, match="get"):
-        http.on_endpoint("get").get()
-
-
-@pytest.mark.vcr
-def test_should_hook_post_method(http: FluentHttp) -> None:
-    with pytest.raises(ValueError, match="post"):
-        http.on_endpoint("post").post()
-
-
-@pytest.mark.vcr
-def test_should_hook_patch_method(http: FluentHttp) -> None:
-    with pytest.raises(ValueError, match="patch"):
-        http.on_endpoint("patch").patch()
-
-
-@pytest.mark.vcr
-def test_should_hook_delete_method(http: FluentHttp) -> None:
-    with pytest.raises(ValueError, match="delete"):
-        http.on_endpoint("delete").delete()
