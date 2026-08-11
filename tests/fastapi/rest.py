@@ -18,6 +18,8 @@ class RestCollection:
     http: Httpx
     name: RestfulName
 
+    request: HttpRequest = HttpRequest()
+
     def sub_resource(self, name: str, *, item_id: str) -> RestCollection:
         return RestCollection(
             self.http.with_endpoint(self.name.plural).with_endpoint(item_id),
@@ -30,7 +32,7 @@ class RestCollection:
             LazyHttpRequest(
                 HttpMethod.post,
                 self.http,
-                HttpRequest().with_endpoint(self.name.plural),
+                self.request.with_endpoint(self.name.plural),
             ),
         )
 
@@ -40,12 +42,12 @@ class RestCollection:
             LazyHttpRequest(
                 HttpMethod.get,
                 self.http,
-                HttpRequest().with_endpoint(self.name.plural),
+                self.request.with_endpoint(self.name.plural),
             ),
         )
 
     def read_many(self, **params: Any) -> _TestRequest:
-        request = HttpRequest().with_endpoint(self.name.plural)
+        request = self.request.with_endpoint(self.name.plural)
         for p, v in params.items():
             request = request.with_param(p, v)
 
@@ -73,7 +75,7 @@ class RestCollection:
             LazyHttpRequest(
                 HttpMethod.patch,
                 self.http,
-                HttpRequest().with_endpoint(self.name.plural),
+                self.request.with_endpoint(self.name.plural),
             ),
         )
 
@@ -83,7 +85,7 @@ class RestCollection:
             LazyHttpRequest(
                 HttpMethod.put,
                 self.http,
-                HttpRequest().with_endpoint(self.name.plural),
+                self.request.with_endpoint(self.name.plural),
             ),
         )
 
