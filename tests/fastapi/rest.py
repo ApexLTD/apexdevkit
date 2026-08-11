@@ -39,11 +39,18 @@ class _RestResource:
         )
 
     def read_many(self, **params: Any) -> _TestRequest:
-        http = self.http.with_endpoint(self.name.plural)
+        request = HttpRequest().with_endpoint(self.name.plural)
         for p, v in params.items():
-            http = http.with_param(p, v)
+            request = request.with_param(p, v)
 
-        return _TestRequest(self.name, LazyHttpRequest(HttpMethod.get, http))
+        return _TestRequest(
+            self.name,
+            LazyHttpRequest(
+                HttpMethod.get,
+                self.http,
+                request,
+            ),
+        )
 
     def read_all(self) -> _TestRequest:
         return _TestRequest(
