@@ -111,16 +111,16 @@ class _TestRequest:
     def response(self) -> HttpResponse:
         return self.channel.transport(self.request).over(self.method)
 
-    def ensure(self) -> _Response:
-        return _Response(
+    def ensure(self) -> ResponseProbe:
+        return ResponseProbe(
             resource=self.resource,
             json=self.response.json(),
             http_code=self.response.status,
         )
 
 
-@dataclass
-class _Response:
+@dataclass(frozen=True)
+class ResponseProbe:
     resource: RestfulName
     json: JsonDict
     http_code: int
