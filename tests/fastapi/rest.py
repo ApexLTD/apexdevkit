@@ -24,6 +24,7 @@ class RestCollection:
         return RestCollection(
             self.http.with_endpoint(self.name.plural).with_endpoint(item_id),
             RestfulName(name),
+            self.request.with_endpoint(self.name.plural).with_endpoint(item_id),
         )
 
     def create_one(self) -> _TestRequest:
