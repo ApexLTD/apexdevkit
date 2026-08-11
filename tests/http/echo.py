@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Self
 
 from pypebbles import JsonDict
 from pypebbles.runtime import Environment
@@ -16,23 +17,33 @@ class Echo:
     def header(self, name: str) -> str:
         return str(self.raw.value_of("headers").to(dict)[name])
 
-    def assert_endpoint(self, *, expected: str) -> None:
+    def assert_endpoint(self, *, expected: str) -> Self:
         assert self.raw.value_of("url").to(str) == self._url_for(expected)
+
+        return self
 
     def _url_for(self, endpoint: str) -> str:
         return self.server + "/" + endpoint.strip("/")
 
-    def assert_user_agent(self, *, expected: str) -> None:
+    def assert_user_agent(self, *, expected: str) -> Self:
         assert self.header(name="User-Agent") == expected
 
-    def assert_content_type(self, *, expected: str) -> None:
+        return self
+
+    def assert_content_type(self, *, expected: str) -> Self:
         assert self.header(name="Content-Type") == expected
 
-    def assert_json(self, *, expected: JsonDict) -> None:
+        return self
+
+    def assert_json(self, *, expected: JsonDict) -> Self:
         assert self._sub_object_of(key="json") == expected
 
-    def assert_form(self, *, expected: JsonDict) -> None:
+        return self
+
+    def assert_form(self, *, expected: JsonDict) -> Self:
         assert self._sub_object_of(key="form") == expected
+
+        return self
 
     def _sub_object_of(self, key: str) -> JsonDict:
         return JsonDict(self.raw.value_of(key).to(dict))
