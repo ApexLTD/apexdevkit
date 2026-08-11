@@ -107,12 +107,12 @@ class _TestRequest:
     def with_data(self, value: JsonDict) -> _TestRequest:
         return replace(self, request=self.request.with_json(value))
 
+    def ensure(self) -> ResponseProbe:
+        return ResponseProbe(resource=self.resource, response=self.response)
+
     @cached_property
     def response(self) -> HttpResponse:
         return self.channel.transport(self.request).over(self.method)
-
-    def ensure(self) -> ResponseProbe:
-        return ResponseProbe(resource=self.resource, response=self.response)
 
 
 @dataclass(frozen=True)
