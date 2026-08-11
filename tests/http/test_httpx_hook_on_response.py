@@ -4,18 +4,17 @@ import pytest
 from httpx2 import Response
 from pypebbles.runtime import Environment
 
-from apexdevkit.http import HttpMethod, Httpx
-
-ECHO_SERVER = Environment().value_of("ECHO_SERVER")
+from apexdevkit.http import FluentHttp
+from apexdevkit.http.httpx.client import HttpxBuilder
 
 
 @pytest.fixture
-def http() -> Httpx:
-    return (
-        Httpx.Builder()
-        .with_url(ECHO_SERVER)
+def http() -> FluentHttp:
+    return FluentHttp(
+        HttpxBuilder()
+        .with_url(Environment().value_of("ECHO_SERVER"))
         .after_response(FakeResponseHandler())
-        .build()
+        .channel()
         .with_header("User-Agent", "Hogwarts")
     )
 
@@ -36,24 +35,24 @@ class FakeResponseHandler:
 
 
 @pytest.mark.vcr
-def test_should_hook_get_method(http: Httpx) -> None:
+def test_should_hook_get_method(http: FluentHttp) -> None:
     with pytest.raises(ValueError, match="get"):
-        http.request(HttpMethod.get, "get")
+        http.on_endpoint("get").get()
 
 
 @pytest.mark.vcr
-def test_should_hook_post_method(http: Httpx) -> None:
+def test_should_hook_post_method(http: FluentHttp) -> None:
     with pytest.raises(ValueError, match="post"):
-        http.request(HttpMethod.post, "post")
+        http.on_endpoint("post").post()
 
 
 @pytest.mark.vcr
-def test_should_hook_patch_method(http: Httpx) -> None:
+def test_should_hook_patch_method(http: FluentHttp) -> None:
     with pytest.raises(ValueError, match="patch"):
-        http.request(HttpMethod.patch, "patch")
+        http.on_endpoint("patch").patch()
 
 
 @pytest.mark.vcr
-def test_should_hook_delete_method(http: Httpx) -> None:
+def test_should_hook_delete_method(http: FluentHttp) -> None:
     with pytest.raises(ValueError, match="delete"):
-        http.request(HttpMethod.delete, "delete")
+        http.on_endpoint("delete").delete()
