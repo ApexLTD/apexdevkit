@@ -48,9 +48,9 @@ class HttpxBuilder:
         return self
 
     def channel(self) -> HttpxChannel:
-        return HttpxChannel(client=self._build_client())
+        return HttpxChannel(client=self.client())
 
-    def _build_client(self) -> Client:
+    def client(self) -> Client:
         return Client(
             base_url=self.url,
             timeout=self.timeout_s,
