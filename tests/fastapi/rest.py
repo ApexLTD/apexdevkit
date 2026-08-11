@@ -8,14 +8,14 @@ from pypebbles import JsonDict
 
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.http import HttpMethod
-from apexdevkit.http.domain import HttpChannel, HttpRequest
+from apexdevkit.http.domain import HttpRequest, HttpTransporter
 from apexdevkit.http.domain.response import HttpResponse
 
 
 @dataclass(frozen=True)
 class RestCollection:
     name: RestfulName
-    channel: HttpChannel
+    channel: HttpTransporter
 
     request: HttpRequest = HttpRequest()
 
@@ -31,17 +31,15 @@ class RestCollection:
     def create_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            HttpMethod.post,
             self.request.with_endpoint(self.name.plural),
-            self.channel,
+            self.channel.over(HttpMethod.post),
         )
 
     def read_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            HttpMethod.get,
             self.request.with_endpoint(self.name.plural),
-            self.channel,
+            self.channel.over(HttpMethod.get),
         )
 
     def read_many(self, **params: Any) -> _TestRequest:
@@ -51,50 +49,44 @@ class RestCollection:
 
         return _TestRequest(
             self.name,
-            HttpMethod.get,
             request,
-            self.channel,
+            self.channel.over(HttpMethod.get),
         )
 
     def read_all(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            HttpMethod.get,
             self.request.with_endpoint(self.name.plural),
-            self.channel,
+            self.channel.over(HttpMethod.get),
         )
 
     def update_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            HttpMethod.patch,
             self.request.with_endpoint(self.name.plural),
-            self.channel,
+            self.channel.over(HttpMethod.patch),
         )
 
     def replace_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            HttpMethod.put,
             self.request.with_endpoint(self.name.plural),
-            self.channel,
+            self.channel.over(HttpMethod.put),
         )
 
     def delete_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            HttpMethod.delete,
             self.request.with_endpoint(self.name.plural),
-            self.channel,
+            self.channel.over(HttpMethod.delete),
         )
 
 
 @dataclass(frozen=True)
 class _TestRequest:
     resource: RestfulName
-    method: HttpMethod
     request: HttpRequest
-    channel: HttpChannel
+    channel: HttpTransporter
 
     def with_id(self, value: Any) -> _TestRequest:
         return replace(self, request=self.request.with_endpoint(str(value)))
@@ -113,7 +105,7 @@ class _TestRequest:
 
     @cached_property
     def response(self) -> HttpResponse:
-        return self.channel.transport(self.request).over(self.method)
+        return self.channel.transport(self.request)
 
 
 @dataclass(frozen=True)

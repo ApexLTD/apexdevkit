@@ -26,6 +26,13 @@ class HttpxBuilder:
 
     url: str = field(init=False)
 
+    headers: FluentDict[str] = field(default_factory=FluentDict[str])
+
+    def with_header(self, key: str, value: str) -> HttpxBuilder:
+        self.headers.merge(FluentDict[str]({key: value}))
+
+        return self
+
     def with_url(self, value: str) -> HttpxBuilder:
         self.url = value
 
@@ -47,15 +54,13 @@ class HttpxBuilder:
         return self
 
     def build(self) -> FluentHttp:
-        return FluentHttp(self.channel())
-
-    def channel(self) -> HttpxChannel:
-        return HttpxChannel(client=self.client())
+        return FluentHttp(HttpxTransporter(self.client()))
 
     def client(self) -> Client:
         return Client(
             base_url=self.url,
             timeout=self.timeout_s,
+            headers=self.headers,
             event_hooks={
                 "request": [BeforeRequestHook(h) for h in self.request_handlers],
                 "response": [AfterResponseHook(h) for h in self.response_handlers],
@@ -64,35 +69,26 @@ class HttpxBuilder:
 
 
 @dataclass(frozen=True)
-class HttpxChannel:
+class HttpxTransporter:
     client: Client
 
-    headers: FluentDict[str] = field(default_factory=FluentDict[str])
+    method: HttpMethod = HttpMethod.get
 
-    def with_header(self, key: str, value: str) -> HttpxChannel:
-        return replace(self, headers=self.headers.merge(FluentDict[str]({key: value})))
+    def __call__(self, method: HttpMethod) -> HttpxTransporter:
+        return self.over(method)
 
-    def transport(self, request: HttpRequest) -> HttpxTransport:
-        return HttpxTransport(
-            client=self.client,
-            request=request.with_headers(self.headers),
-        )
+    def over(self, method: HttpMethod) -> HttpxTransporter:
+        return replace(self, method=method)
 
-
-@dataclass(frozen=True)
-class HttpxTransport:
-    client: Client
-    request: HttpRequest
-
-    def over(self, method: HttpMethod) -> HttpResponse:
+    def transport(self, request: HttpRequest) -> HttpResponse:
         return self.parse(
             self.client.request(
-                method=method.name,
-                url=self.request.endpoint,
-                headers=self.request.headers,
-                params=self.request.params,
-                json=self.request.json,
-                data=self.request.data,
+                method=self.method.name,
+                url=request.endpoint,
+                headers=request.headers,
+                params=request.params,
+                json=request.json,
+                data=request.data,
             )
         )
 

@@ -8,7 +8,7 @@ from apexdevkit.http.fake import InternalEcho
 
 def test_should_attach_headers() -> None:
     echo = (
-        FluentHttp(channel=InternalEcho())
+        FluentHttp(transporter=InternalEcho())
         .with_header("Harry", "Potter")
         .and_header("Ronald", "Weasley")
         .on_endpoint("")
@@ -21,7 +21,7 @@ def test_should_attach_headers() -> None:
 
 def test_should_attach_params() -> None:
     echo = (
-        FluentHttp(channel=InternalEcho())
+        FluentHttp(transporter=InternalEcho())
         .with_param("Color", "Yellow")
         .and_param("Shape", "Square")
         .on_endpoint("")
@@ -36,7 +36,7 @@ def test_should_attach_json() -> None:
     expected = JsonDict().with_a(Harry="Potter")
 
     echo = (
-        FluentHttp(channel=InternalEcho())
+        FluentHttp(transporter=InternalEcho())
         .with_json(expected)
         .on_endpoint("")
         .post()
@@ -50,7 +50,7 @@ def test_should_attach_data() -> None:
     expected = JsonDict().with_a(Harry="Potter")
 
     echo = (
-        FluentHttp(channel=InternalEcho())
+        FluentHttp(transporter=InternalEcho())
         .with_data(expected)
         .on_endpoint("")
         .post()
@@ -62,7 +62,7 @@ def test_should_attach_data() -> None:
 
 def test_should_form_post_response() -> None:
     echo = (
-        FluentHttp(channel=InternalEcho())
+        FluentHttp(transporter=InternalEcho())
         .on_endpoint(HttpMethod.post.name)
         .post()
         .json()
@@ -83,7 +83,7 @@ def test_should_post_with_json() -> None:
     expected = JsonDict().with_a(Harry="Potter")
 
     echo = (
-        FluentHttp(channel=InternalEcho())
+        FluentHttp(transporter=InternalEcho())
         .with_json(expected)
         .on_endpoint(HttpMethod.post.name)
         .post()
@@ -97,7 +97,7 @@ def test_should_post_with_data() -> None:
     expected = JsonDict().with_a(Harry="Potter")
 
     echo = (
-        FluentHttp(channel=InternalEcho())
+        FluentHttp(transporter=InternalEcho())
         .with_data(expected)
         .on_endpoint(HttpMethod.post.name)
         .post()
@@ -109,7 +109,10 @@ def test_should_post_with_data() -> None:
 
 def test_should_form_get_response() -> None:
     echo = (
-        FluentHttp(channel=InternalEcho()).on_endpoint(HttpMethod.get.name).get().json()
+        FluentHttp(transporter=InternalEcho())
+        .on_endpoint(HttpMethod.get.name)
+        .get()
+        .json()
     )
 
     assert echo == (
@@ -125,7 +128,7 @@ def test_should_form_get_response() -> None:
 
 def test_should_get() -> None:
     echo = (
-        FluentHttp(channel=InternalEcho())
+        FluentHttp(transporter=InternalEcho())
         .on_endpoint(HttpMethod.get.name)
         .get()
         .json()
@@ -137,7 +140,7 @@ def test_should_get() -> None:
 
 def test_should_form_patch_response() -> None:
     echo = (
-        FluentHttp(channel=InternalEcho())
+        FluentHttp(transporter=InternalEcho())
         .on_endpoint(HttpMethod.patch.name)
         .patch()
         .json()
@@ -158,7 +161,7 @@ def test_should_patch_with_json() -> None:
     value = JsonDict().with_a(Harry="Potter")
 
     echo = (
-        FluentHttp(channel=InternalEcho())
+        FluentHttp(transporter=InternalEcho())
         .with_json(value)
         .on_endpoint(HttpMethod.patch.name)
         .patch()
@@ -172,7 +175,7 @@ def test_should_patch_with_data() -> None:
     value = JsonDict().with_a(Harry="Potter")
 
     echo = (
-        FluentHttp(channel=InternalEcho())
+        FluentHttp(transporter=InternalEcho())
         .with_data(value)
         .on_endpoint(HttpMethod.patch.name)
         .patch()
@@ -184,7 +187,7 @@ def test_should_patch_with_data() -> None:
 
 def test_should_delete() -> None:
     echo = (
-        FluentHttp(channel=InternalEcho())
+        FluentHttp(transporter=InternalEcho())
         .on_endpoint(HttpMethod.delete.name)
         .delete()
         .json()
@@ -196,7 +199,7 @@ def test_should_delete() -> None:
 
 def test_should_form_delete_response() -> None:
     echo = (
-        FluentHttp(channel=InternalEcho())
+        FluentHttp(transporter=InternalEcho())
         .on_endpoint(HttpMethod.delete.name)
         .delete()
         .json()
@@ -215,7 +218,10 @@ def test_should_form_delete_response() -> None:
 
 def test_should_form_put_response() -> None:
     echo = (
-        FluentHttp(channel=InternalEcho()).on_endpoint(HttpMethod.put.name).put().json()
+        FluentHttp(transporter=InternalEcho())
+        .on_endpoint(HttpMethod.put.name)
+        .put()
+        .json()
     )
 
     assert echo == (
@@ -233,7 +239,7 @@ def test_should_put_with_json() -> None:
     value = JsonDict().with_a(Harry="Potter")
 
     echo = (
-        FluentHttp(channel=InternalEcho())
+        FluentHttp(transporter=InternalEcho())
         .with_json(value)
         .on_endpoint(HttpMethod.put.name)
         .put()
@@ -247,7 +253,7 @@ def test_should_put_with_data() -> None:
     value = JsonDict().with_a(Harry="Potter")
 
     echo = (
-        FluentHttp(channel=InternalEcho())
+        FluentHttp(transporter=InternalEcho())
         .with_data(value)
         .on_endpoint(HttpMethod.put.name)
         .put()

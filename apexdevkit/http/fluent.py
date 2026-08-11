@@ -5,18 +5,18 @@ from typing import Any
 
 from pypebbles import JsonDict
 
-from .domain import HttpChannel, HttpMethod, HttpRequest, HttpResponse
+from .domain import HttpMethod, HttpRequest, HttpResponse, HttpTransporter
 
 
 @dataclass(frozen=True)
 class FluentHttp:
-    channel: HttpChannel
+    transporter: HttpTransporter
 
     _request: HttpRequest = field(default_factory=HttpRequest)
 
     def on_endpoint(self, value: str) -> FluentHttpRequest:
         return FluentHttpRequest(
-            channel=self.channel,
+            transporter=self.transporter,
             inner=self._request.with_endpoint(value),
         )
 
@@ -48,7 +48,7 @@ class FluentHttp:
 @dataclass(frozen=True)
 class FluentHttpRequest:
     inner: HttpRequest
-    channel: HttpChannel
+    transporter: HttpTransporter
 
     def post(self) -> HttpResponse:
         return self.request(HttpMethod.post)
@@ -66,4 +66,4 @@ class FluentHttpRequest:
         return self.request(HttpMethod.put)
 
     def request(self, method: HttpMethod) -> HttpResponse:
-        return self.channel.transport(self.inner).over(method)
+        return self.transporter.over(method).transport(self.inner)

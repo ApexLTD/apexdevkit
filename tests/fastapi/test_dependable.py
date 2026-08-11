@@ -9,7 +9,7 @@ from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuil
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.router import Dependency
-from apexdevkit.http.httpx.client import HttpxChannel
+from apexdevkit.http.httpx.client import HttpxTransporter
 from tests.fastapi.rest import RestCollection
 from tests.fastapi.sample_api import AppleFields, PriceFields
 
@@ -20,7 +20,7 @@ _CHILD = RestfulName("price")
 def _resource(dependency: Dependency) -> RestCollection:
     return RestCollection(
         name=_PARENT,
-        channel=HttpxChannel(TestClient(_setup(dependency))),
+        channel=HttpxTransporter(TestClient(_setup(dependency))),
     )
 
 

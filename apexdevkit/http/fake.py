@@ -1,25 +1,28 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, replace
 
 from .domain import HttpMethod, HttpRequest, HttpResponse
 
 
 @dataclass(frozen=True)
 class InternalEcho:
-    _request: HttpRequest = field(default_factory=HttpRequest)
+    method: HttpMethod = HttpMethod.get
 
-    def transport(self, request: HttpRequest) -> InternalEcho:
-        return replace(self, _request=request)
+    def __call__(self, method: HttpMethod) -> InternalEcho:
+        return self.over(method)
 
-    def over(self, method: HttpMethod) -> HttpResponse:
+    def over(self, method: HttpMethod) -> InternalEcho:
+        return replace(self, method=method)
+
+    def transport(self, request: HttpRequest) -> HttpResponse:
         return HttpResponse(status=200).set_json(
             {
-                "method": method.name,
-                "endpoint": self._request.endpoint,
-                "headers": self._request.headers,
-                "params": self._request.params,
-                "json": self._request.json,
-                "data": self._request.data,
+                "method": self.method.name,
+                "endpoint": request.endpoint,
+                "headers": request.headers,
+                "params": request.params,
+                "json": request.json,
+                "data": request.data,
             }
         )

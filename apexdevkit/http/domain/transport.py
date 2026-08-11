@@ -7,11 +7,12 @@ from .request import HttpRequest
 from .response import HttpResponse
 
 
-class HttpChannel(Protocol):
-    def transport(self, request: HttpRequest) -> HttpTransport:
+class HttpTransporter(Protocol):
+    def __call__(self, method: HttpMethod) -> HttpTransporter:
         pass
 
+    def over(self, method: HttpMethod) -> HttpTransporter:
+        pass
 
-class HttpTransport(Protocol):
-    def over(self, method: HttpMethod) -> HttpResponse:
+    def transport(self, request: HttpRequest) -> HttpResponse:
         pass
