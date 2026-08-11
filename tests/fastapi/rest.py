@@ -66,7 +66,8 @@ class RestCollection:
             self.name,
             LazyHttpRequest(
                 HttpMethod.get,
-                self.http.with_endpoint(self.name.plural),
+                self.http,
+                self.request.with_endpoint(self.name.plural),
             ),
         )
 
