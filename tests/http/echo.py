@@ -14,6 +14,11 @@ class Echo:
         default="http://localhost:8080",
     )
 
+    def assert_header(self, name: str, value: str) -> Self:
+        assert self.header(name=name) == value
+
+        return self
+
     def header(self, name: str) -> str:
         return str(self.raw.value_of("headers").to(dict)[name])
 

@@ -29,45 +29,50 @@ class FakeRequestHandler:
 
 @pytest.mark.vcr
 def test_should_hook_get_method(transport: HttpTransport) -> None:
-    response = (
-        HttpRequest().with_endpoint("get").using(transport).dispatch(HttpMethod.get)
+    (
+        HttpRequest()
+        .with_endpoint("get")
+        .using(transport)
+        .dispatch(HttpMethod.get)
+        .load(Echo)
+        .assert_header(name="Handler", value="on_get")
     )
-
-    echo = Echo(response.json())
-    assert echo.header(name="Handler") == "on_get"
 
 
 @pytest.mark.vcr
 def test_should_hook_post_method(transport: HttpTransport) -> None:
-    response = (
-        HttpRequest().with_endpoint("post").using(transport).dispatch(HttpMethod.post)
+    (
+        HttpRequest()
+        .with_endpoint("post")
+        .using(transport)
+        .dispatch(HttpMethod.post)
+        .load(Echo)
+        .assert_header(name="Handler", value="on_post")
     )
-
-    echo = Echo(response.json())
-    assert echo.header(name="Handler") == "on_post"
 
 
 @pytest.mark.vcr
 def test_should_hook_patch_method(transport: HttpTransport) -> None:
-    response = (
-        HttpRequest().with_endpoint("patch").using(transport).dispatch(HttpMethod.patch)
+    (
+        HttpRequest()
+        .with_endpoint("patch")
+        .using(transport)
+        .dispatch(HttpMethod.patch)
+        .load(Echo)
+        .assert_header(name="Handler", value="on_patch")
     )
-
-    echo = Echo(response.json())
-    assert echo.header(name="Handler") == "on_patch"
 
 
 @pytest.mark.vcr
 def test_should_hook_delete_method(transport: HttpTransport) -> None:
-    response = (
+    (
         HttpRequest()
         .with_endpoint("delete")
         .using(transport)
         .dispatch(HttpMethod.delete)
+        .load(Echo)
+        .assert_header(name="Handler", value="on_delete")
     )
-
-    echo = Echo(response.json())
-    assert echo.header(name="Handler") == "on_delete"
 
 
 @pytest.fixture
