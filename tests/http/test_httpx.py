@@ -84,9 +84,9 @@ def test_should_put(http: FluentHttp) -> None:
 
 @pytest.fixture
 def http() -> FluentHttp:
-    return FluentHttp(
+    return (
         HttpxBuilder()
         .with_url(Environment().value_of("ECHO_SERVER"))
-        .channel()
+        .build()
         .with_header("User-Agent", "hogwarts")
     )

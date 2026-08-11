@@ -13,11 +13,11 @@ ECHO_SERVER = Environment().value_of("ECHO_SERVER")
 
 @pytest.fixture
 def http() -> FluentHttp:
-    return FluentHttp(
+    return (
         HttpxBuilder()
         .with_url(ECHO_SERVER)
         .before_request(FakeRequestHandler())
-        .channel()
+        .build()
     )
 
 

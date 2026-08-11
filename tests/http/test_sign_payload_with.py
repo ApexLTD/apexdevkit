@@ -23,11 +23,11 @@ class FakeAuthority:
 
 @pytest.fixture
 def http() -> FluentHttp:
-    return FluentHttp(
+    return (
         HttpxBuilder()
         .with_url(Environment().value_of("ECHO_SERVER"))
         .before_request(SignPayloadWith(FakeAuthority()))
-        .channel()
+        .build()
     )
 
 

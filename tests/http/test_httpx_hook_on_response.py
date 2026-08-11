@@ -10,11 +10,11 @@ from apexdevkit.http.httpx.client import HttpxBuilder
 
 @pytest.fixture
 def http() -> FluentHttp:
-    return FluentHttp(
+    return (
         HttpxBuilder()
         .with_url(Environment().value_of("ECHO_SERVER"))
         .after_response(FakeResponseHandler())
-        .channel()
+        .build()
         .with_header("User-Agent", "Hogwarts")
     )
 
