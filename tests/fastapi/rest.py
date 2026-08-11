@@ -96,7 +96,8 @@ class RestCollection:
             self.name,
             LazyHttpRequest(
                 HttpMethod.delete,
-                self.http.with_endpoint(self.name.plural),
+                self.http,
+                self.request.with_endpoint(self.name.plural),
             ),
         )
 
