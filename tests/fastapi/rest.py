@@ -20,11 +20,11 @@ class RestCollection:
 
     request: HttpRequest = HttpRequest()
 
-    def sub_resource(self, name: str, *, item_id: str) -> RestCollection:
+    def sub_resource(self, name: str, *, parent_id: str) -> RestCollection:
         return RestCollection(
             self.http,
             RestfulName(name),
-            self.request.with_endpoint(self.name.plural).with_endpoint(item_id),
+            self.request.with_endpoint(self.name.plural).with_endpoint(parent_id),
         )
 
     def create_one(self) -> _TestRequest:
