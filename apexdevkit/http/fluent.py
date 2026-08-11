@@ -5,7 +5,7 @@ from typing import Any
 
 from pypebbles import JsonDict
 
-from .domain import HttpMethod, HttpRequest, HttpResponse, HttpTransport
+from .domain import HttpDispatcher, HttpRequest, HttpTransport
 
 
 @dataclass(frozen=True)
@@ -14,8 +14,8 @@ class FluentHttp:
 
     _request: HttpRequest = field(default_factory=HttpRequest)
 
-    def on_endpoint(self, value: str) -> HttpRequestDispatcher:
-        return HttpRequestDispatcher(
+    def on_endpoint(self, value: str) -> HttpDispatcher:
+        return HttpDispatcher(
             transporter=self.transporter,
             inner=self._request.with_endpoint(value),
         )
@@ -43,27 +43,3 @@ class FluentHttp:
 
     def with_data(self, value: Any) -> FluentHttp:
         return replace(self, _request=self._request.with_data(value))
-
-
-@dataclass(frozen=True)
-class HttpRequestDispatcher:
-    inner: HttpRequest
-    transporter: HttpTransport
-
-    def post(self) -> HttpResponse:
-        return self.dispatch(HttpMethod.post)
-
-    def get(self) -> HttpResponse:
-        return self.dispatch(HttpMethod.get)
-
-    def patch(self) -> HttpResponse:
-        return self.dispatch(HttpMethod.patch)
-
-    def delete(self) -> HttpResponse:
-        return self.dispatch(HttpMethod.delete)
-
-    def put(self) -> HttpResponse:
-        return self.dispatch(HttpMethod.put)
-
-    def dispatch(self, method: HttpMethod) -> HttpResponse:
-        return self.transporter.over(method).transport(self.inner)

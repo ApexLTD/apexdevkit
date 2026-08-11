@@ -2,10 +2,14 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
+from typing import Protocol
 
 from pypebbles import FluentDict, JsonDict
 
 from apexdevkit.http.url import HttpUrl
+
+from .method import HttpMethod
+from .response import HttpResponse
 
 
 @dataclass(frozen=True)
@@ -36,3 +40,38 @@ class HttpRequest:
 
     def with_json(self, value: JsonDict) -> HttpRequest:
         return replace(self, json=value)
+
+
+@dataclass(frozen=True)
+class HttpDispatcher:
+    inner: HttpRequest
+    transporter: HttpTransport
+
+    def post(self) -> HttpResponse:
+        return self.dispatch(HttpMethod.post)
+
+    def get(self) -> HttpResponse:
+        return self.dispatch(HttpMethod.get)
+
+    def patch(self) -> HttpResponse:
+        return self.dispatch(HttpMethod.patch)
+
+    def delete(self) -> HttpResponse:
+        return self.dispatch(HttpMethod.delete)
+
+    def put(self) -> HttpResponse:
+        return self.dispatch(HttpMethod.put)
+
+    def dispatch(self, method: HttpMethod) -> HttpResponse:
+        return self.transporter.over(method).transport(self.inner)
+
+
+class HttpTransport(Protocol):
+    def __call__(self, method: HttpMethod) -> HttpTransport:
+        pass
+
+    def over(self, method: HttpMethod) -> HttpTransport:
+        pass
+
+    def transport(self, request: HttpRequest) -> HttpResponse:
+        pass

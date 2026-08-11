@@ -1,10 +1,10 @@
 from .method import HttpMethod
-from .request import HttpRequest
+from .request import HttpDispatcher, HttpRequest, HttpTransport
 from .response import HttpResponse
-from .transport import HttpTransport
 
 __all__ = [
     "HttpMethod",
+    "HttpDispatcher",
     "HttpRequest",
     "HttpResponse",
     "HttpTransport",
