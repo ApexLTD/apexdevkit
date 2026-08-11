@@ -37,14 +37,14 @@ def http() -> FluentHttp:
     return (
         HttpxBuilder()
         .with_url(Environment().value_of("ECHO_SERVER"))
-        .after_response(FakeResponseHandler())
+        .after_response(_Handler())
         .build()
         .with_header("User-Agent", "Hogwarts")
     )
 
 
 @dataclass
-class FakeResponseHandler:
+class _Handler:
     def on_get(self, _: Response) -> None:
         raise ValueError("on_get")
 
