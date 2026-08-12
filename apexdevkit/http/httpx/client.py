@@ -28,7 +28,7 @@ class HttpxBuilder:
     headers: FluentDict[str] = field(default_factory=FluentDict[str])
 
     def with_header(self, key: str, value: str) -> HttpxBuilder:
-        self.headers.merge(FluentDict[str]({key: value}))
+        self.headers = self.headers.merge(FluentDict[str]({key: value}))
 
         return self
 
