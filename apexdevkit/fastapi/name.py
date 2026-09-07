@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from apexdevkit.http import HttpUrl
+from pypebbles.http import HttpUrl
 
 
 @dataclass
