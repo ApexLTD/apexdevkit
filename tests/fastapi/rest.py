@@ -5,17 +5,28 @@ from functools import cached_property
 from typing import Any, Self
 
 from pypebbles import JsonDict
+from pypebbles.http import HttpMethod, HttpRequest, HttpResponse, HttpTransport
 
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.http import HttpMethod
-from apexdevkit.http.domain import HttpRequest, HttpTransport
-from apexdevkit.http.domain.response import HttpResponse
+
+
+@dataclass(frozen=True)
+class RestTransport:
+    transporter: HttpTransport
+
+    method: HttpMethod = HttpMethod.get
+
+    def over(self, method: HttpMethod) -> RestTransport:
+        return replace(self, method=method)
+
+    def transport(self, request: HttpRequest) -> HttpResponse:
+        return self.transporter.deliver(request, using=self.method)
 
 
 @dataclass(frozen=True)
 class RestCollection:
     name: RestfulName
-    transport: HttpTransport
+    transport: RestTransport
 
     request: HttpRequest = HttpRequest()
 
@@ -86,7 +97,7 @@ class RestCollection:
 class _TestRequest:
     resource: RestfulName
     request: HttpRequest
-    transporter: HttpTransport
+    transporter: RestTransport
 
     def with_id(self, value: Any) -> _TestRequest:
         return replace(self, request=self.request.with_endpoint(str(value)))

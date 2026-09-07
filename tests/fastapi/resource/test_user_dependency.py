@@ -5,11 +5,11 @@ from dataclasses import dataclass
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from pypebbles.http.drivers import Httpx
 
 from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.http.httpx.client import HttpxTransporter
-from tests.fastapi.rest import RestCollection
+from tests.fastapi.rest import RestCollection, RestTransport
 from tests.fastapi.sample_api import AppleFields, FakeApple, SuccessfulService
 
 
@@ -27,7 +27,7 @@ def fake_user() -> FakeUser:
 def resource(infra: RestfulServiceBuilder, fake_user: FakeUser) -> RestCollection:
     return RestCollection(
         RestfulName("apple"),
-        transport=HttpxTransporter(TestClient(setup(infra, fake_user))),
+        transport=RestTransport(Httpx(TestClient(setup(infra, fake_user)))),
     )
 
 

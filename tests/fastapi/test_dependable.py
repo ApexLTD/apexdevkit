@@ -3,14 +3,14 @@ from unittest.mock import MagicMock
 from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from pypebbles.http.drivers import Httpx
 
 from apexdevkit.error import DoesNotExistError
 from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.router import Dependency
-from apexdevkit.http.httpx.client import HttpxTransporter
-from tests.fastapi.rest import RestCollection
+from tests.fastapi.rest import RestCollection, RestTransport
 from tests.fastapi.sample_api import AppleFields, PriceFields
 
 _PARENT = RestfulName("apple")
@@ -20,7 +20,7 @@ _CHILD = RestfulName("price")
 def _resource(dependency: Dependency) -> RestCollection:
     return RestCollection(
         name=_PARENT,
-        transport=HttpxTransporter(TestClient(_setup(dependency))),
+        transport=RestTransport(Httpx(TestClient(_setup(dependency)))),
     )
 
 
