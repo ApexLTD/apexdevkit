@@ -20,7 +20,7 @@ def service() -> FailingService:
 
 def test_should_not_create_forbidden(apple: JsonDict, resource: RestCollection) -> None:
     (
-        resource.create_one()
+        resource.create()
         .from_data(apple)
         .ensure()
         .fail()

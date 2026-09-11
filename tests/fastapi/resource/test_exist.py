@@ -19,7 +19,7 @@ def service() -> FailingService:
 
 def test_should_not_create_existing(apple: JsonDict, resource: RestCollection) -> None:
     (
-        resource.create_one()
+        resource.create()
         .from_data(apple)
         .ensure()
         .fail()

@@ -26,7 +26,7 @@ def test_should_create(
     resource: RestCollection,
 ) -> None:
     (
-        resource.create_one()
+        resource.create()
         .from_data(apple)
         .ensure()
         .success()

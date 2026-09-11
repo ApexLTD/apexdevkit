@@ -42,7 +42,7 @@ class RestCollection:
     def dispatch(self, method: HttpMethod) -> _TestRequest:
         return _TestRequest(self.name, self.request, self.transport.over(method))
 
-    def create_one(self) -> _TestRequest:
+    def create(self) -> _TestRequest:
         return self.dispatch(HttpMethod.post)
 
     def read(self, **params: Any) -> _TestRequest:

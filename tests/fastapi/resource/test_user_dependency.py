@@ -71,7 +71,7 @@ def setup(infra: RestfulServiceBuilder, fake_user: FakeUser) -> FastAPI:
 def test_should_call_extract_user_for_create_one(
     resource: RestCollection, fake_user: FakeUser
 ) -> None:
-    resource.create_one().from_data(FakeApple().json()).ensure()
+    resource.create().from_data(FakeApple().json()).ensure()
 
     assert fake_user.times_called == 1
 
@@ -80,7 +80,7 @@ def test_should_persist_user_for_create_one(
     resource: RestCollection,
     infra: RestfulServiceBuilder,
 ) -> None:
-    resource.create_one().from_data(FakeApple().json()).ensure()
+    resource.create().from_data(FakeApple().json()).ensure()
 
     assert infra.user == "user"
 
