@@ -45,15 +45,15 @@ class RestCollection:
     def create_one(self) -> _TestRequest:
         return self.dispatch(HttpMethod.post)
 
-    def read(self) -> _TestRequest:
-        return self.dispatch(HttpMethod.get)
-
-    def read_many(self, **params: Any) -> _TestRequest:
+    def read(self, **params: Any) -> _TestRequest:
         request = self.request
         for p, v in params.items():
             request = request.with_param(p, v)
 
         return replace(self, request=request).dispatch(HttpMethod.get)
+
+    def read_many(self, **params: Any) -> _TestRequest:
+        return self.read(**params)
 
     def update_one(self) -> _TestRequest:
         return self.dispatch(HttpMethod.patch)
