@@ -52,8 +52,8 @@ def test_should_not_read_all_forbidden(resource: RestCollection) -> None:
 
 def test_should_not_update_forbidden(apple: JsonDict, resource: RestCollection) -> None:
     (
-        resource.update_one()
-        .with_id(apple["id"])
+        resource.item(with_id=apple["id"])
+        .update_one()
         .and_data(apple)
         .ensure()
         .fail()
@@ -77,8 +77,8 @@ def test_should_not_replace_forbidden(
 
 def test_should_not_delete_forbidden(apple: JsonDict, resource: RestCollection) -> None:
     (
-        resource.delete_one()
-        .with_id(apple["id"])
+        resource.item(with_id=apple["id"])
+        .delete_one()
         .ensure()
         .fail()
         .with_code(403)

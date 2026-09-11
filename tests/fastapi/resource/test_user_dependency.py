@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from pypebbles.http import HttpRequest
 from pypebbles.http.drivers import Httpx
 
 from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
@@ -28,6 +29,7 @@ def resource(infra: RestfulServiceBuilder, fake_user: FakeUser) -> RestCollectio
     return RestCollection(
         RestfulName("apple"),
         transport=RestTransport(Httpx(TestClient(setup(infra, fake_user)))),
+        request=HttpRequest().with_endpoint("apples"),
     )
 
 
@@ -121,8 +123,8 @@ def test_should_call_extract_user_for_update_one(
     resource: RestCollection, fake_user: FakeUser
 ) -> None:
     (
-        resource.update_one()
-        .with_id(str(FakeApple().json().get("id")))
+        resource.item(with_id=FakeApple().json().get("id"))
+        .update_one()
         .and_data(FakeApple().json().drop("id").drop("color"))
         .ensure()
     )
@@ -135,8 +137,8 @@ def test_should_persist_user_for_update_one(
     infra: RestfulServiceBuilder,
 ) -> None:
     (
-        resource.update_one()
-        .with_id(str(FakeApple().json().get("id")))
+        resource.item(with_id=FakeApple().json().get("id"))
+        .update_one()
         .and_data(FakeApple().json().drop("id").drop("color"))
         .ensure()
     )
@@ -164,7 +166,7 @@ def test_should_persist_user_for_replace_one(
 def test_should_call_extract_user_for_delete_one(
     resource: RestCollection, fake_user: FakeUser
 ) -> None:
-    resource.delete_one().with_id(str(FakeApple().json().get("id"))).ensure()
+    resource.item(with_id=FakeApple().json().get("id")).delete_one().ensure()
 
     assert fake_user.times_called == 1
 
@@ -173,6 +175,6 @@ def test_should_persist_user_for_delete_one(
     resource: RestCollection,
     infra: RestfulServiceBuilder,
 ) -> None:
-    resource.delete_one().with_id(str(FakeApple().json().get("id"))).ensure()
+    resource.item(with_id=FakeApple().json().get("id")).delete_one().ensure()
 
     assert infra.user == "user"

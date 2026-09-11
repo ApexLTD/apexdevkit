@@ -29,29 +29,25 @@ class RestCollection:
 
     request: HttpRequest = HttpRequest()
 
-    def sub_resource(self, name: str, *, parent_id: str) -> RestCollection:
-        return replace(self.item(with_id=parent_id), name=RestfulName(name))
+    def sub_resource(self, name: RestfulName) -> RestCollection:
+        return replace(self, name=name)
 
     def item(self, with_id: Any) -> RestCollection:
         return RestCollection(
             name=self.name,
             transport=self.transport,
-            request=self.request.with_endpoint(self.name.plural).with_endpoint(
-                str(with_id)
-            ),
+            request=self.request.with_endpoint(str(with_id)),
         )
 
     def create_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            self.request.with_endpoint(self.name.plural),
+            self.request,
             transporter=self.transport.over(HttpMethod.post),
         )
 
     def read_all(self) -> _TestRequest:
-        return replace(
-            self, request=self.request.with_endpoint(self.name.plural)
-        ).read()
+        return self.read()
 
     def read(self) -> _TestRequest:
         return _TestRequest(
@@ -61,7 +57,7 @@ class RestCollection:
         )
 
     def read_many(self, **params: Any) -> _TestRequest:
-        request = self.request.with_endpoint(self.name.plural)
+        request = self.request
         for p, v in params.items():
             request = request.with_param(p, v)
 
@@ -74,21 +70,21 @@ class RestCollection:
     def update_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            self.request.with_endpoint(self.name.plural),
+            self.request,
             transporter=self.transport.over(HttpMethod.patch),
         )
 
     def replace_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            self.request.with_endpoint(self.name.plural),
+            self.request,
             transporter=self.transport.over(HttpMethod.put),
         )
 
     def delete_one(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            self.request.with_endpoint(self.name.plural),
+            self.request,
             transporter=self.transport.over(HttpMethod.delete),
         )
 
@@ -98,9 +94,6 @@ class _TestRequest:
     resource: RestfulName
     request: HttpRequest
     transporter: RestTransport
-
-    def with_id(self, value: Any) -> _TestRequest:
-        return replace(self, request=self.request.with_endpoint(str(value)))
 
     def and_data(self, value: JsonDict) -> _TestRequest:
         return self.with_data(value)

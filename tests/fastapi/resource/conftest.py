@@ -1,5 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
+from pypebbles.http import HttpRequest
 from pypebbles.http.drivers import Httpx
 
 from apexdevkit.fastapi import RestfulServiceBuilder
@@ -13,6 +14,7 @@ def resource(service: RestfulServiceBuilder) -> RestCollection:
     return RestCollection(
         name=RestfulName("market-apple"),
         transport=RestTransport(Httpx(TestClient(setup(service)))),
+        request=HttpRequest().with_endpoint("market-apples"),
     )
 
 
@@ -21,4 +23,5 @@ def read_many_resource(service: RestfulServiceBuilder) -> RestCollection:
     return RestCollection(
         name=RestfulName("apple"),
         transport=RestTransport(Httpx(TestClient(setup(service)))),
+        request=HttpRequest().with_endpoint("apples"),
     )

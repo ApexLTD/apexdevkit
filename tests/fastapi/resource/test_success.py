@@ -5,6 +5,7 @@ from uuid import uuid4
 import pytest
 from pypebbles import JsonDict
 
+from apexdevkit.fastapi.name import RestfulName
 from tests.fastapi.rest import RestCollection
 from tests.fastapi.sample_api import FakeApple, SuccessfulService
 
@@ -85,8 +86,8 @@ def test_should_update_one(
     resource: RestCollection,
 ) -> None:
     (
-        resource.update_one()
-        .with_id(apple["id"])
+        resource.item(with_id=apple["id"])
+        .update_one()
         .and_data(apple)
         .ensure()
         .success()
@@ -111,16 +112,16 @@ def test_should_delete_one(
     service: SuccessfulService,
     resource: RestCollection,
 ) -> None:
-    resource.delete_one().with_id(apple["id"]).ensure().success().with_code(200)
+    resource.item(with_id=apple["id"]).delete_one().ensure().success().with_code(200)
 
     assert service.called_with == apple["id"]
 
 
 def test_should_sub_resource(resource: RestCollection) -> None:
     (
-        resource.sub_resource(name="price", parent_id=str(uuid4()))
+        resource.item(with_id=str(uuid4()))
+        .sub_resource(name=RestfulName("price"))
         .delete_one()
-        .with_id(str(uuid4()))
         .ensure()
         .success()
         .with_code(200)
