@@ -33,7 +33,7 @@ def test_should_not_read_unknown(resource: RestCollection) -> None:
 def test_should_not_update_unknown(apple: JsonDict, resource: RestCollection) -> None:
     (
         resource.item(with_id=apple["id"])
-        .update_one()
+        .update()
         .and_data(apple)
         .ensure()
         .fail()

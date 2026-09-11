@@ -124,7 +124,7 @@ def test_should_call_extract_user_for_update_one(
 ) -> None:
     (
         resource.item(with_id=FakeApple().json().get("id"))
-        .update_one()
+        .update()
         .and_data(FakeApple().json().drop("id").drop("color"))
         .ensure()
     )
@@ -138,7 +138,7 @@ def test_should_persist_user_for_update_one(
 ) -> None:
     (
         resource.item(with_id=FakeApple().json().get("id"))
-        .update_one()
+        .update()
         .and_data(FakeApple().json().drop("id").drop("color"))
         .ensure()
     )

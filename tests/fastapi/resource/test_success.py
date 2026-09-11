@@ -87,7 +87,7 @@ def test_should_update_one(
 ) -> None:
     (
         resource.item(with_id=apple["id"])
-        .update_one()
+        .update()
         .and_data(apple)
         .ensure()
         .success()

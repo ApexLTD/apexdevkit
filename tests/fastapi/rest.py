@@ -52,7 +52,7 @@ class RestCollection:
 
         return replace(self, request=request).dispatch(HttpMethod.get)
 
-    def update_one(self) -> _TestRequest:
+    def update(self) -> _TestRequest:
         return self.dispatch(HttpMethod.patch)
 
     def replace_one(self) -> _TestRequest:
