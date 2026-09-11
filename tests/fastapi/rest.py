@@ -32,11 +32,13 @@ class RestCollection:
     def sub_resource(self, name: str, *, parent_id: str) -> RestCollection:
         return replace(self.item(with_id=parent_id), name=RestfulName(name))
 
-    def item(self, with_id: str) -> RestCollection:
+    def item(self, with_id: Any) -> RestCollection:
         return RestCollection(
             name=self.name,
             transport=self.transport,
-            request=self.request.with_endpoint(self.name.plural).with_endpoint(with_id),
+            request=self.request.with_endpoint(self.name.plural).with_endpoint(
+                str(with_id)
+            ),
         )
 
     def create_one(self) -> _TestRequest:
@@ -46,16 +48,15 @@ class RestCollection:
             transporter=self.transport.over(HttpMethod.post),
         )
 
-    def read_one(self) -> _TestRequest:
-        return self.read()
-
     def read_all(self) -> _TestRequest:
-        return self.read()
+        return replace(
+            self, request=self.request.with_endpoint(self.name.plural)
+        ).read()
 
     def read(self) -> _TestRequest:
         return _TestRequest(
             self.name,
-            self.request.with_endpoint(self.name.plural),
+            self.request,
             transporter=self.transport.over(HttpMethod.get),
         )
 

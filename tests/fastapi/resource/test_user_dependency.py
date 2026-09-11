@@ -86,7 +86,7 @@ def test_should_persist_user_for_create_one(
 def test_should_call_extract_user_for_read_one(
     resource: RestCollection, fake_user: FakeUser
 ) -> None:
-    resource.read_one().with_id(str(FakeApple().json().get("id"))).ensure()
+    resource.item(with_id=FakeApple().json().get("id")).read().ensure()
 
     assert fake_user.times_called == 1
 
@@ -95,7 +95,7 @@ def test_should_persist_user_for_read_one(
     resource: RestCollection,
     infra: RestfulServiceBuilder,
 ) -> None:
-    resource.read_one().with_id(str(FakeApple().json().get("id"))).ensure()
+    resource.item(with_id=FakeApple().json().get("id")).read().ensure()
 
     assert infra.user == "user"
 

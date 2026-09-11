@@ -42,8 +42,8 @@ def test_should_read_one(
     resource: RestCollection,
 ) -> None:
     (
-        resource.read_one()
-        .with_id(apple["id"])
+        resource.item(with_id=apple["id"])
+        .read()
         .ensure()
         .success()
         .with_code(200)

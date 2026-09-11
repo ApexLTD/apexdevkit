@@ -31,8 +31,8 @@ def test_should_not_create_forbidden(apple: JsonDict, resource: RestCollection) 
 
 def test_should_not_read_forbidden(resource: RestCollection) -> None:
     (
-        resource.read_one()
-        .with_id(uuid4())
+        resource.item(with_id=uuid4())
+        .read()
         .ensure()
         .fail()
         .with_code(403)
