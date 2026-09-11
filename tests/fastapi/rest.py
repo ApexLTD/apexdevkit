@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
-from functools import cached_property
 from typing import Any, Self
 
 from pypebbles import JsonDict
@@ -112,11 +111,10 @@ class _TestRequest:
         return replace(self, request=self.request.with_json(value))
 
     def ensure(self) -> ResponseProbe:
-        return ResponseProbe(resource=self.resource, response=self.response)
-
-    @cached_property
-    def response(self) -> HttpResponse:
-        return self.transporter.transport(self.request)
+        return ResponseProbe(
+            resource=self.resource,
+            response=self.transporter.transport(self.request),
+        )
 
 
 @dataclass(frozen=True)
