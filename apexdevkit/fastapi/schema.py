@@ -33,12 +33,22 @@ class RestfulSchema:
 
     def __post_init__(self) -> None:
         schema = self._schema_for("", self.fields.readable())
-
+        self._schema_for(
+            "Item",
+            {
+                self.name.singular: schema,
+            },
+        )
+        self._schema_for(
+            "Collection",
+            {
+                self.name.plural: list[schema],
+                "count": int,
+            },
+        )
         self._schema_for("Create", self.fields.writable())
         self._schema_for("Update", self.fields.editable())
         self._schema_for("Replace", self.fields.readable())
-        self._schema_for("Item", {self.name.singular: schema})
-        self._schema_for("Collection", {self.name.plural: list[schema], "count": int})
 
     def _schema_for(self, action: str, fields: dict[str, Any]) -> type[BaseModel]:
         if action not in self._models:
