@@ -60,7 +60,7 @@ def test_should_read_many(
     read_many_resource: RestCollection,
 ) -> None:
     (
-        read_many_resource.read_many(color="red")
+        read_many_resource.read(color="red")
         .ensure()
         .success()
         .with_code(200)

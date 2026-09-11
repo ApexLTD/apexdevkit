@@ -41,9 +41,13 @@ def test_should_not_read_forbidden(resource: RestCollection) -> None:
 
 
 def test_should_not_read_many_forbidden(read_many_resource: RestCollection) -> None:
-    read_many_resource.read_many(color="red").ensure().fail().with_code(
-        403
-    ).and_message("Forbidden")
+    (
+        read_many_resource.read(color="red")
+        .ensure()
+        .fail()
+        .with_code(403)
+        .and_message("Forbidden")
+    )
 
 
 def test_should_not_read_all_forbidden(resource: RestCollection) -> None:

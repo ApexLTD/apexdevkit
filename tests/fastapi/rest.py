@@ -52,9 +52,6 @@ class RestCollection:
 
         return replace(self, request=request).dispatch(HttpMethod.get)
 
-    def read_many(self, **params: Any) -> _TestRequest:
-        return self.read(**params)
-
     def update_one(self) -> _TestRequest:
         return self.dispatch(HttpMethod.patch)
 
