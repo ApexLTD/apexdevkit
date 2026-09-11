@@ -5,7 +5,7 @@ from functools import cached_property
 from typing import Any
 
 from pydantic import BaseModel, create_model
-from pypebbles import FluentDict, JsonDict
+from pypebbles import FluentDict
 
 from apexdevkit.fastapi.name import RestfulName
 
@@ -19,12 +19,6 @@ class SchemaFields(ABC):
 
     def editable(self) -> FluentDict[type]:
         return self.readable().drop("id")
-
-    def filters(self) -> FluentDict[type]:
-        return JsonDict()
-
-    def aggregation_filters(self) -> FluentDict[type]:
-        return JsonDict()
 
     @abstractmethod
     def readable(self) -> FluentDict[type]:  # pragma: no cover
@@ -45,8 +39,6 @@ class RestfulSchema:
         update_many_item = self._schema_for(
             "UpdateManyItem", self.fields.editable().merge(self.fields.id())
         )
-        self._schema_for("Filter", self.fields.filters())
-        self._schema_for("Aggregation", self.fields.aggregation_filters())
 
         self._schema_for("Item", {self.name.singular: schema})
         self._schema_for("Collection", {self.name.plural: list[schema], "count": int})
