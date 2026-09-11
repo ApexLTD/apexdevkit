@@ -6,14 +6,8 @@ from typing import Any
 
 from pydantic import BaseModel, create_model
 from pypebbles import FluentDict, JsonDict
-from pypebbles.amount import Amount
 
 from apexdevkit.fastapi.name import RestfulName
-
-
-class AggregationResult(BaseModel):
-    field: str
-    aggregation: Amount
 
 
 class SchemaFields(ABC):
@@ -31,9 +25,6 @@ class SchemaFields(ABC):
 
     def aggregation_filters(self) -> FluentDict[type]:
         return JsonDict()
-
-    def aggregation_result(self) -> FluentDict[type]:
-        return JsonDict().with_a(count=int).and_a(sums=list[AggregationResult])
 
     @abstractmethod
     def readable(self) -> FluentDict[type]:  # pragma: no cover
@@ -56,7 +47,6 @@ class RestfulSchema:
         )
         self._schema_for("Filter", self.fields.filters())
         self._schema_for("Aggregation", self.fields.aggregation_filters())
-        self._schema_for("AggregationResult", self.fields.aggregation_result())
 
         self._schema_for("Item", {self.name.singular: schema})
         self._schema_for("Collection", {self.name.plural: list[schema], "count": int})
