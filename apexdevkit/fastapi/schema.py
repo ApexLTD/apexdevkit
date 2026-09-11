@@ -6,14 +6,14 @@ from typing import Any
 
 from pydantic import BaseModel, create_model
 from pypebbles import FluentDict, JsonDict
+from pypebbles.amount import Amount
 
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.value import Value
 
 
 class AggregationResult(BaseModel):
     field: str
-    aggregation: Value
+    aggregation: Amount
 
 
 class SchemaFields(ABC):
