@@ -59,7 +59,7 @@ def test_should_build_dependable_with_user(faker: Faker) -> None:
 
     (
         _resource(DependableBuilder.from_builder(builder).with_user(lambda: user))
-        .read_all()
+        .read()
         .ensure()
     )
 
@@ -76,7 +76,7 @@ def test_should_build_dependable_with_parent(faker: Faker) -> None:
         _resource(DependableBuilder.from_builder(builder).with_parent(_PARENT))
         .item(with_id=parent_id)
         .sub_resource(name=_CHILD)
-        .read_all()
+        .read()
         .ensure()
         .success()
     )
@@ -94,7 +94,7 @@ def test_should_not_build_dependable_when_no_parent(faker: Faker) -> None:
         _resource(DependableBuilder.from_builder(builder).with_parent(_PARENT))
         .item(with_id=parent_id)
         .sub_resource(name=_CHILD)
-        .read_all()
+        .read()
         .ensure()
         .fail()
         .with_code(404)

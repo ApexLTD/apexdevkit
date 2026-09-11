@@ -46,9 +46,6 @@ class RestCollection:
             transporter=self.transport.over(HttpMethod.post),
         )
 
-    def read_all(self) -> _TestRequest:
-        return self.read()
-
     def read(self) -> _TestRequest:
         return _TestRequest(
             self.name,

@@ -75,7 +75,7 @@ def test_should_read_all(
     service: SuccessfulService,
     resource: RestCollection,
 ) -> None:
-    resource.read_all().ensure().success().with_code(200).and_collection([apple])
+    resource.read().ensure().success().with_code(200).and_collection([apple])
 
     assert service.called_with is None
 

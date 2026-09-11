@@ -47,7 +47,7 @@ def test_should_not_read_many_forbidden(read_many_resource: RestCollection) -> N
 
 
 def test_should_not_read_all_forbidden(resource: RestCollection) -> None:
-    resource.read_all().ensure().fail().with_code(403).and_message("Forbidden")
+    resource.read().ensure().fail().with_code(403).and_message("Forbidden")
 
 
 def test_should_not_update_forbidden(apple: JsonDict, resource: RestCollection) -> None:
