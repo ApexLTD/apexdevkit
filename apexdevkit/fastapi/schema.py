@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from functools import cached_property
 from typing import Any
@@ -112,27 +112,11 @@ class RestfulSchema:
 
         return _
 
-    def for_create_many(self) -> Callable[[BaseModel], Iterable[dict[str, Any]]]:
-        schema = self._models["CreateMany"]
-
-        def _(request: schema) -> Iterable[dict[str, Any]]:
-            return [dict(item) for item in request.model_dump()[self.name.plural]]
-
-        return _
-
     def for_update_one(self) -> Callable[[BaseModel], dict[str, Any]]:
         schema = self._models["Update"]
 
         def _(request: schema):
             return request.model_dump()
-
-        return _
-
-    def for_update_many(self) -> Callable[[BaseModel], Iterable[dict[str, Any]]]:
-        schema = self._models["UpdateMany"]
-
-        def _(request: schema) -> Iterable[dict[str, Any]]:
-            return [dict(item) for item in request.model_dump()[self.name.plural]]
 
         return _
 
@@ -143,39 +127,6 @@ class RestfulSchema:
             return request.model_dump()
 
         return _
-
-    def for_replace_many(self) -> Callable[[BaseModel], Iterable[dict[str, Any]]]:
-        schema = self._models["ReplaceMany"]
-
-        def _(request: schema) -> Iterable[dict[str, Any]]:
-            return [dict(item) for item in request.model_dump()[self.name.plural]]
-
-        return _
-
-    def for_filters(self) -> Callable[[BaseModel], dict[str, Any]]:
-        schema = self._models["Filter"]
-
-        def _(request: schema) -> dict[str, Any]:
-            return request.model_dump()
-
-        return _
-
-    def for_aggregation(self) -> Callable[[BaseModel], dict[str, Any]]:
-        schema = self._models["Aggregation"]
-
-        def _(request: schema) -> dict[str, Any]:
-            return request.model_dump()
-
-        return _
-
-    def for_aggregation_result(self) -> type[BaseModel]:
-        return self._schema_for(
-            "AggregationResultResponse",
-            FluentDict[type]()
-            .with_a(status=str)
-            .and_a(code=int)
-            .and_a(aggregations=self._models["AggregationResult"]),
-        )
 
 
 @dataclass(frozen=True)
