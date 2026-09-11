@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Collection, Iterable
 from dataclasses import dataclass, field, replace
-from typing import Any, Generic, Self, TypeVar
+from typing import Any, Self, TypeVar
 
 from apexdevkit.key_fn import AttributeKey, KeyFn
 
@@ -14,7 +14,7 @@ T = TypeVar("T")
 
 
 @dataclass(frozen=True, kw_only=True)
-class Sync(ObservableSync, Generic[T]):
+class Sync[T](ObservableSync):
     source: Source[T] = field(default_factory=EmptySource)
     target: Target[T] = field(default_factory=NoTarget)
 
@@ -33,7 +33,7 @@ class Sync(ObservableSync, Generic[T]):
         return replace(self, target=value)
 
     def and_source(self, value: Source[T]) -> Sync[T]:
-        return self.with_source(value)
+        return self.with_source(value)  # pragma: no cover
 
     def with_source(self, value: Source[T]) -> Sync[T]:
         return replace(self, source=value)
@@ -83,7 +83,7 @@ class Sync(ObservableSync, Generic[T]):
 
 
 @dataclass(frozen=True, kw_only=True)
-class _Purge(Generic[T]):
+class _Purge[T]:
     sync: Sync[T]
 
     def target(self, value: IterableTarget[T]) -> _Purge[T]:
@@ -96,14 +96,14 @@ class _Purge(Generic[T]):
         )
 
     def __call__(self) -> None:
-        self.run()
+        self.run()  # pragma: no cover
 
     def run(self) -> None:
         self.sync.prune()
 
 
 @dataclass
-class _Discriminate(Generic[T]):
+class _Discriminate[T]:
     sync: Sync[T]
     latest: Iterable[T]
 

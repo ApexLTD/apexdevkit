@@ -5,13 +5,13 @@ from typing import Annotated, Any, Protocol, Self, TypeVar
 
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.responses import JSONResponse
+from pypebbles import FluentDict
 
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.resource import RestfulResource
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.schema import RestfulSchema, Schema, SchemaFields
-from apexdevkit.fastapi.service import RawCollection, RawItem, RestfulService
-from apexdevkit.fluent import FluentDict
+from apexdevkit.fastapi.service import RawItem, RestfulService
 
 
 class RouterWithHiddenUnderscoreRoutes(APIRouter):
@@ -144,30 +144,6 @@ class RestfulRouter:
 
         return self
 
-    def with_create_many(
-        self,
-        dependency: Dependency | None = None,
-        is_documented: bool = True,
-    ) -> Self:
-        self.router.add_api_route(
-            "/batch",
-            self.resource.create_many(
-                Service=self._resolve(dependency),
-                Collection=Annotated[
-                    RawCollection,
-                    Depends(self._schema.for_create_many()),
-                ],
-            ),
-            methods=["POST"],
-            status_code=201,
-            responses={409: {}},
-            response_model=self._schema.for_collection(),
-            include_in_schema=is_documented,
-            summary="Create Many",
-        )
-
-        return self
-
     def with_read_one(
         self,
         dependency: Dependency | None = None,
@@ -213,50 +189,6 @@ class RestfulRouter:
             response_model=self._schema.for_collection(),
             include_in_schema=is_documented,
             summary="Read Many",
-        )
-
-        return self
-
-    def with_filter(
-        self,
-        dependency: Dependency | None = None,
-        is_documented: bool = True,
-    ) -> Self:
-        self.router.add_api_route(
-            "/filter",
-            self.resource.filter_with(
-                Service=self._resolve(dependency),
-                QueryOptions=Annotated[RawItem, Depends(self._schema.for_filters())],
-            ),
-            methods=["POST"],
-            status_code=200,
-            responses={},
-            response_model=self._schema.for_collection(),
-            include_in_schema=is_documented,
-            summary="Read Filtered",
-        )
-
-        return self
-
-    def with_aggregation(
-        self,
-        dependency: Dependency | None = None,
-        is_documented: bool = True,
-    ) -> Self:
-        self.router.add_api_route(
-            "/aggregation",
-            self.resource.aggregation_with(
-                Service=self._resolve(dependency),
-                FilterOptions=Annotated[
-                    RawItem, Depends(self._schema.for_aggregation())
-                ],
-            ),
-            methods=["POST"],
-            status_code=200,
-            responses={},
-            response_model=self._schema.for_aggregation_result(),
-            include_in_schema=is_documented,
-            summary="Aggregation",
         )
 
         return self
@@ -307,30 +239,6 @@ class RestfulRouter:
 
         return self
 
-    def with_update_many(
-        self,
-        dependency: Dependency | None = None,
-        is_documented: bool = True,
-    ) -> Self:
-        self.router.add_api_route(
-            "",
-            self.resource.update_many(
-                Service=self._resolve(dependency),
-                Collection=Annotated[
-                    RawCollection,
-                    Depends(self._schema.for_update_many()),
-                ],
-            ),
-            methods=["PATCH"],
-            status_code=200,
-            responses={},
-            response_model=self._schema.for_no_data(),
-            include_in_schema=is_documented,
-            summary="Update Many",
-        )
-
-        return self
-
     def with_replace_one(
         self,
         dependency: Dependency | None = None,
@@ -351,30 +259,6 @@ class RestfulRouter:
             response_model=self._schema.for_no_data(),
             include_in_schema=is_documented,
             summary="Replace One",
-        )
-
-        return self
-
-    def with_replace_many(
-        self,
-        dependency: Dependency | None = None,
-        is_documented: bool = True,
-    ) -> Self:
-        self.router.add_api_route(
-            "/batch",
-            self.resource.replace_many(
-                Service=self._resolve(dependency),
-                Collection=Annotated[
-                    RawCollection,
-                    Depends(self._schema.for_replace_many()),
-                ],
-            ),
-            methods=["PUT"],
-            status_code=200,
-            responses={},
-            response_model=self._schema.for_no_data(),
-            include_in_schema=is_documented,
-            summary="Replace Many",
         )
 
         return self
@@ -412,11 +296,9 @@ class RestfulRouter:
     def default(self) -> Self:
         return (
             self.with_create_one()
-            .with_create_many()
             .with_read_one()
             .with_read_all()
             .with_update_one()
-            .with_update_many()
             .with_delete_one()
         )
 

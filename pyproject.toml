@@ -1,25 +1,25 @@
 [project]
 name = "apexdevkit"
-version = "1.33.1"
+version = "2.0.0"
 description = "Apex Development Tools for python."
 readme = "README.md"
 authors = [
     { name = "Apex Dev", email = "dev@apex.ge" }
 ]
 dynamic = ["dependencies"]
-requires-python = ">=3.11,<4"
+requires-python = ">=3.12,<4"
 
 [tool.poetry.dependencies]
 fastapi = "*"
-httpx = "*"
 python-dotenv = "*"
 pymssql = "2.*"
 pydantic = "*"
 sentry-sdk = { extras = ["fastapi"], version = "*" }
 uvicorn = "*"
+pypebbles = "0.2.*"
 
 [tool.poetry.group.dev.dependencies]
-apexcodexpy = "0.6.5"
+apexcodexpy = "0.7.1"
 pytest = "*"
 pytest-approvaltests = "*"
 pytest-cov = "*"
@@ -37,11 +37,6 @@ exclude = [
 ]
 show_error_codes = true
 pretty = true
-
-[tool.deptry]
-extend_exclude = [
-    "apexdevkit/testing",
-]
 
 [tool.ruff.lint]
 select = [
@@ -84,5 +79,5 @@ show_missing = true
 
 [tool.pytest]
 env = [
-    "ECHO_SERVER=http://httpbin.org"
+    "ECHO_SERVER=http://localhost:8080"
 ]

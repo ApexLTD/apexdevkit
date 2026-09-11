@@ -3,7 +3,7 @@ import pytest
 from apexdevkit.error import ForbiddenError
 from apexdevkit.query import Leaf, NumericValue, Operation, StringValue
 from apexdevkit.query.generator import MsSqlField, OperationEvaluator
-from apexdevkit.testing.fake import FakeLeaf, FakeNumericValue, FakeStringValue
+from tests.query.fake import FakeLeaf, FakeNumericValue, FakeStringValue
 
 
 @pytest.fixture

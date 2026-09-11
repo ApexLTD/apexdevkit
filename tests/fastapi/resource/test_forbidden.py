@@ -1,10 +1,10 @@
 from uuid import uuid4
 
 import pytest
+from pypebbles import JsonDict
 
 from apexdevkit.error import ForbiddenError
-from apexdevkit.http import JsonDict
-from apexdevkit.testing.rest import RestCollection
+from tests.fastapi.rest import RestCollection
 from tests.fastapi.sample_api import FailingService, FakeApple
 
 
@@ -29,56 +29,10 @@ def test_should_not_create_forbidden(apple: JsonDict, resource: RestCollection) 
     )
 
 
-def test_should_not_create_many_forbidden(
-    apple: JsonDict, resource: RestCollection
-) -> None:
-    (
-        resource.create_many()
-        .from_collection([apple])
-        .ensure()
-        .fail()
-        .with_code(403)
-        .and_message("Forbidden")
-    )
-
-
 def test_should_not_read_forbidden(resource: RestCollection) -> None:
     (
         resource.read_one()
         .with_id(uuid4())
-        .ensure()
-        .fail()
-        .with_code(403)
-        .and_message("Forbidden")
-    )
-
-
-def test_should_not_filter_forbidden(resource: RestCollection) -> None:
-    (
-        resource.filter_with()
-        .from_data(
-            JsonDict()
-            .with_a(filter=None)
-            .and_a(condition=None)
-            .and_a(ordering=[])
-            .and_a(
-                paging=JsonDict()
-                .with_a(page=None)
-                .and_a(length=None)
-                .and_a(offset=None)
-            )
-        )
-        .ensure()
-        .fail()
-        .with_code(403)
-        .and_message("Forbidden")
-    )
-
-
-def test_should_not_sum_forbidden(resource: RestCollection) -> None:
-    (
-        resource.aggregation_with()
-        .from_data(JsonDict().with_a(is_rotten=True))
         .ensure()
         .fail()
         .with_code(403)
@@ -108,38 +62,12 @@ def test_should_not_update_forbidden(apple: JsonDict, resource: RestCollection) 
     )
 
 
-def test_should_not_update_many_forbidden(
-    apple: JsonDict, resource: RestCollection
-) -> None:
-    (
-        resource.update_many()
-        .from_collection([apple])
-        .ensure()
-        .fail()
-        .with_code(403)
-        .and_message("Forbidden")
-    )
-
-
 def test_should_not_replace_forbidden(
     apple: JsonDict, resource: RestCollection
 ) -> None:
     (
         resource.replace_one()
         .from_data(apple)
-        .ensure()
-        .fail()
-        .with_code(403)
-        .and_message("Forbidden")
-    )
-
-
-def test_should_not_replace_many_forbidden(
-    apple: JsonDict, resource: RestCollection
-) -> None:
-    (
-        resource.replace_many()
-        .from_collection([apple])
         .ensure()
         .fail()
         .with_code(403)

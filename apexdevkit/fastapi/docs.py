@@ -1,11 +1,11 @@
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 from pydantic import BaseModel
 
 PayloadT = TypeVar("PayloadT")
 
 
-class Response(BaseModel, Generic[PayloadT]):
+class Response[PayloadT](BaseModel):
     status: str
     code: int
     data: PayloadT

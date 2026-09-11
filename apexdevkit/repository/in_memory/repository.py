@@ -12,7 +12,7 @@ from .store import InMemoryByteStore, KeyValueStore
 
 
 @dataclass(frozen=True)
-class InMemoryRepository(ContainsMixin[ItemT], Repository[ItemT]):
+class InMemoryRepository(ContainsMixin, Repository[ItemT]):
     store: KeyValueStore[ItemT] = field(default_factory=InMemoryByteStore)
     keys: list[KeyFn[ItemT]] = field(default_factory=lambda: [AttributeKey("id")])
 

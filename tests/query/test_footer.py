@@ -3,7 +3,7 @@ import pytest
 from apexdevkit.error import ForbiddenError
 from apexdevkit.query import Aggregation, AggregationOption
 from apexdevkit.query.generator import MsSqlField, MsSqlFooterGenerator
-from apexdevkit.testing.fake import FakeAggregationOption
+from tests.query.fake import FakeAggregationOption
 
 
 def test_should_select_footer() -> None:

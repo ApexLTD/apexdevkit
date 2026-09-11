@@ -9,13 +9,8 @@ import sentry_sdk
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from pypebbles.runtime import Environment
 from sentry_sdk.types import Event, Hint
-
-from apexdevkit.environment import environment_variable
-
-
-def _do_nothing() -> None:
-    pass
 
 
 @dataclass
@@ -73,14 +68,23 @@ class UvicornServer:
 
 @dataclass
 class Sentry:
-    dsn: str = environment_variable("SENTRY_DSN", default="")
-    release: str = environment_variable("RELEASE", default="unknown")
-    trace_sample_rate: str = environment_variable(
-        "SENTRY_TRACE_SAMPLE_RATE",
+    dsn: str = Environment().inject(
+        variable="SENTRY_DSN",
+        default="",
+    )
+
+    release: str = Environment().inject(
+        variable="RELEASE",
+        default="unknown",
+    )
+
+    trace_sample_rate: str = Environment().inject(
+        variable="SENTRY_TRACE_SAMPLE_RATE",
         default="0.2",
     )
-    profile_sample_rate: str = environment_variable(
-        "SENTRY_PROFILE_SAMPLE_RATE",
+
+    profile_sample_rate: str = Environment().inject(
+        variable="SENTRY_PROFILE_SAMPLE_RATE",
         default="0.2",
     )
 
@@ -107,7 +111,10 @@ class Sentry:
 
 @dataclass
 class LoggingConfig:
-    level: str = environment_variable("LOGGING_LEVEL", default=str(logging.INFO))
+    level: str = Environment().inject(
+        variable="LOGGING_LEVEL",
+        default=str(logging.INFO),
+    )
 
     def setup(self) -> LoggingConfig:
         logging.config.dictConfig(self.as_dict())

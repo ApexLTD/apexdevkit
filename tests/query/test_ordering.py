@@ -1,5 +1,5 @@
 from apexdevkit.query.generator import MsSqlField, MsSqlOrderGenerator
-from apexdevkit.testing.fake import FakeSort
+from tests.query.fake import FakeSort
 
 
 def test_should_order_by_default_field() -> None:

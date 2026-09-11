@@ -33,7 +33,7 @@ def deprecated(warning: str) -> Callable[[F], F]:
     return decorator
 
 
-def _wrap_function(func: F, warning: str) -> F:
+def _wrap_function[F: Callable[..., Any]](func: F, warning: str) -> F:
     def wrapper(*args: Any, **kwargs: dict[str, Any]) -> Any:
         warn(warning, category=DeprecationWarning, stacklevel=2)
         return func(*args, **kwargs)

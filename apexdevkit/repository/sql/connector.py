@@ -7,15 +7,15 @@ from functools import cached_property
 from typing import Any
 
 import pymssql
+from pypebbles.runtime import Environment
 
-from apexdevkit.environment import environment_variable
 from apexdevkit.repository import Connection
 from apexdevkit.repository.core.database import ConnectionContextManager
 
 
 @dataclass(frozen=True)
 class SqliteFileConnector:
-    dsn: str = environment_variable("DSN")
+    dsn: str = Environment().inject(variable="DSN")
 
     def connect(self) -> AbstractContextManager[Connection]:
         connection = sqlite3.connect(self.dsn)
@@ -41,11 +41,11 @@ class SqliteInMemoryConnector:
 
 @dataclass(frozen=True)
 class MsSqlConnector:
-    db_host: str = environment_variable("DB_HOST")
-    db_user: str = environment_variable("DB_USER")
-    db_password: str = environment_variable("DB_PASSWORD")
-    db_name: str = environment_variable("DB_NAME")
-    db_port: str = environment_variable("DB_PORT", default="1433")
+    db_host: str = Environment().inject(variable="DB_HOST")
+    db_user: str = Environment().inject(variable="DB_USER")
+    db_password: str = Environment().inject(variable="DB_PASSWORD")
+    db_name: str = Environment().inject(variable="DB_NAME")
+    db_port: str = Environment().inject(variable="DB_PORT", default="1433")
     db_tds_version = "7.0"
 
     def connect(self) -> AbstractContextManager[Connection]:

@@ -1,87 +1,32 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator, Mapping
-from dataclasses import dataclass, field
-from sqlite3 import IntegrityError
-from typing import Any, Generic
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass
+from typing import Any
 
-from apexdevkit.error import DoesNotExistError, ExistsError
+from apexdevkit.error import ExistsError
 from apexdevkit.formatter import Formatter
-from apexdevkit.repository.core import (
-    ContainsMixin,
-    Database,
-    DatabaseCommand,
-    ItemT,
-    Repository,
-)
-
-from .connector import SqliteFileConnector
-from .field import NotNone, SqlFieldManager, _SqlField
+from apexdevkit.repository.core import DatabaseCommand
+from apexdevkit.repository.sql.field import NotNone, SqlFieldManager, _SqlField
 
 
-@dataclass(frozen=True, kw_only=True)
-class SqliteRepository(ContainsMixin[ItemT], Repository[ItemT]):
-    table: SqlTable[ItemT]
-
-    db: Database = field(default_factory=lambda: Database(SqliteFileConnector()))
-
-    def __iter__(self) -> Iterator[ItemT]:
-        for raw in self.db.execute(self.table.select_all()).fetch_all():
-            yield self.table.load(raw)
-
-    def __len__(self) -> int:
-        raw = self.db.execute(self.table.count_all()).fetch_one()
-
-        try:
-            return int(raw["n_items"])
-        except KeyError as e:
-            raise UnknownError(raw) from e
-
-    def create(self, item: ItemT) -> ItemT:
-        try:
-            return self.table.load(self.db.execute(self.table.insert(item)).fetch_one())
-        except IntegrityError:  # pragma: no cover
-            item = self.table.load(
-                self.db.execute(self.table.select_duplicate(item)).fetch_one()
-            )
-            self.table.duplicate(item).fire()
-            return item
-
-    def read(self, item_id: str) -> ItemT:
-        raw = self.db.execute(self.table.select(str(item_id))).fetch_one()
-
-        if not raw:
-            raise DoesNotExistError(item_id)
-
-        return self.table.load(raw)
-
-    def update(self, item: ItemT) -> None:
-        self.db.execute(self.table.update(item)).fetch_none()
-
-    def delete(self, item_id: str) -> None:
-        self.db.execute(self.table.delete(str(item_id))).fetch_none()
-
-    def delete_all(self) -> None:
-        self.db.execute(self.table.delete_all()).fetch_none()
-
-
-class SqlTable(Generic[ItemT]):  # pragma: no cover
+class SqlTable[T]:  # pragma: no cover
     def count_all(self) -> DatabaseCommand:
         raise NotImplementedError
 
-    def insert(self, item: ItemT) -> DatabaseCommand:
+    def insert(self, item: T) -> DatabaseCommand:
         raise NotImplementedError
 
     def select(self, item_id: str) -> DatabaseCommand:
         raise NotImplementedError
 
-    def select_duplicate(self, item: ItemT) -> DatabaseCommand:
+    def select_duplicate(self, item: T) -> DatabaseCommand:
         raise NotImplementedError
 
     def select_all(self) -> DatabaseCommand:
         raise NotImplementedError
 
-    def update(self, item: ItemT) -> DatabaseCommand:
+    def update(self, item: T) -> DatabaseCommand:
         raise NotImplementedError
 
     def delete(self, item_id: str) -> DatabaseCommand:
@@ -90,27 +35,22 @@ class SqlTable(Generic[ItemT]):  # pragma: no cover
     def delete_all(self) -> DatabaseCommand:
         raise NotImplementedError
 
-    def load(self, data: Mapping[str, Any]) -> ItemT:
+    def load(self, data: Mapping[str, Any]) -> T:
         raise NotImplementedError
 
-    def duplicate(self, item: ItemT) -> ExistsError:
+    def duplicate(self, item: T) -> ExistsError:
         return ExistsError(item).with_duplicate(lambda _: "Unknown")
 
 
-@dataclass
-class UnknownError(Exception):
-    raw: Mapping[str, Any]
-
-
 @dataclass(frozen=True)
-class SqliteTableBuilder(Generic[ItemT]):
+class SqliteTableBuilder[T]:
     table_name: str | None = None
-    formatter: Formatter[Mapping[str, Any], ItemT] | None = None
+    formatter: Formatter[Mapping[str, Any], T] | None = None
     fields: list[_SqlField] | None = None
     custom_filters: list[str] | None = None
 
-    def with_name(self, value: str) -> SqliteTableBuilder[ItemT]:
-        return SqliteTableBuilder[ItemT](
+    def with_name(self, value: str) -> SqliteTableBuilder[T]:
+        return SqliteTableBuilder[T](
             value,
             self.formatter,
             self.fields,
@@ -118,16 +58,16 @@ class SqliteTableBuilder(Generic[ItemT]):
         )
 
     def with_formatter(
-        self, value: Formatter[Mapping[str, Any], ItemT]
-    ) -> SqliteTableBuilder[ItemT]:
-        return SqliteTableBuilder[ItemT](
+        self, value: Formatter[Mapping[str, Any], T]
+    ) -> SqliteTableBuilder[T]:
+        return SqliteTableBuilder[T](
             self.table_name,
             value,
             self.fields,
             self.custom_filters,
         )
 
-    def with_fields(self, value: Iterable[_SqlField]) -> SqliteTableBuilder[ItemT]:
+    def with_fields(self, value: Iterable[_SqlField]) -> SqliteTableBuilder[T]:
         key_list = list(value)
         if len([key for key in key_list if key.is_id]) != 1:
             raise ValueError("Pass only one identifier key.")
@@ -144,22 +84,22 @@ class SqliteTableBuilder(Generic[ItemT]):
             > 0
         ):
             raise ValueError("Only filter fields can be 'not null'.")
-        return SqliteTableBuilder[ItemT](
+        return SqliteTableBuilder[T](
             self.table_name,
             self.formatter,
             key_list,
             self.custom_filters,
         )
 
-    def with_custom_filters(self, filters: Iterable[str]) -> SqliteTableBuilder[ItemT]:
-        return SqliteTableBuilder[ItemT](
+    def with_custom_filters(self, filters: Iterable[str]) -> SqliteTableBuilder[T]:
+        return SqliteTableBuilder[T](
             self.table_name,
             self.formatter,
             self.fields,
             list(filters),
         )
 
-    def build(self) -> SqlTable[ItemT]:
+    def build(self) -> SqlTable[T]:
         if not self.table_name or not self.formatter or not self.fields:
             raise ValueError("Parameter missing.")
 
@@ -175,9 +115,9 @@ class SqliteTableBuilder(Generic[ItemT]):
 
 
 @dataclass(frozen=True)
-class _DefaultSqlTable(SqlTable[ItemT]):
+class _DefaultSqlTable[T](SqlTable[T]):
     table_name: str
-    formatter: Formatter[Mapping[str, Any], ItemT]
+    formatter: Formatter[Mapping[str, Any], T]
     fields: SqlFieldManager
 
     def count_all(self) -> DatabaseCommand:
@@ -187,7 +127,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             {self.fields.where_statement(include_id=False)};
         """).with_data(self.fields.with_fixed({}))
 
-    def insert(self, item: ItemT) -> DatabaseCommand:
+    def insert(self, item: T) -> DatabaseCommand:
         insert_columns = ", ".join(
             [field.name for field in self.fields if field.include_in_insert]
         )
@@ -215,7 +155,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             {self.fields.where_statement(include_id=True)};
         """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
 
-    def select_duplicate(self, item: ItemT) -> DatabaseCommand:
+    def select_duplicate(self, item: T) -> DatabaseCommand:
         raw = self.formatter.dump(item)
         columns = ", ".join([field.name for field in self.fields])
 
@@ -241,7 +181,7 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             {self.fields.order}
         """).with_data(self.fields.with_fixed({}))
 
-    def update(self, item: ItemT) -> DatabaseCommand:
+    def update(self, item: T) -> DatabaseCommand:
         updates = ", ".join(
             [
                 f"{field.name} = :{field.name}"
@@ -271,10 +211,10 @@ class _DefaultSqlTable(SqlTable[ItemT]):
             {self.fields.where_statement(include_id=False)};
         """).with_data(self.fields.with_fixed({}))
 
-    def load(self, data: Mapping[str, Any]) -> ItemT:
+    def load(self, data: Mapping[str, Any]) -> T:
         return self.formatter.load(data)
 
-    def duplicate(self, item: ItemT) -> ExistsError:
+    def duplicate(self, item: T) -> ExistsError:
         raw = self.formatter.dump(item)
         return ExistsError(item).with_duplicate(
             lambda _: ",".join(

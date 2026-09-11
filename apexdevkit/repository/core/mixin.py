@@ -1,10 +1,10 @@
-from typing import Generic
+from typing import Any
 
 from apexdevkit.error import DoesNotExistError
-from apexdevkit.repository.core import Entity, ItemT
+from apexdevkit.repository.core import Entity
 
 
-class ContainsMixin(Generic[ItemT]):
+class ContainsMixin:
     def __contains__(self, item: object) -> bool:
         match item:
             case Entity():
@@ -20,5 +20,5 @@ class ContainsMixin(Generic[ItemT]):
 
         return True
 
-    def read(self, item_id: str) -> ItemT:
+    def read(self, item_id: str) -> Any:
         raise NotImplementedError

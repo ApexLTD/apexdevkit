@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Any, Generic, Protocol, TypeVar
+from typing import Any, Protocol, TypeVar
 
 from apexdevkit.key_fn import AttributeKey, KeyFn
 
@@ -21,7 +21,7 @@ class Source(Protocol[T]):  # pragma: no cover
 
 
 @dataclass(frozen=True)
-class EmptySource(Generic[T]):  # pragma: no cover
+class EmptySource[T]:  # pragma: no cover
     def absent(self) -> Iterable[T]:
         return []
 
@@ -33,7 +33,7 @@ class EmptySource(Generic[T]):  # pragma: no cover
 
 
 @dataclass(frozen=True, kw_only=True)
-class SourceDecorator(Generic[T]):  # pragma: no cover
+class SourceDecorator[T]:  # pragma: no cover
     inner: Source[T] = field(default_factory=EmptySource)
 
     def absent(self) -> Iterable[T]:
@@ -47,7 +47,7 @@ class SourceDecorator(Generic[T]):  # pragma: no cover
 
 
 @dataclass(frozen=True, kw_only=True)
-class SourcePreSet(Generic[T]):
+class SourcePreSet[T]:
     removals: Iterable[T] = field(default_factory=list)
     additions: Iterable[T] = field(default_factory=list)
     changes: Iterable[T] = field(default_factory=list)
@@ -62,7 +62,7 @@ class SourcePreSet(Generic[T]):
         return self.changes
 
 
-class SourceFailing(Generic[T]):
+class SourceFailing[T]:  # pragma: no cover
     @staticmethod
     def on_everything(using: Source[T] | None = None) -> Source[T]:
         return SourceFailing.on_absent(
@@ -105,7 +105,7 @@ class _FailOnUpdate(SourceDecorator[T]):
 
 
 @dataclass(frozen=True, kw_only=True)
-class SourceDiscriminator(Generic[T]):
+class SourceDiscriminator[T]:
     current: Iterable[T]
     latest: Iterable[T]
 

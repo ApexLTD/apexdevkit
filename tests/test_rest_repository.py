@@ -13,7 +13,7 @@ from apexdevkit.repository import (
     InMemoryRepository,
     Repository,
 )
-from apexdevkit.testing.fake import FakeResource
+from tests.fake import FakeResource
 
 
 @dataclass(frozen=True, kw_only=True)

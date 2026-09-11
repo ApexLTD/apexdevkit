@@ -2,11 +2,10 @@ from enum import StrEnum
 from typing import Annotated
 
 from pydantic import Field
+from pypebbles import FluentDict, JsonDict
 
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.schema import RestfulSchema, Schema, SchemaFields
-from apexdevkit.fluent import FluentDict
-from apexdevkit.http import JsonDict
 from tests.approvals.conftest import Approver
 
 

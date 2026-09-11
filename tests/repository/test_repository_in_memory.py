@@ -3,7 +3,7 @@ import pytest
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.key_fn import AttributeKey
 from apexdevkit.repository.in_memory import InMemoryRepository
-from apexdevkit.testing.fake import Fake
+from tests.fake import Fake
 from tests.repository.data import CompanyInMemoryItem
 
 

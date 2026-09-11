@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Generic, Protocol, TypeVar
+from typing import Protocol, TypeVar
 
 T = TypeVar("T")
 
@@ -22,7 +22,7 @@ class IterableTarget(Target[T], Iterable[T], Protocol[T]):
     pass
 
 
-class NoTarget(Generic[T]):  # pragma: no cover
+class NoTarget[T]:  # pragma: no cover
     def prune(self, source: Iterable[T]) -> Iterable[T] | None:
         pass
 
@@ -34,7 +34,7 @@ class NoTarget(Generic[T]):  # pragma: no cover
 
 
 @dataclass(frozen=True, kw_only=True)
-class TargetDecorator(Generic[T]):
+class TargetDecorator[T]:
     inner: Target[T] = field(default_factory=NoTarget)
 
     def prune(self, source: Iterable[T]) -> Iterable[T] | None:
@@ -47,7 +47,7 @@ class TargetDecorator(Generic[T]):
         return self.inner.renew(source)
 
 
-class TargetFailing(Generic[T]):
+class TargetFailing[T]:
     @staticmethod
     def on_everything(using: Target[T] | None = None) -> Target[T]:
         return TargetFailing.on_prune(

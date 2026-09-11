@@ -1,5 +1,5 @@
 from apexdevkit.query.generator import MsSqlPagingGenerator
-from apexdevkit.testing.fake import FakePage
+from tests.query.fake import FakePage
 
 
 def test_should_generate_paging() -> None:

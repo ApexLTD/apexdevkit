@@ -1,15 +1,16 @@
 from unittest.mock import MagicMock
 
 from faker import Faker
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from pypebbles.http.drivers import Httpx
 
 from apexdevkit.error import DoesNotExistError
 from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.router import Dependency
-from apexdevkit.http import Httpx
-from apexdevkit.testing import RestCollection
+from tests.fastapi.rest import RestCollection, RestTransport
 from tests.fastapi.sample_api import AppleFields, PriceFields
 
 _PARENT = RestfulName("apple")
@@ -19,31 +20,33 @@ _CHILD = RestfulName("price")
 def _resource(dependency: Dependency) -> RestCollection:
     return RestCollection(
         name=_PARENT,
-        http=Httpx(
-            TestClient(
-                FastApiBuilder()
-                .with_route(
-                    apples=(
-                        RestfulRouter.named(_PARENT.singular)
-                        .with_fields(AppleFields())
-                        .with_default_dependency(dependency)
-                        .with_sub_resource(
-                            prices=(
-                                RestfulRouter.named(_CHILD.singular)
-                                .child_of(_PARENT.singular)
-                                .with_fields(PriceFields())
-                                .with_default_dependency(dependency)
-                                .default()
-                                .build()
-                            )
-                        )
+        transport=RestTransport(Httpx(TestClient(_setup(dependency)))),
+    )
+
+
+def _setup(using: Dependency) -> FastAPI:
+    return (
+        FastApiBuilder()
+        .with_route(
+            apples=(
+                RestfulRouter.named(_PARENT.singular)
+                .with_fields(AppleFields())
+                .with_default_dependency(using)
+                .with_sub_resource(
+                    prices=(
+                        RestfulRouter.named(_CHILD.singular)
+                        .child_of(_PARENT.singular)
+                        .with_fields(PriceFields())
+                        .with_default_dependency(using)
                         .default()
                         .build()
                     )
                 )
+                .default()
                 .build()
             )
-        ),
+        )
+        .build()
     )
 
 
@@ -67,8 +70,7 @@ def test_should_build_dependable_with_parent(faker: Faker) -> None:
 
     (
         _resource(DependableBuilder.from_builder(builder).with_parent(_PARENT))
-        .sub_resource(parent_id)
-        .sub_resource(_CHILD.singular)
+        .sub_resource(name=_CHILD.singular, parent_id=parent_id)
         .read_all()
         .ensure()
         .success()
@@ -85,8 +87,7 @@ def test_should_not_build_dependable_when_no_parent(faker: Faker) -> None:
 
     (
         _resource(DependableBuilder.from_builder(builder).with_parent(_PARENT))
-        .sub_resource(parent_id)
-        .sub_resource(_CHILD.singular)
+        .sub_resource(name=_CHILD.singular, parent_id=parent_id)
         .read_all()
         .ensure()
         .fail()
