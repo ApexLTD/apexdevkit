@@ -39,51 +39,30 @@ class RestCollection:
             request=self.request.with_endpoint(str(with_id)),
         )
 
+    def dispatch(self, method: HttpMethod) -> _TestRequest:
+        return _TestRequest(self.name, self.request, self.transport.over(method))
+
     def create_one(self) -> _TestRequest:
-        return _TestRequest(
-            self.name,
-            self.request,
-            transporter=self.transport.over(HttpMethod.post),
-        )
+        return self.dispatch(HttpMethod.post)
 
     def read(self) -> _TestRequest:
-        return _TestRequest(
-            self.name,
-            self.request,
-            transporter=self.transport.over(HttpMethod.get),
-        )
+        return self.dispatch(HttpMethod.get)
 
     def read_many(self, **params: Any) -> _TestRequest:
         request = self.request
         for p, v in params.items():
             request = request.with_param(p, v)
 
-        return _TestRequest(
-            self.name,
-            request,
-            transporter=self.transport.over(HttpMethod.get),
-        )
+        return replace(self, request=request).dispatch(HttpMethod.get)
 
     def update_one(self) -> _TestRequest:
-        return _TestRequest(
-            self.name,
-            self.request,
-            transporter=self.transport.over(HttpMethod.patch),
-        )
+        return self.dispatch(HttpMethod.patch)
 
     def replace_one(self) -> _TestRequest:
-        return _TestRequest(
-            self.name,
-            self.request,
-            transporter=self.transport.over(HttpMethod.put),
-        )
+        return self.dispatch(HttpMethod.put)
 
     def delete_one(self) -> _TestRequest:
-        return _TestRequest(
-            self.name,
-            self.request,
-            transporter=self.transport.over(HttpMethod.delete),
-        )
+        return self.dispatch(HttpMethod.delete)
 
 
 @dataclass(frozen=True)
