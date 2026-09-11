@@ -14,7 +14,7 @@ def test_should_cast_to_decimal() -> None:
 def test_should_cast_from_string() -> None:
     decimal = "15.16"
 
-    quantity = Value.from_string(decimal)
+    quantity = Value.parse(decimal)
 
     assert quantity == Value(1516, 100)
 
@@ -62,5 +62,5 @@ def test_should_convert_to_float() -> None:
 def test_should_compare_to_decimal() -> None:
     decimal_string = "15.16"
 
-    assert Value.from_string(decimal_string) == Decimal(decimal_string)
-    assert Value.from_string(decimal_string) != Decimal(decimal_string) * 2 + 1
+    assert Value.parse(decimal_string) == Decimal(decimal_string)
+    assert Value.parse(decimal_string) != Decimal(decimal_string) * 2 + 1

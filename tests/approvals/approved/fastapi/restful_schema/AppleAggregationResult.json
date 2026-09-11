@@ -7,7 +7,7 @@
           "type": "string"
         },
         "aggregation": {
-          "$ref": "#/$defs/Value"
+          "$ref": "#/$defs/Amount"
         }
       },
       "required": [
@@ -17,7 +17,7 @@
       "title": "AggregationResult",
       "type": "object"
     },
-    "Value": {
+    "Amount": {
       "properties": {
         "value": {
           "default": 0,
@@ -35,7 +35,7 @@
           "type": "string"
         }
       },
-      "title": "Value",
+      "title": "Amount",
       "type": "object"
     }
   },
