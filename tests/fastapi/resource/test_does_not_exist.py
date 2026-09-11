@@ -44,7 +44,7 @@ def test_should_not_update_unknown(apple: JsonDict, resource: RestCollection) ->
 
 def test_should_not_replace_unknown(apple: JsonDict, resource: RestCollection) -> None:
     (
-        resource.replace_one()
+        resource.replace()
         .from_data(apple)
         .ensure()
         .fail()

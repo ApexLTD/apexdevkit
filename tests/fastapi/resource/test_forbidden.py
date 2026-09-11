@@ -70,7 +70,7 @@ def test_should_not_replace_forbidden(
     apple: JsonDict, resource: RestCollection
 ) -> None:
     (
-        resource.replace_one()
+        resource.replace()
         .from_data(apple)
         .ensure()
         .fail()

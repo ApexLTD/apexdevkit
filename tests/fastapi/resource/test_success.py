@@ -102,7 +102,7 @@ def test_should_replace_one(
     service: SuccessfulService,
     resource: RestCollection,
 ) -> None:
-    resource.replace_one().from_data(apple).ensure().success().with_code(200)
+    resource.replace().from_data(apple).ensure().success().with_code(200)
 
     assert service.called_with == apple
 

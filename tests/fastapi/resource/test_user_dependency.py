@@ -149,7 +149,7 @@ def test_should_persist_user_for_update_one(
 def test_should_call_extract_user_for_replace_one(
     resource: RestCollection, fake_user: FakeUser
 ) -> None:
-    resource.replace_one().from_data(FakeApple().json()).ensure()
+    resource.replace().from_data(FakeApple().json()).ensure()
 
     assert fake_user.times_called == 1
 
@@ -158,7 +158,7 @@ def test_should_persist_user_for_replace_one(
     resource: RestCollection,
     infra: RestfulServiceBuilder,
 ) -> None:
-    resource.replace_one().from_data(FakeApple().json()).ensure()
+    resource.replace().from_data(FakeApple().json()).ensure()
 
     assert infra.user == "user"
 
