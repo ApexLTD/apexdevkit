@@ -47,6 +47,12 @@ class RestCollection:
         )
 
     def read_one(self) -> _TestRequest:
+        return self.read()
+
+    def read_all(self) -> _TestRequest:
+        return self.read()
+
+    def read(self) -> _TestRequest:
         return _TestRequest(
             self.name,
             self.request.with_endpoint(self.name.plural),
@@ -61,13 +67,6 @@ class RestCollection:
         return _TestRequest(
             self.name,
             request,
-            transporter=self.transport.over(HttpMethod.get),
-        )
-
-    def read_all(self) -> _TestRequest:
-        return _TestRequest(
-            self.name,
-            self.request.with_endpoint(self.name.plural),
             transporter=self.transport.over(HttpMethod.get),
         )
 
