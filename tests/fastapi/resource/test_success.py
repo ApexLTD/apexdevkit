@@ -112,7 +112,7 @@ def test_should_delete_one(
     service: SuccessfulService,
     resource: RestCollection,
 ) -> None:
-    resource.item(with_id=apple["id"]).delete_one().ensure().success().with_code(200)
+    resource.item(with_id=apple["id"]).delete().ensure().success().with_code(200)
 
     assert service.called_with == apple["id"]
 
@@ -121,7 +121,7 @@ def test_should_sub_resource(resource: RestCollection) -> None:
     (
         resource.item(with_id=str(uuid4()))
         .sub_resource(name=RestfulName("price"))
-        .delete_one()
+        .delete()
         .ensure()
         .success()
         .with_code(200)

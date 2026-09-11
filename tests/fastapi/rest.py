@@ -58,7 +58,7 @@ class RestCollection:
     def replace(self) -> _TestRequest:
         return self.dispatch(HttpMethod.put)
 
-    def delete_one(self) -> _TestRequest:
+    def delete(self) -> _TestRequest:
         return self.dispatch(HttpMethod.delete)
 
 

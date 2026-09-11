@@ -56,7 +56,7 @@ def test_should_not_replace_unknown(apple: JsonDict, resource: RestCollection) -
 def test_should_not_delete_unknown(apple: JsonDict, resource: RestCollection) -> None:
     (
         resource.item(with_id=apple["id"])
-        .delete_one()
+        .delete()
         .ensure()
         .fail()
         .with_code(404)

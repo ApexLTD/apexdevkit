@@ -82,7 +82,7 @@ def test_should_not_replace_forbidden(
 def test_should_not_delete_forbidden(apple: JsonDict, resource: RestCollection) -> None:
     (
         resource.item(with_id=apple["id"])
-        .delete_one()
+        .delete()
         .ensure()
         .fail()
         .with_code(403)
