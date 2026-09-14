@@ -4,9 +4,10 @@ from uuid import uuid4
 
 import pytest
 from pypebbles import JsonDict
+from pypebbles.http import HttpTransport
 
 from apexdevkit.fastapi.name import RestfulName
-from tests.fastapi.rest import RestCollection
+from tests.fastapi.rest import RestRequest
 from tests.fastapi.sample_api import FakeApple, SuccessfulService
 
 
@@ -23,12 +24,13 @@ def service(apple: JsonDict) -> SuccessfulService:
 def test_should_create(
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestCollection,
+    transport: HttpTransport,
 ) -> None:
     (
-        resource.create()
+        RestRequest.resource(RestfulName("market-apple"))
         .from_data(apple)
-        .ensure()
+        .using(transport)
+        .create()
         .success()
         .with_code(201)
         .and_item(apple)
@@ -40,28 +42,30 @@ def test_should_create(
 def test_should_read_one(
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestCollection,
+    transport: HttpTransport,
 ) -> None:
     (
-        resource.item(with_id=apple["id"])
+        RestRequest.resource(RestfulName("market-apple"))
+        .item(with_id=apple.value_of("id").to(str))
+        .using(transport)
         .read()
-        .ensure()
         .success()
         .with_code(200)
         .with_item(apple)
     )
 
-    assert service.called_with == apple["id"]
+    assert service.called_with == apple.value_of("id").to(str)
 
 
 def test_should_read_many(
     apple: JsonDict,
     service: SuccessfulService,
-    read_many_resource: RestCollection,
+    transport: HttpTransport,
 ) -> None:
     (
-        read_many_resource.read(color="red")
-        .ensure()
+        RestRequest.resource(RestfulName("apple"))
+        .using(transport)
+        .read(color="red")
         .success()
         .with_code(200)
         .with_collection([apple])
@@ -73,9 +77,16 @@ def test_should_read_many(
 def test_should_read_all(
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestCollection,
+    transport: HttpTransport,
 ) -> None:
-    resource.read().ensure().success().with_code(200).and_collection([apple])
+    (
+        RestRequest.resource(RestfulName("market-apple"))
+        .using(transport)
+        .read()
+        .success()
+        .with_code(200)
+        .and_collection([apple])
+    )
 
     assert service.called_with is None
 
@@ -83,13 +94,14 @@ def test_should_read_all(
 def test_should_update_one(
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestCollection,
+    transport: HttpTransport,
 ) -> None:
     (
-        resource.item(with_id=apple["id"])
+        RestRequest.resource(RestfulName("market-apple"))
+        .item(with_id=apple.value_of("id"))
+        .with_data(apple)
+        .using(transport)
         .update()
-        .and_data(apple)
-        .ensure()
         .success()
         .with_code(200)
     )
@@ -100,9 +112,16 @@ def test_should_update_one(
 def test_should_replace_one(
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestCollection,
+    transport: HttpTransport,
 ) -> None:
-    resource.replace().from_data(apple).ensure().success().with_code(200)
+    (
+        RestRequest.resource(RestfulName("market-apple"))
+        .with_data(apple)
+        .using(transport)
+        .replace()
+        .success()
+        .with_code(200)
+    )
 
     assert service.called_with == apple
 
@@ -110,19 +129,27 @@ def test_should_replace_one(
 def test_should_delete_one(
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestCollection,
+    transport: HttpTransport,
 ) -> None:
-    resource.item(with_id=apple["id"]).delete().ensure().success().with_code(200)
+    (
+        RestRequest.resource(RestfulName("market-apple"))
+        .item(with_id=apple.value_of("id"))
+        .using(transport)
+        .delete()
+        .success()
+        .with_code(200)
+    )
 
     assert service.called_with == apple["id"]
 
 
-def test_should_sub_resource(resource: RestCollection) -> None:
+def test_should_sub_resource(transport: HttpTransport) -> None:
     (
-        resource.item(with_id=str(uuid4()))
+        RestRequest.resource(RestfulName("market-apple"))
+        .item(with_id=str(uuid4()))
         .sub_resource(name=RestfulName("price"))
+        .using(transport)
         .delete()
-        .ensure()
         .success()
         .with_code(200)
     )
