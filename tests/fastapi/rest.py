@@ -127,7 +127,15 @@ class RestMethod(Enum):
 class RestRequest:
     request: HttpRequest
     response: RestResponse
+
     transporter: RestTransport | None = None
+
+    @classmethod
+    def resource(cls, name: RestfulName) -> RestRequest:
+        return cls(
+            request=HttpRequest().with_endpoint(name.plural),
+            response=RestResponse(name),
+        )
 
     def and_data(self, value: JsonDict) -> RestRequest:
         return self.with_data(value)
