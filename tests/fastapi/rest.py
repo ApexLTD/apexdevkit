@@ -79,9 +79,11 @@ class _TestRequest:
         return replace(self, request=self.request.with_json(value))
 
     def ensure(self) -> ResponseProbe:
+        http_response = self.transporter.transport(self.request)
+
         return ResponseProbe(
-            resource=self.resource,
-            http_response=self.transporter.transport(self.request),
+            rest_response=http_response.load(RestResponse(self.resource)),
+            http_response=http_response,
         )
 
 
@@ -121,18 +123,14 @@ class RestResponse:
 
 @dataclass(frozen=True)
 class ResponseProbe:
-    resource: RestfulName
     http_response: HttpResponse
+    rest_response: RestResponse
 
     def fail(self) -> Self:
         return self.with_status("fail")
 
     def success(self) -> Self:
         return self.with_status("success")
-
-    @property
-    def rest_response(self) -> RestResponse:
-        return self.http_response.load(RestResponse(self.resource))
 
     def with_status(self, value: str) -> Self:
         assert self.rest_response.status() == value
