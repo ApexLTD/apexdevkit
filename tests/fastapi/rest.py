@@ -127,7 +127,7 @@ class RestMethod(Enum):
 class RestRequest:
     request: HttpRequest
     response: RestResponse
-    transporter: RestTransport
+    transporter: RestTransport | None = None
 
     def and_data(self, value: JsonDict) -> RestRequest:
         return self.with_data(value)
@@ -139,6 +139,8 @@ class RestRequest:
         return replace(self, request=self.request.with_json(value))
 
     def ensure(self) -> ResponseProbe:
+        assert self.transporter is not None
+
         http_response = self.transporter.transport(self.request)
 
         return ResponseProbe(

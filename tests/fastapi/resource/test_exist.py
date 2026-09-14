@@ -1,15 +1,11 @@
 import pytest
-from pypebbles import JsonDict
+from pypebbles.http import HttpRequest
 
 from apexdevkit.error import ExistsError
+from apexdevkit.fastapi.name import RestfulName
 
-from ..rest import RestCollection
+from ..rest import RestRequest, RestResponse, RestTransport
 from ..sample_api import FailingService, FakeApple
-
-
-@pytest.fixture
-def apple() -> JsonDict:
-    return FakeApple().json()
 
 
 @pytest.fixture
@@ -17,11 +13,15 @@ def service() -> FailingService:
     return FailingService(ExistsError)
 
 
-def test_should_not_create_existing(apple: JsonDict, resource: RestCollection) -> None:
+def test_should_not_create_existing(transport: RestTransport) -> None:
     (
-        resource.create()
-        .from_data(apple)
-        .ensure()
+        RestRequest(
+            request=HttpRequest().with_endpoint("market-apples"),
+            response=RestResponse(RestfulName("market-apple")),
+        )
+        .from_data(FakeApple().json())
+        .using(transport)
+        .create()
         .fail()
         .with_code(409)
         .and_message("An item<Market-apple> with the  already exists.")
