@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Collection
 from dataclasses import dataclass, field, replace
+from enum import Enum, auto
 from typing import Any, Self
 
 from pypebbles import JsonDict
@@ -64,6 +65,61 @@ class RestCollection:
 
 
 @dataclass(frozen=True)
+class RestDispatcher:
+    request: HttpRequest
+    transporter: HttpTransport
+    response: RestResponse
+
+    def create(self) -> ResponseProbe:
+        return self.dispatch(RestMethod.create)
+
+    def read(self, **params: Any) -> ResponseProbe:
+        request = self.request
+        for p, v in params.items():
+            request = request.with_param(p, v)
+
+        return replace(self, request=request).dispatch(RestMethod.read)
+
+    def update(self) -> ResponseProbe:
+        return self.dispatch(RestMethod.update)
+
+    def replace(self) -> ResponseProbe:
+        return self.dispatch(RestMethod.replace)
+
+    def delete(self) -> ResponseProbe:
+        return self.dispatch(RestMethod.delete)
+
+    def dispatch(self, method: RestMethod) -> ResponseProbe:
+        http_response = self.transporter.deliver(self.request, method.as_http())
+
+        return ResponseProbe(
+            rest_response=http_response.load(self.response),
+            http_response=http_response,
+        )
+
+
+class RestMethod(Enum):
+    create = auto()
+    read = auto()
+    update = auto()
+    delete = auto()
+    replace = auto()
+
+    def as_http(self) -> HttpMethod:
+        match self:
+            case RestMethod.create:
+                return HttpMethod.post
+            case RestMethod.read:
+                return HttpMethod.get
+            case RestMethod.update:
+                return HttpMethod.patch
+            case RestMethod.replace:
+                return HttpMethod.put
+            case RestMethod.delete:
+                return HttpMethod.delete
+
+
+@dataclass(frozen=True)
 class _TestRequest:
     resource: RestfulName
     request: HttpRequest
@@ -84,6 +140,19 @@ class _TestRequest:
         return ResponseProbe(
             rest_response=http_response.load(RestResponse(self.resource)),
             http_response=http_response,
+        )
+
+    def sub_resource(self, name: RestfulName) -> _TestRequest:
+        return replace(self, resource=name)
+
+    def item(self, with_id: Any) -> _TestRequest:
+        return replace(self, request=self.request.with_endpoint(str(with_id)))
+
+    def using(self, transport: HttpTransport) -> RestDispatcher:
+        return RestDispatcher(
+            request=self.request,
+            response=RestResponse(self.resource),
+            transporter=transport,
         )
 
 
