@@ -3,15 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import pytest
-from fastapi.testclient import TestClient
 from pypebbles.http import HttpTransport
-from pypebbles.http.drivers import Httpx
 
 from apexdevkit.fastapi import RestfulServiceBuilder
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from tests.fastapi.rest import RestRequest
-from tests.fastapi.sample_api import FakeApple, SuccessfulService, setup
+from tests.fastapi.sample_api import FakeApple, SuccessfulService
 
 
 @pytest.fixture
@@ -27,11 +25,6 @@ def fake_user() -> FakeUser:
 @pytest.fixture
 def dependency(infra: RestfulServiceBuilder, fake_user: FakeUser) -> DependableBuilder:
     return infra.as_dependable().with_user(fake_user.user)
-
-
-@pytest.fixture
-def transport(dependency: DependableBuilder) -> HttpTransport:
-    return Httpx(TestClient(setup(dependency)))
 
 
 @dataclass

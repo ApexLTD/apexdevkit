@@ -4,9 +4,15 @@ from pypebbles.http import HttpTransport
 from pypebbles.http.drivers import Httpx
 
 from apexdevkit.fastapi import RestfulServiceBuilder
+from apexdevkit.fastapi.dependable import DependableBuilder
 from tests.fastapi.sample_api import setup
 
 
 @pytest.fixture
-def transport(service: RestfulServiceBuilder) -> HttpTransport:
-    return Httpx(TestClient(setup(service.as_dependable())))
+def dependency(service: RestfulServiceBuilder) -> DependableBuilder:
+    return service.as_dependable()
+
+
+@pytest.fixture
+def transport(dependency: DependableBuilder) -> HttpTransport:
+    return Httpx(TestClient(setup(dependency)))
