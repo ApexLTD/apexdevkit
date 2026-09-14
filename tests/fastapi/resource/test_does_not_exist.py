@@ -2,10 +2,12 @@ from uuid import uuid4
 
 import pytest
 from pypebbles import JsonDict
+from pypebbles.http import HttpTransport
 
 from apexdevkit.error import DoesNotExistError
+from apexdevkit.fastapi.name import RestfulName
 
-from ..rest import RestCollection
+from ..rest import RestRequest
 from ..sample_api import FailingService, FakeApple
 
 
@@ -19,45 +21,49 @@ def service() -> FailingService:
     return FailingService(DoesNotExistError)
 
 
-def test_should_not_read_unknown(resource: RestCollection) -> None:
+def test_should_not_read_unknown(transport: HttpTransport) -> None:
     (
-        resource.item(with_id=uuid4())
+        RestRequest.resource(RestfulName("market-apple"))
+        .item(with_id=uuid4())
+        .using(transport)
         .read()
-        .ensure()
         .fail()
         .with_code(404)
         .and_message("An item<Market-apple> with id<unknown> does not exist.")
     )
 
 
-def test_should_not_update_unknown(apple: JsonDict, resource: RestCollection) -> None:
+def test_should_not_update_unknown(apple: JsonDict, transport: HttpTransport) -> None:
     (
-        resource.item(with_id=apple["id"])
+        RestRequest.resource(RestfulName("market-apple"))
+        .item(with_id=apple["id"])
+        .with_data(apple)
+        .using(transport)
         .update()
-        .and_data(apple)
-        .ensure()
         .fail()
         .with_code(404)
         .and_message("An item<Market-apple> with id<unknown> does not exist.")
     )
 
 
-def test_should_not_replace_unknown(apple: JsonDict, resource: RestCollection) -> None:
+def test_should_not_replace_unknown(apple: JsonDict, transport: HttpTransport) -> None:
     (
-        resource.replace()
-        .from_data(apple)
-        .ensure()
+        RestRequest.resource(RestfulName("market-apple"))
+        .with_data(apple)
+        .using(transport)
+        .replace()
         .fail()
         .with_code(404)
         .and_message("An item<Market-apple> with id<unknown> does not exist.")
     )
 
 
-def test_should_not_delete_unknown(apple: JsonDict, resource: RestCollection) -> None:
+def test_should_not_delete_unknown(apple: JsonDict, transport: HttpTransport) -> None:
     (
-        resource.item(with_id=apple["id"])
+        RestRequest.resource(RestfulName("market-apple"))
+        .item(with_id=apple["id"])
+        .using(transport)
         .delete()
-        .ensure()
         .fail()
         .with_code(404)
         .and_message("An item<Market-apple> with id<unknown> does not exist.")
