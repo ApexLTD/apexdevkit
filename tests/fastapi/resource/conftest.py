@@ -1,8 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
-from pypebbles.http import HttpRequest
+from pypebbles.http import HttpRequest, HttpTransport
 from pypebbles.http.drivers import Httpx
-from sentry_sdk import HttpTransport
 
 from apexdevkit.fastapi import RestfulServiceBuilder
 from apexdevkit.fastapi.name import RestfulName
