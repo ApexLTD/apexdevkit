@@ -4,8 +4,8 @@ import pytest
 from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from pypebbles.http import HttpTransport
 from pypebbles.http.drivers import Httpx
-from sentry_sdk import HttpTransport
 
 from apexdevkit.error import DoesNotExistError
 from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder

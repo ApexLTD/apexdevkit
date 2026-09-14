@@ -12,51 +12,6 @@ from apexdevkit.fastapi.name import RestfulName
 
 
 @dataclass(frozen=True)
-class RestTransport:
-    transporter: HttpTransport
-
-    method: HttpMethod = HttpMethod.get
-
-    def over(self, method: HttpMethod) -> RestTransport:
-        return replace(self, method=method)
-
-    def transport(self, request: HttpRequest) -> HttpResponse:
-        return self.transporter.deliver(request, using=self.method)
-
-
-@dataclass(frozen=True)
-class RestCollection:
-    name: RestfulName
-    transport: RestTransport
-
-    request: HttpRequest = HttpRequest()
-
-    def sub_resource(self, name: RestfulName) -> RestCollection:
-        return replace(self, name=name)
-
-    def item(self, with_id: Any) -> RestCollection:
-        return RestCollection(
-            name=self.name,
-            transport=self.transport,
-            request=self.request.with_endpoint(str(with_id)),
-        )
-
-    def dispatch(self, method: HttpMethod) -> RestRequest:
-        return RestRequest(
-            request=self.request,
-            response=RestResponse(self.name),
-            transporter=self.transport.over(method),
-        )
-
-    def read(self, **params: Any) -> RestRequest:
-        request = self.request
-        for p, v in params.items():
-            request = request.with_param(p, v)
-
-        return replace(self, request=request).dispatch(HttpMethod.get)
-
-
-@dataclass(frozen=True)
 class RestDispatcher:
     request: HttpRequest
     transporter: HttpTransport
@@ -116,8 +71,6 @@ class RestRequest:
     request: HttpRequest
     response: RestResponse
 
-    transporter: RestTransport | None = None
-
     @classmethod
     def resource(cls, name: RestfulName) -> RestRequest:
         return cls(
@@ -133,16 +86,6 @@ class RestRequest:
 
     def with_data(self, value: JsonDict) -> RestRequest:
         return replace(self, request=self.request.with_json(value))
-
-    def ensure(self) -> ResponseProbe:
-        assert self.transporter is not None
-
-        http_response = self.transporter.transport(self.request)
-
-        return ResponseProbe(
-            rest_response=http_response.load(self.response),
-            http_response=http_response,
-        )
 
     def sub_resource(self, name: RestfulName) -> RestRequest:
         return replace(self, response=RestResponse(name))
