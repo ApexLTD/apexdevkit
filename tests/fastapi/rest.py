@@ -167,8 +167,3 @@ class ResponseProbe:
         assert self.rest_response.count() == len(values)
 
         return self
-
-    def with_data(self, **kwargs: Any) -> Self:
-        assert self.rest_response.data() == kwargs, self.http_response.json()
-
-        return self
