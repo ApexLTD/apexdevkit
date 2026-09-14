@@ -2,9 +2,11 @@ from uuid import uuid4
 
 import pytest
 from pypebbles import JsonDict
+from pypebbles.http import HttpTransport
 
 from apexdevkit.error import ForbiddenError
-from tests.fastapi.rest import RestCollection
+from apexdevkit.fastapi.name import RestfulName
+from tests.fastapi.rest import RestCollection, RestRequest
 from tests.fastapi.sample_api import FailingService, FakeApple
 
 
@@ -18,11 +20,12 @@ def service() -> FailingService:
     return FailingService(ForbiddenError)
 
 
-def test_should_not_create_forbidden(apple: JsonDict, resource: RestCollection) -> None:
+def test_should_not_create_forbidden(transport: HttpTransport) -> None:
     (
-        resource.create()
-        .from_data(apple)
-        .ensure()
+        RestRequest.resource(RestfulName("market-apple"))
+        .with_data(FakeApple().json())
+        .using(transport)
+        .create()
         .fail()
         .with_code(403)
         .and_message("Forbidden")
