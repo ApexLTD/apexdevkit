@@ -10,6 +10,7 @@ from fastapi import FastAPI
 from pypebbles import JsonDict
 
 from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
+from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.schema import SchemaFields
 from apexdevkit.fastapi.service import (
     RawCollection,
@@ -21,9 +22,7 @@ from apexdevkit.query.query import Operator, Page, Sort
 from tests.fake import FakeResource
 
 
-def setup(infra: RestfulServiceBuilder) -> FastAPI:
-    dependable = infra.as_dependable().with_user(lambda: None)
-
+def setup(dependency: DependableBuilder) -> FastAPI:
     return (
         FastApiBuilder()
         .with_title("Apple API")
@@ -33,7 +32,7 @@ def setup(infra: RestfulServiceBuilder) -> FastAPI:
             apples=(
                 RestfulRouter.named("apple")
                 .with_fields(AppleFields())
-                .with_default_dependency(dependable)
+                .with_default_dependency(dependency)
                 .with_read_one()
                 .with_create_one()
                 .with_update_one()

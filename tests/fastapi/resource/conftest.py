@@ -9,4 +9,4 @@ from tests.fastapi.sample_api import setup
 
 @pytest.fixture
 def transport(service: RestfulServiceBuilder) -> HttpTransport:
-    return Httpx(TestClient(setup(service)))
+    return Httpx(TestClient(setup(service.as_dependable())))

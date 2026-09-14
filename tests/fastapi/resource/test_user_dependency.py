@@ -3,16 +3,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import pytest
-from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pypebbles.http import HttpTransport
 from pypebbles.http.drivers import Httpx
 
-from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
+from apexdevkit.fastapi import RestfulServiceBuilder
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from tests.fastapi.rest import RestRequest
-from tests.fastapi.sample_api import AppleFields, FakeApple, SuccessfulService
+from tests.fastapi.sample_api import FakeApple, SuccessfulService, setup
 
 
 @pytest.fixture
@@ -42,30 +41,6 @@ class FakeUser:
     def user(self) -> str:
         self.times_called += 1
         return "user"
-
-
-def setup(dependency: DependableBuilder) -> FastAPI:
-    return (
-        FastApiBuilder()
-        .with_title("Apple API")
-        .with_version("1.0.0")
-        .with_description("Sample API for unit testing various testing routines")
-        .with_route(
-            apples=(
-                RestfulRouter.named("apple")
-                .with_fields(AppleFields())
-                .with_default_dependency(dependency)
-                .with_create_one()
-                .with_read_one()
-                .with_read_all()
-                .with_update_one()
-                .with_replace_one()
-                .with_delete_one()
-                .build()
-            )
-        )
-        .build()
-    )
 
 
 def test_should_call_extract_user_for_create_one(
