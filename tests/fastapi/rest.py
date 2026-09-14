@@ -41,30 +41,30 @@ class RestCollection:
             request=self.request.with_endpoint(str(with_id)),
         )
 
-    def dispatch(self, method: HttpMethod) -> _TestRequest:
-        return _TestRequest(
+    def dispatch(self, method: HttpMethod) -> RestRequest:
+        return RestRequest(
             request=self.request,
             response=RestResponse(self.name),
             transporter=self.transport.over(method),
         )
 
-    def create(self) -> _TestRequest:
+    def create(self) -> RestRequest:
         return self.dispatch(HttpMethod.post)
 
-    def read(self, **params: Any) -> _TestRequest:
+    def read(self, **params: Any) -> RestRequest:
         request = self.request
         for p, v in params.items():
             request = request.with_param(p, v)
 
         return replace(self, request=request).dispatch(HttpMethod.get)
 
-    def update(self) -> _TestRequest:
+    def update(self) -> RestRequest:
         return self.dispatch(HttpMethod.patch)
 
-    def replace(self) -> _TestRequest:
+    def replace(self) -> RestRequest:
         return self.dispatch(HttpMethod.put)
 
-    def delete(self) -> _TestRequest:
+    def delete(self) -> RestRequest:
         return self.dispatch(HttpMethod.delete)
 
 
@@ -124,18 +124,18 @@ class RestMethod(Enum):
 
 
 @dataclass(frozen=True)
-class _TestRequest:
+class RestRequest:
     request: HttpRequest
     response: RestResponse
     transporter: RestTransport
 
-    def and_data(self, value: JsonDict) -> _TestRequest:
+    def and_data(self, value: JsonDict) -> RestRequest:
         return self.with_data(value)
 
-    def from_data(self, value: JsonDict) -> _TestRequest:
+    def from_data(self, value: JsonDict) -> RestRequest:
         return self.with_data(value)
 
-    def with_data(self, value: JsonDict) -> _TestRequest:
+    def with_data(self, value: JsonDict) -> RestRequest:
         return replace(self, request=self.request.with_json(value))
 
     def ensure(self) -> ResponseProbe:
@@ -146,10 +146,10 @@ class _TestRequest:
             http_response=http_response,
         )
 
-    def sub_resource(self, name: RestfulName) -> _TestRequest:
+    def sub_resource(self, name: RestfulName) -> RestRequest:
         return replace(self, response=RestResponse(name))
 
-    def item(self, with_id: Any) -> _TestRequest:
+    def item(self, with_id: Any) -> RestRequest:
         return replace(self, request=self.request.with_endpoint(str(with_id)))
 
     def using(self, transport: HttpTransport) -> RestDispatcher:
