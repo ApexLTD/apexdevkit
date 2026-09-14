@@ -15,7 +15,7 @@ def service() -> FailingService:
 def test_should_not_create_existing(transport: RestTransport) -> None:
     (
         RestRequest.resource(RestfulName("market-apple"))
-        .from_data(FakeApple().json())
+        .with_data(FakeApple().json())
         .using(transport)
         .create()
         .fail()
