@@ -14,14 +14,12 @@ def service() -> FailingService:
 
 
 def test_should_not_create_existing(transport: HttpTransport) -> None:
-    name = RestfulName("market-apple")
-
     (
-        RestRequest.resource(name)
+        RestRequest.resource(RestfulName("apple"))
         .with_data(FakeApple().json())
         .using(transport)
         .create()
         .fail()
         .with_code(409)
-        .and_message(f"An item<{name.singular.capitalize()}> with the  already exists.")
+        .and_message("An item<Apple> with the  already exists.")
     )

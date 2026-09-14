@@ -27,7 +27,7 @@ def test_should_create(
     transport: HttpTransport,
 ) -> None:
     (
-        RestRequest.resource(RestfulName("market-apple"))
+        RestRequest.resource(RestfulName("apple"))
         .with_data(apple)
         .using(transport)
         .create()
@@ -45,7 +45,7 @@ def test_should_read_one(
     transport: HttpTransport,
 ) -> None:
     (
-        RestRequest.resource(RestfulName("market-apple"))
+        RestRequest.resource(RestfulName("apple"))
         .item(with_id=apple.value_of("id").to(str))
         .using(transport)
         .read()
@@ -80,7 +80,7 @@ def test_should_read_all(
     transport: HttpTransport,
 ) -> None:
     (
-        RestRequest.resource(RestfulName("market-apple"))
+        RestRequest.resource(RestfulName("apple"))
         .using(transport)
         .read()
         .success()
@@ -88,7 +88,7 @@ def test_should_read_all(
         .and_collection([apple])
     )
 
-    assert service.called_with is None
+    assert service.called_with == {"color": None}
 
 
 def test_should_update_one(
@@ -97,7 +97,7 @@ def test_should_update_one(
     transport: HttpTransport,
 ) -> None:
     (
-        RestRequest.resource(RestfulName("market-apple"))
+        RestRequest.resource(RestfulName("apple"))
         .item(with_id=apple.value_of("id"))
         .with_data(apple)
         .using(transport)
@@ -115,7 +115,7 @@ def test_should_replace_one(
     transport: HttpTransport,
 ) -> None:
     (
-        RestRequest.resource(RestfulName("market-apple"))
+        RestRequest.resource(RestfulName("apple"))
         .with_data(apple)
         .using(transport)
         .replace()
@@ -132,7 +132,7 @@ def test_should_delete_one(
     transport: HttpTransport,
 ) -> None:
     (
-        RestRequest.resource(RestfulName("market-apple"))
+        RestRequest.resource(RestfulName("apple"))
         .item(with_id=apple.value_of("id"))
         .using(transport)
         .delete()
@@ -145,7 +145,7 @@ def test_should_delete_one(
 
 def test_should_sub_resource(transport: HttpTransport) -> None:
     (
-        RestRequest.resource(RestfulName("market-apple"))
+        RestRequest.resource(RestfulName("apple"))
         .item(with_id=str(uuid4()))
         .sub_resource(name=RestfulName("price"))
         .using(transport)

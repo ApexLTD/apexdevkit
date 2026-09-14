@@ -22,7 +22,7 @@ def service() -> FailingService:
 
 def test_should_not_create_forbidden(transport: HttpTransport) -> None:
     (
-        RestRequest.resource(RestfulName("market-apple"))
+        RestRequest.resource(RestfulName("apple"))
         .with_data(FakeApple().json())
         .using(transport)
         .create()
@@ -34,7 +34,7 @@ def test_should_not_create_forbidden(transport: HttpTransport) -> None:
 
 def test_should_not_read_forbidden(transport: HttpTransport) -> None:
     (
-        RestRequest.resource(RestfulName("market-apple"))
+        RestRequest.resource(RestfulName("apple"))
         .item(with_id=uuid4())
         .using(transport)
         .read()
@@ -57,7 +57,7 @@ def test_should_not_read_many_forbidden(transport: HttpTransport) -> None:
 
 def test_should_not_read_all_forbidden(transport: HttpTransport) -> None:
     (
-        RestRequest.resource(RestfulName("market-apple"))
+        RestRequest.resource(RestfulName("apple"))
         .using(transport)
         .read()
         .fail()
@@ -70,7 +70,7 @@ def test_should_not_update_forbidden(transport: HttpTransport) -> None:
     apple = FakeApple().json()
 
     (
-        RestRequest.resource(RestfulName("market-apple"))
+        RestRequest.resource(RestfulName("apple"))
         .item(with_id=apple.value_of("id"))
         .with_data(apple)
         .using(transport)
@@ -83,7 +83,7 @@ def test_should_not_update_forbidden(transport: HttpTransport) -> None:
 
 def test_should_not_replace_forbidden(transport: HttpTransport) -> None:
     (
-        RestRequest.resource(RestfulName("market-apple"))
+        RestRequest.resource(RestfulName("apple"))
         .with_data(FakeApple().json())
         .using(transport)
         .replace()
@@ -95,7 +95,7 @@ def test_should_not_replace_forbidden(transport: HttpTransport) -> None:
 
 def test_should_not_delete_forbidden(transport: HttpTransport) -> None:
     (
-        RestRequest.resource(RestfulName("market-apple"))
+        RestRequest.resource(RestfulName("apple"))
         .item(with_id=FakeApple().json().value_of("id").to(str))
         .using(transport)
         .delete()
