@@ -55,15 +55,6 @@ class RestCollection:
 
         return replace(self, request=request).dispatch(HttpMethod.get)
 
-    def update(self) -> RestRequest:
-        return self.dispatch(HttpMethod.patch)
-
-    def replace(self) -> RestRequest:
-        return self.dispatch(HttpMethod.put)
-
-    def delete(self) -> RestRequest:
-        return self.dispatch(HttpMethod.delete)
-
 
 @dataclass(frozen=True)
 class RestDispatcher:
