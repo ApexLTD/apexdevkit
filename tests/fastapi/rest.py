@@ -42,7 +42,11 @@ class RestCollection:
         )
 
     def dispatch(self, method: HttpMethod) -> _TestRequest:
-        return _TestRequest(self.name, self.request, self.transport.over(method))
+        return _TestRequest(
+            request=self.request,
+            response=RestResponse(self.name),
+            transporter=self.transport.over(method),
+        )
 
     def create(self) -> _TestRequest:
         return self.dispatch(HttpMethod.post)
@@ -121,8 +125,8 @@ class RestMethod(Enum):
 
 @dataclass(frozen=True)
 class _TestRequest:
-    resource: RestfulName
     request: HttpRequest
+    response: RestResponse
     transporter: RestTransport
 
     def and_data(self, value: JsonDict) -> _TestRequest:
@@ -138,12 +142,12 @@ class _TestRequest:
         http_response = self.transporter.transport(self.request)
 
         return ResponseProbe(
-            rest_response=http_response.load(RestResponse(self.resource)),
+            rest_response=http_response.load(self.response),
             http_response=http_response,
         )
 
     def sub_resource(self, name: RestfulName) -> _TestRequest:
-        return replace(self, resource=name)
+        return replace(self, response=RestResponse(name))
 
     def item(self, with_id: Any) -> _TestRequest:
         return replace(self, request=self.request.with_endpoint(str(with_id)))
@@ -151,7 +155,7 @@ class _TestRequest:
     def using(self, transport: HttpTransport) -> RestDispatcher:
         return RestDispatcher(
             request=self.request,
-            response=RestResponse(self.resource),
+            response=self.response,
             transporter=transport,
         )
 
