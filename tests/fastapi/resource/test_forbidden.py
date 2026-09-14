@@ -84,7 +84,7 @@ def test_should_not_update_forbidden(transport: HttpTransport) -> None:
 def test_should_not_replace_forbidden(transport: HttpTransport) -> None:
     (
         RestRequest.resource(RestfulName("market-apple"))
-        .from_data(FakeApple().json())
+        .with_data(FakeApple().json())
         .using(transport)
         .replace()
         .fail()

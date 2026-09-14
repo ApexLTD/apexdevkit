@@ -78,12 +78,6 @@ class RestRequest:
             response=RestResponse(name),
         )
 
-    def and_data(self, value: JsonDict) -> RestRequest:
-        return self.with_data(value)
-
-    def from_data(self, value: JsonDict) -> RestRequest:
-        return self.with_data(value)
-
     def with_data(self, value: JsonDict) -> RestRequest:
         return replace(self, request=self.request.with_json(value))
 

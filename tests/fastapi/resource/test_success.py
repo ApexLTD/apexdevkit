@@ -28,7 +28,7 @@ def test_should_create(
 ) -> None:
     (
         RestRequest.resource(RestfulName("market-apple"))
-        .from_data(apple)
+        .with_data(apple)
         .using(transport)
         .create()
         .success()
