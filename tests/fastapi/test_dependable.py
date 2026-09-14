@@ -4,27 +4,23 @@ import pytest
 from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from pypebbles.http import HttpRequest
 from pypebbles.http.drivers import Httpx
+from sentry_sdk import HttpTransport
 
 from apexdevkit.error import DoesNotExistError
 from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.router import Dependency
-from tests.fastapi.rest import RestCollection, RestTransport
+from tests.fastapi.rest import RestRequest
 from tests.fastapi.sample_api import AppleFields, PriceFields
 
 _PARENT = RestfulName("apple")
 _CHILD = RestfulName("price")
 
 
-def _resource(dependency: Dependency) -> RestCollection:
-    return RestCollection(
-        name=_PARENT,
-        transport=RestTransport(Httpx(TestClient(_setup(dependency)))),
-        request=HttpRequest().with_endpoint(_PARENT.plural),
-    )
+def _transport(using: Dependency) -> HttpTransport:
+    return Httpx(TestClient(_setup(using)))
 
 
 def _setup(using: Dependency) -> FastAPI:
@@ -56,12 +52,9 @@ def _setup(using: Dependency) -> FastAPI:
 def test_should_build_dependable_with_user(faker: Faker) -> None:
     user = faker.name()
     builder = MagicMock(spec=RestfulServiceBuilder)
+    dependency = DependableBuilder.from_builder(builder).with_user(lambda: user)
 
-    (
-        _resource(DependableBuilder.from_builder(builder).with_user(lambda: user))
-        .read()
-        .ensure()
-    )
+    RestRequest.resource(_PARENT).using(_transport(dependency)).read()
 
     builder.with_user.assert_called_once_with(user)
     builder.with_user().build.assert_called_once()
@@ -71,13 +64,14 @@ def test_should_build_dependable_with_user(faker: Faker) -> None:
 def test_should_build_dependable_with_parent(faker: Faker) -> None:
     parent_id = str(faker.uuid4())
     builder = MagicMock(spec=RestfulServiceBuilder)
+    dependency = DependableBuilder.from_builder(builder).with_parent(_PARENT)
 
     (
-        _resource(DependableBuilder.from_builder(builder).with_parent(_PARENT))
+        RestRequest.resource(_PARENT)
         .item(with_id=parent_id)
         .sub_resource(name=_CHILD)
+        .using(_transport(dependency))
         .read()
-        .ensure()
         .success()
     )
 
@@ -90,12 +84,13 @@ def test_should_not_build_dependable_when_no_parent(faker: Faker) -> None:
     builder = MagicMock(spec=RestfulServiceBuilder)
     builder.with_parent.side_effect = DoesNotExistError(parent_id)
 
+    dependency = DependableBuilder.from_builder(builder).with_parent(_PARENT)
     (
-        _resource(DependableBuilder.from_builder(builder).with_parent(_PARENT))
+        RestRequest.resource(_PARENT)
         .item(with_id=parent_id)
         .sub_resource(name=_CHILD)
+        .using(_transport(dependency))
         .read()
-        .ensure()
         .fail()
         .with_code(404)
         .and_message(
