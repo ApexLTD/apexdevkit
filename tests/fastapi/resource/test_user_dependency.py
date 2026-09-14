@@ -9,6 +9,7 @@ from pypebbles.http import HttpTransport
 from pypebbles.http.drivers import Httpx
 
 from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
+from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from tests.fastapi.rest import RestRequest
 from tests.fastapi.sample_api import AppleFields, FakeApple, SuccessfulService
@@ -25,8 +26,13 @@ def fake_user() -> FakeUser:
 
 
 @pytest.fixture
-def transport(infra: RestfulServiceBuilder, fake_user: FakeUser) -> HttpTransport:
-    return Httpx(TestClient(setup(infra, fake_user)))
+def dependency(infra: RestfulServiceBuilder, fake_user: FakeUser) -> DependableBuilder:
+    return infra.as_dependable().with_user(fake_user.user)
+
+
+@pytest.fixture
+def transport(dependency: DependableBuilder) -> HttpTransport:
+    return Httpx(TestClient(setup(dependency)))
 
 
 @dataclass
@@ -38,7 +44,7 @@ class FakeUser:
         return "user"
 
 
-def setup(infra: RestfulServiceBuilder, fake_user: FakeUser) -> FastAPI:
+def setup(dependency: DependableBuilder) -> FastAPI:
     return (
         FastApiBuilder()
         .with_title("Apple API")
@@ -48,9 +54,7 @@ def setup(infra: RestfulServiceBuilder, fake_user: FakeUser) -> FastAPI:
             apples=(
                 RestfulRouter.named("apple")
                 .with_fields(AppleFields())
-                .with_default_dependency(
-                    infra.as_dependable().with_user(fake_user.user)
-                )
+                .with_default_dependency(dependency)
                 .with_create_one()
                 .with_read_one()
                 .with_read_all()
