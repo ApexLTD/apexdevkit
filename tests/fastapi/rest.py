@@ -12,6 +12,35 @@ from apexdevkit.fastapi.name import RestfulName
 
 
 @dataclass(frozen=True)
+class RestRequest:
+    request: HttpRequest
+    response: RestResponse
+
+    @classmethod
+    def resource(cls, name: RestfulName) -> RestRequest:
+        return cls(
+            request=HttpRequest().with_endpoint(name.plural),
+            response=RestResponse(name),
+        )
+
+    def with_data(self, value: JsonDict) -> RestRequest:
+        return replace(self, request=self.request.with_json(value))
+
+    def sub_resource(self, name: RestfulName) -> RestRequest:
+        return replace(self, response=RestResponse(name))
+
+    def item(self, with_id: Any) -> RestRequest:
+        return replace(self, request=self.request.with_endpoint(str(with_id)))
+
+    def using(self, transport: HttpTransport) -> RestDispatcher:
+        return RestDispatcher(
+            request=self.request,
+            response=self.response,
+            transporter=transport,
+        )
+
+
+@dataclass(frozen=True)
 class RestDispatcher:
     request: HttpRequest
     transporter: HttpTransport
@@ -64,35 +93,6 @@ class RestMethod(Enum):
                 return HttpMethod.put
             case RestMethod.delete:
                 return HttpMethod.delete
-
-
-@dataclass(frozen=True)
-class RestRequest:
-    request: HttpRequest
-    response: RestResponse
-
-    @classmethod
-    def resource(cls, name: RestfulName) -> RestRequest:
-        return cls(
-            request=HttpRequest().with_endpoint(name.plural),
-            response=RestResponse(name),
-        )
-
-    def with_data(self, value: JsonDict) -> RestRequest:
-        return replace(self, request=self.request.with_json(value))
-
-    def sub_resource(self, name: RestfulName) -> RestRequest:
-        return replace(self, response=RestResponse(name))
-
-    def item(self, with_id: Any) -> RestRequest:
-        return replace(self, request=self.request.with_endpoint(str(with_id)))
-
-    def using(self, transport: HttpTransport) -> RestDispatcher:
-        return RestDispatcher(
-            request=self.request,
-            response=self.response,
-            transporter=transport,
-        )
 
 
 @dataclass(frozen=True)
