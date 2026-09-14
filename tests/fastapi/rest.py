@@ -163,7 +163,7 @@ class ResponseProbe:
         return self.with_collection(value)
 
     def with_collection(self, values: list[Any]) -> Self:
-        assert self.rest_response.collection() == values, self.http_response.json()
+        assert self.rest_response.collection() == values, self.rest_response.raw
         assert self.rest_response.count() == len(values)
 
         return self
