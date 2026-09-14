@@ -48,9 +48,6 @@ class RestCollection:
             transporter=self.transport.over(method),
         )
 
-    def create(self) -> RestRequest:
-        return self.dispatch(HttpMethod.post)
-
     def read(self, **params: Any) -> RestRequest:
         request = self.request
         for p, v in params.items():
