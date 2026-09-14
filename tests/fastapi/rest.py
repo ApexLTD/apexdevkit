@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from collections.abc import Collection
+from dataclasses import dataclass, field, replace
 from typing import Any, Self
 
 from pypebbles import JsonDict
@@ -80,14 +81,48 @@ class _TestRequest:
     def ensure(self) -> ResponseProbe:
         return ResponseProbe(
             resource=self.resource,
-            response=self.transporter.transport(self.request),
+            http_response=self.transporter.transport(self.request),
         )
+
+
+@dataclass(frozen=True)
+class RestResponse:
+    resource: RestfulName
+
+    raw: JsonDict = field(default_factory=JsonDict)
+
+    def __call__(self, raw: JsonDict) -> RestResponse:
+        return replace(self, raw=raw)
+
+    def status(self) -> str:
+        return self.raw.value_of("status").to(str)
+
+    def code(self) -> int:
+        return self.raw.value_of("code").to(int)
+
+    def message(self) -> str:
+        return self.error().value_of("message").to(str)
+
+    def error(self) -> JsonDict:
+        return self.raw.value_of("error").to(JsonDict)
+
+    def item(self) -> JsonDict:
+        return self.data().value_of(self.resource.singular).to(JsonDict)
+
+    def collection(self) -> Collection[JsonDict]:
+        return self.data().value_of(self.resource.plural).to(list)
+
+    def count(self) -> int:
+        return self.data().value_of("count").to(int)
+
+    def data(self) -> JsonDict:
+        return self.raw.value_of("data").to(JsonDict)
 
 
 @dataclass(frozen=True)
 class ResponseProbe:
     resource: RestfulName
-    response: HttpResponse
+    http_response: HttpResponse
 
     def fail(self) -> Self:
         return self.with_status("fail")
@@ -95,14 +130,18 @@ class ResponseProbe:
     def success(self) -> Self:
         return self.with_status("success")
 
+    @property
+    def rest_response(self) -> RestResponse:
+        return self.http_response.load(RestResponse(self.resource))
+
     def with_status(self, value: str) -> Self:
-        assert self.response.json().value_of("status").to(str) == value
+        assert self.rest_response.status() == value
 
         return self
 
     def with_code(self, value: int) -> Self:
-        assert self.response.status == value
-        assert self.response.json().value_of("code").to(int) == value
+        assert self.http_response.status == value
+        assert self.rest_response.code() == value
 
         return self
 
@@ -110,8 +149,7 @@ class ResponseProbe:
         return self.with_message(value)
 
     def with_message(self, value: str) -> Self:
-        actual = self.response.json().value_of("error").to(dict)
-        assert actual == {"message": value}, self.response.json()
+        assert self.rest_response.message() == value, self.rest_response.raw
 
         return self
 
@@ -119,16 +157,20 @@ class ResponseProbe:
         return self.with_item(value)
 
     def with_item(self, value: Any) -> Self:
-        return self.with_data(**{self.resource.singular: value})
+        assert self.rest_response.item() == value, self.rest_response.raw
+
+        return self
 
     def and_collection(self, value: list[Any]) -> Self:
         return self.with_collection(value)
 
     def with_collection(self, values: list[Any]) -> Self:
-        return self.with_data(**{self.resource.plural: values}, count=len(values))
+        assert self.rest_response.collection() == values, self.http_response.json()
+        assert self.rest_response.count() == len(values)
+
+        return self
 
     def with_data(self, **kwargs: Any) -> Self:
-        actual = self.response.json().value_of("data").to(dict)
-        assert actual == {**kwargs}, self.response.json()
+        assert self.rest_response.data() == kwargs, self.http_response.json()
 
         return self
