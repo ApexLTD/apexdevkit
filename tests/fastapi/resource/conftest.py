@@ -10,18 +10,23 @@ from tests.fastapi.sample_api import setup
 
 
 @pytest.fixture
-def resource(service: RestfulServiceBuilder) -> RestCollection:
+def resource(transport: RestTransport) -> RestCollection:
     return RestCollection(
         name=RestfulName("market-apple"),
-        transport=RestTransport(Httpx(TestClient(setup(service)))),
+        transport=transport,
         request=HttpRequest().with_endpoint("market-apples"),
     )
 
 
 @pytest.fixture
-def read_many_resource(service: RestfulServiceBuilder) -> RestCollection:
+def read_many_resource(transport: RestTransport) -> RestCollection:
     return RestCollection(
         name=RestfulName("apple"),
-        transport=RestTransport(Httpx(TestClient(setup(service)))),
+        transport=transport,
         request=HttpRequest().with_endpoint("apples"),
     )
+
+
+@pytest.fixture
+def transport(service: RestfulServiceBuilder) -> RestTransport:
+    return RestTransport(Httpx(TestClient(setup(service))))
