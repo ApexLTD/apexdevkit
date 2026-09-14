@@ -5,7 +5,6 @@ from dataclasses import dataclass
 import pytest
 from pypebbles.http import HttpTransport
 
-from apexdevkit.fastapi import RestfulServiceBuilder
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from tests.fastapi.rest import RestRequest
@@ -13,7 +12,7 @@ from tests.fastapi.sample_api import FakeApple, SuccessfulService
 
 
 @pytest.fixture
-def infra() -> RestfulServiceBuilder:
+def service() -> SuccessfulService:
     return SuccessfulService(always_return=FakeApple().json())
 
 
@@ -23,8 +22,8 @@ def fake_user() -> FakeUser:
 
 
 @pytest.fixture
-def dependency(infra: RestfulServiceBuilder, fake_user: FakeUser) -> DependableBuilder:
-    return infra.as_dependable().with_user(fake_user.user)
+def dependency(service: SuccessfulService, fake_user: FakeUser) -> DependableBuilder:
+    return service.as_dependable().with_user(fake_user.user)
 
 
 @dataclass
@@ -52,7 +51,7 @@ def test_should_call_extract_user_for_create_one(
 
 def test_should_persist_user_for_create_one(
     transport: HttpTransport,
-    infra: RestfulServiceBuilder,
+    service: SuccessfulService,
 ) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
@@ -61,7 +60,7 @@ def test_should_persist_user_for_create_one(
         .create()
     )
 
-    assert infra.user == "user"
+    assert service.user == "user"
 
 
 def test_should_call_extract_user_for_read_one(
@@ -80,7 +79,7 @@ def test_should_call_extract_user_for_read_one(
 
 def test_should_persist_user_for_read_one(
     transport: HttpTransport,
-    infra: RestfulServiceBuilder,
+    service: SuccessfulService,
 ) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
@@ -89,7 +88,7 @@ def test_should_persist_user_for_read_one(
         .read()
     )
 
-    assert infra.user == "user"
+    assert service.user == "user"
 
 
 def test_should_call_extract_user_for_read_all(
@@ -103,11 +102,11 @@ def test_should_call_extract_user_for_read_all(
 
 def test_should_persist_user_for_read_all(
     transport: HttpTransport,
-    infra: RestfulServiceBuilder,
+    service: SuccessfulService,
 ) -> None:
     RestRequest.resource(RestfulName("apple")).using(transport).read()
 
-    assert infra.user == "user"
+    assert service.user == "user"
 
 
 def test_should_call_extract_user_for_update_one(
@@ -127,7 +126,7 @@ def test_should_call_extract_user_for_update_one(
 
 def test_should_persist_user_for_update_one(
     transport: HttpTransport,
-    infra: RestfulServiceBuilder,
+    service: SuccessfulService,
 ) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
@@ -137,7 +136,7 @@ def test_should_persist_user_for_update_one(
         .update()
     )
 
-    assert infra.user == "user"
+    assert service.user == "user"
 
 
 def test_should_call_extract_user_for_replace_one(
@@ -156,7 +155,7 @@ def test_should_call_extract_user_for_replace_one(
 
 def test_should_persist_user_for_replace_one(
     transport: HttpTransport,
-    infra: RestfulServiceBuilder,
+    service: SuccessfulService,
 ) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
@@ -165,7 +164,7 @@ def test_should_persist_user_for_replace_one(
         .replace()
     )
 
-    assert infra.user == "user"
+    assert service.user == "user"
 
 
 def test_should_call_extract_user_for_delete_one(
@@ -184,7 +183,7 @@ def test_should_call_extract_user_for_delete_one(
 
 def test_should_persist_user_for_delete_one(
     transport: HttpTransport,
-    infra: RestfulServiceBuilder,
+    service: SuccessfulService,
 ) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
@@ -193,4 +192,4 @@ def test_should_persist_user_for_delete_one(
         .delete()
     )
 
-    assert infra.user == "user"
+    assert service.user == "user"
