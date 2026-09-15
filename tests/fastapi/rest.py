@@ -50,11 +50,9 @@ class RestDispatcher:
         return self.dispatch(RestMethod.create)
 
     def read(self, **params: Any) -> ResponseProbe:
-        request = self.request
-        for p, v in params.items():
-            request = request.with_param(p, v)
-
-        return replace(self, request=request).dispatch(RestMethod.read)
+        return replace(self, request=self.request.with_params(params)).dispatch(
+            RestMethod.read
+        )
 
     def update(self) -> ResponseProbe:
         return self.dispatch(RestMethod.update)
@@ -69,8 +67,8 @@ class RestDispatcher:
         http_response = self.transporter.deliver(self.request, method.as_http())
 
         return ResponseProbe(
-            rest_response=http_response.load(self.response),
             http_response=http_response,
+            rest_response=http_response.load(self.response),
         )
 
 
