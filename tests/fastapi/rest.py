@@ -23,6 +23,9 @@ class RestRequest:
             response=RestResponse(name),
         )
 
+    def with_params(self, **params: Any) -> RestRequest:
+        return replace(self, request=self.request.with_params(params))
+
     def with_data(self, value: JsonDict) -> RestRequest:
         return replace(self, request=self.request.with_json(value))
 
@@ -49,10 +52,8 @@ class RestDispatcher:
     def create(self) -> ResponseProbe:
         return self.dispatch(RestMethod.create)
 
-    def read(self, **params: Any) -> ResponseProbe:
-        return replace(self, request=self.request.with_params(params)).dispatch(
-            RestMethod.read
-        )
+    def read(self) -> ResponseProbe:
+        return self.dispatch(RestMethod.read)
 
     def update(self) -> ResponseProbe:
         return self.dispatch(RestMethod.update)

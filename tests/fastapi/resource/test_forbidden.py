@@ -47,8 +47,9 @@ def test_should_not_read_forbidden(transport: HttpTransport) -> None:
 def test_should_not_read_many_forbidden(transport: HttpTransport) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
+        .with_params(color="red")
         .using(transport)
-        .read(color="red")
+        .read()
         .fail()
         .with_code(403)
         .and_message("Forbidden")

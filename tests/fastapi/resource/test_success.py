@@ -64,8 +64,9 @@ def test_should_read_many(
 ) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
+        .with_params(color="red")
         .using(transport)
-        .read(color="red")
+        .read()
         .success()
         .with_code(200)
         .with_collection([apple])
