@@ -95,7 +95,7 @@ class StatusProbe:
 
 @dataclass(frozen=True)
 class ResponseProbe:
-    rest_response: RestResponse
+    response: RestResponse
 
     def fail(self) -> Self:
         return self.with_status("fail")
@@ -104,12 +104,12 @@ class ResponseProbe:
         return self.with_status("success")
 
     def with_status(self, value: str) -> Self:
-        assert self.rest_response.status() == value
+        assert self.response.status() == value
 
         return self
 
     def with_code(self, value: int) -> Self:
-        assert self.rest_response.code() == value
+        assert self.response.code() == value
 
         return self
 
@@ -117,7 +117,7 @@ class ResponseProbe:
         return self.with_message(value)
 
     def with_message(self, value: str) -> Self:
-        assert self.rest_response.message() == value, self.rest_response.raw
+        assert self.response.message() == value, self.response.raw
 
         return self
 
@@ -125,7 +125,7 @@ class ResponseProbe:
         return self.with_item(value)
 
     def with_item(self, value: Any) -> Self:
-        assert self.rest_response.item() == value, self.rest_response.raw
+        assert self.response.item() == value, self.response.raw
 
         return self
 
@@ -133,8 +133,8 @@ class ResponseProbe:
         return self.with_collection(value)
 
     def with_collection(self, values: list[Any]) -> Self:
-        assert self.rest_response.collection() == values, self.rest_response.raw
-        assert self.rest_response.count() == len(values)
+        assert self.response.collection() == values, self.response.raw
+        assert self.response.count() == len(values)
 
         return self
 
