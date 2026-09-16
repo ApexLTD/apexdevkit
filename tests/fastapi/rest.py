@@ -36,12 +36,17 @@ class RestRequest:
         return replace(self, request=self.request.with_endpoint(str(with_id)))
 
     def using(self, transport: HttpTransport[HttpResponse]) -> RestDispatcher:
-        return RestDispatcher(
-            request=self.request,
+        return self.using_alt(
             transport=RestTransport(
                 response=self.response,
                 transport=transport,
             ),
+        )
+
+    def using_alt(self, transport: RestTransport) -> RestDispatcher:
+        return RestDispatcher(
+            request=self.request,
+            transport=transport,
         )
 
 
