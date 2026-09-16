@@ -90,15 +90,11 @@ class StatusProbe:
     def ensure(self, http_code: int) -> ResponseProbe:
         assert self.response.status == http_code
 
-        return ResponseProbe(
-            self.response,
-            self.response.load(RestResponse(self.resource)),
-        )
+        return ResponseProbe(self.response.load(RestResponse(self.resource)))
 
 
 @dataclass(frozen=True)
 class ResponseProbe:
-    http_response: HttpResponse
     rest_response: RestResponse
 
     def fail(self) -> Self:
@@ -113,7 +109,6 @@ class ResponseProbe:
         return self
 
     def with_code(self, value: int) -> Self:
-        assert self.http_response.status == value
         assert self.rest_response.code() == value
 
         return self
