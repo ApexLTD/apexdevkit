@@ -149,6 +149,7 @@ def test_should_sub_resource(transport: HttpTransport[HttpResponse]) -> None:
         RestRequest(RestfulName("apple"))
         .item(with_id=str(uuid4()))
         .sub_resource(name=RestfulName("price"))
+        .item(with_id=str(uuid4()))
         .using(transport)
         .delete()
         .success()

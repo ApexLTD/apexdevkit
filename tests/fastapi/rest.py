@@ -24,7 +24,7 @@ class RestRequest:
         return replace(self, request=self.request.with_json(value))
 
     def sub_resource(self, name: RestfulName) -> RestRequest:
-        return replace(self, resource=name)
+        return replace(self, request=self.request.with_endpoint(name.plural))
 
     def item(self, with_id: Any) -> RestRequest:
         return replace(self, request=self.request.with_endpoint(str(with_id)))

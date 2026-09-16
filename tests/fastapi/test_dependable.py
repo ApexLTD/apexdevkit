@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock
 
-import pytest
 from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -67,7 +66,6 @@ def test_should_build_dependable_with_user(faker: Faker) -> None:
     builder.with_user().build.assert_called_once()
 
 
-@pytest.mark.skip("FixMe")
 def test_should_build_dependable_with_parent(faker: Faker) -> None:
     parent_id = str(faker.uuid4())
     builder = MagicMock(spec=RestfulServiceBuilder)
