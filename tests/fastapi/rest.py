@@ -2,11 +2,16 @@ from __future__ import annotations
 
 from collections.abc import Collection
 from dataclasses import dataclass, field, replace
-from enum import Enum, auto
 from typing import Any, Self
 
 from pypebbles import JsonDict
-from pypebbles.http import HttpMethod, HttpRequest, HttpResponse, HttpTransport
+from pypebbles.http import (
+    HttpDispatcher,
+    HttpMethod,
+    HttpRequest,
+    HttpResponse,
+    HttpTransport,
+)
 
 from apexdevkit.fastapi.name import RestfulName
 
@@ -43,51 +48,6 @@ class RestTransport:
             http_response=http_response,
             rest_response=http_response.load(RestResponse(self.resource)),
         )
-
-
-@dataclass(frozen=True)
-class RestDispatcher:
-    request: HttpRequest
-    transport: RestTransport
-
-    def create(self) -> ResponseProbe:
-        return self.dispatch(RestMethod.create)
-
-    def read(self) -> ResponseProbe:
-        return self.dispatch(RestMethod.read)
-
-    def update(self) -> ResponseProbe:
-        return self.dispatch(RestMethod.update)
-
-    def replace(self) -> ResponseProbe:
-        return self.dispatch(RestMethod.replace)
-
-    def delete(self) -> ResponseProbe:
-        return self.dispatch(RestMethod.delete)
-
-    def dispatch(self, method: RestMethod) -> ResponseProbe:
-        return self.transport.deliver(self.request, method.as_http())
-
-
-class RestMethod(Enum):
-    create = auto()
-    read = auto()
-    update = auto()
-    delete = auto()
-    replace = auto()
-
-    def as_http(self) -> HttpMethod:
-        match self:
-            case RestMethod.create:
-                return HttpMethod.post
-            case RestMethod.read:
-                return HttpMethod.get
-            case RestMethod.update:
-                return HttpMethod.patch
-            case RestMethod.replace:
-                return HttpMethod.put
-            case RestMethod.delete:
-                return HttpMethod.delete
 
 
 @dataclass(frozen=True)
@@ -170,3 +130,21 @@ class ResponseProbe:
         assert self.rest_response.count() == len(values)
 
         return self
+
+
+@dataclass(frozen=True)
+class RestDispatcher(HttpDispatcher[ResponseProbe]):
+    def create(self) -> ResponseProbe:
+        return self.dispatch(HttpMethod.post)
+
+    def read(self) -> ResponseProbe:
+        return self.dispatch(HttpMethod.get)
+
+    def update(self) -> ResponseProbe:
+        return self.dispatch(HttpMethod.patch)
+
+    def replace(self) -> ResponseProbe:
+        return self.dispatch(HttpMethod.put)
+
+    def delete(self) -> ResponseProbe:
+        return self.dispatch(HttpMethod.delete)
