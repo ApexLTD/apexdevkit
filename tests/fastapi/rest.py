@@ -29,19 +29,8 @@ class RestRequest:
     def item(self, with_id: Any) -> RestRequest:
         return replace(self, request=self.request.with_endpoint(str(with_id)))
 
-    def using(self, transport: HttpTransport[HttpResponse]) -> RestDispatcher:
-        return self.using_alt(
-            transport=RestTransport(
-                resource=self.resource,
-                transport=transport,
-            ),
-        )
-
-    def using_alt(self, transport: RestTransport) -> RestDispatcher:
-        return RestDispatcher(
-            request=self.request,
-            transport=transport,
-        )
+    def using(self, transport: RestTransport) -> RestDispatcher:
+        return RestDispatcher(request=self.request, transport=transport)
 
 
 @dataclass(frozen=True)

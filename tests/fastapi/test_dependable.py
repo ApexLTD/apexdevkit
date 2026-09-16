@@ -4,7 +4,6 @@ import pytest
 from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from pypebbles.http import HttpResponse, HttpTransport
 from pypebbles.http.drivers import Httpx
 
 from apexdevkit.error import DoesNotExistError
@@ -12,15 +11,23 @@ from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuil
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.router import Dependency
-from tests.fastapi.rest import RestRequest
+from tests.fastapi.rest import RestRequest, RestTransport
 from tests.fastapi.sample_api import AppleFields, PriceFields
 
 _PARENT = RestfulName("apple")
 _CHILD = RestfulName("price")
 
 
-def _transport(using: Dependency) -> HttpTransport[HttpResponse]:
-    return Httpx(TestClient(_setup(using), base_url="http://testserver/apples"))
+def _transport(using: Dependency) -> RestTransport:
+    return RestTransport(
+        resource=RestfulName("apple"),
+        transport=Httpx(
+            TestClient(
+                _setup(using),
+                base_url="http://testserver/apples",
+            )
+        ),
+    )
 
 
 def _setup(using: Dependency) -> FastAPI:

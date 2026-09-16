@@ -1,10 +1,9 @@
 import pytest
-from pypebbles.http import HttpResponse, HttpTransport
 
 from apexdevkit.error import ExistsError
 from apexdevkit.fastapi.name import RestfulName
 
-from ..rest import RestRequest
+from ..rest import RestRequest, RestTransport
 from ..sample_api import FailingService, FakeApple
 
 
@@ -13,9 +12,7 @@ def service() -> FailingService:
     return FailingService(ExistsError)
 
 
-def test_should_not_create_existing(
-    transport: HttpTransport[HttpResponse],
-) -> None:
+def test_should_not_create_existing(transport: RestTransport) -> None:
     (
         RestRequest(RestfulName("apple"))
         .with_data(FakeApple().json())
