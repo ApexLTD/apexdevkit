@@ -38,8 +38,10 @@ class RestRequest:
     def using(self, transport: HttpTransport[HttpResponse]) -> RestDispatcher:
         return RestDispatcher(
             request=self.request,
-            response=self.response,
-            transporter=transport,
+            transport=RestTransport(
+                response=self.response,
+                transport=transport,
+            ),
         )
 
 
@@ -60,8 +62,7 @@ class RestTransport:
 @dataclass(frozen=True)
 class RestDispatcher:
     request: HttpRequest
-    transporter: HttpTransport[HttpResponse]
-    response: RestResponse
+    transport: RestTransport
 
     def create(self) -> ResponseProbe:
         return self.dispatch(RestMethod.create)
@@ -79,10 +80,7 @@ class RestDispatcher:
         return self.dispatch(RestMethod.delete)
 
     def dispatch(self, method: RestMethod) -> ResponseProbe:
-        return RestTransport(
-            response=self.response,
-            transport=self.transporter,
-        ).deliver(self.request, method.as_http())
+        return self.transport.deliver(self.request, method.as_http())
 
 
 class RestMethod(Enum):
