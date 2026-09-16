@@ -129,10 +129,10 @@ class ResponseProbe:
 
         return self
 
-    def and_collection(self, value: list[Any]) -> Self:
-        return self.with_collection(value)
+    def and_collection(self, values: Collection[Any]) -> Self:
+        return self.with_collection(values)
 
-    def with_collection(self, values: list[Any]) -> Self:
+    def with_collection(self, values: Collection[Any]) -> Self:
         assert self.response.collection() == values, self.response.raw
         assert self.response.count() == len(values)
 
