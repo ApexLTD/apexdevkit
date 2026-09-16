@@ -30,6 +30,7 @@ def test_should_create(
         .with_data(apple)
         .using(transport)
         .create()
+        .ensure(http_code=201)
         .success()
         .with_code(201)
         .and_item(apple)
@@ -48,6 +49,7 @@ def test_should_read_one(
         .item(with_id=apple.value_of("id").to(str))
         .using(transport)
         .read()
+        .ensure(http_code=200)
         .success()
         .with_code(200)
         .with_item(apple)
@@ -66,6 +68,7 @@ def test_should_read_many(
         .with_params(color="red")
         .using(transport)
         .read()
+        .ensure(http_code=200)
         .success()
         .with_code(200)
         .with_collection([apple])
@@ -83,6 +86,7 @@ def test_should_read_all(
         RestRequest()
         .using(transport)
         .read()
+        .ensure(http_code=200)
         .success()
         .with_code(200)
         .and_collection([apple])
@@ -102,6 +106,7 @@ def test_should_update_one(
         .with_data(apple)
         .using(transport)
         .update()
+        .ensure(http_code=200)
         .success()
         .with_code(200)
     )
@@ -114,7 +119,15 @@ def test_should_replace_one(
     apple: JsonDict,
     service: SuccessfulService,
 ) -> None:
-    RestRequest().with_data(apple).using(transport).replace().success().with_code(200)
+    (
+        RestRequest()
+        .with_data(apple)
+        .using(transport)
+        .replace()
+        .ensure(http_code=200)
+        .success()
+        .with_code(200)
+    )
 
     assert service.called_with == apple
 
@@ -129,6 +142,7 @@ def test_should_delete_one(
         .item(with_id=apple.value_of("id"))
         .using(transport)
         .delete()
+        .ensure(http_code=200)
         .success()
         .with_code(200)
     )
@@ -144,6 +158,7 @@ def test_should_sub_resource(transport: RestTransport) -> None:
         .item(with_id=str(uuid4()))
         .using(transport)
         .delete()
+        .ensure(http_code=200)
         .success()
         .with_code(200)
     )

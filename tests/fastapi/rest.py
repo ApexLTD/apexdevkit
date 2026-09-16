@@ -41,12 +41,10 @@ class RestTransport:
     resource: RestfulName
     transport: HttpTransport[HttpResponse]
 
-    def deliver(self, request: HttpRequest, using: HttpMethod) -> ResponseProbe:
-        http_response = self.transport.deliver(request, using)
-
-        return ResponseProbe(
-            http_response=http_response,
-            rest_response=http_response.load(RestResponse(self.resource)),
+    def deliver(self, request: HttpRequest, using: HttpMethod) -> StatusProbe:
+        return StatusProbe(
+            resource=self.resource,
+            response=self.transport.deliver(request, using),
         )
 
 
@@ -82,6 +80,20 @@ class RestResponse:
 
     def data(self) -> JsonDict:
         return self.raw.value_of("data").to(JsonDict)
+
+
+@dataclass(frozen=True)
+class StatusProbe:
+    resource: RestfulName
+    response: HttpResponse
+
+    def ensure(self, http_code: int) -> ResponseProbe:
+        assert self.response.status == http_code
+
+        return ResponseProbe(
+            self.response,
+            self.response.load(RestResponse(self.resource)),
+        )
 
 
 @dataclass(frozen=True)
@@ -133,18 +145,18 @@ class ResponseProbe:
 
 
 @dataclass(frozen=True)
-class RestDispatcher(HttpDispatcher[ResponseProbe]):
-    def create(self) -> ResponseProbe:
+class RestDispatcher(HttpDispatcher[StatusProbe]):
+    def create(self) -> StatusProbe:
         return self.dispatch(HttpMethod.post)
 
-    def read(self) -> ResponseProbe:
+    def read(self) -> StatusProbe:
         return self.dispatch(HttpMethod.get)
 
-    def update(self) -> ResponseProbe:
+    def update(self) -> StatusProbe:
         return self.dispatch(HttpMethod.patch)
 
-    def delete(self) -> ResponseProbe:
+    def delete(self) -> StatusProbe:
         return self.dispatch(HttpMethod.delete)
 
-    def replace(self) -> ResponseProbe:
+    def replace(self) -> StatusProbe:
         return self.dispatch(HttpMethod.put)

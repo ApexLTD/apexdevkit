@@ -77,6 +77,7 @@ def test_should_build_dependable_with_parent(faker: Faker) -> None:
         .sub_resource(name=_CHILD)
         .using(_transport(dependency))
         .read()
+        .ensure(http_code=200)
         .success()
     )
 
@@ -96,6 +97,7 @@ def test_should_not_build_dependable_when_no_parent(faker: Faker) -> None:
         .sub_resource(name=_CHILD)
         .using(_transport(dependency))
         .read()
+        .ensure(http_code=404)
         .fail()
         .with_code(404)
         .and_message(
