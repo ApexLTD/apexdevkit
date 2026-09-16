@@ -1,7 +1,6 @@
 import pytest
 
 from apexdevkit.error import ExistsError
-from apexdevkit.fastapi.name import RestfulName
 
 from ..rest import RestRequest, RestTransport
 from ..sample_api import FailingService, FakeApple
@@ -14,7 +13,7 @@ def service() -> FailingService:
 
 def test_should_not_create_existing(transport: RestTransport) -> None:
     (
-        RestRequest(RestfulName("apple"))
+        RestRequest()
         .with_data(FakeApple().json())
         .using(transport)
         .create()

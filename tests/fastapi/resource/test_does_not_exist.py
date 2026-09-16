@@ -5,7 +5,6 @@ from pypebbles import JsonDict
 from pypebbles.http import HttpResponse, HttpTransport
 
 from apexdevkit.error import DoesNotExistError
-from apexdevkit.fastapi.name import RestfulName
 
 from ..rest import RestRequest
 from ..sample_api import FailingService, FakeApple
@@ -25,7 +24,7 @@ def test_should_not_read_unknown(
     transport: HttpTransport[HttpResponse],
 ) -> None:
     (
-        RestRequest(RestfulName("apple"))
+        RestRequest()
         .item(with_id=uuid4())
         .using(transport)
         .read()
@@ -40,7 +39,7 @@ def test_should_not_update_unknown(
     apple: JsonDict,
 ) -> None:
     (
-        RestRequest(RestfulName("apple"))
+        RestRequest()
         .item(with_id=apple["id"])
         .with_data(apple)
         .using(transport)
@@ -56,7 +55,7 @@ def test_should_not_replace_unknown(
     apple: JsonDict,
 ) -> None:
     (
-        RestRequest(RestfulName("apple"))
+        RestRequest()
         .with_data(apple)
         .using(transport)
         .replace()
@@ -71,7 +70,7 @@ def test_should_not_delete_unknown(
     apple: JsonDict,
 ) -> None:
     (
-        RestRequest(RestfulName("apple"))
+        RestRequest()
         .item(with_id=apple["id"])
         .using(transport)
         .delete()

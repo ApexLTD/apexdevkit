@@ -60,7 +60,7 @@ def test_should_build_dependable_with_user(faker: Faker) -> None:
     builder = MagicMock(spec=RestfulServiceBuilder)
     dependency = DependableBuilder.from_builder(builder).with_user(lambda: user)
 
-    RestRequest(_PARENT).using(_transport(dependency)).read()
+    RestRequest().using(_transport(dependency)).read()
 
     builder.with_user.assert_called_once_with(user)
     builder.with_user().build.assert_called_once()
@@ -72,7 +72,7 @@ def test_should_build_dependable_with_parent(faker: Faker) -> None:
     dependency = DependableBuilder.from_builder(builder).with_parent(_PARENT)
 
     (
-        RestRequest(_PARENT)
+        RestRequest()
         .item(with_id=parent_id)
         .sub_resource(name=_CHILD)
         .using(_transport(dependency))
@@ -91,7 +91,7 @@ def test_should_not_build_dependable_when_no_parent(faker: Faker) -> None:
 
     dependency = DependableBuilder.from_builder(builder).with_parent(_PARENT)
     (
-        RestRequest(_PARENT)
+        RestRequest()
         .item(with_id=parent_id)
         .sub_resource(name=_CHILD)
         .using(_transport(dependency))
