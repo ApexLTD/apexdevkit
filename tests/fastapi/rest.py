@@ -143,8 +143,8 @@ class RestDispatcher(HttpDispatcher[ResponseProbe]):
     def update(self) -> ResponseProbe:
         return self.dispatch(HttpMethod.patch)
 
-    def replace(self) -> ResponseProbe:
-        return self.dispatch(HttpMethod.put)
-
     def delete(self) -> ResponseProbe:
         return self.dispatch(HttpMethod.delete)
+
+    def replace(self) -> ResponseProbe:
+        return self.dispatch(HttpMethod.put)
