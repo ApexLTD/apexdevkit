@@ -19,7 +19,7 @@ class RestRequest:
     @classmethod
     def resource(cls, name: RestfulName) -> RestRequest:
         return cls(
-            request=HttpRequest().with_endpoint(name.plural),
+            request=HttpRequest(),
             response=RestResponse(name),
         )
 

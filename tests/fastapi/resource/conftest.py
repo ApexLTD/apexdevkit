@@ -15,4 +15,4 @@ def dependency(service: RestfulServiceBuilder) -> DependableBuilder:
 
 @pytest.fixture
 def transport(dependency: DependableBuilder) -> HttpTransport[HttpResponse]:
-    return Httpx(TestClient(setup(dependency)))
+    return Httpx(TestClient(setup(dependency), base_url="http://testserver/apples"))

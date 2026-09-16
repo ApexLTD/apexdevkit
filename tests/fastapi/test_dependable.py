@@ -20,7 +20,7 @@ _CHILD = RestfulName("price")
 
 
 def _transport(using: Dependency) -> HttpTransport[HttpResponse]:
-    return Httpx(TestClient(_setup(using)))
+    return Httpx(TestClient(_setup(using), base_url="http://testserver/apples"))
 
 
 def _setup(using: Dependency) -> FastAPI:
