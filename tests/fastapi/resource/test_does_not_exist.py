@@ -2,11 +2,10 @@ from uuid import uuid4
 
 import pytest
 from pypebbles import JsonDict
-from pypebbles.http import HttpResponse, HttpTransport
 
 from apexdevkit.error import DoesNotExistError
 
-from ..rest import RestRequest
+from ..rest import RestRequest, RestTransport
 from ..sample_api import FailingService, FakeApple
 
 
@@ -20,9 +19,7 @@ def service() -> FailingService:
     return FailingService(DoesNotExistError)
 
 
-def test_should_not_read_unknown(
-    transport: HttpTransport[HttpResponse],
-) -> None:
+def test_should_not_read_unknown(transport: RestTransport) -> None:
     (
         RestRequest()
         .item(with_id=uuid4())
@@ -34,10 +31,7 @@ def test_should_not_read_unknown(
     )
 
 
-def test_should_not_update_unknown(
-    transport: HttpTransport[HttpResponse],
-    apple: JsonDict,
-) -> None:
+def test_should_not_update_unknown(transport: RestTransport, apple: JsonDict) -> None:
     (
         RestRequest()
         .item(with_id=apple["id"])
@@ -50,10 +44,7 @@ def test_should_not_update_unknown(
     )
 
 
-def test_should_not_replace_unknown(
-    transport: HttpTransport[HttpResponse],
-    apple: JsonDict,
-) -> None:
+def test_should_not_replace_unknown(transport: RestTransport, apple: JsonDict) -> None:
     (
         RestRequest()
         .with_data(apple)
@@ -65,10 +56,7 @@ def test_should_not_replace_unknown(
     )
 
 
-def test_should_not_delete_unknown(
-    transport: HttpTransport[HttpResponse],
-    apple: JsonDict,
-) -> None:
+def test_should_not_delete_unknown(transport: RestTransport, apple: JsonDict) -> None:
     (
         RestRequest()
         .item(with_id=apple["id"])

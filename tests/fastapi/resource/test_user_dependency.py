@@ -3,10 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import pytest
-from pypebbles.http import HttpResponse, HttpTransport
 
 from apexdevkit.fastapi.dependable import DependableBuilder
-from tests.fastapi.rest import RestRequest
+from tests.fastapi.rest import RestRequest, RestTransport
 from tests.fastapi.sample_api import FakeApple, SuccessfulService
 
 
@@ -35,7 +34,7 @@ class FakeUser:
 
 
 def test_should_call_extract_user_for_create_one(
-    transport: HttpTransport[HttpResponse],
+    transport: RestTransport,
     fake_user: FakeUser,
 ) -> None:
     RestRequest().with_data(FakeApple().json()).using(transport).create()
@@ -44,7 +43,7 @@ def test_should_call_extract_user_for_create_one(
 
 
 def test_should_persist_user_for_create_one(
-    transport: HttpTransport[HttpResponse],
+    transport: RestTransport,
     service: SuccessfulService,
 ) -> None:
     RestRequest().with_data(FakeApple().json()).using(transport).create()
@@ -53,7 +52,7 @@ def test_should_persist_user_for_create_one(
 
 
 def test_should_call_extract_user_for_read_one(
-    transport: HttpTransport[HttpResponse],
+    transport: RestTransport,
     fake_user: FakeUser,
 ) -> None:
     RestRequest().item(with_id=FakeApple().json().get("id")).using(transport).read()
@@ -62,7 +61,7 @@ def test_should_call_extract_user_for_read_one(
 
 
 def test_should_persist_user_for_read_one(
-    transport: HttpTransport[HttpResponse],
+    transport: RestTransport,
     service: SuccessfulService,
 ) -> None:
     RestRequest().item(with_id=FakeApple().json().get("id")).using(transport).read()
@@ -71,7 +70,7 @@ def test_should_persist_user_for_read_one(
 
 
 def test_should_call_extract_user_for_read_all(
-    transport: HttpTransport[HttpResponse],
+    transport: RestTransport,
     fake_user: FakeUser,
 ) -> None:
     RestRequest().using(transport).read()
@@ -80,7 +79,7 @@ def test_should_call_extract_user_for_read_all(
 
 
 def test_should_persist_user_for_read_all(
-    transport: HttpTransport[HttpResponse],
+    transport: RestTransport,
     service: SuccessfulService,
 ) -> None:
     RestRequest().using(transport).read()
@@ -89,7 +88,7 @@ def test_should_persist_user_for_read_all(
 
 
 def test_should_call_extract_user_for_update_one(
-    transport: HttpTransport[HttpResponse],
+    transport: RestTransport,
     fake_user: FakeUser,
 ) -> None:
     (
@@ -104,7 +103,7 @@ def test_should_call_extract_user_for_update_one(
 
 
 def test_should_persist_user_for_update_one(
-    transport: HttpTransport[HttpResponse],
+    transport: RestTransport,
     service: SuccessfulService,
 ) -> None:
     (
@@ -119,7 +118,7 @@ def test_should_persist_user_for_update_one(
 
 
 def test_should_call_extract_user_for_replace_one(
-    transport: HttpTransport[HttpResponse],
+    transport: RestTransport,
     fake_user: FakeUser,
 ) -> None:
     RestRequest().with_data(FakeApple().json()).using(transport).replace()
@@ -128,7 +127,7 @@ def test_should_call_extract_user_for_replace_one(
 
 
 def test_should_persist_user_for_replace_one(
-    transport: HttpTransport[HttpResponse],
+    transport: RestTransport,
     service: SuccessfulService,
 ) -> None:
     RestRequest().with_data(FakeApple().json()).using(transport).replace()
@@ -137,7 +136,7 @@ def test_should_persist_user_for_replace_one(
 
 
 def test_should_call_extract_user_for_delete_one(
-    transport: HttpTransport[HttpResponse],
+    transport: RestTransport,
     fake_user: FakeUser,
 ) -> None:
     RestRequest().item(with_id=FakeApple().json().get("id")).using(transport).delete()
@@ -146,7 +145,7 @@ def test_should_call_extract_user_for_delete_one(
 
 
 def test_should_persist_user_for_delete_one(
-    transport: HttpTransport[HttpResponse],
+    transport: RestTransport,
     service: SuccessfulService,
 ) -> None:
     RestRequest().item(with_id=FakeApple().json().get("id")).using(transport).delete()
