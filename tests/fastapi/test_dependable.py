@@ -98,7 +98,7 @@ def test_should_not_build_dependable_when_no_parent(faker: Faker) -> None:
         .using(_transport(dependency))
         .read()
         .ensure(http_code=404)
-        .fail()
+        .and_api_fail()
         .with_code(404)
         .and_message(
             f"An item<{_PARENT.singular.capitalize()}> "

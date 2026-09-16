@@ -97,7 +97,7 @@ class StatusProbe:
 class ResponseProbe:
     response: RestResponse
 
-    def fail(self) -> Self:
+    def and_api_fail(self) -> Self:
         return self.with_status("fail")
 
     def success(self) -> Self:

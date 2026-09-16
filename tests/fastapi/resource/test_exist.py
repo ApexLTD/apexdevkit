@@ -18,7 +18,7 @@ def test_should_not_create_existing(transport: RestTransport) -> None:
         .using(transport)
         .create()
         .ensure(http_code=409)
-        .fail()
+        .and_api_fail()
         .with_code(409)
         .and_message("An item<Apple> with the  already exists.")
     )
