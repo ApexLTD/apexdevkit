@@ -2,7 +2,7 @@ from uuid import uuid4
 
 import pytest
 from pypebbles import JsonDict
-from pypebbles.http import HttpTransport
+from pypebbles.http import HttpResponse, HttpTransport
 
 from apexdevkit.error import ForbiddenError
 from apexdevkit.fastapi.name import RestfulName
@@ -20,7 +20,7 @@ def service() -> FailingService:
     return FailingService(ForbiddenError)
 
 
-def test_should_not_create_forbidden(transport: HttpTransport) -> None:
+def test_should_not_create_forbidden(transport: HttpTransport[HttpResponse]) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
         .with_data(FakeApple().json())
@@ -32,7 +32,7 @@ def test_should_not_create_forbidden(transport: HttpTransport) -> None:
     )
 
 
-def test_should_not_read_forbidden(transport: HttpTransport) -> None:
+def test_should_not_read_forbidden(transport: HttpTransport[HttpResponse]) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
         .item(with_id=uuid4())
@@ -44,7 +44,7 @@ def test_should_not_read_forbidden(transport: HttpTransport) -> None:
     )
 
 
-def test_should_not_read_many_forbidden(transport: HttpTransport) -> None:
+def test_should_not_read_many_forbidden(transport: HttpTransport[HttpResponse]) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
         .with_params(color="red")
@@ -56,7 +56,7 @@ def test_should_not_read_many_forbidden(transport: HttpTransport) -> None:
     )
 
 
-def test_should_not_read_all_forbidden(transport: HttpTransport) -> None:
+def test_should_not_read_all_forbidden(transport: HttpTransport[HttpResponse]) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
         .using(transport)
@@ -67,7 +67,7 @@ def test_should_not_read_all_forbidden(transport: HttpTransport) -> None:
     )
 
 
-def test_should_not_update_forbidden(transport: HttpTransport) -> None:
+def test_should_not_update_forbidden(transport: HttpTransport[HttpResponse]) -> None:
     apple = FakeApple().json()
 
     (
@@ -82,7 +82,7 @@ def test_should_not_update_forbidden(transport: HttpTransport) -> None:
     )
 
 
-def test_should_not_replace_forbidden(transport: HttpTransport) -> None:
+def test_should_not_replace_forbidden(transport: HttpTransport[HttpResponse]) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
         .with_data(FakeApple().json())
@@ -94,7 +94,7 @@ def test_should_not_replace_forbidden(transport: HttpTransport) -> None:
     )
 
 
-def test_should_not_delete_forbidden(transport: HttpTransport) -> None:
+def test_should_not_delete_forbidden(transport: HttpTransport[HttpResponse]) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
         .item(with_id=FakeApple().json().value_of("id").to(str))

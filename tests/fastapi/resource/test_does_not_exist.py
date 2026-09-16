@@ -2,7 +2,7 @@ from uuid import uuid4
 
 import pytest
 from pypebbles import JsonDict
-from pypebbles.http import HttpTransport
+from pypebbles.http import HttpResponse, HttpTransport
 
 from apexdevkit.error import DoesNotExistError
 from apexdevkit.fastapi.name import RestfulName
@@ -21,7 +21,9 @@ def service() -> FailingService:
     return FailingService(DoesNotExistError)
 
 
-def test_should_not_read_unknown(transport: HttpTransport) -> None:
+def test_should_not_read_unknown(
+    transport: HttpTransport[HttpResponse],
+) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
         .item(with_id=uuid4())
@@ -33,7 +35,10 @@ def test_should_not_read_unknown(transport: HttpTransport) -> None:
     )
 
 
-def test_should_not_update_unknown(apple: JsonDict, transport: HttpTransport) -> None:
+def test_should_not_update_unknown(
+    transport: HttpTransport[HttpResponse],
+    apple: JsonDict,
+) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
         .item(with_id=apple["id"])
@@ -46,7 +51,10 @@ def test_should_not_update_unknown(apple: JsonDict, transport: HttpTransport) ->
     )
 
 
-def test_should_not_replace_unknown(apple: JsonDict, transport: HttpTransport) -> None:
+def test_should_not_replace_unknown(
+    transport: HttpTransport[HttpResponse],
+    apple: JsonDict,
+) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
         .with_data(apple)
@@ -58,7 +66,10 @@ def test_should_not_replace_unknown(apple: JsonDict, transport: HttpTransport) -
     )
 
 
-def test_should_not_delete_unknown(apple: JsonDict, transport: HttpTransport) -> None:
+def test_should_not_delete_unknown(
+    transport: HttpTransport[HttpResponse],
+    apple: JsonDict,
+) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
         .item(with_id=apple["id"])

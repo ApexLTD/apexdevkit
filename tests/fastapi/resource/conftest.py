@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from pypebbles.http import HttpTransport
+from pypebbles.http import HttpResponse, HttpTransport
 from pypebbles.http.drivers import Httpx
 
 from apexdevkit.fastapi import RestfulServiceBuilder
@@ -14,5 +14,5 @@ def dependency(service: RestfulServiceBuilder) -> DependableBuilder:
 
 
 @pytest.fixture
-def transport(dependency: DependableBuilder) -> HttpTransport:
+def transport(dependency: DependableBuilder) -> HttpTransport[HttpResponse]:
     return Httpx(TestClient(setup(dependency)))

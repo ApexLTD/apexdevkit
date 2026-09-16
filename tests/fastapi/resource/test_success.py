@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 from pypebbles import JsonDict
-from pypebbles.http import HttpTransport
+from pypebbles.http import HttpResponse, HttpTransport
 
 from apexdevkit.fastapi.name import RestfulName
 from tests.fastapi.rest import RestRequest
@@ -24,7 +24,7 @@ def service(apple: JsonDict) -> SuccessfulService:
 def test_should_create(
     apple: JsonDict,
     service: SuccessfulService,
-    transport: HttpTransport,
+    transport: HttpTransport[HttpResponse],
 ) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
@@ -42,7 +42,7 @@ def test_should_create(
 def test_should_read_one(
     apple: JsonDict,
     service: SuccessfulService,
-    transport: HttpTransport,
+    transport: HttpTransport[HttpResponse],
 ) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
@@ -60,7 +60,7 @@ def test_should_read_one(
 def test_should_read_many(
     apple: JsonDict,
     service: SuccessfulService,
-    transport: HttpTransport,
+    transport: HttpTransport[HttpResponse],
 ) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
@@ -78,7 +78,7 @@ def test_should_read_many(
 def test_should_read_all(
     apple: JsonDict,
     service: SuccessfulService,
-    transport: HttpTransport,
+    transport: HttpTransport[HttpResponse],
 ) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
@@ -95,7 +95,7 @@ def test_should_read_all(
 def test_should_update_one(
     apple: JsonDict,
     service: SuccessfulService,
-    transport: HttpTransport,
+    transport: HttpTransport[HttpResponse],
 ) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
@@ -113,7 +113,7 @@ def test_should_update_one(
 def test_should_replace_one(
     apple: JsonDict,
     service: SuccessfulService,
-    transport: HttpTransport,
+    transport: HttpTransport[HttpResponse],
 ) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
@@ -130,7 +130,7 @@ def test_should_replace_one(
 def test_should_delete_one(
     apple: JsonDict,
     service: SuccessfulService,
-    transport: HttpTransport,
+    transport: HttpTransport[HttpResponse],
 ) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
@@ -144,7 +144,7 @@ def test_should_delete_one(
     assert service.called_with == apple["id"]
 
 
-def test_should_sub_resource(transport: HttpTransport) -> None:
+def test_should_sub_resource(transport: HttpTransport[HttpResponse]) -> None:
     (
         RestRequest.resource(RestfulName("apple"))
         .item(with_id=str(uuid4()))

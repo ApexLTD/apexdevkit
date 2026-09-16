@@ -4,7 +4,7 @@ import pytest
 from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from pypebbles.http import HttpTransport
+from pypebbles.http import HttpResponse, HttpTransport
 from pypebbles.http.drivers import Httpx
 
 from apexdevkit.error import DoesNotExistError
@@ -19,7 +19,7 @@ _PARENT = RestfulName("apple")
 _CHILD = RestfulName("price")
 
 
-def _transport(using: Dependency) -> HttpTransport:
+def _transport(using: Dependency) -> HttpTransport[HttpResponse]:
     return Httpx(TestClient(_setup(using)))
 
 

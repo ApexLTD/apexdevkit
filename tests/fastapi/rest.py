@@ -35,7 +35,7 @@ class RestRequest:
     def item(self, with_id: Any) -> RestRequest:
         return replace(self, request=self.request.with_endpoint(str(with_id)))
 
-    def using(self, transport: HttpTransport) -> RestDispatcher:
+    def using(self, transport: HttpTransport[HttpResponse]) -> RestDispatcher:
         return RestDispatcher(
             request=self.request,
             response=self.response,
@@ -46,7 +46,7 @@ class RestRequest:
 @dataclass(frozen=True)
 class RestDispatcher:
     request: HttpRequest
-    transporter: HttpTransport
+    transporter: HttpTransport[HttpResponse]
     response: RestResponse
 
     def create(self) -> ResponseProbe:
