@@ -40,7 +40,7 @@ def test_should_call_extract_user_for_create_one(
     fake_user: FakeUser,
 ) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .with_data(FakeApple().json())
         .using(transport)
         .create()
@@ -54,7 +54,7 @@ def test_should_persist_user_for_create_one(
     service: SuccessfulService,
 ) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .with_data(FakeApple().json())
         .using(transport)
         .create()
@@ -68,7 +68,7 @@ def test_should_call_extract_user_for_read_one(
     fake_user: FakeUser,
 ) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .item(with_id=FakeApple().json().get("id"))
         .using(transport)
         .read()
@@ -82,7 +82,7 @@ def test_should_persist_user_for_read_one(
     service: SuccessfulService,
 ) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .item(with_id=FakeApple().json().get("id"))
         .using(transport)
         .read()
@@ -95,7 +95,7 @@ def test_should_call_extract_user_for_read_all(
     transport: HttpTransport[HttpResponse],
     fake_user: FakeUser,
 ) -> None:
-    RestRequest.resource(RestfulName("apple")).using(transport).read()
+    RestRequest(RestfulName("apple")).using(transport).read()
 
     assert fake_user.times_called == 1
 
@@ -104,7 +104,7 @@ def test_should_persist_user_for_read_all(
     transport: HttpTransport[HttpResponse],
     service: SuccessfulService,
 ) -> None:
-    RestRequest.resource(RestfulName("apple")).using(transport).read()
+    RestRequest(RestfulName("apple")).using(transport).read()
 
     assert service.user == "user"
 
@@ -114,7 +114,7 @@ def test_should_call_extract_user_for_update_one(
     fake_user: FakeUser,
 ) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .item(with_id=FakeApple().json().get("id"))
         .with_data(FakeApple().json().drop("id").drop("color"))
         .using(transport)
@@ -129,7 +129,7 @@ def test_should_persist_user_for_update_one(
     service: SuccessfulService,
 ) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .item(with_id=FakeApple().json().get("id"))
         .with_data(FakeApple().json().drop("id").drop("color"))
         .using(transport)
@@ -144,7 +144,7 @@ def test_should_call_extract_user_for_replace_one(
     fake_user: FakeUser,
 ) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .with_data(FakeApple().json())
         .using(transport)
         .replace()
@@ -158,7 +158,7 @@ def test_should_persist_user_for_replace_one(
     service: SuccessfulService,
 ) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .with_data(FakeApple().json())
         .using(transport)
         .replace()
@@ -172,7 +172,7 @@ def test_should_call_extract_user_for_delete_one(
     fake_user: FakeUser,
 ) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .item(with_id=FakeApple().json().get("id"))
         .using(transport)
         .delete()
@@ -186,7 +186,7 @@ def test_should_persist_user_for_delete_one(
     service: SuccessfulService,
 ) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .item(with_id=FakeApple().json().get("id"))
         .using(transport)
         .delete()

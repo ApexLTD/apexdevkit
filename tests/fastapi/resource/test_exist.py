@@ -17,7 +17,7 @@ def test_should_not_create_existing(
     transport: HttpTransport[HttpResponse],
 ) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .with_data(FakeApple().json())
         .using(transport)
         .create()

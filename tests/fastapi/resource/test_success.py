@@ -27,7 +27,7 @@ def test_should_create(
     transport: HttpTransport[HttpResponse],
 ) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .with_data(apple)
         .using(transport)
         .create()
@@ -45,7 +45,7 @@ def test_should_read_one(
     transport: HttpTransport[HttpResponse],
 ) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .item(with_id=apple.value_of("id").to(str))
         .using(transport)
         .read()
@@ -63,7 +63,7 @@ def test_should_read_many(
     transport: HttpTransport[HttpResponse],
 ) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .with_params(color="red")
         .using(transport)
         .read()
@@ -81,7 +81,7 @@ def test_should_read_all(
     transport: HttpTransport[HttpResponse],
 ) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .using(transport)
         .read()
         .success()
@@ -98,7 +98,7 @@ def test_should_update_one(
     transport: HttpTransport[HttpResponse],
 ) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .item(with_id=apple.value_of("id"))
         .with_data(apple)
         .using(transport)
@@ -116,7 +116,7 @@ def test_should_replace_one(
     transport: HttpTransport[HttpResponse],
 ) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .with_data(apple)
         .using(transport)
         .replace()
@@ -133,7 +133,7 @@ def test_should_delete_one(
     transport: HttpTransport[HttpResponse],
 ) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .item(with_id=apple.value_of("id"))
         .using(transport)
         .delete()
@@ -146,7 +146,7 @@ def test_should_delete_one(
 
 def test_should_sub_resource(transport: HttpTransport[HttpResponse]) -> None:
     (
-        RestRequest.resource(RestfulName("apple"))
+        RestRequest(RestfulName("apple"))
         .item(with_id=str(uuid4()))
         .sub_resource(name=RestfulName("price"))
         .using(transport)
