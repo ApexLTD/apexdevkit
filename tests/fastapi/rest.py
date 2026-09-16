@@ -13,15 +13,13 @@ from apexdevkit.fastapi.name import RestfulName
 
 @dataclass(frozen=True)
 class RestRequest:
-    request: HttpRequest
     response: RestResponse
+
+    request: HttpRequest = HttpRequest()
 
     @classmethod
     def resource(cls, name: RestfulName) -> RestRequest:
-        return cls(
-            request=HttpRequest(),
-            response=RestResponse(name),
-        )
+        return cls(response=RestResponse(name))
 
     def with_params(self, **params: Any) -> RestRequest:
         return replace(self, request=self.request.with_params(params))
