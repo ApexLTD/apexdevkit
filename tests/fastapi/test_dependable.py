@@ -78,7 +78,7 @@ def test_should_build_dependable_with_parent(faker: Faker) -> None:
         .using(_transport(dependency))
         .read()
         .ensure(http_code=200)
-        .success()
+        .and_api_success()
     )
 
     builder.with_parent.assert_called_once_with(parent_id)

@@ -100,7 +100,7 @@ class ResponseProbe:
     def and_api_fail(self) -> Self:
         return self.with_status("fail")
 
-    def success(self) -> Self:
+    def and_api_success(self) -> Self:
         return self.with_status("success")
 
     def with_status(self, value: str) -> Self:
