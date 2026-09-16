@@ -13,13 +13,13 @@ from apexdevkit.fastapi.name import RestfulName
 
 @dataclass(frozen=True)
 class RestRequest:
-    response: RestResponse
+    resource: RestfulName
 
     request: HttpRequest = HttpRequest()
 
     @classmethod
     def resource(cls, name: RestfulName) -> RestRequest:
-        return cls(response=RestResponse(name))
+        return cls(resource=name)
 
     def with_params(self, **params: Any) -> RestRequest:
         return replace(self, request=self.request.with_params(params))
@@ -28,7 +28,7 @@ class RestRequest:
         return replace(self, request=self.request.with_json(value))
 
     def sub_resource(self, name: RestfulName) -> RestRequest:
-        return replace(self, response=RestResponse(name))
+        return replace(self, resource=name)
 
     def item(self, with_id: Any) -> RestRequest:
         return replace(self, request=self.request.with_endpoint(str(with_id)))
@@ -36,7 +36,7 @@ class RestRequest:
     def using(self, transport: HttpTransport[HttpResponse]) -> RestDispatcher:
         return self.using_alt(
             transport=RestTransport(
-                response=self.response,
+                response=RestResponse(self.resource),
                 transport=transport,
             ),
         )
