@@ -32,7 +32,7 @@ class RestRequest:
     def using(self, transport: HttpTransport[HttpResponse]) -> RestDispatcher:
         return self.using_alt(
             transport=RestTransport(
-                response=RestResponse(self.resource),
+                resource=self.resource,
                 transport=transport,
             ),
         )
@@ -46,7 +46,7 @@ class RestRequest:
 
 @dataclass(frozen=True)
 class RestTransport:
-    response: RestResponse
+    resource: RestfulName
     transport: HttpTransport[HttpResponse]
 
     def deliver(self, request: HttpRequest, using: HttpMethod) -> ResponseProbe:
@@ -54,7 +54,7 @@ class RestTransport:
 
         return ResponseProbe(
             http_response=http_response,
-            rest_response=http_response.load(self.response),
+            rest_response=http_response.load(RestResponse(self.resource)),
         )
 
 
