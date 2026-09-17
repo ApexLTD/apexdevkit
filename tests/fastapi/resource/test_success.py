@@ -6,7 +6,7 @@ import pytest
 from pypebbles import JsonDict
 
 from apexdevkit.fastapi.name import RestfulName
-from tests.fastapi.rest import RestRequest, RestTransport
+from apexdevkit.testing import RestRequest, RestTransport
 from tests.fastapi.sample_api import FakeApple, SuccessfulService
 
 

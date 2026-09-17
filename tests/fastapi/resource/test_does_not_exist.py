@@ -4,8 +4,8 @@ import pytest
 from pypebbles import JsonDict
 
 from apexdevkit.error import DoesNotExistError
+from apexdevkit.testing import RestRequest, RestTransport
 
-from ..rest import RestRequest, RestTransport
 from ..sample_api import FailingService, FakeApple
 
 

@@ -10,7 +10,7 @@ from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuil
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.router import Dependency
-from tests.fastapi.rest import RestRequest, RestTransport
+from apexdevkit.testing import RestRequest, RestTransport
 from tests.fastapi.sample_api import AppleFields, PriceFields
 
 _PARENT = RestfulName("apple")

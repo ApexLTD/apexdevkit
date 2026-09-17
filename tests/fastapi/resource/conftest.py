@@ -5,7 +5,7 @@ from pypebbles.http.drivers import Httpx
 from apexdevkit.fastapi import RestfulServiceBuilder
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
-from tests.fastapi.rest import RestTransport
+from apexdevkit.testing import RestTransport
 from tests.fastapi.sample_api import setup
 
 

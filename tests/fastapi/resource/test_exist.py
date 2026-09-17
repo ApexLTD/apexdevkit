@@ -1,8 +1,8 @@
 import pytest
 
 from apexdevkit.error import ExistsError
+from apexdevkit.testing import RestRequest, RestTransport
 
-from ..rest import RestRequest, RestTransport
 from ..sample_api import FailingService, FakeApple
 
 

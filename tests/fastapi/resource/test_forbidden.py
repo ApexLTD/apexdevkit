@@ -4,7 +4,7 @@ import pytest
 from pypebbles import JsonDict
 
 from apexdevkit.error import ForbiddenError
-from tests.fastapi.rest import RestRequest, RestTransport
+from apexdevkit.testing import RestRequest, RestTransport
 from tests.fastapi.sample_api import FailingService, FakeApple
 
 
