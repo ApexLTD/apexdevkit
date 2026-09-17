@@ -4,7 +4,7 @@ import pytest
 from pypebbles import JsonDict
 
 from apexdevkit.error import ForbiddenError
-from tests.fastapi.rest import RestCollection
+from apexdevkit.testing import RestRequest, RestTransport
 from tests.fastapi.sample_api import FailingService, FakeApple
 
 
@@ -18,69 +18,94 @@ def service() -> FailingService:
     return FailingService(ForbiddenError)
 
 
-def test_should_not_create_forbidden(apple: JsonDict, resource: RestCollection) -> None:
+def test_should_not_create_forbidden(transport: RestTransport) -> None:
     (
-        resource.create_one()
-        .from_data(apple)
-        .ensure()
-        .fail()
+        RestRequest()
+        .with_data(FakeApple().json())
+        .using(transport)
+        .create()
+        .ensure(http_code=403)
+        .and_api_fail()
         .with_code(403)
         .and_message("Forbidden")
     )
 
 
-def test_should_not_read_forbidden(resource: RestCollection) -> None:
+def test_should_not_read_forbidden(transport: RestTransport) -> None:
     (
-        resource.read_one()
-        .with_id(uuid4())
-        .ensure()
-        .fail()
+        RestRequest()
+        .item(with_id=uuid4())
+        .using(transport)
+        .read()
+        .ensure(http_code=403)
+        .and_api_fail()
         .with_code(403)
         .and_message("Forbidden")
     )
 
 
-def test_should_not_read_many_forbidden(read_many_resource: RestCollection) -> None:
-    read_many_resource.read_many(color="red").ensure().fail().with_code(
-        403
-    ).and_message("Forbidden")
-
-
-def test_should_not_read_all_forbidden(resource: RestCollection) -> None:
-    resource.read_all().ensure().fail().with_code(403).and_message("Forbidden")
-
-
-def test_should_not_update_forbidden(apple: JsonDict, resource: RestCollection) -> None:
+def test_should_not_read_many_forbidden(transport: RestTransport) -> None:
     (
-        resource.update_one()
-        .with_id(apple["id"])
-        .and_data(apple)
-        .ensure()
-        .fail()
+        RestRequest()
+        .with_params(color="red")
+        .using(transport)
+        .read()
+        .ensure(http_code=403)
+        .and_api_fail()
         .with_code(403)
         .and_message("Forbidden")
     )
 
 
-def test_should_not_replace_forbidden(
-    apple: JsonDict, resource: RestCollection
-) -> None:
+def test_should_not_read_all_forbidden(transport: RestTransport) -> None:
     (
-        resource.replace_one()
-        .from_data(apple)
-        .ensure()
-        .fail()
+        RestRequest()
+        .using(transport)
+        .read()
+        .ensure(http_code=403)
+        .and_api_fail()
         .with_code(403)
         .and_message("Forbidden")
     )
 
 
-def test_should_not_delete_forbidden(apple: JsonDict, resource: RestCollection) -> None:
+def test_should_not_update_forbidden(transport: RestTransport) -> None:
+    apple = FakeApple().json()
+
     (
-        resource.delete_one()
-        .with_id(apple["id"])
-        .ensure()
-        .fail()
+        RestRequest()
+        .item(with_id=apple.value_of("id"))
+        .with_data(apple)
+        .using(transport)
+        .update()
+        .ensure(http_code=403)
+        .and_api_fail()
+        .with_code(403)
+        .and_message("Forbidden")
+    )
+
+
+def test_should_not_replace_forbidden(transport: RestTransport) -> None:
+    (
+        RestRequest()
+        .with_data(FakeApple().json())
+        .using(transport)
+        .replace()
+        .ensure(http_code=403)
+        .and_api_fail()
+        .with_code(403)
+        .and_message("Forbidden")
+    )
+
+
+def test_should_not_delete_forbidden(transport: RestTransport) -> None:
+    (
+        RestRequest()
+        .item(with_id=FakeApple().json().value_of("id").to(str))
+        .using(transport)
+        .delete()
+        .ensure(http_code=403)
+        .and_api_fail()
         .with_code(403)
         .and_message("Forbidden")
     )

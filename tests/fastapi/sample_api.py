@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from pypebbles import JsonDict
 
 from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
-from apexdevkit.fastapi.name import RestfulName
+from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.schema import SchemaFields
 from apexdevkit.fastapi.service import (
     RawCollection,
@@ -22,43 +22,31 @@ from apexdevkit.query.query import Operator, Page, Sort
 from tests.fake import FakeResource
 
 
-def setup(infra: RestfulServiceBuilder) -> FastAPI:
-    dependable = infra.as_dependable().with_user(lambda: None)
-
+def setup(dependency: DependableBuilder) -> FastAPI:
     return (
         FastApiBuilder()
         .with_title("Apple API")
         .with_version("1.0.0")
         .with_description("Sample API for unit testing various testing routines")
         .with_route(
-            market_apples=(
-                RestfulRouter.named("market-apple")
-                .with_fields(AppleFields())
-                .with_sub_resource(
-                    prices=(
-                        RestfulRouter.named("price")
-                        .child_of("market-apple")
-                        .with_fields(PriceFields())
-                        .with_delete_one(
-                            dependable.with_parent(RestfulName("market-apple"))
-                        )
-                        .build()
-                    )
-                )
-                .with_default_dependency(dependable)
+            apples=RestfulRouter.named("apple")
+            .with_fields(AppleFields())
+            .with_default_dependency(dependency)
+            .with_read_one()
+            .with_create_one()
+            .with_update_one()
+            .with_replace_one()
+            .with_delete_one()
+            .with_read_many(JsonDict().with_a(color=str))
+            .with_sub_resource(
+                prices=RestfulRouter.named("price")
+                .child_of("apple")
+                .with_fields(PriceFields())
+                .with_default_dependency(dependency)
                 .default()
-                .with_replace_one()
                 .build()
             )
-        )
-        .with_route(
-            apples=(
-                RestfulRouter.named("apple")
-                .with_fields(AppleFields())
-                .with_default_dependency(dependable)
-                .with_read_many(JsonDict().with_a(color=str))
-                .build()
-            )
+            .build()
         )
         .build()
     )

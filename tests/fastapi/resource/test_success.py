@@ -5,7 +5,8 @@ from uuid import uuid4
 import pytest
 from pypebbles import JsonDict
 
-from tests.fastapi.rest import RestCollection
+from apexdevkit.fastapi.name import RestfulName
+from apexdevkit.testing import RestRequest, RestTransport
 from tests.fastapi.sample_api import FakeApple, SuccessfulService
 
 
@@ -20,15 +21,17 @@ def service(apple: JsonDict) -> SuccessfulService:
 
 
 def test_should_create(
+    transport: RestTransport,
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestCollection,
 ) -> None:
     (
-        resource.create_one()
-        .from_data(apple)
-        .ensure()
-        .success()
+        RestRequest()
+        .with_data(apple)
+        .using(transport)
+        .create()
+        .ensure(http_code=201)
+        .and_api_success()
         .with_code(201)
         .and_item(apple)
     )
@@ -37,59 +40,74 @@ def test_should_create(
 
 
 def test_should_read_one(
+    transport: RestTransport,
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestCollection,
 ) -> None:
     (
-        resource.read_one()
-        .with_id(apple["id"])
-        .ensure()
-        .success()
+        RestRequest()
+        .item(with_id=apple.value_of("id").to(str))
+        .using(transport)
+        .read()
+        .ensure(http_code=200)
+        .and_api_success()
         .with_code(200)
-        .with_item(apple)
+        .and_item(apple)
     )
 
-    assert service.called_with == apple["id"]
+    assert service.called_with == apple.value_of("id").to(str)
 
 
 def test_should_read_many(
+    transport: RestTransport,
     apple: JsonDict,
     service: SuccessfulService,
-    read_many_resource: RestCollection,
 ) -> None:
     (
-        read_many_resource.read_many(color="red")
-        .ensure()
-        .success()
+        RestRequest()
+        .with_params(color="red")
+        .using(transport)
+        .read()
+        .ensure(http_code=200)
+        .and_api_success()
         .with_code(200)
-        .with_collection([apple])
+        .and_collection([apple])
     )
 
     assert service.called_with == {"color": "red"}
 
 
 def test_should_read_all(
+    transport: RestTransport,
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestCollection,
 ) -> None:
-    resource.read_all().ensure().success().with_code(200).and_collection([apple])
+    (
+        RestRequest()
+        .using(transport)
+        .read()
+        .ensure(http_code=200)
+        .and_api_success()
+        .with_code(200)
+        .and_collection([apple])
+    )
 
-    assert service.called_with is None
+    assert service.called_with == {"color": None}
 
 
 def test_should_update_one(
+    transport: RestTransport,
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestCollection,
 ) -> None:
     (
-        resource.update_one()
-        .with_id(apple["id"])
-        .and_data(apple)
-        .ensure()
-        .success()
+        RestRequest()
+        .item(with_id=apple.value_of("id"))
+        .with_data(apple)
+        .using(transport)
+        .update()
+        .ensure(http_code=200)
+        .and_api_success()
         .with_code(200)
     )
 
@@ -97,31 +115,50 @@ def test_should_update_one(
 
 
 def test_should_replace_one(
+    transport: RestTransport,
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestCollection,
 ) -> None:
-    resource.replace_one().from_data(apple).ensure().success().with_code(200)
+    (
+        RestRequest()
+        .with_data(apple)
+        .using(transport)
+        .replace()
+        .ensure(http_code=200)
+        .and_api_success()
+        .with_code(200)
+    )
 
     assert service.called_with == apple
 
 
 def test_should_delete_one(
+    transport: RestTransport,
     apple: JsonDict,
     service: SuccessfulService,
-    resource: RestCollection,
 ) -> None:
-    resource.delete_one().with_id(apple["id"]).ensure().success().with_code(200)
+    (
+        RestRequest()
+        .item(with_id=apple.value_of("id"))
+        .using(transport)
+        .delete()
+        .ensure(http_code=200)
+        .and_api_success()
+        .with_code(200)
+    )
 
     assert service.called_with == apple["id"]
 
 
-def test_should_sub_resource(resource: RestCollection) -> None:
+def test_should_sub_resource(transport: RestTransport) -> None:
     (
-        resource.sub_resource(name="price", parent_id=str(uuid4()))
-        .delete_one()
-        .with_id(str(uuid4()))
-        .ensure()
-        .success()
+        RestRequest()
+        .item(with_id=str(uuid4()))
+        .sub_resource(name=RestfulName("price"))
+        .item(with_id=str(uuid4()))
+        .using(transport)
+        .delete()
+        .ensure(http_code=200)
+        .and_api_success()
         .with_code(200)
     )

@@ -3,18 +3,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import pytest
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-from pypebbles.http.drivers import Httpx
 
-from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
-from apexdevkit.fastapi.name import RestfulName
-from tests.fastapi.rest import RestCollection, RestTransport
-from tests.fastapi.sample_api import AppleFields, FakeApple, SuccessfulService
+from apexdevkit.fastapi.dependable import DependableBuilder
+from apexdevkit.testing import RestRequest, RestTransport
+from tests.fastapi.sample_api import FakeApple, SuccessfulService
 
 
 @pytest.fixture
-def infra() -> RestfulServiceBuilder:
+def service() -> SuccessfulService:
     return SuccessfulService(always_return=FakeApple().json())
 
 
@@ -24,11 +20,8 @@ def fake_user() -> FakeUser:
 
 
 @pytest.fixture
-def resource(infra: RestfulServiceBuilder, fake_user: FakeUser) -> RestCollection:
-    return RestCollection(
-        RestfulName("apple"),
-        transport=RestTransport(Httpx(TestClient(setup(infra, fake_user)))),
-    )
+def dependency(service: SuccessfulService, fake_user: FakeUser) -> DependableBuilder:
+    return service.as_dependable().with_user(fake_user.user)
 
 
 @dataclass
@@ -40,139 +33,121 @@ class FakeUser:
         return "user"
 
 
-def setup(infra: RestfulServiceBuilder, fake_user: FakeUser) -> FastAPI:
-    return (
-        FastApiBuilder()
-        .with_title("Apple API")
-        .with_version("1.0.0")
-        .with_description("Sample API for unit testing various testing routines")
-        .with_route(
-            apples=(
-                RestfulRouter.named("apple")
-                .with_fields(AppleFields())
-                .with_default_dependency(
-                    infra.as_dependable().with_user(fake_user.user)
-                )
-                .with_create_one()
-                .with_read_one()
-                .with_read_all()
-                .with_update_one()
-                .with_replace_one()
-                .with_delete_one()
-                .build()
-            )
-        )
-        .build()
-    )
-
-
 def test_should_call_extract_user_for_create_one(
-    resource: RestCollection, fake_user: FakeUser
+    transport: RestTransport,
+    fake_user: FakeUser,
 ) -> None:
-    resource.create_one().from_data(FakeApple().json()).ensure()
+    RestRequest().with_data(FakeApple().json()).using(transport).create()
 
     assert fake_user.times_called == 1
 
 
 def test_should_persist_user_for_create_one(
-    resource: RestCollection,
-    infra: RestfulServiceBuilder,
+    transport: RestTransport,
+    service: SuccessfulService,
 ) -> None:
-    resource.create_one().from_data(FakeApple().json()).ensure()
+    RestRequest().with_data(FakeApple().json()).using(transport).create()
 
-    assert infra.user == "user"
+    assert service.user == "user"
 
 
 def test_should_call_extract_user_for_read_one(
-    resource: RestCollection, fake_user: FakeUser
+    transport: RestTransport,
+    fake_user: FakeUser,
 ) -> None:
-    resource.read_one().with_id(str(FakeApple().json().get("id"))).ensure()
+    RestRequest().item(with_id=FakeApple().json().get("id")).using(transport).read()
 
     assert fake_user.times_called == 1
 
 
 def test_should_persist_user_for_read_one(
-    resource: RestCollection,
-    infra: RestfulServiceBuilder,
+    transport: RestTransport,
+    service: SuccessfulService,
 ) -> None:
-    resource.read_one().with_id(str(FakeApple().json().get("id"))).ensure()
+    RestRequest().item(with_id=FakeApple().json().get("id")).using(transport).read()
 
-    assert infra.user == "user"
+    assert service.user == "user"
 
 
 def test_should_call_extract_user_for_read_all(
-    resource: RestCollection, fake_user: FakeUser
+    transport: RestTransport,
+    fake_user: FakeUser,
 ) -> None:
-    resource.read_all().ensure()
+    RestRequest().using(transport).read()
 
     assert fake_user.times_called == 1
 
 
 def test_should_persist_user_for_read_all(
-    resource: RestCollection,
-    infra: RestfulServiceBuilder,
+    transport: RestTransport,
+    service: SuccessfulService,
 ) -> None:
-    resource.read_all().ensure()
+    RestRequest().using(transport).read()
 
-    assert infra.user == "user"
+    assert service.user == "user"
 
 
 def test_should_call_extract_user_for_update_one(
-    resource: RestCollection, fake_user: FakeUser
+    transport: RestTransport,
+    fake_user: FakeUser,
 ) -> None:
     (
-        resource.update_one()
-        .with_id(str(FakeApple().json().get("id")))
-        .and_data(FakeApple().json().drop("id").drop("color"))
-        .ensure()
+        RestRequest()
+        .item(with_id=FakeApple().json().get("id"))
+        .with_data(FakeApple().json().drop("id").drop("color"))
+        .using(transport)
+        .update()
     )
 
     assert fake_user.times_called == 1
 
 
 def test_should_persist_user_for_update_one(
-    resource: RestCollection,
-    infra: RestfulServiceBuilder,
+    transport: RestTransport,
+    service: SuccessfulService,
 ) -> None:
     (
-        resource.update_one()
-        .with_id(str(FakeApple().json().get("id")))
-        .and_data(FakeApple().json().drop("id").drop("color"))
-        .ensure()
+        RestRequest()
+        .item(with_id=FakeApple().json().get("id"))
+        .with_data(FakeApple().json().drop("id").drop("color"))
+        .using(transport)
+        .update()
     )
 
-    assert infra.user == "user"
+    assert service.user == "user"
 
 
 def test_should_call_extract_user_for_replace_one(
-    resource: RestCollection, fake_user: FakeUser
+    transport: RestTransport,
+    fake_user: FakeUser,
 ) -> None:
-    resource.replace_one().from_data(FakeApple().json()).ensure()
+    RestRequest().with_data(FakeApple().json()).using(transport).replace()
 
     assert fake_user.times_called == 1
 
 
 def test_should_persist_user_for_replace_one(
-    resource: RestCollection,
-    infra: RestfulServiceBuilder,
+    transport: RestTransport,
+    service: SuccessfulService,
 ) -> None:
-    resource.replace_one().from_data(FakeApple().json()).ensure()
+    RestRequest().with_data(FakeApple().json()).using(transport).replace()
 
-    assert infra.user == "user"
+    assert service.user == "user"
 
 
 def test_should_call_extract_user_for_delete_one(
-    resource: RestCollection, fake_user: FakeUser
+    transport: RestTransport,
+    fake_user: FakeUser,
 ) -> None:
-    resource.delete_one().with_id(str(FakeApple().json().get("id"))).ensure()
+    RestRequest().item(with_id=FakeApple().json().get("id")).using(transport).delete()
 
     assert fake_user.times_called == 1
 
 
 def test_should_persist_user_for_delete_one(
-    resource: RestCollection,
-    infra: RestfulServiceBuilder,
+    transport: RestTransport,
+    service: SuccessfulService,
 ) -> None:
-    resource.delete_one().with_id(str(FakeApple().json().get("id"))).ensure()
+    RestRequest().item(with_id=FakeApple().json().get("id")).using(transport).delete()
 
-    assert infra.user == "user"
+    assert service.user == "user"

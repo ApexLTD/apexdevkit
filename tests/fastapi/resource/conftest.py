@@ -3,22 +3,25 @@ from fastapi.testclient import TestClient
 from pypebbles.http.drivers import Httpx
 
 from apexdevkit.fastapi import RestfulServiceBuilder
+from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
-from tests.fastapi.rest import RestCollection, RestTransport
+from apexdevkit.testing import RestTransport
 from tests.fastapi.sample_api import setup
 
 
 @pytest.fixture
-def resource(service: RestfulServiceBuilder) -> RestCollection:
-    return RestCollection(
-        name=RestfulName("market-apple"),
-        transport=RestTransport(Httpx(TestClient(setup(service)))),
-    )
+def dependency(service: RestfulServiceBuilder) -> DependableBuilder:
+    return service.as_dependable()
 
 
 @pytest.fixture
-def read_many_resource(service: RestfulServiceBuilder) -> RestCollection:
-    return RestCollection(
-        name=RestfulName("apple"),
-        transport=RestTransport(Httpx(TestClient(setup(service)))),
+def transport(dependency: DependableBuilder) -> RestTransport:
+    return RestTransport(
+        resource=RestfulName("apple"),
+        transport=Httpx(
+            TestClient(
+                app=setup(dependency),
+                base_url="http://testserver/apples",
+            )
+        ),
     )
