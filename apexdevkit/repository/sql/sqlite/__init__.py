@@ -1,7 +1,8 @@
-from apexdevkit.repository.sql.sqlite.repository import SqliteRepository
-from apexdevkit.repository.sql.sqlite.table import SqliteTableBuilder
+from .repository import SqliteRepository
+from .table import SqliteTableBuilder, SqlTable
 
 __all__ = [
     "SqliteRepository",
     "SqliteTableBuilder",
+    "SqlTable",
 ]

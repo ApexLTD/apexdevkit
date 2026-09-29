@@ -1,64 +1,69 @@
+from pathlib import Path
 from uuid import uuid4
 
-from _pytest.fixtures import fixture
-from _pytest.raises import raises
+import pytest
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Database, DatabaseCommand
 from apexdevkit.repository.sql import SqlFieldBuilder
-from apexdevkit.repository.sql.connector import SqliteInMemoryConnector
 from apexdevkit.repository.sql.sqlite import (
     SqliteRepository,
     SqliteTableBuilder,
 )
 from tests.repository.data import SqliteTableItem
 
+TABLE = f"{Path(__file__).stem}_ITEM"
+
 
 def setup() -> DatabaseCommand:
-    return DatabaseCommand("""
-        CREATE TABLE IF NOT EXISTS ITEM (
-            id              TEXT        NOT NULL    PRIMARY KEY,
-            name            TEXT        NOT NULL,
-            count           INT         NOT NULL,
-            parent          INT         NOT NULL,
-            fixed           INT         NOT NULL,
+    return DatabaseCommand(
+        f"""
+        CREATE TABLE IF NOT EXISTS {TABLE}
+        (
+            id     TEXT NOT NULL PRIMARY KEY,
+            name   TEXT NOT NULL,
+            count  INT  NOT NULL,
+            parent INT  NOT NULL,
+            fixed  INT  NOT NULL,
 
-            UNIQUE(id)
+            UNIQUE (id)
         );
-    """)
+        """
+    )
 
 
-@fixture
+@pytest.fixture
 def item() -> SqliteTableItem:
     return SqliteTableItem(id=str(uuid4()), name="item", count=1)
 
 
-@fixture
+@pytest.fixture
 def item_with_parent(item: SqliteTableItem) -> SqliteTableItem:
     return SqliteTableItem(id=item.id, name="item", count=1, parent=0)
 
 
-@fixture
-def repository() -> SqliteRepository[SqliteTableItem]:
-    db = Database(SqliteInMemoryConnector())
-    db.execute(setup()).fetch_none()
+@pytest.fixture
+def repository(sqlite_db: Database) -> SqliteRepository[SqliteTableItem]:
+    sqlite_db.execute(setup()).fetch_none()
 
-    return SqliteRepository[SqliteTableItem](
-        table=SqliteTableBuilder[SqliteTableItem]()
-        .with_name("item")
-        .with_formatter(DataclassFormatter(SqliteTableItem))
-        .with_fields(
-            [
-                SqlFieldBuilder().with_name("id").as_id().as_composite().build(),
-                SqlFieldBuilder().with_name("name").as_selectable().build(),
-                SqlFieldBuilder().with_name("count").build(),
-                SqlFieldBuilder().with_name("parent").as_parent(0).build(),
-                SqlFieldBuilder().with_name("fixed").as_fixed(1).build(),
-            ]
-        )
-        .build(),
-        db=db,
+    return SqliteRepository(
+        db=sqlite_db,
+        table=(
+            SqliteTableBuilder[SqliteTableItem]()
+            .with_name(TABLE)
+            .with_formatter(DataclassFormatter(SqliteTableItem))
+            .with_fields(
+                [
+                    SqlFieldBuilder().with_name("id").as_id().as_composite().build(),
+                    SqlFieldBuilder().with_name("name").as_selectable().build(),
+                    SqlFieldBuilder().with_name("count").build(),
+                    SqlFieldBuilder().with_name("parent").as_parent(0).build(),
+                    SqlFieldBuilder().with_name("fixed").as_fixed(1).build(),
+                ]
+            )
+            .build()
+        ),
     )
 
 
@@ -70,7 +75,7 @@ def test_should_list_nothing_when_empty(
 
 
 def test_should_not_read_unknown(repository: SqliteRepository[SqliteTableItem]) -> None:
-    with raises(DoesNotExistError):
+    with pytest.raises(DoesNotExistError):
         repository.read(str(uuid4()))
 
 
@@ -87,7 +92,7 @@ def test_should_not_duplicate_on_create(
 ) -> None:
     repository.create(item)
 
-    with raises(ExistsError, match=f"id<{item.id}>"):
+    with pytest.raises(ExistsError, match=f"id<{item.id}>"):
         repository.create(item)
 
 

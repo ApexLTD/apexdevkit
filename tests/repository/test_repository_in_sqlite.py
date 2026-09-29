@@ -1,40 +1,48 @@
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
-from apexdevkit.repository import Database, DatabaseCommand, Repository
-from apexdevkit.repository.sql import SqlFieldBuilder
-from apexdevkit.repository.sql.connector import SqliteInMemoryConnector
-from apexdevkit.repository.sql.sqlite import (
+from apexdevkit.repository import (
+    Database,
+    DatabaseCommand,
+    Repository,
     SqliteRepository,
+)
+from apexdevkit.repository.sql import SqlFieldBuilder
+from apexdevkit.repository.sql.sqlite import (
     SqliteTableBuilder,
 )
 from tests.repository.data import AppleItem
 
+TABLE = f"{Path(__file__).stem}_ITEM"
+
+
+def setup() -> DatabaseCommand:
+    return DatabaseCommand(
+        f"""
+        CREATE TABLE IF NOT EXISTS {TABLE}
+        (
+            id    TEXT NOT NULL PRIMARY KEY,
+            color TEXT NOT NULL,
+
+            UNIQUE (id)
+        );
+        """
+    )
+
 
 @pytest.fixture
-def repository() -> SqliteRepository[AppleItem]:
-    db = Database(SqliteInMemoryConnector())
-    db.execute(
-        DatabaseCommand(
-            """
-            CREATE TABLE IF NOT EXISTS ITEM (
-                id              TEXT        NOT NULL    PRIMARY KEY,
-                color     TEXT        NOT NULL,
-
-                UNIQUE(id)
-            );
-            """
-        )
-    ).fetch_none()
+def repository(sqlite_db: Database) -> SqliteRepository[AppleItem]:
+    sqlite_db.execute(setup()).fetch_none()
 
     return SqliteRepository(
-        db=db,
+        db=sqlite_db,
         table=(
             SqliteTableBuilder[AppleItem]()
-            .with_name("ITEM")
+            .with_name(TABLE)
             .with_formatter(DataclassFormatter(AppleItem))
             .with_fields(
                 [

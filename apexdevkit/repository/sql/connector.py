@@ -3,7 +3,6 @@ from __future__ import annotations
 import sqlite3
 from contextlib import AbstractContextManager
 from dataclasses import dataclass
-from functools import cached_property
 from typing import Any
 
 import pymssql
@@ -18,25 +17,10 @@ class SqliteFileConnector:
     dsn: str = Environment().inject(variable="DSN")
 
     def connect(self) -> AbstractContextManager[Connection]:
-        connection = sqlite3.connect(self.dsn)
+        connection = sqlite3.connect(self.dsn, autocommit=True)
         connection.row_factory = sqlite3.Row
 
-        return connection
-
-
-@dataclass(frozen=True)
-class SqliteInMemoryConnector:
-    dsn: str = ":memory:"
-
-    def connect(self) -> AbstractContextManager[Connection]:
-        return self._connection
-
-    @cached_property
-    def _connection(self) -> AbstractContextManager[Connection]:
-        connection = sqlite3.connect(self.dsn, check_same_thread=False)
-        connection.row_factory = sqlite3.Row
-
-        return connection
+        return ConnectionContextManager(connection)
 
 
 @dataclass(frozen=True)

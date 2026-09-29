@@ -1,6 +1,6 @@
 [project]
 name = "apexdevkit"
-version = "2.0.2"
+version = "2.1.0"
 description = "Apex Development Tools for python."
 readme = "README.md"
 authors = [
@@ -79,5 +79,5 @@ show_missing = true
 
 [tool.pytest]
 env = [
-    "ECHO_SERVER=http://localhost:8080"
+    "ECHO_SERVER=http://localhost:8080",
 ]
