@@ -1,3 +1,4 @@
+import os
 from collections.abc import Iterable
 
 import pytest
@@ -8,9 +9,7 @@ from apexdevkit.repository.sql.sqlite import SqlTable
 
 @pytest.fixture
 def repository[T: Entity](table: SqlTable[T]) -> Iterable[SqliteRepository[T]]:
-    result = SqliteRepository(table=table)
-
     try:
-        yield result
+        yield SqliteRepository(table=table)
     finally:
-        result.delete_all()
+        os.unlink("test.db")
