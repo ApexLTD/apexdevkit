@@ -21,7 +21,7 @@ def repository() -> SqliteRepository[AppleItem]:
         DatabaseCommand(
             """
             CREATE TABLE IF NOT EXISTS ITEM (
-                id              TEXT        NOT NULL    PRIMARY KEY,
+                id        TEXT        NOT NULL    PRIMARY KEY,
                 color     TEXT        NOT NULL,
 
                 UNIQUE(id)
