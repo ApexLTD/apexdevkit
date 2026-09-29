@@ -5,8 +5,9 @@ import pytest
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
-from apexdevkit.repository import DatabaseCommand
+from apexdevkit.repository import Database, DatabaseCommand
 from apexdevkit.repository.sql import SqlFieldBuilder
+from apexdevkit.repository.sql.connector import SqliteFileConnector
 from apexdevkit.repository.sql.sqlite import (
     SqliteRepository,
     SqliteTableBuilder,
@@ -46,6 +47,8 @@ def item_with_parent(item: SqliteTableItem) -> SqliteTableItem:
 
 @pytest.fixture
 def table() -> SqlTable[SqliteTableItem]:
+    Database(SqliteFileConnector()).execute(setup()).fetch_none()
+
     return (
         SqliteTableBuilder[SqliteTableItem]()
         .with_name(TABLE)
