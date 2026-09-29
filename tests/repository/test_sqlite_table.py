@@ -1,7 +1,6 @@
 from uuid import uuid4
 
-from _pytest.fixtures import fixture
-from _pytest.raises import raises
+import pytest
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
@@ -29,17 +28,17 @@ def setup() -> DatabaseCommand:
     )
 
 
-@fixture
+@pytest.fixture
 def item() -> SqliteTableItem:
     return SqliteTableItem(id=str(uuid4()), name="item", count=1)
 
 
-@fixture
+@pytest.fixture
 def item_with_parent(item: SqliteTableItem) -> SqliteTableItem:
     return SqliteTableItem(id=item.id, name="item", count=1, parent=0)
 
 
-@fixture
+@pytest.fixture
 def repository() -> SqliteRepository[SqliteTableItem]:
     Database(SqliteFileConnector()).execute(setup()).fetch_none()
 
@@ -68,7 +67,7 @@ def test_should_list_nothing_when_empty(
 
 
 def test_should_not_read_unknown(repository: SqliteRepository[SqliteTableItem]) -> None:
-    with raises(DoesNotExistError):
+    with pytest.raises(DoesNotExistError):
         repository.read(str(uuid4()))
 
 
@@ -85,7 +84,7 @@ def test_should_not_duplicate_on_create(
 ) -> None:
     repository.create(item)
 
-    with raises(ExistsError, match=f"id<{item.id}>"):
+    with pytest.raises(ExistsError, match=f"id<{item.id}>"):
         repository.create(item)
 
 
