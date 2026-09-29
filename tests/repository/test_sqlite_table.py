@@ -1,20 +1,26 @@
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
-from apexdevkit.repository import Database, DatabaseCommand
+from apexdevkit.repository import DatabaseCommand
 from apexdevkit.repository.sql import SqlFieldBuilder
-from apexdevkit.repository.sql.connector import SqliteFileConnector
-from apexdevkit.repository.sql.sqlite import SqliteRepository, SqliteTableBuilder
+from apexdevkit.repository.sql.sqlite import (
+    SqliteRepository,
+    SqliteTableBuilder,
+    SqlTable,
+)
 from tests.repository.data import SqliteTableItem
+
+TABLE = f"{Path(__file__).stem}_ITEM"
 
 
 def setup() -> DatabaseCommand:
     return DatabaseCommand(
-        """
-        CREATE TABLE ITEM
+        f"""
+        CREATE TABLE IF NOT EXISTS {TABLE}
         (
             id     TEXT NOT NULL PRIMARY KEY,
             name   TEXT NOT NULL,
@@ -39,12 +45,10 @@ def item_with_parent(item: SqliteTableItem) -> SqliteTableItem:
 
 
 @pytest.fixture
-def repository() -> SqliteRepository[SqliteTableItem]:
-    Database(SqliteFileConnector()).execute(setup()).fetch_none()
-
-    return SqliteRepository[SqliteTableItem](
-        table=SqliteTableBuilder[SqliteTableItem]()
-        .with_name("item")
+def table() -> SqlTable[SqliteTableItem]:
+    return (
+        SqliteTableBuilder[SqliteTableItem]()
+        .with_name(TABLE)
         .with_formatter(DataclassFormatter(SqliteTableItem))
         .with_fields(
             [

@@ -1,14 +1,16 @@
+from collections.abc import Iterable
+
 import pytest
 
-from apexdevkit.repository import Database, DatabaseCommand
-from apexdevkit.repository.sql.connector import SqliteFileConnector
+from apexdevkit.repository import Entity, SqliteRepository
+from apexdevkit.repository.sql.sqlite import SqlTable
 
 
-@pytest.fixture(autouse=True)
-def cleanup_db():
-    cleanup = DatabaseCommand("DROP TABLE IF EXISTS ITEM;")
+@pytest.fixture
+def repository[T: Entity](table: SqlTable[T]) -> Iterable[SqliteRepository[T]]:
+    result = SqliteRepository(table=table)
 
     try:
-        yield
+        yield result
     finally:
-        Database(SqliteFileConnector()).execute(cleanup).fetch_none()
+        result.delete_all()

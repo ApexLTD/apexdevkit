@@ -1,3 +1,4 @@
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
@@ -7,14 +8,19 @@ from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Database, DatabaseCommand, Repository
 from apexdevkit.repository.sql import SqlFieldBuilder
 from apexdevkit.repository.sql.connector import SqliteFileConnector
-from apexdevkit.repository.sql.sqlite import SqliteRepository, SqliteTableBuilder
+from apexdevkit.repository.sql.sqlite import (
+    SqliteTableBuilder,
+    SqlTable,
+)
 from tests.repository.data import AppleItem
+
+TABLE = f"{Path(__file__).stem}_ITEM"
 
 
 def setup() -> DatabaseCommand:
     return DatabaseCommand(
-        """
-        CREATE TABLE ITEM
+        f"""
+        CREATE TABLE IF NOT EXISTS {TABLE}
         (
             id    TEXT NOT NULL PRIMARY KEY,
             color TEXT NOT NULL,
@@ -26,22 +32,20 @@ def setup() -> DatabaseCommand:
 
 
 @pytest.fixture
-def repository() -> SqliteRepository[AppleItem]:
+def table() -> SqlTable[AppleItem]:
     Database(SqliteFileConnector()).execute(setup()).fetch_none()
 
-    return SqliteRepository[AppleItem](
-        table=(
-            SqliteTableBuilder[AppleItem]()
-            .with_name("ITEM")
-            .with_formatter(DataclassFormatter(AppleItem))
-            .with_fields(
-                [
-                    SqlFieldBuilder().with_name("id").as_id().build(),
-                    SqlFieldBuilder().with_name("color").build(),
-                ]
-            )
-            .build()
-        ),
+    return (
+        SqliteTableBuilder[AppleItem]()
+        .with_name(TABLE)
+        .with_formatter(DataclassFormatter(AppleItem))
+        .with_fields(
+            [
+                SqlFieldBuilder().with_name("id").as_id().build(),
+                SqlFieldBuilder().with_name("color").build(),
+            ]
+        )
+        .build()
     )
 
 
