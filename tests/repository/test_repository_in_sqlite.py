@@ -5,12 +5,15 @@ import pytest
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
-from apexdevkit.repository import Database, DatabaseCommand, Repository
+from apexdevkit.repository import (
+    Database,
+    DatabaseCommand,
+    Repository,
+    SqliteRepository,
+)
 from apexdevkit.repository.sql import SqlFieldBuilder
-from apexdevkit.repository.sql.connector import SqliteFileConnector
 from apexdevkit.repository.sql.sqlite import (
     SqliteTableBuilder,
-    SqlTable,
 )
 from tests.repository.data import AppleItem
 
@@ -32,20 +35,23 @@ def setup() -> DatabaseCommand:
 
 
 @pytest.fixture
-def table() -> SqlTable[AppleItem]:
-    Database(SqliteFileConnector()).execute(setup()).fetch_none()
+def repository(sqlite_db: Database) -> SqliteRepository[AppleItem]:
+    sqlite_db.execute(setup()).fetch_none()
 
-    return (
-        SqliteTableBuilder[AppleItem]()
-        .with_name(TABLE)
-        .with_formatter(DataclassFormatter(AppleItem))
-        .with_fields(
-            [
-                SqlFieldBuilder().with_name("id").as_id().build(),
-                SqlFieldBuilder().with_name("color").build(),
-            ]
-        )
-        .build()
+    return SqliteRepository(
+        db=sqlite_db,
+        table=(
+            SqliteTableBuilder[AppleItem]()
+            .with_name(TABLE)
+            .with_formatter(DataclassFormatter(AppleItem))
+            .with_fields(
+                [
+                    SqlFieldBuilder().with_name("id").as_id().build(),
+                    SqlFieldBuilder().with_name("color").build(),
+                ]
+            )
+            .build()
+        ),
     )
 
 

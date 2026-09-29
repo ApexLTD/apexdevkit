@@ -7,11 +7,9 @@ from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Database, DatabaseCommand
 from apexdevkit.repository.sql import SqlFieldBuilder
-from apexdevkit.repository.sql.connector import SqliteFileConnector
 from apexdevkit.repository.sql.sqlite import (
     SqliteRepository,
     SqliteTableBuilder,
-    SqlTable,
 )
 from tests.repository.data import SqliteTableItem
 
@@ -46,23 +44,26 @@ def item_with_parent(item: SqliteTableItem) -> SqliteTableItem:
 
 
 @pytest.fixture
-def table() -> SqlTable[SqliteTableItem]:
-    Database(SqliteFileConnector()).execute(setup()).fetch_none()
+def repository(sqlite_db: Database) -> SqliteRepository[SqliteTableItem]:
+    sqlite_db.execute(setup()).fetch_none()
 
-    return (
-        SqliteTableBuilder[SqliteTableItem]()
-        .with_name(TABLE)
-        .with_formatter(DataclassFormatter(SqliteTableItem))
-        .with_fields(
-            [
-                SqlFieldBuilder().with_name("id").as_id().as_composite().build(),
-                SqlFieldBuilder().with_name("name").as_selectable().build(),
-                SqlFieldBuilder().with_name("count").build(),
-                SqlFieldBuilder().with_name("parent").as_parent(0).build(),
-                SqlFieldBuilder().with_name("fixed").as_fixed(1).build(),
-            ]
-        )
-        .build()
+    return SqliteRepository(
+        db=sqlite_db,
+        table=(
+            SqliteTableBuilder[SqliteTableItem]()
+            .with_name(TABLE)
+            .with_formatter(DataclassFormatter(SqliteTableItem))
+            .with_fields(
+                [
+                    SqlFieldBuilder().with_name("id").as_id().as_composite().build(),
+                    SqlFieldBuilder().with_name("name").as_selectable().build(),
+                    SqlFieldBuilder().with_name("count").build(),
+                    SqlFieldBuilder().with_name("parent").as_parent(0).build(),
+                    SqlFieldBuilder().with_name("fixed").as_fixed(1).build(),
+                ]
+            )
+            .build()
+        ),
     )
 
 
