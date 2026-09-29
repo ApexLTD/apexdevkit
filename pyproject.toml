@@ -79,6 +79,5 @@ show_missing = true
 
 [tool.pytest]
 env = [
-    "DSN=test.db",
     "ECHO_SERVER=http://localhost:8080",
 ]
