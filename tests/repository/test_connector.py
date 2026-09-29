@@ -1,8 +1,5 @@
 from apexdevkit.repository import Connector, DatabaseCommand
-from apexdevkit.repository.sql.connector import (
-    SqliteFileConnector,
-    SqliteInMemoryConnector,
-)
+from apexdevkit.repository.sql.connector import SqliteFileConnector
 
 command = DatabaseCommand("SELECT 1;")
 
@@ -16,7 +13,3 @@ def execute_command(connector: Connector) -> None:
 
 def test_should_connect_to_file() -> None:
     execute_command(SqliteFileConnector())
-
-
-def test_should_connect_to_memory() -> None:
-    execute_command(SqliteInMemoryConnector())

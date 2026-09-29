@@ -7,26 +7,26 @@ from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Database, DatabaseCommand
 from apexdevkit.repository.sql import SqlFieldBuilder
-from apexdevkit.repository.sql.connector import SqliteInMemoryConnector
-from apexdevkit.repository.sql.sqlite import (
-    SqliteRepository,
-    SqliteTableBuilder,
-)
+from apexdevkit.repository.sql.connector import SqliteFileConnector
+from apexdevkit.repository.sql.sqlite import SqliteRepository, SqliteTableBuilder
 from tests.repository.data import SqliteTableItem
 
 
 def setup() -> DatabaseCommand:
-    return DatabaseCommand("""
-        CREATE TABLE IF NOT EXISTS ITEM (
-            id              TEXT        NOT NULL    PRIMARY KEY,
-            name            TEXT        NOT NULL,
-            count           INT         NOT NULL,
-            parent          INT         NOT NULL,
-            fixed           INT         NOT NULL,
+    return DatabaseCommand(
+        """
+        CREATE TABLE ITEM
+        (
+            id     TEXT NOT NULL PRIMARY KEY,
+            name   TEXT NOT NULL,
+            count  INT  NOT NULL,
+            parent INT  NOT NULL,
+            fixed  INT  NOT NULL,
 
-            UNIQUE(id)
+            UNIQUE (id)
         );
-    """)
+        """
+    )
 
 
 @fixture
@@ -41,8 +41,7 @@ def item_with_parent(item: SqliteTableItem) -> SqliteTableItem:
 
 @fixture
 def repository() -> SqliteRepository[SqliteTableItem]:
-    db = Database(SqliteInMemoryConnector())
-    db.execute(setup()).fetch_none()
+    Database(SqliteFileConnector()).execute(setup()).fetch_none()
 
     return SqliteRepository[SqliteTableItem](
         table=SqliteTableBuilder[SqliteTableItem]()
@@ -57,8 +56,7 @@ def repository() -> SqliteRepository[SqliteTableItem]:
                 SqlFieldBuilder().with_name("fixed").as_fixed(1).build(),
             ]
         )
-        .build(),
-        db=db,
+        .build()
     )
 
 

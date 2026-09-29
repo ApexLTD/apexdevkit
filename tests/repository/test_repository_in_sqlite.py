@@ -6,32 +6,30 @@ from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Database, DatabaseCommand, Repository
 from apexdevkit.repository.sql import SqlFieldBuilder
-from apexdevkit.repository.sql.connector import SqliteInMemoryConnector
-from apexdevkit.repository.sql.sqlite import (
-    SqliteRepository,
-    SqliteTableBuilder,
-)
+from apexdevkit.repository.sql.connector import SqliteFileConnector
+from apexdevkit.repository.sql.sqlite import SqliteRepository, SqliteTableBuilder
 from tests.repository.data import AppleItem
+
+
+def setup() -> DatabaseCommand:
+    return DatabaseCommand(
+        """
+        CREATE TABLE ITEM
+        (
+            id    TEXT NOT NULL PRIMARY KEY,
+            color TEXT NOT NULL,
+
+            UNIQUE (id)
+        );
+        """
+    )
 
 
 @pytest.fixture
 def repository() -> SqliteRepository[AppleItem]:
-    db = Database(SqliteInMemoryConnector())
-    db.execute(
-        DatabaseCommand(
-            """
-            CREATE TABLE IF NOT EXISTS ITEM (
-                id        TEXT        NOT NULL    PRIMARY KEY,
-                color     TEXT        NOT NULL,
+    Database(SqliteFileConnector()).execute(setup()).fetch_none()
 
-                UNIQUE(id)
-            );
-            """
-        )
-    ).fetch_none()
-
-    return SqliteRepository(
-        db=db,
+    return SqliteRepository[AppleItem](
         table=(
             SqliteTableBuilder[AppleItem]()
             .with_name("ITEM")
