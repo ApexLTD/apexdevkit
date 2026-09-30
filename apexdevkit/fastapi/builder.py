@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Mapping
+from collections.abc import Mapping, MutableSet
 from dataclasses import dataclass, field
-from typing import Any, Self
+from typing import Any, Protocol, Self
 
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from apexdevkit.annotation import deprecated
 from apexdevkit.error import ApiError
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.service import RestfulService
@@ -65,21 +66,60 @@ class FastApiBuilder:
 
         return self
 
+    @deprecated(
+        warning="""
+            .with_frontend is deprecated
+            use .apply(CORSApplicator()) instead
+        """
+    )
     def with_frontend(self, origin: str) -> Self:  # pragma: no cover
-        self.app.add_middleware(
-            CORSMiddleware,
-            allow_origins=[origin],
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
-        )
-
-        return self
+        return self.apply(CORSApplicator().with_origin(origin))
 
     def with_swagger(self, **config: Any) -> Self:  # pragma: no cover
         self.app.swagger_ui_parameters = config
 
         return self
+
+    def apply(self, applicator: Applicator) -> Self:
+        applicator.apply_to(self.app)
+
+        return self
+
+
+class Applicator(Protocol):
+    def apply_to(self, app: FastAPI) -> None:
+        pass
+
+
+@dataclass(frozen=True)
+class CORSApplicator:
+    origins: MutableSet[str] = field(default_factory=set)
+
+    def and_origin(self, origin: str) -> Self:
+        return self.with_origin(origin)
+
+    def with_origin(self, origin: str) -> Self:
+        self.origins.add(origin)
+
+        return self
+
+    def and_localhost(self, port: int) -> Self:
+        return self.with_localhost(port)
+
+    def with_localhost(self, port: int) -> Self:
+        self.origins.add(f"http://localhost:{port}")
+        self.origins.add(f"http://127.0.0.1:{port}")
+
+        return self
+
+    def apply_to(self, app: FastAPI) -> None:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=list(self.origins),
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
 
 
 @dataclass
