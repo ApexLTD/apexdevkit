@@ -50,14 +50,14 @@ class DateTime:
     def from_date_time(
         cls, date_time: str, time_zone: ZoneInfo | None = None
     ) -> DateTime:
-        if time_zone is None:
-            time_zone = ZoneInfo("UTC")
-
-        dt = datetime.strptime(date_time, "%Y-%m-%dT%H:%M:%S")
-        dt = dt.replace(tzinfo=time_zone)
-        timestamp_ms = int(dt.timestamp() * 1000)
-
-        return cls(timestamp_ms=timestamp_ms)
+        return cls(
+            timestamp_ms=int(
+                datetime.strptime(date_time, "%Y-%m-%dT%H:%M:%S")
+                .replace(tzinfo=time_zone or ZoneInfo("UTC"))
+                .timestamp()
+                * 1000
+            )
+        )
 
     @classmethod
     def from_timestamp(cls, timestamp: float) -> DateTime:
