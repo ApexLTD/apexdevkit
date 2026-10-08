@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import sqlite3
-from contextlib import AbstractContextManager
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pymssql
 from pypebbles.runtime import Environment
 
-from apexdevkit.repository import Connection
 from apexdevkit.repository.core.database import ConnectionContextManager
+
+if TYPE_CHECKING:
+    from contextlib import AbstractContextManager
+
+    from apexdevkit.repository import Connection
 
 
 @dataclass(frozen=True)

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator, Mapping
 
 
 @dataclass(frozen=True)
@@ -237,7 +239,7 @@ class SqlFieldManager:
         return "(" + " OR ".join(clauses) + ")"
 
     def _general_filters(self) -> str:
-        statements: list[str] = [] + self.custom_filters
+        statements: list[str] = [*self.custom_filters]
         for key in self.fields:
             if key.is_filter:
                 inner_statements: list[str] = []

@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
-from typing import Any, ClassVar, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Protocol, TypeVar
 
 from apexdevkit.annotation import deprecated
 from apexdevkit.error import ForbiddenError
@@ -23,6 +22,9 @@ from apexdevkit.query.query import (
     SummaryExtractor,
 )
 from apexdevkit.repository import Database, DatabaseCommand
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Mapping
 
 ItemT = TypeVar("ItemT", covariant=True)
 

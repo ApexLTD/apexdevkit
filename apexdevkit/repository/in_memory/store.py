@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
 from apexdevkit.formatter import Formatter, PickleFormatter
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class KeyValueStore[ItemT](Protocol):  # pragma: no cover

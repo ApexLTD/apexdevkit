@@ -50,7 +50,7 @@ class MsSqlRepository(ContainsMixin, Repository[ItemT]):
         except OperationalError as e:
             if "Conversion failed" in str(e):
                 raise DoesNotExistError(item_id) from e
-            raise e
+            raise
 
         if not raw:
             raise DoesNotExistError(item_id)

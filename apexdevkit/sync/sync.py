@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Collection, Iterable
 from dataclasses import dataclass, field, replace
-from typing import Any, Self, TypeVar
+from typing import TYPE_CHECKING, Any, Self, TypeVar
 
 from apexdevkit.key_fn import AttributeKey, KeyFn
 
 from .observer import DefaultLog, ObservableSync
 from .source import EmptySource, Source, SourceDiscriminator, SourcePreSet
 from .target import IterableTarget, NoTarget, Target
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Collection, Iterable
 
 T = TypeVar("T")
 

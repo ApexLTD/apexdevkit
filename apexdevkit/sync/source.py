@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Any, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar
 
 from apexdevkit.key_fn import AttributeKey, KeyFn
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 T = TypeVar("T", covariant=True)
 

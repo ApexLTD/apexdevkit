@@ -11,22 +11,18 @@ from .interface import Entity, ItemT, KeyFn, Repository
 from .mixin import ContainsMixin
 
 __all__ = [
-    # Database
+    "BruteForceBatch",
     "Connection",
     "ConnectionContextManager",
     "Connector",
+    "ContainsMixin",
     "Cursor",
     "Database",
     "DatabaseCommand",
-    # Decorator
-    "RepositoryDecorator",
-    "BruteForceBatch",
-    # Interface
     "Entity",
     "ItemT",
     "KeyFn",
-    "Repository",
     "NoRepository",
-    # Mixin
-    "ContainsMixin",
+    "Repository",
+    "RepositoryDecorator",
 ]
