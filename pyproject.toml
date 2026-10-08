@@ -55,6 +55,17 @@ select = [
     "I",
     "N",
     "UP",
+    "RUF",
+    "FURB",
+    "PERF",
+    "LOG",
+    "PIE",
+    "SLF",
+    "DTZ",
+    "PTH",
+    "TRY",
+    "PL",
+    "TCH",
 ]
 
 [tool.ruff.lint.per-file-ignores]
