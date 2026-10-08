@@ -66,7 +66,7 @@ class MssqlException:
     code: int
     message: str
 
-    def __init__(self, e: DatabaseError):
+    def __init__(self, e: DatabaseError) -> None:
         self.code = e.args[0]
         self.message = e.args[1].decode()
 

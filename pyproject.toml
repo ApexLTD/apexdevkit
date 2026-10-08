@@ -63,10 +63,11 @@ select = [
     "SLF",
     "DTZ",
     "PTH",
-    "PYI",
     "TRY",
     "PL",
     "TCH",
+    "PYI",
+    "FLY",
 ]
 ignore = [
     "TRY003",
