@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class RestRequest:
-    request: HttpRequest = HttpRequest()
+    request: HttpRequest = field(default_factory=HttpRequest)
 
     def with_params(self, **params: Any) -> RestRequest:
         return replace(self, request=self.request.with_params(params))
