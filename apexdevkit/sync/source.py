@@ -1,17 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, Protocol
 
 from apexdevkit.key_fn import AttributeKey, KeyFn
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-T = TypeVar("T", covariant=True)
 
-
-class Source(Protocol[T]):  # pragma: no cover
+class Source[T](Protocol):  # pragma: no cover
     def absent(self) -> Iterable[T]:
         pass
 
@@ -89,19 +87,19 @@ class SourceFailing[T]:  # pragma: no cover
 
 
 @dataclass(frozen=True, kw_only=True)
-class _FailOnAbsent(SourceDecorator[T]):
+class _FailOnAbsent[T](SourceDecorator[T]):
     def absent(self) -> Iterable[T]:  # pragma: no cover
         raise RuntimeError("Should not request absent!")
 
 
 @dataclass(frozen=True, kw_only=True)
-class _FailOnNew(SourceDecorator[T]):
+class _FailOnNew[T](SourceDecorator[T]):
     def new(self) -> Iterable[T]:  # pragma: no cover
         raise RuntimeError("Should not request new!")
 
 
 @dataclass(frozen=True, kw_only=True)
-class _FailOnUpdate(SourceDecorator[T]):
+class _FailOnUpdate[T](SourceDecorator[T]):
     def updates(self) -> Iterable[T]:  # pragma: no cover
         raise RuntimeError("Should not request updates!")
 

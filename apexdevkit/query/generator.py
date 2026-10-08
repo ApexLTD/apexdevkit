@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, ClassVar, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Protocol
 
 from apexdevkit.annotation import deprecated
 from apexdevkit.error import ForbiddenError
@@ -26,42 +26,40 @@ from apexdevkit.repository import Database, DatabaseCommand
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
 
-ItemT = TypeVar("ItemT", covariant=True)
 
-
-class _Loader(Protocol[ItemT]):
-    def load(self, raw: Mapping[str, Any]) -> ItemT:
+class _Loader[T](Protocol):
+    def load(self, raw: Mapping[str, Any]) -> T:
         pass
 
 
 @dataclass
-class DefaultMsSqlFilter[ItemT]:
+class DefaultMsSqlFilter[T]:
     _database: Database = field(init=False)
     _query_builder: MsSqlQueryBuilder = field(init=False)
     _options: QueryOptions = field(init=False)
-    _formatter: _Loader[ItemT] = field(init=False)
+    _formatter: _Loader[T] = field(init=False)
 
-    def with_database(self, value: Database) -> DefaultMsSqlFilter[ItemT]:
+    def with_database(self, value: Database) -> DefaultMsSqlFilter[T]:
         self._database = value
 
         return self
 
-    def with_query_builder(self, value: MsSqlQueryBuilder) -> DefaultMsSqlFilter[ItemT]:
+    def with_query_builder(self, value: MsSqlQueryBuilder) -> DefaultMsSqlFilter[T]:
         self._query_builder = value
 
         return self
 
-    def with_options(self, value: QueryOptions) -> DefaultMsSqlFilter[ItemT]:
+    def with_options(self, value: QueryOptions) -> DefaultMsSqlFilter[T]:
         self._options = value
 
         return self
 
-    def with_formatter(self, value: _Loader[ItemT]) -> DefaultMsSqlFilter[ItemT]:
+    def with_formatter(self, value: _Loader[T]) -> DefaultMsSqlFilter[T]:
         self._formatter = value
 
         return self
 
-    def retrieve(self) -> Iterable[ItemT]:
+    def retrieve(self) -> Iterable[T]:
         if not any(sort.name == "id" for sort in self._options.ordering):
             self._options.ordering.append(Sort("id", False))
 
