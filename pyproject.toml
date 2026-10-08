@@ -67,6 +67,10 @@ select = [
     "PL",
     "TCH",
 ]
+ignore = [
+    "TRY003",
+    "PLR2004",
+]
 
 [tool.ruff.lint.per-file-ignores]
 "apexdevkit/fastapi/resource.py" = ["N803"]
