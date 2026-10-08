@@ -101,7 +101,7 @@ class DefaultMsSqlAggregate:
             for aggregation in self._options.aggregations
             for value in [
                 result[
-                    f"{aggregation.name if aggregation.name else 'general'}"
+                    f"{aggregation.name or 'general'}"
                     f"_{aggregation.aggregation.value.lower()}"
                 ]
             ]

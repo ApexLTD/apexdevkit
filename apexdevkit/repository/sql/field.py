@@ -26,7 +26,7 @@ class _SqlField:
     parent_value: Any | None = None
 
     is_filter: bool = False
-    filter_values: list[Any | None | NotNone] = field(default_factory=list)
+    filter_values: list[Any | NotNone | None] = field(default_factory=list)
 
     is_fixed: bool = False
     fixed_value: Any | None = None
@@ -48,7 +48,7 @@ class SqlFieldBuilder:
     _parent_value: Any | None = None
 
     _is_filter: bool = False
-    _filter_values: list[Any | None | NotNone] = field(default_factory=list)
+    _filter_values: list[Any | NotNone | None] = field(default_factory=list)
 
     _is_fixed: bool = False
     _fixed_value: Any | None = None
@@ -95,7 +95,7 @@ class SqlFieldBuilder:
 
         return self
 
-    def as_filter(self, values: list[Any | None | NotNone]) -> SqlFieldBuilder:
+    def as_filter(self, values: list[Any | NotNone | None]) -> SqlFieldBuilder:
         self._is_filter = True
         self._filter_values = values
 
