@@ -19,7 +19,7 @@ uvicorn = "*"
 pypebbles = "0.3.*"
 
 [tool.poetry.group.dev.dependencies]
-apexcodexpy = "0.7.1"
+apexcodexpy = "0.7.*"
 pytest = "*"
 pytest-approvaltests = "*"
 pytest-cov = "*"
