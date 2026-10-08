@@ -36,14 +36,14 @@ class DateTime:
     # Date in format of "yyyy-mm-dd"
     @classmethod
     def from_date(cls, date: str, time_zone: ZoneInfo | None = None) -> DateTime:
-        if time_zone is None:
-            time_zone = ZoneInfo("UTC")
-
-        dt = datetime.strptime(date, "%Y-%m-%d")
-        dt = dt.replace(tzinfo=time_zone)
-        timestamp_ms = int(dt.timestamp() * 1000)
-
-        return cls(timestamp_ms=timestamp_ms)
+        return cls(
+            timestamp_ms=int(
+                datetime.strptime(date, "%Y-%m-%d")
+                .replace(tzinfo=time_zone or ZoneInfo("UTC"))
+                .timestamp()
+                * 1000
+            )
+        )
 
     # Date in format of "yyyy-mm-ddTHH:MM:SS"
     @classmethod
