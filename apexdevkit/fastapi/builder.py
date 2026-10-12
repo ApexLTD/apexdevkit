@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Mapping, MutableSet
 from dataclasses import dataclass, field
-from typing import Any, Protocol, Self
+from typing import TYPE_CHECKING, Any, Protocol, Self
 
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,7 +11,11 @@ from fastapi.responses import JSONResponse
 from apexdevkit.annotation import deprecated
 from apexdevkit.error import ApiError
 from apexdevkit.fastapi.dependable import DependableBuilder
-from apexdevkit.fastapi.service import RestfulService
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping, MutableSet
+
+    from apexdevkit.fastapi.service import RestfulService
 
 
 @dataclass

@@ -1,15 +1,17 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Protocol, Self
+from typing import TYPE_CHECKING, Protocol, Self
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 @dataclass(frozen=True)
 class ObservableSync:
     observers: list[SyncObserver] = field(default_factory=list)
 
-    def attach(self, observer: SyncObserver, when: bool = True) -> Self:
+    def attach(self, observer: SyncObserver, *, when: bool = True) -> Self:
         if when:
             self.observers.append(observer)
 

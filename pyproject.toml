@@ -19,7 +19,7 @@ uvicorn = "*"
 pypebbles = "0.3.*"
 
 [tool.poetry.group.dev.dependencies]
-apexcodexpy = "0.7.1"
+apexcodexpy = "0.8.*"
 pytest = "*"
 pytest-approvaltests = "*"
 pytest-cov = "*"
@@ -55,6 +55,27 @@ select = [
     "I",
     "N",
     "UP",
+    "RUF",
+    "FURB",
+    "PERF",
+    "LOG",
+    "PIE",
+    "SLF",
+    "DTZ",
+    "PTH",
+    "TRY",
+    "PL",
+    "TCH",
+    "FLY",
+    "PYI",
+    "PGH",
+    "FBT",
+]
+ignore = [
+    "TRY003",
+    "PLR2004",
+    "PYI",
+    "PGH",
 ]
 
 [tool.ruff.lint.per-file-ignores]

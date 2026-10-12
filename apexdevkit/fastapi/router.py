@@ -123,6 +123,7 @@ class RestfulRouter:
     def with_create_one(
         self,
         dependency: Dependency | None = None,
+        *,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
@@ -147,6 +148,7 @@ class RestfulRouter:
     def with_read_one(
         self,
         dependency: Dependency | None = None,
+        *,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
@@ -172,6 +174,7 @@ class RestfulRouter:
         self,
         query: FluentDict[Any],
         dependency: Dependency | None = None,
+        *,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
@@ -196,6 +199,7 @@ class RestfulRouter:
     def with_read_all(
         self,
         dependency: Dependency | None = None,
+        *,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
@@ -214,6 +218,7 @@ class RestfulRouter:
     def with_update_one(
         self,
         dependency: Dependency | None = None,
+        *,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
@@ -242,6 +247,7 @@ class RestfulRouter:
     def with_replace_one(
         self,
         dependency: Dependency | None = None,
+        *,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
@@ -266,6 +272,7 @@ class RestfulRouter:
     def with_delete_one(
         self,
         dependency: Dependency | None = None,
+        *,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(

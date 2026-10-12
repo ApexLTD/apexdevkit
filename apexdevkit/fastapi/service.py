@@ -3,11 +3,13 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from apexdevkit.formatter import Formatter
 from apexdevkit.repository import BruteForceBatch, Entity, Repository
-from apexdevkit.repository.core.interface import BatchRepository
+
+if TYPE_CHECKING:
+    from apexdevkit.formatter import Formatter
+    from apexdevkit.repository.core.interface import BatchRepository
 
 RawItem = Mapping[str, Any]
 RawCollection = Iterable[RawItem]

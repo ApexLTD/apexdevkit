@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator, Mapping
 
 
 @dataclass(frozen=True)
@@ -26,7 +28,7 @@ class _SqlField:
     parent_value: Any | None = None
 
     is_filter: bool = False
-    filter_values: list[Any | None | NotNone] = field(default_factory=list)
+    filter_values: list[Any | NotNone | None] = field(default_factory=list)
 
     is_fixed: bool = False
     fixed_value: Any | None = None
@@ -48,7 +50,7 @@ class SqlFieldBuilder:
     _parent_value: Any | None = None
 
     _is_filter: bool = False
-    _filter_values: list[Any | None | NotNone] = field(default_factory=list)
+    _filter_values: list[Any | NotNone | None] = field(default_factory=list)
 
     _is_fixed: bool = False
     _fixed_value: Any | None = None
@@ -73,7 +75,7 @@ class SqlFieldBuilder:
 
         return self
 
-    def in_ordering(self, descending: bool = False) -> SqlFieldBuilder:
+    def in_ordering(self, *, descending: bool = False) -> SqlFieldBuilder:
         self._is_ordered = True
         self._is_descending = descending
 
@@ -95,7 +97,7 @@ class SqlFieldBuilder:
 
         return self
 
-    def as_filter(self, values: list[Any | None | NotNone]) -> SqlFieldBuilder:
+    def as_filter(self, values: list[Any | NotNone | None]) -> SqlFieldBuilder:
         self._is_filter = True
         self._filter_values = values
 
@@ -159,12 +161,17 @@ class SqlFieldManager:
     def __iter__(self) -> Iterator[_SqlField]:
         yield from self.fields
 
-    def where_statement(self, include_id: bool = False, read_id: bool = False) -> str:
+    def where_statement(
+        self,
+        *,
+        include_id: bool = False,
+        read_id: bool = False,
+    ) -> str:
         statements = [
             statement
             for statement in [
                 self._parent_filter(),
-                self._id_filter(include_id, read_id),
+                self._id_filter(include_id=include_id, read_id=read_id),
                 self._general_filters(),
             ]
             if statement != ""
@@ -201,7 +208,7 @@ class SqlFieldManager:
 
         return ""
 
-    def _id_filter(self, include_id: bool, read_id: bool) -> str:
+    def _id_filter(self, *, include_id: bool, read_id: bool) -> str:
         if not include_id:
             return ""
 
@@ -237,7 +244,7 @@ class SqlFieldManager:
         return "(" + " OR ".join(clauses) + ")"
 
     def _general_filters(self) -> str:
-        statements: list[str] = [] + self.custom_filters
+        statements: list[str] = [*self.custom_filters]
         for key in self.fields:
             if key.is_filter:
                 inner_statements: list[str] = []

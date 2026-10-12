@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import pytest
 
-from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.testing import RestRequest, RestTransport
 from tests.fastapi.sample_api import FakeApple, SuccessfulService
+
+if TYPE_CHECKING:
+    from apexdevkit.fastapi.dependable import DependableBuilder
 
 
 @pytest.fixture

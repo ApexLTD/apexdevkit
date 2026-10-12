@@ -1,5 +1,5 @@
-import os
 from collections.abc import Iterable
+from pathlib import Path
 
 import pytest
 
@@ -12,4 +12,4 @@ def sqlite_db() -> Iterable[Database]:
     try:
         yield Database(SqliteFileConnector("test.db"))
     finally:
-        os.unlink("test.db")
+        Path("test.db").unlink(missing_ok=True)

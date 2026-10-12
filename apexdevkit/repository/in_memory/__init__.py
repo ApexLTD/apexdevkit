@@ -4,7 +4,7 @@ from .store import InMemoryByteStore, KeyValueStore
 
 __all__ = [
     "CacheMixin",
-    "InMemoryRepository",
     "InMemoryByteStore",
+    "InMemoryRepository",
     "KeyValueStore",
 ]

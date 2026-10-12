@@ -4,15 +4,15 @@ from .sync import Sync, SyncProbe
 from .target import NoTarget, Target, TargetDecorator, TargetFailing
 
 __all__ = [
-    "Sync",
-    "SyncObserver",
-    "SyncProbe",
     "EmptySource",
+    "NoTarget",
     "Source",
     "SourceDecorator",
     "SourceFailing",
     "SourcePreSet",
-    "NoTarget",
+    "Sync",
+    "SyncObserver",
+    "SyncProbe",
     "Target",
     "TargetDecorator",
     "TargetFailing",

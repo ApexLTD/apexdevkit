@@ -5,9 +5,9 @@ from apexdevkit.fastapi.service import RestfulRepository
 
 __all__ = [
     "FastApiBuilder",
-    "RestfulServiceBuilder",
-    "inject",
     "RestfulRepository",
     "RestfulRouter",
+    "RestfulServiceBuilder",
     "RouterWithHiddenUnderscoreRoutes",
+    "inject",
 ]
