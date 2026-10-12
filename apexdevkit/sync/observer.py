@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 class ObservableSync:
     observers: list[SyncObserver] = field(default_factory=list)
 
-    def attach(self, observer: SyncObserver, when: bool = True) -> Self:
+    def attach(self, observer: SyncObserver, *, when: bool = True) -> Self:
         if when:
             self.observers.append(observer)
 

@@ -46,7 +46,13 @@ class Sync[T](ObservableSync):
     def dry(self, *, when: bool = True) -> Sync[T]:
         return replace(self, dry_run=when)
 
-    def run(self, prune: bool = True, load: bool = True, update: bool = True) -> None:
+    def run(
+        self,
+        *,
+        prune: bool = True,
+        load: bool = True,
+        update: bool = True,
+    ) -> None:
         if prune:
             self.prune()
 
@@ -142,7 +148,7 @@ class SyncProbe:
 
     is_enabled: bool = True
 
-    def disable(self, when: bool) -> SyncProbe:
+    def disable(self, *, when: bool) -> SyncProbe:
         return SyncProbe(source=self.source, is_enabled=not when)
 
     def notify(self, using: Callable[[int], None]) -> SyncProbe:

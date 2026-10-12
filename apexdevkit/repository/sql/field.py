@@ -75,7 +75,7 @@ class SqlFieldBuilder:
 
         return self
 
-    def in_ordering(self, descending: bool = False) -> SqlFieldBuilder:
+    def in_ordering(self, *, descending: bool = False) -> SqlFieldBuilder:
         self._is_ordered = True
         self._is_descending = descending
 
@@ -161,12 +161,17 @@ class SqlFieldManager:
     def __iter__(self) -> Iterator[_SqlField]:
         yield from self.fields
 
-    def where_statement(self, include_id: bool = False, read_id: bool = False) -> str:
+    def where_statement(
+        self,
+        *,
+        include_id: bool = False,
+        read_id: bool = False,
+    ) -> str:
         statements = [
             statement
             for statement in [
                 self._parent_filter(),
-                self._id_filter(include_id, read_id),
+                self._id_filter(include_id=include_id, read_id=read_id),
                 self._general_filters(),
             ]
             if statement != ""
@@ -203,7 +208,7 @@ class SqlFieldManager:
 
         return ""
 
-    def _id_filter(self, include_id: bool, read_id: bool) -> str:
+    def _id_filter(self, *, include_id: bool, read_id: bool) -> str:
         if not include_id:
             return ""
 

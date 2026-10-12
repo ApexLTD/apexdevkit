@@ -61,7 +61,7 @@ class DefaultMsSqlFilter[T]:
 
     def retrieve(self) -> Iterable[T]:
         if not any(sort.name == "id" for sort in self._options.ordering):
-            self._options.ordering.append(Sort("id", False))
+            self._options.ordering.append(Sort(name="id", is_descending=False))
 
         result = self._database.execute(
             self._query_builder.filter(self._options)
@@ -215,7 +215,7 @@ class MsSqlField:
 
         return result
 
-    def as_order_part(self, is_descending: bool = False) -> str:
+    def as_order_part(self, *, is_descending: bool = False) -> str:
         result = self.name
 
         if is_descending:
@@ -278,7 +278,7 @@ class MsSqlOrderGenerator:
         return f"ORDER BY {clause}"
 
     def generate_one(self, item: Sort) -> str:
-        return self.field_for(item.name).as_order_part(item.is_descending)
+        return self.field_for(item.name).as_order_part(is_descending=item.is_descending)
 
     def field_for(self, name: str) -> MsSqlField:
         for f in self.fields:
