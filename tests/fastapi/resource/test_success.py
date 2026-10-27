@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import replace
 from unittest.mock import ANY
 from uuid import uuid4
 
@@ -8,7 +7,7 @@ import pytest
 
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.testing import RestRequest, RestTransport
-from tests.fastapi.sample_api import AppleFormatter, FakeApple, SuccessfulService
+from tests.fastapi.sample_api import FakeApple, SuccessfulService
 
 
 @pytest.fixture
@@ -39,7 +38,7 @@ def test_should_create(
         .and_item(apple.with_a(id=ANY))
     )
 
-    assert service.called_with == replace(AppleFormatter().load(apple), id=ANY)
+    assert service.called_with == fake_apple.entity(id=ANY)
 
 
 def test_should_read_one(
@@ -122,7 +121,7 @@ def test_should_update_one(
         .with_code(200)
     )
 
-    assert service.called_with == replace(AppleFormatter().load(apple), id=ANY)
+    assert service.called_with == fake_apple.entity(id=ANY)
 
 
 def test_should_replace_one(
@@ -142,7 +141,7 @@ def test_should_replace_one(
         .with_code(200)
     )
 
-    assert service.called_with == replace(AppleFormatter().load(apple), id=ANY)
+    assert service.called_with == fake_apple.entity(id=apple.get("id"))
 
 
 def test_should_delete_one(

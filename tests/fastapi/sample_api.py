@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import Enum
 from functools import cached_property
 from typing import TYPE_CHECKING, Any
@@ -143,13 +143,15 @@ class FakeApple:
 
 class AppleFormatter:
     def load(self, source: Mapping[str, Any]) -> Apple:
-        return Apple(
+        result = Apple(
             name=Name(
                 common=source["name"]["common"],
                 scientific=source["name"]["scientific"],
             ),
             color=Color(source["color"]),
         )
+
+        return replace(result, id=source.get("id", result.id))
 
     def dump(self, target: Apple) -> Mapping[str, Any]:
         return {
