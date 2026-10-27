@@ -14,9 +14,12 @@ from apexdevkit.fastapi.service import (
     RawCollection,
     RawItem,
     RestfulService,
+    RestfulServiceWithFormatter,
 )
+from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.query import Filter
 from apexdevkit.query.query import Operator, Page, Sort
+from apexdevkit.repository import Entity
 from tests.fake import FakeResource
 
 if TYPE_CHECKING:
@@ -56,27 +59,23 @@ def setup(dependency: DependableBuilder) -> FastAPI:
 
 
 @dataclass
-class FailingService(RestfulServiceBuilder, RestfulService):
+class FailingService(RestfulServiceBuilder):
     error: Exception | type[Exception]
 
     def fail(self, *_: Any, **__: Any) -> Any:
         raise self.error
 
     def build(self) -> RestfulService:
-        return self
+        return RestfulServiceWithFormatter(
+            inner=self,
+            formatter=DataclassFormatter(Apple),
+        )
 
     create_one = fail
-    create_many = fail
     read_one = fail
-    filter_with = fail
-    aggregation_with = fail
-    sum_with = fail
     read_many = fail
     read_all = fail
     update_one = fail
-    update_many = fail
-    replace_one = fail
-    replace_many = fail
     delete_one = fail
 
 
@@ -96,8 +95,7 @@ class Name:
 
 
 @dataclass(frozen=True)
-class Apple:
-    id: str
+class Apple(Entity):
     name: Name
     color: Color
 
