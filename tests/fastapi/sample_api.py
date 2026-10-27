@@ -145,26 +145,32 @@ class SuccessfulService(RestfulServiceBuilder, RestfulService):
 
     def create_one(self, item: RawItem) -> RawItem:
         self.called_with = item
+
         return self.always_return
 
     def read_one(self, item_id: str) -> RawItem:
         self.called_with = item_id
+
         return self.always_return
 
     def read_many(self, **params: Any) -> RawCollection:
         self.called_with = params
+
         return [self.always_return]
 
     def read_all(self) -> RawCollection:
         self.called_with = None
+
         return [self.always_return]
 
     def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
         self.called_with = (item_id, with_fields)
+
         return self.always_return
 
     def replace_one(self, item: RawItem) -> RawItem:
         self.called_with = item
+
         return self.always_return
 
     def delete_one(self, item_id: str) -> None:
