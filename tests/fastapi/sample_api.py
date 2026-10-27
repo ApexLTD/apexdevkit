@@ -124,14 +124,12 @@ class FakeApple:
     def _raw(self) -> dict[str, Any]:
         return {
             "id": self.fake.uuid(),
-            "name": self._name(),
+            "name": {
+                "scientific": self.fake.text(length=10),
+                "common": self.fake.text(length=10),
+            },
             "color": random.choice(list(Color)).value,
         }
-
-    def _name(self) -> dict[str, Any]:
-        name = Name(self.fake.text(length=10), self.fake.text(length=10))
-
-        return {"scientific": name.scientific, "common": name.common}
 
     def unknown_id(self) -> str:
         return self.fake.text(length=32)
