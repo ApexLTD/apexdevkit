@@ -17,6 +17,14 @@ class Formatter[SourceT, TargetT](Protocol):  # pragma: no cover
         pass
 
 
+class NoFormatter[S, T]:
+    def load(self, source: S) -> T:
+        raise NotImplementedError
+
+    def dump(self, target: T) -> S:
+        raise NotImplementedError
+
+
 @dataclass(frozen=True)
 class AliasFormatter[TargetT](Formatter[Mapping[str, Any], TargetT]):
     inner: Formatter[Mapping[str, Any], TargetT]

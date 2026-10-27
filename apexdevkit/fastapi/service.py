@@ -5,19 +5,13 @@ from typing import TYPE_CHECKING, Any, Protocol
 
 from pypebbles import JsonDict
 
+from apexdevkit.formatter import NoFormatter
+
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
 
     from apexdevkit.formatter import Formatter
     from apexdevkit.repository import Entity, Repository
-
-
-class NoFormatter[T]:
-    def load(self, source: Mapping[str, Any]) -> T:
-        raise NotImplementedError
-
-    def dump(self, target: T) -> Mapping[str, Any]:
-        raise NotImplementedError
 
 
 class NoService[T]:
