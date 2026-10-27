@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 import pytest
 from faker import Faker
 
+from apexdevkit.fastapi.builder import PreBuilt
 from apexdevkit.testing import RestRequest, RestTransport
 from tests.fastapi.sample_api import FakeApple, SuccessfulService
 
@@ -20,7 +21,7 @@ def service() -> SuccessfulService:
 
 @pytest.fixture
 def builder(service: SuccessfulService) -> RestfulServiceBuilder:
-    return service
+    return PreBuilt(service.build())
 
 
 @pytest.fixture
@@ -35,37 +36,37 @@ def dependency(builder: RestfulServiceBuilder, username: str) -> DependableBuild
 
 def test_should_persist_user_for_create_one(
     transport: RestTransport,
-    service: SuccessfulService,
+    builder: RestfulServiceBuilder,
     username: str,
 ) -> None:
     RestRequest().with_data(FakeApple().json()).using(transport).create()
 
-    assert service.user == username
+    assert builder.user == username
 
 
 def test_should_persist_user_for_read_one(
     transport: RestTransport,
-    service: SuccessfulService,
+    builder: RestfulServiceBuilder,
     username: str,
 ) -> None:
     RestRequest().item(with_id=FakeApple().json().get("id")).using(transport).read()
 
-    assert service.user == username
+    assert builder.user == username
 
 
 def test_should_persist_user_for_read_all(
     transport: RestTransport,
-    service: SuccessfulService,
+    builder: RestfulServiceBuilder,
     username: str,
 ) -> None:
     RestRequest().using(transport).read()
 
-    assert service.user == username
+    assert builder.user == username
 
 
 def test_should_persist_user_for_update_one(
     transport: RestTransport,
-    service: SuccessfulService,
+    builder: RestfulServiceBuilder,
     username: str,
 ) -> None:
     (
@@ -76,24 +77,24 @@ def test_should_persist_user_for_update_one(
         .update()
     )
 
-    assert service.user == username
+    assert builder.user == username
 
 
 def test_should_persist_user_for_replace_one(
     transport: RestTransport,
-    service: SuccessfulService,
+    builder: RestfulServiceBuilder,
     username: str,
 ) -> None:
     RestRequest().with_data(FakeApple().json()).using(transport).replace()
 
-    assert service.user == username
+    assert builder.user == username
 
 
 def test_should_persist_user_for_delete_one(
     transport: RestTransport,
-    service: SuccessfulService,
+    builder: RestfulServiceBuilder,
     username: str,
 ) -> None:
     RestRequest().item(with_id=FakeApple().json().get("id")).using(transport).delete()
 
-    assert service.user == username
+    assert builder.user == username
