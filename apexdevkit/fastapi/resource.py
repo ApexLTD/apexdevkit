@@ -19,11 +19,12 @@ class RestfulResource:
         def endpoint(service: Service, item: Item) -> _Response:
             try:
                 result = service.create_one(item)
-                return self.response.created_one(result)
             except ExistsError as e:
                 return JSONResponse(self.response.exists(e), 409)
             except ForbiddenError as e:
                 return JSONResponse(self.response.forbidden(e), 403)
+
+            return self.response.created_one(result)
 
         return endpoint
 
@@ -31,11 +32,12 @@ class RestfulResource:
         def endpoint(service: Service, item_id: ItemId) -> _Response:
             try:
                 result = service.read_one(item_id)
-                return self.response.found_one(result)
             except DoesNotExistError as e:
                 return JSONResponse(self.response.not_found(e), 404)
             except ForbiddenError as e:
                 return JSONResponse(self.response.forbidden(e), 403)
+
+            return self.response.found_one(result)
 
         return endpoint
 
@@ -43,9 +45,10 @@ class RestfulResource:
         def endpoint(service: Service, params: QueryParams) -> _Response:
             try:
                 result = list(service.read_many(**dict(params)))
-                return self.response.found_many(result)
             except ForbiddenError as e:
                 return JSONResponse(self.response.forbidden(e), 403)
+
+            return self.response.found_many(result)
 
         return endpoint
 
@@ -53,9 +56,10 @@ class RestfulResource:
         def endpoint(service: Service) -> _Response:
             try:
                 result = list(service.read_all())
-                return self.response.found_many(result)
             except ForbiddenError as e:
                 return JSONResponse(self.response.forbidden(e), 403)
+
+            return self.response.found_many(result)
 
         return endpoint
 
