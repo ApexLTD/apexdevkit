@@ -3,6 +3,7 @@ from faker import Faker
 from fastapi.testclient import TestClient
 from pypebbles.http.drivers import Httpx
 
+from apexdevkit.fastapi import RestfulApiBuilder
 from apexdevkit.fastapi.builder import PreBuilt
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
@@ -31,7 +32,7 @@ def transport(dependency: DependableBuilder) -> RestTransport:
 
 
 @pytest.fixture
-def dependency(username: str, builder: PreBuilt[Apple]) -> DependableBuilder:
+def dependency(username: str, builder: RestfulApiBuilder[Apple]) -> DependableBuilder:
     return DependableBuilder.from_builder(builder).with_user(lambda: username)
 
 
@@ -41,7 +42,7 @@ def username(faker: Faker) -> str:
 
 
 @pytest.fixture
-def builder(service: RestfulService[Apple]) -> PreBuilt[Apple]:
+def builder(service: RestfulService[Apple]) -> RestfulApiBuilder[Apple]:
     return PreBuilt(service).with_formatter(AppleFormatter())
 
 

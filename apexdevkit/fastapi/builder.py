@@ -150,16 +150,19 @@ class RestfulApiBuilder[T](ABC):
         return self
 
     @abstractmethod
-    def build(self) -> RestfulApi[T]:  # pragma: no cover
+    def service(self) -> RestfulService[T]:
         pass
+
+    def build(self) -> RestfulApi[T]:
+        return RestfulApi(service=self.service(), formatter=self.formatter)
 
 
 @dataclass
 class PreBuilt[T](RestfulApiBuilder[T]):  # pragma: no cover
     instance: RestfulService[T]
 
-    def build(self) -> RestfulApi[T]:
-        return RestfulApi(service=self.instance, formatter=self.formatter)
+    def service(self) -> RestfulService[T]:
+        return self.instance
 
 
 @dataclass(frozen=True)
