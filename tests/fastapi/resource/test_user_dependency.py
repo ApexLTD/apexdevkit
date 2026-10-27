@@ -12,12 +12,11 @@ from tests.fastapi.sample_api import AppleFormatter, FakeApple, SuccessfulServic
 if TYPE_CHECKING:
     from faker import Faker
 
-    from apexdevkit.fastapi import RestfulServiceBuilder
     from apexdevkit.fastapi.dependable import DependableBuilder
 
 
 @pytest.fixture
-def builder() -> RestfulServiceBuilder:
+def builder() -> PreBuilt:
     return PreBuilt(
         RestfulServiceWithFormatter(
             inner=SuccessfulService(always_return=FakeApple().entity()),
@@ -32,13 +31,13 @@ def username(faker: Faker) -> str:
 
 
 @pytest.fixture
-def dependency(builder: RestfulServiceBuilder, username: str) -> DependableBuilder:
+def dependency(builder: PreBuilt, username: str) -> DependableBuilder:
     return builder.as_dependable().with_user(lambda: username)
 
 
 def test_should_persist_user_for_create_one(
     transport: RestTransport,
-    builder: RestfulServiceBuilder,
+    builder: PreBuilt,
     username: str,
 ) -> None:
     RestRequest().with_data(FakeApple().json()).using(transport).create()
@@ -48,7 +47,7 @@ def test_should_persist_user_for_create_one(
 
 def test_should_persist_user_for_read_one(
     transport: RestTransport,
-    builder: RestfulServiceBuilder,
+    builder: PreBuilt,
     username: str,
 ) -> None:
     RestRequest().item(with_id=FakeApple().json().get("id")).using(transport).read()
@@ -58,7 +57,7 @@ def test_should_persist_user_for_read_one(
 
 def test_should_persist_user_for_read_all(
     transport: RestTransport,
-    builder: RestfulServiceBuilder,
+    builder: PreBuilt,
     username: str,
 ) -> None:
     RestRequest().using(transport).read()
@@ -68,7 +67,7 @@ def test_should_persist_user_for_read_all(
 
 def test_should_persist_user_for_update_one(
     transport: RestTransport,
-    builder: RestfulServiceBuilder,
+    builder: PreBuilt,
     username: str,
 ) -> None:
     (
@@ -84,7 +83,7 @@ def test_should_persist_user_for_update_one(
 
 def test_should_persist_user_for_replace_one(
     transport: RestTransport,
-    builder: RestfulServiceBuilder,
+    builder: PreBuilt,
     username: str,
 ) -> None:
     RestRequest().with_data(FakeApple().json()).using(transport).replace()
@@ -94,7 +93,7 @@ def test_should_persist_user_for_replace_one(
 
 def test_should_persist_user_for_delete_one(
     transport: RestTransport,
-    builder: RestfulServiceBuilder,
+    builder: PreBuilt,
     username: str,
 ) -> None:
     RestRequest().item(with_id=FakeApple().json().get("id")).using(transport).delete()

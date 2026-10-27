@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from unittest import mock
 from unittest.mock import ANY
 from uuid import uuid4
 
-import mock
 import pytest
 
 from apexdevkit.fastapi.builder import PreBuilt
@@ -12,9 +11,6 @@ from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.service import RestfulServiceWithFormatter
 from apexdevkit.testing import RestRequest, RestTransport
 from tests.fastapi.sample_api import AppleFormatter, FakeApple, SuccessfulService
-
-if TYPE_CHECKING:
-    from apexdevkit.fastapi import RestfulServiceBuilder
 
 
 @pytest.fixture
@@ -28,7 +24,7 @@ def service(apple: FakeApple) -> SuccessfulService:
 
 
 @pytest.fixture
-def builder(service: SuccessfulService) -> RestfulServiceBuilder:
+def builder(service: SuccessfulService) -> PreBuilt:
     return PreBuilt(
         RestfulServiceWithFormatter(
             inner=service,

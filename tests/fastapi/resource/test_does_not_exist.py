@@ -4,9 +4,10 @@ import pytest
 from pypebbles import JsonDict
 
 from apexdevkit.error import DoesNotExistError
+from apexdevkit.fastapi.builder import PreBuilt
+from apexdevkit.fastapi.service import RestfulServiceWithFormatter
 from apexdevkit.testing import RestRequest, RestTransport
-
-from ..sample_api import FailingService, FakeApple
+from tests.fastapi.sample_api import AppleFormatter, FailingService, FakeApple
 
 
 @pytest.fixture
@@ -15,8 +16,13 @@ def apple() -> JsonDict:
 
 
 @pytest.fixture
-def builder() -> FailingService:
-    return FailingService(DoesNotExistError)
+def builder() -> PreBuilt:
+    return PreBuilt(
+        RestfulServiceWithFormatter(
+            inner=FailingService(DoesNotExistError),
+            formatter=AppleFormatter(),
+        )
+    )
 
 
 def test_should_not_read_unknown(transport: RestTransport) -> None:
