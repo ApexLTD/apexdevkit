@@ -5,7 +5,11 @@ from typing import Any
 import pytest
 
 from apexdevkit.error import DoesNotExistError, ExistsError
-from apexdevkit.fastapi.service import RestfulRepository, RestfulService
+from apexdevkit.fastapi.service import (
+    RepositoryBasedService,
+    RestfulService,
+    RestfulServiceWithFormatter,
+)
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import (
     Entity,
@@ -45,7 +49,10 @@ def repository() -> Repository[Animal]:
 
 @pytest.fixture
 def service(repository: Repository[Animal]) -> RestfulService:
-    return RestfulRepository(repository, formatter=DataclassFormatter(Animal))
+    return RestfulServiceWithFormatter(
+        inner=RepositoryBasedService(repository),
+        formatter=DataclassFormatter(Animal),
+    )
 
 
 def test_should_create_one(

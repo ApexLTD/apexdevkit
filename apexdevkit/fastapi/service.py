@@ -157,3 +157,32 @@ class _Service[T: Entity](Protocol):
 
     def delete_one(self, with_id: str) -> T:
         pass
+
+
+@dataclass(frozen=True)
+class RepositoryBasedService[T: Entity](_Service[T]):
+    repository: Repository[T]
+
+    def create_one(self, item: T) -> T:
+        return self.repository.create(item)
+
+    def read_one(self, *, with_id: str) -> T:
+        return self.repository.read(with_id)
+
+    def read_all(self) -> Iterable[T]:
+        yield from self.repository
+
+    def read_many(self, query: JsonDict) -> Iterable[T]:
+        raise NotImplementedError
+
+    def update_one(self, item: T) -> T:
+        self.repository.update(item)
+
+        return item
+
+    def delete_one(self, with_id: str) -> T:
+        result = self.repository.read(with_id)
+
+        self.repository.delete(with_id)
+
+        return result
