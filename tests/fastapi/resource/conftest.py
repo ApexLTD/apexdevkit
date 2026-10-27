@@ -6,7 +6,7 @@ from pypebbles.http.drivers import Httpx
 from apexdevkit.fastapi.builder import PreBuilt
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.fastapi.service import RestfulApi, RestfulService
+from apexdevkit.fastapi.service import RestfulService
 from apexdevkit.testing import RestTransport
 from tests.fastapi.sample_api import (
     Apple,
@@ -31,7 +31,7 @@ def transport(dependency: DependableBuilder) -> RestTransport:
 
 
 @pytest.fixture
-def dependency(username: str, builder: PreBuilt) -> DependableBuilder:
+def dependency(username: str, builder: PreBuilt[Apple]) -> DependableBuilder:
     return DependableBuilder.from_builder(builder).with_user(lambda: username)
 
 
@@ -41,8 +41,8 @@ def username(faker: Faker) -> str:
 
 
 @pytest.fixture
-def builder(service: RestfulService[Apple]) -> PreBuilt:
-    return PreBuilt(RestfulApi(service=service, formatter=AppleFormatter()))
+def builder(service: RestfulService[Apple]) -> PreBuilt[Apple]:
+    return PreBuilt(service).with_formatter(AppleFormatter())
 
 
 @pytest.fixture

@@ -11,11 +11,12 @@ from fastapi.responses import JSONResponse
 from apexdevkit.annotation import deprecated
 from apexdevkit.error import ApiError
 from apexdevkit.fastapi.dependable import DependableBuilder
+from apexdevkit.fastapi.service import RestfulApi, RestfulService
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, MutableSet
 
-    from apexdevkit.fastapi.service import RestfulApi
+    from apexdevkit.formatter import Formatter
 
 
 @dataclass
@@ -149,11 +150,18 @@ class RestfulApiBuilder(ABC):
 
 
 @dataclass
-class PreBuilt(RestfulApiBuilder):  # pragma: no cover
-    service: RestfulApi
+class PreBuilt[T](RestfulApiBuilder):  # pragma: no cover
+    service: RestfulService[T]
 
-    def build(self) -> RestfulApi:
-        return self.service
+    formatter: Formatter[Mapping[str, Any], T] = field(init=False)
+
+    def with_formatter(self, formatter: Formatter[Mapping[str, Any], T]) -> PreBuilt[T]:
+        self.formatter = formatter
+
+        return self
+
+    def build(self) -> RestfulApi[T]:
+        return RestfulApi(service=self.service, formatter=self.formatter)
 
 
 @dataclass(frozen=True)
