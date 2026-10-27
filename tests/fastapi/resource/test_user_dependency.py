@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 import pytest
@@ -25,57 +24,49 @@ def builder(service: SuccessfulService) -> RestfulServiceBuilder:
 
 
 @pytest.fixture
-def fake_user() -> FakeUser:
-    return FakeUser()
+def username(faker: Faker) -> str:
+    return faker.word()
 
 
 @pytest.fixture
-def dependency(service: SuccessfulService, fake_user: FakeUser) -> DependableBuilder:
-    return service.as_dependable().with_user(fake_user.user)
-
-
-@dataclass
-class FakeUser:
-    _user: str = field(init=False, default_factory=Faker().word)
-
-    def user(self) -> str:
-        return self._user
+def dependency(service: SuccessfulService, username: str) -> DependableBuilder:
+    return service.as_dependable().with_user(lambda: username)
 
 
 def test_should_persist_user_for_create_one(
     transport: RestTransport,
     service: SuccessfulService,
-    fake_user: FakeUser,
+    username: str,
 ) -> None:
     RestRequest().with_data(FakeApple().json()).using(transport).create()
 
-    assert service.user == fake_user.user()
+    assert service.user == username
 
 
 def test_should_persist_user_for_read_one(
     transport: RestTransport,
     service: SuccessfulService,
-    fake_user: FakeUser,
+    username: str,
 ) -> None:
     RestRequest().item(with_id=FakeApple().json().get("id")).using(transport).read()
 
-    assert service.user == fake_user.user()
+    assert service.user == username
 
 
 def test_should_persist_user_for_read_all(
     transport: RestTransport,
     service: SuccessfulService,
-    fake_user: FakeUser,
+    username: str,
 ) -> None:
     RestRequest().using(transport).read()
 
-    assert service.user == fake_user.user()
+    assert service.user == username
 
 
 def test_should_persist_user_for_update_one(
     transport: RestTransport,
     service: SuccessfulService,
-    fake_user: FakeUser,
+    username: str,
 ) -> None:
     (
         RestRequest()
@@ -85,24 +76,24 @@ def test_should_persist_user_for_update_one(
         .update()
     )
 
-    assert service.user == fake_user.user()
+    assert service.user == username
 
 
 def test_should_persist_user_for_replace_one(
     transport: RestTransport,
     service: SuccessfulService,
-    fake_user: FakeUser,
+    username: str,
 ) -> None:
     RestRequest().with_data(FakeApple().json()).using(transport).replace()
 
-    assert service.user == fake_user.user()
+    assert service.user == username
 
 
 def test_should_persist_user_for_delete_one(
     transport: RestTransport,
     service: SuccessfulService,
-    fake_user: FakeUser,
+    username: str,
 ) -> None:
     RestRequest().item(with_id=FakeApple().json().get("id")).using(transport).delete()
 
-    assert service.user == fake_user.user()
+    assert service.user == username
