@@ -170,12 +170,6 @@ class SuccessfulService:
 
     called_with: Any | None = None
 
-    def build(self) -> RestfulService:
-        return RestfulServiceWithFormatter(
-            inner=self,
-            formatter=AppleFormatter(),
-        )
-
     def create_one(self, item: Apple) -> Apple:
         self.called_with = item
 

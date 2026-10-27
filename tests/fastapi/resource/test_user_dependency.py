@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pytest
-from faker import Faker
 
 from apexdevkit.fastapi.builder import PreBuilt
 from apexdevkit.fastapi.service import RestfulServiceWithFormatter
@@ -11,6 +10,8 @@ from apexdevkit.testing import RestRequest, RestTransport
 from tests.fastapi.sample_api import AppleFormatter, FakeApple, SuccessfulService
 
 if TYPE_CHECKING:
+    from faker import Faker
+
     from apexdevkit.fastapi import RestfulServiceBuilder
     from apexdevkit.fastapi.dependable import DependableBuilder
 
