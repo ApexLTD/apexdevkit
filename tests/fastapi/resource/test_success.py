@@ -25,17 +25,15 @@ def test_should_create(
     fake_apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
-    apple = fake_apple.json()
-
     (
         RestRequest()
-        .with_data(apple)
+        .with_data(fake_apple.json())
         .using(transport)
         .create()
         .ensure(http_code=201)
         .and_api_success()
         .with_code(201)
-        .and_item(apple.with_a(id=ANY))
+        .and_item(fake_apple.json().with_a(id=ANY))
     )
 
     assert service.called_with == fake_apple.entity(id=ANY)
@@ -46,20 +44,18 @@ def test_should_read_one(
     fake_apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
-    apple = fake_apple.json()
-
     (
         RestRequest()
-        .item(with_id=apple.value_of("id").to(str))
+        .item(with_id=fake_apple.entity().id)
         .using(transport)
         .read()
         .ensure(http_code=200)
         .and_api_success()
         .with_code(200)
-        .and_item(apple.with_a(id=ANY))
+        .and_item(fake_apple.json().with_a(id=ANY))
     )
 
-    assert service.called_with == apple.value_of("id").to(str)
+    assert service.called_with == fake_apple.entity().id
 
 
 def test_should_read_many(
@@ -67,8 +63,6 @@ def test_should_read_many(
     fake_apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
-    apple = fake_apple.json()
-
     (
         RestRequest()
         .with_params(color="red")
@@ -77,7 +71,7 @@ def test_should_read_many(
         .ensure(http_code=200)
         .and_api_success()
         .with_code(200)
-        .and_collection([apple.with_a(id=ANY)])
+        .and_collection([fake_apple.json().with_a(id=ANY)])
     )
 
     assert service.called_with == {"color": "red"}
@@ -88,8 +82,6 @@ def test_should_read_all(
     fake_apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
-    apple = fake_apple.json()
-
     (
         RestRequest()
         .using(transport)
@@ -97,7 +89,7 @@ def test_should_read_all(
         .ensure(http_code=200)
         .and_api_success()
         .with_code(200)
-        .and_collection([apple.with_a(id=ANY)])
+        .and_collection([fake_apple.json().with_a(id=ANY)])
     )
 
     assert service.called_with == {"color": None}
@@ -108,12 +100,10 @@ def test_should_update_one(
     fake_apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
-    apple = fake_apple.json()
-
     (
         RestRequest()
-        .item(with_id=apple.value_of("id"))
-        .with_data(apple)
+        .item(with_id=fake_apple.entity().id)
+        .with_data(fake_apple.json())
         .using(transport)
         .update()
         .ensure(http_code=200)
@@ -129,11 +119,9 @@ def test_should_replace_one(
     fake_apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
-    apple = fake_apple.json()
-
     (
         RestRequest()
-        .with_data(apple)
+        .with_data(fake_apple.json())
         .using(transport)
         .replace()
         .ensure(http_code=200)
@@ -141,7 +129,7 @@ def test_should_replace_one(
         .with_code(200)
     )
 
-    assert service.called_with == fake_apple.entity(id=apple.get("id"))
+    assert service.called_with == fake_apple.entity(id=fake_apple.json().get("id"))
 
 
 def test_should_delete_one(
@@ -149,11 +137,9 @@ def test_should_delete_one(
     fake_apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
-    apple = fake_apple.json()
-
     (
         RestRequest()
-        .item(with_id=apple.value_of("id"))
+        .item(with_id=fake_apple.entity().id)
         .using(transport)
         .delete()
         .ensure(http_code=200)
@@ -161,7 +147,7 @@ def test_should_delete_one(
         .with_code(200)
     )
 
-    assert service.called_with == apple["id"]
+    assert service.called_with == fake_apple.entity().id
 
 
 def test_should_sub_resource(transport: RestTransport) -> None:
