@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 @pytest.fixture
 def service() -> SuccessfulService:
-    return SuccessfulService(always_return=FakeApple().json())
+    return SuccessfulService(always_return=FakeApple().entity())
 
 
 @pytest.fixture

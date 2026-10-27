@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 from collections.abc import Mapping
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from enum import Enum
 from functools import cached_property
 from typing import TYPE_CHECKING, Any
@@ -168,18 +168,12 @@ class AppleFormatter:
 
 @dataclass
 class SuccessfulService(RestfulServiceBuilder):
-    always_return: JsonDict
+    always_return: Apple
     called_with: Any | None = None
 
     @property
     def formatter(self) -> AppleFormatter:
         return AppleFormatter()
-
-    def apple(self) -> Apple:
-        return replace(
-            self.formatter.load(self.always_return),
-            id=self.always_return["id"],
-        )
 
     def build(self) -> RestfulService:
         return RestfulServiceWithFormatter(inner=self, formatter=self.formatter)
@@ -187,34 +181,34 @@ class SuccessfulService(RestfulServiceBuilder):
     def create_one(self, item: Apple) -> Apple:
         self.called_with = item
 
-        return self.apple()
+        return self.always_return
 
     def read_one(self, with_id: str) -> Apple:
         self.called_with = with_id
 
-        return self.apple()
+        return self.always_return
 
     def read_many(self, query: JsonDict) -> Iterable[Apple]:
         self.called_with = query
 
-        return [self.apple()]
+        return [self.always_return]
 
     def read_all(self) -> Iterable[Apple]:
         self.called_with = None
 
-        return [self.apple()]
+        return [self.always_return]
 
     def update_one(self, item: Apple) -> Apple:
         self.called_with = item
 
-        return self.apple()
+        return self.always_return
 
     def replace_one(self, item: Apple) -> Apple:
         self.called_with = item
 
-        return self.apple()
+        return self.always_return
 
     def delete_one(self, with_id: str) -> Apple:
         self.called_with = with_id
 
-        return self.apple()
+        return self.always_return

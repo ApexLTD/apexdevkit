@@ -22,7 +22,9 @@ def apple() -> JsonDict:
 
 @pytest.fixture
 def service(apple: JsonDict) -> SuccessfulService:
-    return SuccessfulService(always_return=apple)
+    return SuccessfulService(
+        always_return=replace(AppleFormatter().load(apple), id=apple["id"])
+    )
 
 
 def test_should_create(
