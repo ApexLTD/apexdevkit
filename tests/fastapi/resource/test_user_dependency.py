@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 import pytest
+from faker import Faker
 
 from apexdevkit.fastapi import RestfulServiceBuilder
 from apexdevkit.testing import RestRequest, RestTransport
@@ -37,9 +38,12 @@ def dependency(service: SuccessfulService, fake_user: FakeUser) -> DependableBui
 class FakeUser:
     times_called: int = 0
 
+    _user: str = field(init=False, default_factory=Faker().word)
+
     def user(self) -> str:
         self.times_called += 1
-        return "user"
+
+        return self._user
 
 
 def test_should_call_extract_user_for_create_one(
@@ -54,10 +58,11 @@ def test_should_call_extract_user_for_create_one(
 def test_should_persist_user_for_create_one(
     transport: RestTransport,
     service: SuccessfulService,
+    fake_user: FakeUser,
 ) -> None:
     RestRequest().with_data(FakeApple().json()).using(transport).create()
 
-    assert service.user == "user"
+    assert service.user == fake_user.user()
 
 
 def test_should_call_extract_user_for_read_one(
@@ -72,10 +77,11 @@ def test_should_call_extract_user_for_read_one(
 def test_should_persist_user_for_read_one(
     transport: RestTransport,
     service: SuccessfulService,
+    fake_user: FakeUser,
 ) -> None:
     RestRequest().item(with_id=FakeApple().json().get("id")).using(transport).read()
 
-    assert service.user == "user"
+    assert service.user == fake_user.user()
 
 
 def test_should_call_extract_user_for_read_all(
@@ -90,10 +96,11 @@ def test_should_call_extract_user_for_read_all(
 def test_should_persist_user_for_read_all(
     transport: RestTransport,
     service: SuccessfulService,
+    fake_user: FakeUser,
 ) -> None:
     RestRequest().using(transport).read()
 
-    assert service.user == "user"
+    assert service.user == fake_user.user()
 
 
 def test_should_call_extract_user_for_update_one(
@@ -114,6 +121,7 @@ def test_should_call_extract_user_for_update_one(
 def test_should_persist_user_for_update_one(
     transport: RestTransport,
     service: SuccessfulService,
+    fake_user: FakeUser,
 ) -> None:
     (
         RestRequest()
@@ -123,7 +131,7 @@ def test_should_persist_user_for_update_one(
         .update()
     )
 
-    assert service.user == "user"
+    assert service.user == fake_user.user()
 
 
 def test_should_call_extract_user_for_replace_one(
@@ -138,10 +146,11 @@ def test_should_call_extract_user_for_replace_one(
 def test_should_persist_user_for_replace_one(
     transport: RestTransport,
     service: SuccessfulService,
+    fake_user: FakeUser,
 ) -> None:
     RestRequest().with_data(FakeApple().json()).using(transport).replace()
 
-    assert service.user == "user"
+    assert service.user == fake_user.user()
 
 
 def test_should_call_extract_user_for_delete_one(
@@ -156,7 +165,8 @@ def test_should_call_extract_user_for_delete_one(
 def test_should_persist_user_for_delete_one(
     transport: RestTransport,
     service: SuccessfulService,
+    fake_user: FakeUser,
 ) -> None:
     RestRequest().item(with_id=FakeApple().json().get("id")).using(transport).delete()
 
-    assert service.user == "user"
+    assert service.user == fake_user.user()
