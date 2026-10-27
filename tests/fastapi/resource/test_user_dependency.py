@@ -4,25 +4,19 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from apexdevkit.fastapi.builder import PreBuilt
-from apexdevkit.fastapi.service import RestfulApi
 from apexdevkit.testing import RestRequest, RestTransport
-from tests.fastapi.sample_api import AppleFormatter, FakeApple, SuccessfulService
+from tests.fastapi.sample_api import FakeApple, SuccessfulService
 
 if TYPE_CHECKING:
     from faker import Faker
 
+    from apexdevkit.fastapi.builder import PreBuilt
     from apexdevkit.fastapi.dependable import DependableBuilder
 
 
 @pytest.fixture
-def builder() -> PreBuilt:
-    return PreBuilt(
-        RestfulApi(
-            inner=SuccessfulService(always_return=FakeApple().entity()),
-            formatter=AppleFormatter(),
-        )
-    )
+def service() -> SuccessfulService:
+    return SuccessfulService(always_return=FakeApple().entity())
 
 
 @pytest.fixture

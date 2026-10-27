@@ -6,11 +6,9 @@ from uuid import uuid4
 
 import pytest
 
-from apexdevkit.fastapi.builder import PreBuilt
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.fastapi.service import RestfulApi
 from apexdevkit.testing import RestRequest, RestTransport
-from tests.fastapi.sample_api import AppleFormatter, FakeApple, SuccessfulService
+from tests.fastapi.sample_api import FakeApple, SuccessfulService
 
 
 @pytest.fixture
@@ -21,16 +19,6 @@ def apple() -> FakeApple:
 @pytest.fixture
 def service(apple: FakeApple) -> SuccessfulService:
     return SuccessfulService(always_return=apple.entity())
-
-
-@pytest.fixture
-def builder(service: SuccessfulService) -> PreBuilt:
-    return PreBuilt(
-        RestfulApi(
-            inner=service,
-            formatter=AppleFormatter(),
-        )
-    )
 
 
 def test_should_create(
