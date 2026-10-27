@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import ANY
 from uuid import uuid4
 
+import mock
 import pytest
 
 from apexdevkit.fastapi.builder import PreBuilt
@@ -52,7 +53,7 @@ def test_should_create(
         .and_item(apple.json().with_a(id=ANY))
     )
 
-    service.log.assert_called_with(create_one=apple.entity(id=ANY))
+    service.log.assert_called_once_with(create_one=apple.entity(id=ANY))
 
 
 def test_should_read_one(
@@ -71,7 +72,7 @@ def test_should_read_one(
         .and_item(apple.json().with_a(id=ANY))
     )
 
-    service.log.assert_called_with(read_one=apple.entity().id)
+    service.log.assert_called_once_with(read_one=apple.entity().id)
 
 
 def test_should_read_many(
@@ -90,7 +91,7 @@ def test_should_read_many(
         .and_collection([apple.json().with_a(id=ANY)])
     )
 
-    service.log.assert_called_with(read_many={"color": "red"})
+    service.log.assert_called_once_with(read_many={"color": "red"})
 
 
 def test_should_read_all(
@@ -108,7 +109,7 @@ def test_should_read_all(
         .and_collection([apple.json().with_a(id=ANY)])
     )
 
-    service.log.assert_called_with(read_many={"color": None})
+    service.log.assert_called_once_with(read_many={"color": None})
 
 
 def test_should_update_one(
@@ -127,7 +128,12 @@ def test_should_update_one(
         .with_code(200)
     )
 
-    service.log.assert_called_with(update_one=apple.entity(id=ANY))
+    service.log.assert_has_calls(
+        [
+            mock.call(read_one=apple.entity().id),
+            mock.call(update_one=apple.entity(id=ANY)),
+        ]
+    )
 
 
 def test_should_replace_one(
@@ -145,7 +151,9 @@ def test_should_replace_one(
         .with_code(200)
     )
 
-    service.log.assert_called_with(update_one=apple.entity(id=apple.json().get("id")))
+    service.log.assert_called_once_with(
+        update_one=apple.entity(id=apple.json().get("id"))
+    )
 
 
 def test_should_delete_one(
@@ -163,7 +171,7 @@ def test_should_delete_one(
         .with_code(200)
     )
 
-    service.log.assert_called_with(delete_one=apple.entity().id)
+    service.log.assert_called_once_with(delete_one=apple.entity().id)
 
 
 def test_should_sub_resource(transport: RestTransport) -> None:
