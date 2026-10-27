@@ -7,7 +7,6 @@ import pytest
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.fastapi.service import (
     RepositoryBasedService,
-    RestfulService,
     RestfulServiceWithFormatter,
 )
 from apexdevkit.formatter import DataclassFormatter
@@ -48,7 +47,7 @@ def repository() -> Repository[Animal]:
 
 
 @pytest.fixture
-def service(repository: Repository[Animal]) -> RestfulService:
+def service(repository: Repository[Animal]) -> RestfulServiceWithFormatter[Animal]:
     return RestfulServiceWithFormatter(
         inner=RepositoryBasedService(repository),
         formatter=DataclassFormatter(Animal),
@@ -57,7 +56,7 @@ def service(repository: Repository[Animal]) -> RestfulService:
 
 def test_should_create_one(
     repository: Repository[Animal],
-    service: RestfulService,
+    service: RestfulServiceWithFormatter[Animal],
 ) -> None:
     # Given
     animal = FakeAnimal()
@@ -72,7 +71,7 @@ def test_should_create_one(
 
 def test_should_not_create_one(
     repository: Repository[Animal],
-    service: RestfulService,
+    service: RestfulServiceWithFormatter[Animal],
 ) -> None:
     # Given
     animal = FakeAnimal()
@@ -86,7 +85,7 @@ def test_should_not_create_one(
 
 def test_should_read_one(
     repository: Repository[Animal],
-    service: RestfulService,
+    service: RestfulServiceWithFormatter[Animal],
 ) -> None:
     # Given
     animal = FakeAnimal()
@@ -99,7 +98,9 @@ def test_should_read_one(
     assert result == animal.json()
 
 
-def test_should_not_read_unknown(service: RestfulService) -> None:
+def test_should_not_read_unknown(
+    service: RestfulServiceWithFormatter[Animal],
+) -> None:
     # Given
     animal = FakeAnimal()
 
@@ -111,7 +112,7 @@ def test_should_not_read_unknown(service: RestfulService) -> None:
 
 def test_should_read_all(
     repository: Repository[Animal],
-    service: RestfulService,
+    service: RestfulServiceWithFormatter[Animal],
 ) -> None:
     # Given
     animal_1 = FakeAnimal()
@@ -128,7 +129,7 @@ def test_should_read_all(
 
 def test_should_update_one(
     repository: Repository[Animal],
-    service: RestfulService,
+    service: RestfulServiceWithFormatter[Animal],
 ) -> None:
     # Given
     initial = FakeAnimal().entity()
@@ -143,7 +144,9 @@ def test_should_update_one(
     assert repository.read(updated.entity().id) == updated.entity()
 
 
-def test_should_not_update_unknown(service: RestfulService) -> None:
+def test_should_not_update_unknown(
+    service: RestfulServiceWithFormatter[Animal],
+) -> None:
     # Given
     updated = FakeAnimal()
 
@@ -155,7 +158,7 @@ def test_should_not_update_unknown(service: RestfulService) -> None:
 
 def test_should_replace_one(
     repository: Repository[Animal],
-    service: RestfulService,
+    service: RestfulServiceWithFormatter[Animal],
 ) -> None:
     # Given
     initial = FakeAnimal().entity()
@@ -170,7 +173,9 @@ def test_should_replace_one(
     assert repository.read(replaced.entity().id) == replaced.entity()
 
 
-def test_should_not_replace_unknown(service: RestfulService) -> None:
+def test_should_not_replace_unknown(
+    service: RestfulServiceWithFormatter[Animal],
+) -> None:
     # Given
     replaced = FakeAnimal()
 
@@ -182,7 +187,7 @@ def test_should_not_replace_unknown(service: RestfulService) -> None:
 
 def test_should_delete_one(
     repository: Repository[Animal],
-    service: RestfulService,
+    service: RestfulServiceWithFormatter[Animal],
 ) -> None:
     # Given
     animal = FakeAnimal()
@@ -195,7 +200,9 @@ def test_should_delete_one(
     assert len(repository) == 0
 
 
-def test_should_not_delete_unknown(service: RestfulService) -> None:
+def test_should_not_delete_unknown(
+    service: RestfulServiceWithFormatter[Animal],
+) -> None:
     # Given
     animal = FakeAnimal()
 
