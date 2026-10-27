@@ -47,17 +47,6 @@ class RestfulResource:
 
         return endpoint
 
-    def create_many_endpoint(self, Service, Collection) -> _Endpoint:  # type: ignore
-        def endpoint(service: Service, items: Collection) -> _Response:
-            try:
-                return self.response.created_many(service.create_many(items))
-            except ExistsError as e:
-                return JSONResponse(self.response.exists(e), 409)
-            except ForbiddenError as e:
-                return JSONResponse(self.response.forbidden(e), 403)
-
-        return endpoint
-
     def read_one_endpoint(self, Service, ItemId) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, item_id: ItemId) -> _Response:
             try:
@@ -73,28 +62,6 @@ class RestfulResource:
         def endpoint(service: Service, params: QueryParams) -> _Response:
             try:
                 return self.response.found_many(list(service.read_many(**dict(params))))
-            except ForbiddenError as e:
-                return JSONResponse(self.response.forbidden(e), 403)
-
-        return endpoint
-
-    def filter_with_endpoint(self, Service, QueryOptions) -> _Endpoint:  # type: ignore
-        def endpoint(service: Service, options: QueryOptions) -> _Response:
-            try:
-                return self.response.found_many(list(service.filter_with(options)))
-            except ForbiddenError as e:
-                return JSONResponse(self.response.forbidden(e), 403)
-
-        return endpoint
-
-    def aggregation_with_endpoint(self, Service, FilterOptions) -> _Endpoint:  # type: ignore
-        def endpoint(service: Service, options: FilterOptions) -> _Response:
-            try:
-                return {
-                    "status": "success",
-                    "code": 200,
-                    "aggregations": service.aggregation_with(options),
-                }
             except ForbiddenError as e:
                 return JSONResponse(self.response.forbidden(e), 403)
 
@@ -122,36 +89,10 @@ class RestfulResource:
 
         return endpoint
 
-    def update_many_endpoint(self, Service, Collection) -> _Endpoint:  # type: ignore
-        def endpoint(service: Service, items: Collection) -> _Response:
-            try:
-                service.update_many(items)
-            except DoesNotExistError as e:
-                return JSONResponse(self.response.not_found(e), 404)
-            except ForbiddenError as e:
-                return JSONResponse(self.response.forbidden(e), 403)
-
-            return self.response.ok()
-
-        return endpoint
-
     def replace_one_endpoint(self, Service, Item) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, item: Item) -> _Response:
             try:
                 service.replace_one(item)
-            except DoesNotExistError as e:
-                return JSONResponse(self.response.not_found(e), 404)
-            except ForbiddenError as e:
-                return JSONResponse(self.response.forbidden(e), 403)
-
-            return self.response.ok()
-
-        return endpoint
-
-    def replace_many_endpoint(self, Service, Collection) -> _Endpoint:  # type: ignore
-        def endpoint(service: Service, items: Collection) -> _Response:
-            try:
-                service.replace_many(items)
             except DoesNotExistError as e:
                 return JSONResponse(self.response.not_found(e), 404)
             except ForbiddenError as e:
