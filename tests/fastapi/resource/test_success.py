@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import TYPE_CHECKING
+from unittest.mock import ANY
 from uuid import uuid4
 
 import pytest
 
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.testing import RestRequest, RestTransport
-from tests.fastapi.sample_api import FakeApple, SuccessfulService
+from tests.fastapi.sample_api import AppleFormatter, FakeApple, SuccessfulService
 
 if TYPE_CHECKING:
     from pypebbles import JsonDict
@@ -39,7 +41,7 @@ def test_should_create(
         .and_item(apple)
     )
 
-    assert service.called_with == apple.drop("id")
+    assert service.called_with == replace(AppleFormatter().load(apple), id=ANY)
 
 
 def test_should_read_one(
@@ -114,7 +116,7 @@ def test_should_update_one(
         .with_code(200)
     )
 
-    assert service.called_with == (apple["id"], apple.drop("id").drop("color"))
+    assert service.called_with == replace(AppleFormatter().load(apple), id=ANY)
 
 
 def test_should_replace_one(
@@ -132,7 +134,7 @@ def test_should_replace_one(
         .with_code(200)
     )
 
-    assert service.called_with == apple
+    assert service.called_with == replace(AppleFormatter().load(apple), id=ANY)
 
 
 def test_should_delete_one(

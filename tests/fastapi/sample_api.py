@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass, field
+from collections.abc import Mapping
+from dataclasses import dataclass, field, replace
 from enum import Enum
 from functools import cached_property
 from typing import TYPE_CHECKING, Any
@@ -11,16 +12,16 @@ from pypebbles import JsonDict
 from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
 from apexdevkit.fastapi.schema import SchemaFields
 from apexdevkit.fastapi.service import (
-    RawCollection,
-    RawItem,
     RestfulService,
     RestfulServiceWithFormatter,
 )
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Entity
-from tests.fake import FakeResource
+from tests.fake import Fake
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from fastapi import FastAPI
 
     from apexdevkit.fastapi.dependable import DependableBuilder
@@ -117,10 +118,10 @@ class PriceFields(SchemaFields):
 
 
 @dataclass(frozen=True)
-class FakeApple(FakeResource[Apple]):
+class FakeApple:
     id: str | None = None
     name: Name | None = None
-    item_type: type[Apple] = field(default=Apple)
+    fake: Fake = field(default_factory=Fake)
 
     @cached_property
     def _raw(self) -> dict[str, Any]:
@@ -134,44 +135,86 @@ class FakeApple(FakeResource[Apple]):
         name = self.name or Name(self.fake.text(length=10), self.fake.text(length=10))
         return {"scientific": name.scientific, "common": name.common}
 
+    def unknown_id(self) -> str:
+        return self.fake.text(length=32)
+
+    def json(self) -> JsonDict:
+        return JsonDict(self._raw)
+
+    def entity(self, **fields: Any) -> Apple:
+        return AppleFormatter().load(self.json().merge(JsonDict(fields)))
+
+
+class AppleFormatter:
+    def load(self, source: Mapping[str, Any]) -> Apple:
+        return Apple(
+            name=Name(
+                common=source["name"]["common"],
+                scientific=source["name"]["scientific"],
+            ),
+            color=Color(source["color"]),
+        )
+
+    def dump(self, target: Apple) -> Mapping[str, Any]:
+        return {
+            "id": target.id,
+            "name": {
+                "scientific": target.name.scientific,
+                "common": target.name.common,
+            },
+            "color": target.color.value,
+        }
+
 
 @dataclass
-class SuccessfulService(RestfulServiceBuilder, RestfulService):
+class SuccessfulService(RestfulServiceBuilder):
     always_return: JsonDict
     called_with: Any | None = None
 
-    def build(self) -> RestfulService:
-        return self
+    @property
+    def formatter(self) -> AppleFormatter:
+        return AppleFormatter()
 
-    def create_one(self, item: RawItem) -> RawItem:
+    def apple(self) -> Apple:
+        return replace(
+            self.formatter.load(self.always_return),
+            id=self.always_return["id"],
+        )
+
+    def build(self) -> RestfulService:
+        return RestfulServiceWithFormatter(inner=self, formatter=self.formatter)
+
+    def create_one(self, item: Apple) -> Apple:
         self.called_with = item
 
-        return self.always_return
+        return self.apple()
 
-    def read_one(self, item_id: str) -> RawItem:
-        self.called_with = item_id
+    def read_one(self, with_id: str) -> Apple:
+        self.called_with = with_id
 
-        return self.always_return
+        return self.apple()
 
-    def read_many(self, **params: Any) -> RawCollection:
-        self.called_with = params
+    def read_many(self, query: JsonDict) -> Iterable[Apple]:
+        self.called_with = query
 
-        return [self.always_return]
+        return [self.apple()]
 
-    def read_all(self) -> RawCollection:
+    def read_all(self) -> Iterable[Apple]:
         self.called_with = None
 
-        return [self.always_return]
+        return [self.apple()]
 
-    def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
-        self.called_with = (item_id, with_fields)
-
-        return self.always_return
-
-    def replace_one(self, item: RawItem) -> RawItem:
+    def update_one(self, item: Apple) -> Apple:
         self.called_with = item
 
-        return self.always_return
+        return self.apple()
 
-    def delete_one(self, item_id: str) -> None:
-        self.called_with = item_id
+    def replace_one(self, item: Apple) -> Apple:
+        self.called_with = item
+
+        return self.apple()
+
+    def delete_one(self, with_id: str) -> Apple:
+        self.called_with = with_id
+
+        return self.apple()

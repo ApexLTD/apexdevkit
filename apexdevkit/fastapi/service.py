@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Protocol
 
 from pypebbles import JsonDict
@@ -93,8 +93,8 @@ class RestfulServiceWithFormatter[T: Entity](RestfulService):
 
     def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
         current = self.inner.read_one(with_id=item_id)
-        updated = replace(current, **with_fields)
-        result = self.inner.update_one(updated)
+        updated = {**self.formatter.dump(current), **with_fields}
+        result = self.inner.update_one(self.formatter.load(updated))
 
         return self.formatter.dump(result)
 
