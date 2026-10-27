@@ -2,14 +2,12 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from functools import cached_property
 from typing import TYPE_CHECKING, Any
 
-from apexdevkit.repository import BruteForceBatch, Entity, Repository
+from apexdevkit.repository import Entity, Repository
 
 if TYPE_CHECKING:
     from apexdevkit.formatter import Formatter
-    from apexdevkit.repository.core.interface import BatchRepository
 
 RawItem = Mapping[str, Any]
 RawCollection = Iterable[RawItem]
@@ -43,10 +41,6 @@ class RestfulRepository[ItemT: Entity](RestfulService):
     repository: Repository[ItemT]
 
     formatter: Formatter[Mapping[str, Any], ItemT]
-
-    @cached_property
-    def _batch(self) -> BatchRepository[ItemT]:
-        return BruteForceBatch(inner=self.repository)
 
     def create_one(self, item: RawItem) -> RawItem:
         return self.formatter.dump(self.repository.create(self.formatter.load(item)))
