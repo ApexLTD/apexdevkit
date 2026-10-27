@@ -5,6 +5,7 @@ from dataclasses import dataclass, field, replace
 from enum import Enum
 from functools import cached_property
 from typing import TYPE_CHECKING, Any
+from unittest.mock import MagicMock
 
 from pypebbles import JsonDict
 
@@ -164,43 +165,43 @@ class AppleFormatter:
         }
 
 
-@dataclass
+@dataclass(frozen=True)
 class SuccessfulService:
     always_return: Apple
 
-    called_with: Any | None = None
+    log: MagicMock = field(default_factory=MagicMock)
 
     def create_one(self, item: Apple) -> Apple:
-        self.called_with = item
+        self.log(create_one=item)
 
         return self.always_return
 
     def read_one(self, with_id: str) -> Apple:
-        self.called_with = with_id
+        self.log(read_one=with_id)
 
         return self.always_return
 
     def read_many(self, query: JsonDict) -> Iterable[Apple]:
-        self.called_with = query
+        self.log(read_many=query)
 
         return [self.always_return]
 
     def read_all(self) -> Iterable[Apple]:
-        self.called_with = None
+        self.log(read_all=None)
 
         return [self.always_return]
 
     def update_one(self, item: Apple) -> Apple:
-        self.called_with = item
+        self.log(update_one=item)
 
         return self.always_return
 
     def replace_one(self, item: Apple) -> Apple:
-        self.called_with = item
+        self.log(replace_one=item)
 
         return self.always_return
 
     def delete_one(self, with_id: str) -> Apple:
-        self.called_with = with_id
+        self.log(delete_one=with_id)
 
         return self.always_return
