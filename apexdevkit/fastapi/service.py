@@ -15,14 +15,6 @@ RawItem = Mapping[str, Any]
 RawCollection = Iterable[RawItem]
 
 
-class _RawItemWithId(dict[str, Any]):
-    def __post_init__(self) -> None:
-        assert "id" in self
-
-
-RawCollectionWithId = Iterable[_RawItemWithId]
-
-
 class RestfulService:  # pragma: no cover
     def create_one(self, item: RawItem) -> RawItem:
         raise NotImplementedError(self.create_one.__name__)
