@@ -16,15 +16,18 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture
-def apple() -> JsonDict:
-    return FakeApple().json()
+def fake_apple() -> FakeApple:
+    return FakeApple()
 
 
 @pytest.fixture
-def service(apple: JsonDict) -> SuccessfulService:
-    return SuccessfulService(
-        always_return=replace(AppleFormatter().load(apple), id=apple["id"])
-    )
+def apple(fake_apple: FakeApple) -> JsonDict:
+    return fake_apple.json()
+
+
+@pytest.fixture
+def service(fake_apple: FakeApple) -> SuccessfulService:
+    return SuccessfulService(always_return=fake_apple.entity())
 
 
 def test_should_create(
@@ -40,7 +43,7 @@ def test_should_create(
         .ensure(http_code=201)
         .and_api_success()
         .with_code(201)
-        .and_item(apple)
+        .and_item(apple.with_a(id=ANY))
     )
 
     assert service.called_with == replace(AppleFormatter().load(apple), id=ANY)
@@ -59,7 +62,7 @@ def test_should_read_one(
         .ensure(http_code=200)
         .and_api_success()
         .with_code(200)
-        .and_item(apple)
+        .and_item(apple.with_a(id=ANY))
     )
 
     assert service.called_with == apple.value_of("id").to(str)
@@ -78,7 +81,7 @@ def test_should_read_many(
         .ensure(http_code=200)
         .and_api_success()
         .with_code(200)
-        .and_collection([apple])
+        .and_collection([apple.with_a(id=ANY)])
     )
 
     assert service.called_with == {"color": "red"}
@@ -96,7 +99,7 @@ def test_should_read_all(
         .ensure(http_code=200)
         .and_api_success()
         .with_code(200)
-        .and_collection([apple])
+        .and_collection([apple.with_a(id=ANY)])
     )
 
     assert service.called_with == {"color": None}
