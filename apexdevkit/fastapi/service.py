@@ -11,14 +11,13 @@ if TYPE_CHECKING:
     from apexdevkit.repository import Entity, Repository
 
 RawItem = Mapping[str, Any]
-RawCollection = Iterable[RawItem]
 
 
 class NoFormatter[T]:
-    def load(self, source: RawItem) -> T:
+    def load(self, source: Mapping[str, Any]) -> T:
         raise NotImplementedError
 
-    def dump(self, target: T) -> RawItem:
+    def dump(self, target: T) -> Mapping[str, Any]:
         raise NotImplementedError
 
 
@@ -45,36 +44,36 @@ class NoService[T]:
 @dataclass(frozen=True, kw_only=True)
 class RestfulService[T]:
     inner: _Service[T] = field(default_factory=NoService)
-    formatter: Formatter[RawItem, T] = field(default_factory=NoFormatter)
+    formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
 
-    def create_one(self, item: RawItem) -> RawItem:
+    def create_one(self, item: Mapping[str, Any]) -> Mapping[str, Any]:
         result = self.inner.create_one(self.formatter.load(item))
 
         return self.formatter.dump(result)
 
-    def read_one(self, item_id: str) -> RawItem:
+    def read_one(self, item_id: str) -> Mapping[str, Any]:
         result = self.inner.read_one(with_id=item_id)
 
         return self.formatter.dump(result)
 
-    def read_all(self) -> RawCollection:
+    def read_all(self) -> Iterable[Mapping[str, Any]]:
         result = self.inner.read_all()
 
         return [self.formatter.dump(item) for item in result]
 
-    def read_many(self, **params: Any) -> RawCollection:
+    def read_many(self, **params: Any) -> Iterable[Mapping[str, Any]]:
         result = self.inner.read_many(JsonDict(params))
 
         return [self.formatter.dump(item) for item in result]
 
-    def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
+    def update_one(self, item_id: str, **with_fields: Any) -> Mapping[str, Any]:
         current = self.inner.read_one(with_id=item_id)
         updated = {**self.formatter.dump(current), **with_fields}
         result = self.inner.update_one(self.formatter.load(updated))
 
         return self.formatter.dump(result)
 
-    def replace_one(self, item: RawItem) -> RawItem:
+    def replace_one(self, item: Mapping[str, Any]) -> Mapping[str, Any]:
         result = self.inner.update_one(self.formatter.load(item))
 
         return self.formatter.dump(result)
