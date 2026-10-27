@@ -204,7 +204,9 @@ class RestfulRouter:
     ) -> Self:
         self.router.add_api_route(
             "",
-            self.resource.read_all_endpoint(Service=self._resolve(dependency)),
+            self.resource.read_all_endpoint(
+                Service=self._resolve(dependency),
+            ),
             methods=["GET"],
             status_code=200,
             responses={},
