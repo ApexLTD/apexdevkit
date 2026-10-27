@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Protocol
 
@@ -74,44 +73,6 @@ class RestfulApi[T]:
 
     def delete_one(self, item_id: str) -> None:
         self.inner.delete_one(with_id=item_id)
-
-    @dataclass(kw_only=True)
-    class Builder(ABC):
-        formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
-
-        parent_id: str = field(init=False)
-        user: Any = field(init=False)
-
-        def with_formatter(
-            self, formatter: Formatter[Mapping[str, Any], T]
-        ) -> RestfulApi.Builder:
-            self.formatter = formatter
-
-            return self
-
-        def with_user(self, user: Any) -> RestfulApi.Builder:
-            self.user = user
-
-            return self
-
-        def with_parent(self, identity: str) -> RestfulApi.Builder:
-            self.parent_id = identity
-
-            return self
-
-        def build(self) -> RestfulApi:
-            return RestfulApi(inner=self.service(), formatter=self.formatter)
-
-        @abstractmethod
-        def service(self) -> RestfulService[T]:
-            pass
-
-    @dataclass(kw_only=True)
-    class PreBuilt(Builder):
-        instance: RestfulService[T]
-
-        def service(self) -> RestfulApi:
-            return self.instance
 
 
 class RestfulService[T](Protocol):

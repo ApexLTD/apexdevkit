@@ -32,7 +32,7 @@ def transport(dependency: DependableBuilder) -> RestTransport:
 
 @pytest.fixture
 def dependency(username: str, builder: PreBuilt) -> DependableBuilder:
-    return builder.as_dependable().with_user(lambda: username)
+    return DependableBuilder.from_builder(builder).with_user(lambda: username)
 
 
 @pytest.fixture
@@ -41,7 +41,7 @@ def username(faker: Faker) -> str:
 
 
 @pytest.fixture
-def builder(service: RestfulService) -> PreBuilt:
+def builder(service: RestfulService[Apple]) -> PreBuilt:
     return PreBuilt(RestfulApi(inner=service, formatter=AppleFormatter()))
 
 
