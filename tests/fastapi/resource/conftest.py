@@ -42,7 +42,7 @@ def username(faker: Faker) -> str:
 
 @pytest.fixture
 def builder(service: RestfulService[Apple]) -> PreBuilt:
-    return PreBuilt(RestfulApi(inner=service, formatter=AppleFormatter()))
+    return PreBuilt(RestfulApi(service=service, formatter=AppleFormatter()))
 
 
 @pytest.fixture

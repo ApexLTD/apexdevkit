@@ -49,7 +49,7 @@ def repository() -> Repository[Animal]:
 @pytest.fixture
 def service(repository: Repository[Animal]) -> RestfulApi[Animal]:
     return RestfulApi(
-        inner=RestfulRepository(repository),
+        service=RestfulRepository(repository),
         formatter=DataclassFormatter(Animal),
     )
 

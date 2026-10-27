@@ -36,43 +36,43 @@ class NoService[T]:
 
 @dataclass(frozen=True, kw_only=True)
 class RestfulApi[T]:
-    inner: RestfulService[T] = field(default_factory=NoService)
+    service: RestfulService[T] = field(default_factory=NoService)
     formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
 
     def create_one(self, item: Mapping[str, Any]) -> Mapping[str, Any]:
-        result = self.inner.create_one(self.formatter.load(item))
+        result = self.service.create_one(self.formatter.load(item))
 
         return self.formatter.dump(result)
 
     def read_one(self, item_id: str) -> Mapping[str, Any]:
-        result = self.inner.read_one(with_id=item_id)
+        result = self.service.read_one(with_id=item_id)
 
         return self.formatter.dump(result)
 
     def read_all(self) -> Iterable[Mapping[str, Any]]:
-        result = self.inner.read_all()
+        result = self.service.read_all()
 
         return [self.formatter.dump(item) for item in result]
 
     def read_many(self, **params: Any) -> Iterable[Mapping[str, Any]]:
-        result = self.inner.read_many(JsonDict(params))
+        result = self.service.read_many(JsonDict(params))
 
         return [self.formatter.dump(item) for item in result]
 
     def update_one(self, item_id: str, **with_fields: Any) -> Mapping[str, Any]:
-        current = self.inner.read_one(with_id=item_id)
+        current = self.service.read_one(with_id=item_id)
         updated = {**self.formatter.dump(current), **with_fields}
-        result = self.inner.update_one(self.formatter.load(updated))
+        result = self.service.update_one(self.formatter.load(updated))
 
         return self.formatter.dump(result)
 
     def replace_one(self, item: Mapping[str, Any]) -> Mapping[str, Any]:
-        result = self.inner.update_one(self.formatter.load(item))
+        result = self.service.update_one(self.formatter.load(item))
 
         return self.formatter.dump(result)
 
     def delete_one(self, item_id: str) -> None:
-        self.inner.delete_one(with_id=item_id)
+        self.service.delete_one(with_id=item_id)
 
 
 class RestfulService[T](Protocol):
