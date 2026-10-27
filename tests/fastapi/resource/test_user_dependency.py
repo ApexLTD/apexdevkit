@@ -29,8 +29,8 @@ def username(faker: Faker) -> str:
 
 
 @pytest.fixture
-def dependency(service: SuccessfulService, username: str) -> DependableBuilder:
-    return service.as_dependable().with_user(lambda: username)
+def dependency(builder: RestfulServiceBuilder, username: str) -> DependableBuilder:
+    return builder.as_dependable().with_user(lambda: username)
 
 
 def test_should_persist_user_for_create_one(
