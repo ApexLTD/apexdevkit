@@ -10,7 +10,6 @@ from fastapi.responses import JSONResponse
 
 from apexdevkit.annotation import deprecated
 from apexdevkit.error import ApiError
-from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.service import RestfulApi, RestfulService
 
 if TYPE_CHECKING:
@@ -127,38 +126,37 @@ class CORSApplicator:
 
 
 @dataclass
-class RestfulApiBuilder(ABC):
+class RestfulApiBuilder[T](ABC):
     parent_id: str = field(init=False)
     user: Any = field(init=False)
 
-    def as_dependable(self) -> DependableBuilder:
-        return DependableBuilder.from_builder(self)
+    formatter: Formatter[Mapping[str, Any], T] = field(init=False)
 
-    def with_user(self, user: Any) -> RestfulApiBuilder:
+    def with_formatter(
+        self, formatter: Formatter[Mapping[str, Any], T]
+    ) -> RestfulApiBuilder[T]:
+        self.formatter = formatter
+
+        return self
+
+    def with_user(self, user: Any) -> RestfulApiBuilder[T]:
         self.user = user
 
         return self
 
-    def with_parent(self, identity: str) -> RestfulApiBuilder:
+    def with_parent(self, identity: str) -> RestfulApiBuilder[T]:
         self.parent_id = identity
 
         return self
 
     @abstractmethod
-    def build(self) -> RestfulApi:  # pragma: no cover
+    def build(self) -> RestfulApi[T]:  # pragma: no cover
         pass
 
 
 @dataclass
-class PreBuilt[T](RestfulApiBuilder):  # pragma: no cover
+class PreBuilt[T](RestfulApiBuilder[T]):  # pragma: no cover
     instance: RestfulService[T]
-
-    formatter: Formatter[Mapping[str, Any], T] = field(init=False)
-
-    def with_formatter(self, formatter: Formatter[Mapping[str, Any], T]) -> PreBuilt[T]:
-        self.formatter = formatter
-
-        return self
 
     def build(self) -> RestfulApi[T]:
         return RestfulApi(service=self.instance, formatter=self.formatter)
