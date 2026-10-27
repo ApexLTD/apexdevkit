@@ -182,7 +182,10 @@ class RestfulRouter:
             self.resource.read_many_endpoint(
                 Service=self._resolve(dependency),
                 QueryParams=Annotated[
-                    Schema(self.name.singular).optional_schema_for("ReadMany", query),
+                    Schema(self.name.singular).optional_schema_for(
+                        action="ReadMany",
+                        fields=query,
+                    ),
                     Query(),
                 ],
             ),
