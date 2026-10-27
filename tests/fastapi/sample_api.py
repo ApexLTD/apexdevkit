@@ -52,21 +52,6 @@ def setup(dependency: DependableBuilder) -> FastAPI:
     )
 
 
-@dataclass(frozen=True)
-class FailingService:
-    error: Exception | type[Exception]
-
-    def fail(self, *_: Any, **__: Any) -> Any:
-        raise self.error
-
-    create_one = fail
-    read_one = fail
-    read_many = fail
-    read_all = fail
-    update_one = fail
-    delete_one = fail
-
-
 class Color(Enum):
     red = "RED"
     gold = "GOLD"
@@ -194,3 +179,18 @@ class SuccessfulService:
         self.log(delete_one=with_id)
 
         return self.always_return
+
+
+@dataclass(frozen=True)
+class FailingService:
+    error: Exception | type[Exception]
+
+    def fail(self, *_: Any, **__: Any) -> Any:
+        raise self.error
+
+    create_one = fail
+    read_one = fail
+    read_many = fail
+    read_all = fail
+    update_one = fail
+    delete_one = fail
