@@ -9,13 +9,8 @@ from unittest.mock import MagicMock
 
 from pypebbles import JsonDict
 
-from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
+from apexdevkit.fastapi import FastApiBuilder, RestfulRouter
 from apexdevkit.fastapi.schema import SchemaFields
-from apexdevkit.fastapi.service import (
-    RestfulService,
-    RestfulServiceWithFormatter,
-)
-from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Entity
 from tests.fake import Fake
 
@@ -57,18 +52,12 @@ def setup(dependency: DependableBuilder) -> FastAPI:
     )
 
 
-@dataclass
-class FailingService(RestfulServiceBuilder):
+@dataclass(frozen=True)
+class FailingService:
     error: Exception | type[Exception]
 
     def fail(self, *_: Any, **__: Any) -> Any:
         raise self.error
-
-    def build(self) -> RestfulService:
-        return RestfulServiceWithFormatter(
-            inner=self,
-            formatter=DataclassFormatter(Apple),
-        )
 
     create_one = fail
     read_one = fail
