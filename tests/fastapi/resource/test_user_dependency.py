@@ -2,18 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import pytest
-
 from apexdevkit.testing import RestRequest, RestTransport
-from tests.fastapi.sample_api import FakeApple, SuccessfulService
+from tests.fastapi.sample_api import FakeApple
 
 if TYPE_CHECKING:
     from apexdevkit.fastapi.builder import PreBuilt
-
-
-@pytest.fixture
-def service() -> SuccessfulService:
-    return SuccessfulService(always_return=FakeApple().entity())
 
 
 def test_should_persist_user_for_create_one(

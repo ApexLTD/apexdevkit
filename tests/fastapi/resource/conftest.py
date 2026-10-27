@@ -8,7 +8,13 @@ from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.service import RestfulApi, RestfulService
 from apexdevkit.testing import RestTransport
-from tests.fastapi.sample_api import AppleFormatter, setup
+from tests.fastapi.sample_api import (
+    Apple,
+    AppleFormatter,
+    FakeApple,
+    SuccessfulService,
+    setup,
+)
 
 
 @pytest.fixture
@@ -25,8 +31,13 @@ def transport(dependency: DependableBuilder) -> RestTransport:
 
 
 @pytest.fixture
-def dependency(builder: PreBuilt, username: str) -> DependableBuilder:
+def dependency(username: str, builder: PreBuilt) -> DependableBuilder:
     return builder.as_dependable().with_user(lambda: username)
+
+
+@pytest.fixture
+def username(faker: Faker) -> str:
+    return faker.word()
 
 
 @pytest.fixture
@@ -35,5 +46,5 @@ def builder(service: RestfulService) -> PreBuilt:
 
 
 @pytest.fixture
-def username(faker: Faker) -> str:
-    return faker.word()
+def service() -> RestfulService[Apple]:
+    return SuccessfulService(always_return=FakeApple().entity())
