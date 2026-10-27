@@ -8,5 +8,5 @@ def test_should_generate_paging() -> None:
     offset = ((paging.page or 1) - 1) * (paging.length or 200) + (paging.offset or 0)
     assert (
         MsSqlPagingGenerator(paging).generate() == f"OFFSET {offset}"
-        f" ROWS FETCH NEXT {(paging.length if paging.length else 200)} ROWS ONLY"
+        f" ROWS FETCH NEXT {(paging.length or 200)} ROWS ONLY"
     )

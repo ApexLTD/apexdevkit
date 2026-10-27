@@ -1,13 +1,16 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from apexdevkit.error import ExistsError
-from apexdevkit.formatter import Formatter
 from apexdevkit.repository.core import DatabaseCommand
 from apexdevkit.repository.sql.field import NotNone, SqlFieldManager, _SqlField
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Mapping
+
+    from apexdevkit.formatter import Formatter
 
 
 class SqlTable[T]:  # pragma: no cover

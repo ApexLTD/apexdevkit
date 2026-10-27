@@ -4,13 +4,11 @@ import random
 from dataclasses import dataclass, field
 from enum import Enum
 from functools import cached_property
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from fastapi import FastAPI
 from pypebbles import JsonDict
 
 from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
-from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.schema import SchemaFields
 from apexdevkit.fastapi.service import (
     RawCollection,
@@ -20,6 +18,11 @@ from apexdevkit.fastapi.service import (
 from apexdevkit.query import Filter
 from apexdevkit.query.query import Operator, Page, Sort
 from tests.fake import FakeResource
+
+if TYPE_CHECKING:
+    from fastapi import FastAPI
+
+    from apexdevkit.fastapi.dependable import DependableBuilder
 
 
 def setup(dependency: DependableBuilder) -> FastAPI:

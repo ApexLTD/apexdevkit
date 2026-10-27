@@ -1,15 +1,18 @@
 from __future__ import annotations
 
-from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
 from sqlite3 import IntegrityError
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from apexdevkit.error import DoesNotExistError
 from apexdevkit.repository import Database, Repository
 from apexdevkit.repository.core import ContainsMixin, ItemT
 from apexdevkit.repository.sql.connector import SqliteFileConnector
-from apexdevkit.repository.sql.sqlite.table import SqlTable
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator, Mapping
+
+    from apexdevkit.repository.sql.sqlite.table import SqlTable
 
 
 @dataclass(frozen=True, kw_only=True)

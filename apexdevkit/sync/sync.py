@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Collection, Iterable
 from dataclasses import dataclass, field, replace
-from typing import Any, Self, TypeVar
+from typing import TYPE_CHECKING, Any, Self, TypeVar
 
 from apexdevkit.key_fn import AttributeKey, KeyFn
 
 from .observer import DefaultLog, ObservableSync
 from .source import EmptySource, Source, SourceDiscriminator, SourcePreSet
 from .target import IterableTarget, NoTarget, Target
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Collection, Iterable
 
 T = TypeVar("T")
 
@@ -44,7 +46,13 @@ class Sync[T](ObservableSync):
     def dry(self, *, when: bool = True) -> Sync[T]:
         return replace(self, dry_run=when)
 
-    def run(self, prune: bool = True, load: bool = True, update: bool = True) -> None:
+    def run(
+        self,
+        *,
+        prune: bool = True,
+        load: bool = True,
+        update: bool = True,
+    ) -> None:
         if prune:
             self.prune()
 
@@ -140,7 +148,7 @@ class SyncProbe:
 
     is_enabled: bool = True
 
-    def disable(self, when: bool) -> SyncProbe:
+    def disable(self, *, when: bool) -> SyncProbe:
         return SyncProbe(source=self.source, is_enabled=not when)
 
     def notify(self, using: Callable[[int], None]) -> SyncProbe:

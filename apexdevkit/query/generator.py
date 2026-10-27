@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
-from typing import Any, ClassVar, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Protocol
 
 from apexdevkit.annotation import deprecated
 from apexdevkit.error import ForbiddenError
@@ -24,44 +23,45 @@ from apexdevkit.query.query import (
 )
 from apexdevkit.repository import Database, DatabaseCommand
 
-ItemT = TypeVar("ItemT", covariant=True)
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Mapping
 
 
-class _Loader(Protocol[ItemT]):
-    def load(self, raw: Mapping[str, Any]) -> ItemT:
+class _Loader[T](Protocol):
+    def load(self, raw: Mapping[str, Any]) -> T:
         pass
 
 
 @dataclass
-class DefaultMsSqlFilter[ItemT]:
+class DefaultMsSqlFilter[T]:
     _database: Database = field(init=False)
     _query_builder: MsSqlQueryBuilder = field(init=False)
     _options: QueryOptions = field(init=False)
-    _formatter: _Loader[ItemT] = field(init=False)
+    _formatter: _Loader[T] = field(init=False)
 
-    def with_database(self, value: Database) -> DefaultMsSqlFilter[ItemT]:
+    def with_database(self, value: Database) -> DefaultMsSqlFilter[T]:
         self._database = value
 
         return self
 
-    def with_query_builder(self, value: MsSqlQueryBuilder) -> DefaultMsSqlFilter[ItemT]:
+    def with_query_builder(self, value: MsSqlQueryBuilder) -> DefaultMsSqlFilter[T]:
         self._query_builder = value
 
         return self
 
-    def with_options(self, value: QueryOptions) -> DefaultMsSqlFilter[ItemT]:
+    def with_options(self, value: QueryOptions) -> DefaultMsSqlFilter[T]:
         self._options = value
 
         return self
 
-    def with_formatter(self, value: _Loader[ItemT]) -> DefaultMsSqlFilter[ItemT]:
+    def with_formatter(self, value: _Loader[T]) -> DefaultMsSqlFilter[T]:
         self._formatter = value
 
         return self
 
-    def retrieve(self) -> Iterable[ItemT]:
+    def retrieve(self) -> Iterable[T]:
         if not any(sort.name == "id" for sort in self._options.ordering):
-            self._options.ordering.append(Sort("id", False))
+            self._options.ordering.append(Sort(name="id", is_descending=False))
 
         result = self._database.execute(
             self._query_builder.filter(self._options)
@@ -101,7 +101,7 @@ class DefaultMsSqlAggregate:
             for aggregation in self._options.aggregations
             for value in [
                 result[
-                    f"{aggregation.name if aggregation.name else 'general'}"
+                    f"{aggregation.name or 'general'}"
                     f"_{aggregation.aggregation.value.lower()}"
                 ]
             ]
@@ -215,7 +215,7 @@ class MsSqlField:
 
         return result
 
-    def as_order_part(self, is_descending: bool = False) -> str:
+    def as_order_part(self, *, is_descending: bool = False) -> str:
         result = self.name
 
         if is_descending:
@@ -278,7 +278,7 @@ class MsSqlOrderGenerator:
         return f"ORDER BY {clause}"
 
     def generate_one(self, item: Sort) -> str:
-        return self.field_for(item.name).as_order_part(item.is_descending)
+        return self.field_for(item.name).as_order_part(is_descending=item.is_descending)
 
     def field_for(self, name: str) -> MsSqlField:
         for f in self.fields:

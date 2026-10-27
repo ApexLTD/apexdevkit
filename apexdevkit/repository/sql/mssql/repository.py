@@ -50,7 +50,7 @@ class MsSqlRepository(ContainsMixin, Repository[ItemT]):
         except OperationalError as e:
             if "Conversion failed" in str(e):
                 raise DoesNotExistError(item_id) from e
-            raise e
+            raise
 
         if not raw:
             raise DoesNotExistError(item_id)
@@ -66,7 +66,7 @@ class MssqlException:
     code: int
     message: str
 
-    def __init__(self, e: DatabaseError):
+    def __init__(self, e: DatabaseError) -> None:
         self.code = e.args[0]
         self.message = e.args[1].decode()
 

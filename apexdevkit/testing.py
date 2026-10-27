@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Collection
 from dataclasses import dataclass, field, replace
-from typing import Any, Self
+from typing import TYPE_CHECKING, Any, Self
 
 from pypebbles import JsonDict
 from pypebbles.http import (
@@ -13,12 +12,15 @@ from pypebbles.http import (
     HttpTransport,
 )
 
-from apexdevkit.fastapi.name import RestfulName
+if TYPE_CHECKING:
+    from collections.abc import Collection
+
+    from apexdevkit.fastapi.name import RestfulName
 
 
 @dataclass(frozen=True)
 class RestRequest:
-    request: HttpRequest = HttpRequest()
+    request: HttpRequest = field(default_factory=HttpRequest)
 
     def with_params(self, **params: Any) -> RestRequest:
         return replace(self, request=self.request.with_params(params))

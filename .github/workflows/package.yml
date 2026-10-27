@@ -17,11 +17,11 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: 3.11
-          pip-install: apexcodexpy
+          python-version: 3.12
 
-      - name: Install dependencies
-        run: codex install
+      - name: Install Poetry
+        shell: bash
+        run: pip install poetry
 
       - name: Bump using poetry
         run: poetry version patch

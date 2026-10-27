@@ -32,7 +32,7 @@ def apple() -> AppleItem:
 
 def test_should_retrieve_all(apple: AppleItem) -> None:
     db = MagicMock(spec=Database)
-    executor = MagicMock(spec=Database._CommandExecutor)
+    executor = MagicMock()
     db.execute.return_value = executor
 
     executor.fetch_all.return_value = [
@@ -50,7 +50,7 @@ def test_should_retrieve_all(apple: AppleItem) -> None:
 
 def test_should_count_all() -> None:
     db = MagicMock(spec=Database)
-    executor = MagicMock(spec=Database._CommandExecutor)
+    executor = MagicMock()
     db.execute.return_value = executor
 
     executor.fetch_one.return_value = {"n_items": 1}
@@ -63,7 +63,7 @@ def test_should_count_all() -> None:
 
 def test_should_not_count_all() -> None:
     db = MagicMock(spec=Database)
-    executor = MagicMock(spec=Database._CommandExecutor)
+    executor = MagicMock()
     db.execute.return_value = executor
 
     executor.fetch_one.return_value = {}
@@ -73,7 +73,7 @@ def test_should_not_count_all() -> None:
 
 def test_should_delete(apple: AppleItem) -> None:
     db = MagicMock(spec=Database)
-    executor = MagicMock(spec=Database._CommandExecutor)
+    executor = MagicMock()
     db.execute.return_value = executor
 
     MsSqlRepository[AppleItem](db=db, table=TABLE).delete(apple.id)
@@ -84,7 +84,7 @@ def test_should_delete(apple: AppleItem) -> None:
 
 def test_should_delete_all() -> None:
     db = MagicMock(spec=Database)
-    executor = MagicMock(spec=Database._CommandExecutor)
+    executor = MagicMock()
     db.execute.return_value = executor
 
     MsSqlRepository[AppleItem](db=db, table=TABLE).delete_all()
@@ -95,7 +95,7 @@ def test_should_delete_all() -> None:
 
 def test_should_create(apple: AppleItem) -> None:
     db = MagicMock(spec=Database)
-    executor = MagicMock(spec=Database._CommandExecutor)
+    executor = MagicMock()
     db.execute.return_value = executor
 
     executor.fetch_one.return_value = {
@@ -112,7 +112,7 @@ def test_should_create(apple: AppleItem) -> None:
 
 def test_should_not_duplicate(apple: AppleItem) -> None:
     db = MagicMock(spec=Database)
-    executor = MagicMock(spec=Database._CommandExecutor)
+    executor = MagicMock()
     db.execute.return_value = executor
 
     db.execute.side_effect = DatabaseError(2627, b"duplication")
@@ -123,7 +123,7 @@ def test_should_not_duplicate(apple: AppleItem) -> None:
 
 def test_should_not_create(apple: AppleItem) -> None:
     db = MagicMock(spec=Database)
-    executor = MagicMock(spec=Database._CommandExecutor)
+    executor = MagicMock()
     db.execute.return_value = executor
 
     db.execute.side_effect = DatabaseError(0, b"error")
@@ -134,7 +134,7 @@ def test_should_not_create(apple: AppleItem) -> None:
 
 def test_should_read(apple: AppleItem) -> None:
     db = MagicMock(spec=Database)
-    executor = MagicMock(spec=Database._CommandExecutor)
+    executor = MagicMock()
     db.execute.return_value = executor
 
     executor.fetch_one.return_value = {
@@ -151,7 +151,7 @@ def test_should_read(apple: AppleItem) -> None:
 
 def test_should_not_read_unknown(apple: AppleItem) -> None:
     db = MagicMock(spec=Database)
-    executor = MagicMock(spec=Database._CommandExecutor)
+    executor = MagicMock()
     db.execute.return_value = executor
 
     executor.fetch_one.return_value = None
@@ -162,7 +162,7 @@ def test_should_not_read_unknown(apple: AppleItem) -> None:
 
 def test_should_update(apple: AppleItem) -> None:
     db = MagicMock(spec=Database)
-    executor = MagicMock(spec=Database._CommandExecutor)
+    executor = MagicMock()
     db.execute.return_value = executor
 
     MsSqlRepository[AppleItem](db=db, table=TABLE).update(apple)

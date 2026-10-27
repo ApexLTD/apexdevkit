@@ -19,23 +19,20 @@ from .in_memory import (
 from .sql import MsSqlRepository, SqliteRepository
 
 __all__ = [
-    "Entity",
-    # Core
     "BruteForceBatch",
+    "CacheMixin",
     "Connection",
     "Connector",
     "Cursor",
     "Database",
     "DatabaseCommand",
-    "NoRepository",
-    "Repository",
-    "RepositoryDecorator",
-    # In-memory
-    "CacheMixin",
+    "Entity",
     "InMemoryByteStore",
     "InMemoryRepository",
     "KeyValueStore",
-    # SQL
     "MsSqlRepository",
+    "NoRepository",
+    "Repository",
+    "RepositoryDecorator",
     "SqliteRepository",
 ]

@@ -1,14 +1,17 @@
 from __future__ import annotations
 
-from collections.abc import Iterator
 from contextlib import suppress
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.key_fn import AttributeKey
 from apexdevkit.repository.core import ContainsMixin, ItemT, KeyFn, Repository
 
 from .store import InMemoryByteStore, KeyValueStore
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 
 @dataclass(frozen=True)

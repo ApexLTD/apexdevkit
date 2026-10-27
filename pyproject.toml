@@ -1,42 +1,41 @@
 [project]
 name = "apexdevkit"
-version = "2.0.2"
+version = "2.1.4"
 description = "Apex Development Tools for python."
 readme = "README.md"
 authors = [
-    { name = "Apex Dev", email = "dev@apex.ge" }
+    { name = "Apex Dev", email = "dev@apex.ge" },
 ]
-dynamic = ["dependencies"]
 requires-python = ">=3.12,<4"
+dynamic = [
+    "dependencies",
+]
 
 [tool.poetry.dependencies]
 fastapi = "*"
-python-dotenv = "*"
-pymssql = "2.*"
 pydantic = "*"
-sentry-sdk = { extras = ["fastapi"], version = "*" }
+pymssql = "2.*"
+pypebbles = "0.4.*"
+python-dotenv = "*"
+sentry-sdk = { extras = [ "fastapi" ], version = "*" }
 uvicorn = "*"
-pypebbles = "0.3.*"
 
 [tool.poetry.group.dev.dependencies]
-apexcodexpy = "0.7.1"
+apexcodexpy = "0.8.*"
+coverage = "*"
+faker = "*"
 pytest = "*"
 pytest-approvaltests = "*"
 pytest-cov = "*"
 pytest-env = "*"
 pytest-recording = "*"
-coverage = "*"
-faker = "*"
 
-[tool.mypy]
-ignore_missing_imports = true
-strict = true
-exclude = [
-    "apexdevkit/fastapi/schema.py",
-    "apexdevkit/fastapi/dependable.py",
-]
-show_error_codes = true
-pretty = true
+[tool.ruff.lint.per-file-ignores]
+"apexdevkit/fastapi/resource.py" = [ "N803" ]
+"apexdevkit/fastapi/dependable.py" = [ "N806" ]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
 
 [tool.ruff.lint]
 select = [
@@ -44,40 +43,63 @@ select = [
     "ARG",
     "B",
     "C4",
-    "PT",
-    "RSE",
-    "RET",
-    "SIM",
-    "T20",
+    "DTZ",
     "E",
-    "W",
     "F",
+    "FBT",
+    "FLY",
+    "FURB",
     "I",
+    "LOG",
     "N",
+    "PERF",
+    "PGH",
+    "PIE",
+    "PL",
+    "PT",
+    "PTH",
+    "PYI",
+    "RET",
+    "RSE",
+    "RUF",
+    "SIM",
+    "SLF",
+    "T20",
+    "TCH",
+    "TRY",
     "UP",
+    "W",
+]
+ignore = [
+    "PGH",
+    "PLR2004",
+    "PYI",
+    "TRY003",
 ]
 
-[tool.ruff.lint.per-file-ignores]
-"apexdevkit/fastapi/resource.py" = ["N803"]
-"apexdevkit/fastapi/dependable.py" = ["N806"]
+[tool.mypy]
+exclude = [
+    "apexdevkit/fastapi/dependable.py",
+    "apexdevkit/fastapi/schema.py",
+]
+ignore_missing_imports = true
+strict = true
+pretty = true
+show_error_codes = true
 
-
-[tool.ruff.lint.mccabe]
-max-complexity = 10
+[tool.pytest]
+env = [
+    "ECHO_SERVER=http://localhost:8080",
+]
 
 [tool.coverage.run]
-branch = true
 source = [
     "apexdevkit",
     "tests",
 ]
+branch = true
 
 [tool.coverage.report]
-skip_empty = true
 skip_covered = true
+skip_empty = true
 show_missing = true
-
-[tool.pytest]
-env = [
-    "ECHO_SERVER=http://localhost:8080"
-]

@@ -1,16 +1,19 @@
 from __future__ import annotations
 
 import logging.config
-from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import sentry_sdk
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import FastAPI
 from pypebbles.runtime import Environment
-from sentry_sdk.types import Event, Hint
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from fastapi import FastAPI
+    from sentry_sdk.types import Event, Hint
 
 
 @dataclass

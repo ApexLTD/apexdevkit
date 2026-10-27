@@ -106,6 +106,6 @@ class ConnectionContextManager(AbstractContextManager[Connection]):
     def __enter__(self) -> Connection:
         return self.connection
 
-    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
+    def __exit__(self, exc_type: object, exc_value: object, traceback: object) -> None:
         self.connection.cursor().close()
         self.connection.close()
