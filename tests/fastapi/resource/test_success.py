@@ -6,9 +6,11 @@ from uuid import uuid4
 
 import pytest
 
+from apexdevkit.fastapi.builder import PreBuilt
 from apexdevkit.fastapi.name import RestfulName
+from apexdevkit.fastapi.service import RestfulServiceWithFormatter
 from apexdevkit.testing import RestRequest, RestTransport
-from tests.fastapi.sample_api import FakeApple, SuccessfulService
+from tests.fastapi.sample_api import FakeApple, SuccessfulService, AppleFormatter
 
 if TYPE_CHECKING:
     from apexdevkit.fastapi import RestfulServiceBuilder
@@ -26,7 +28,12 @@ def service(apple: FakeApple) -> SuccessfulService:
 
 @pytest.fixture
 def builder(service: SuccessfulService) -> RestfulServiceBuilder:
-    return service
+    return PreBuilt(
+        RestfulServiceWithFormatter(
+            inner=service,
+            formatter=AppleFormatter(),
+        )
+    )
 
 
 def test_should_create(

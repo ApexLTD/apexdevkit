@@ -165,7 +165,7 @@ class AppleFormatter:
 
 
 @dataclass
-class SuccessfulService(RestfulServiceBuilder):
+class SuccessfulService:
     always_return: Apple
 
     called_with: Any | None = None
