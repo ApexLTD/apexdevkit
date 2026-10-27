@@ -38,38 +38,6 @@ class RestfulService:  # pragma: no cover
         raise NotImplementedError(self.delete_one.__name__)
 
 
-@dataclass(frozen=True)
-class RestfulRepository[ItemT: Entity](RestfulService):
-    repository: Repository[ItemT]
-
-    formatter: Formatter[Mapping[str, Any], ItemT]
-
-    def create_one(self, item: RawItem) -> RawItem:
-        return self.formatter.dump(self.repository.create(self.formatter.load(item)))
-
-    def read_one(self, item_id: str) -> RawItem:
-        return self.formatter.dump(self.repository.read(item_id))
-
-    def read_all(self) -> RawCollection:
-        return [self.formatter.dump(item) for item in self.repository]
-
-    def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
-        data = dict(self.formatter.dump(self.repository.read(item_id)))
-        data.update(**with_fields)
-
-        self.repository.update(self.formatter.load(data))
-
-        return data
-
-    def replace_one(self, item: RawItem) -> RawItem:
-        self.repository.update(self.formatter.load(item))
-
-        return item
-
-    def delete_one(self, item_id: str) -> None:
-        self.repository.delete(item_id)
-
-
 class NoFormatter[T]:
     def load(self, source: RawItem) -> T:
         raise NotImplementedError
