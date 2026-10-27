@@ -108,9 +108,7 @@ class AppleFields(SchemaFields):
         )
 
     def editable(self) -> JsonDict:
-        return JsonDict().with_a(
-            name=JsonDict().with_a(common=str).and_a(scientific=str)
-        )
+        return self.readable().select("name")
 
 
 class PriceFields(SchemaFields):
