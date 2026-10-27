@@ -19,6 +19,10 @@ jobs:
         with:
           python-version: 3.12
 
+      - name: Install Poetry
+        shell: bash
+        run: pip install poetry
+
       - name: Bump using poetry
         run: poetry version patch
 
