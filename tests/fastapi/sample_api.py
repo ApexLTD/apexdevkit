@@ -171,12 +171,11 @@ class SuccessfulService(RestfulServiceBuilder):
     always_return: Apple
     called_with: Any | None = None
 
-    @property
-    def formatter(self) -> AppleFormatter:
-        return AppleFormatter()
-
     def build(self) -> RestfulService:
-        return RestfulServiceWithFormatter(inner=self, formatter=self.formatter)
+        return RestfulServiceWithFormatter(
+            inner=self,
+            formatter=AppleFormatter(),
+        )
 
     def create_one(self, item: Apple) -> Apple:
         self.called_with = item
