@@ -6,8 +6,8 @@ import pytest
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.fastapi.service import (
-    RestfulRepository,
     RestfulApi,
+    RestfulRepository,
 )
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import (

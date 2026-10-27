@@ -126,19 +126,19 @@ class CORSApplicator:
 
 
 @dataclass
-class RestfulServiceBuilder(ABC):
+class RestfulApiBuilder(ABC):
     parent_id: str = field(init=False)
     user: Any = field(init=False)
 
     def as_dependable(self) -> DependableBuilder:
         return DependableBuilder.from_builder(self)
 
-    def with_user(self, user: Any) -> RestfulServiceBuilder:
+    def with_user(self, user: Any) -> RestfulApiBuilder:
         self.user = user
 
         return self
 
-    def with_parent(self, identity: str) -> RestfulServiceBuilder:
+    def with_parent(self, identity: str) -> RestfulApiBuilder:
         self.parent_id = identity
 
         return self
@@ -149,7 +149,7 @@ class RestfulServiceBuilder(ABC):
 
 
 @dataclass
-class PreBuilt(RestfulServiceBuilder):  # pragma: no cover
+class PreBuilt(RestfulApiBuilder):  # pragma: no cover
     service: RestfulApi
 
     def build(self) -> RestfulApi:
