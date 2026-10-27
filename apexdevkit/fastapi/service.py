@@ -6,10 +6,9 @@ from typing import TYPE_CHECKING, Any, Protocol
 
 from pypebbles import JsonDict
 
-from apexdevkit.repository import Entity, Repository
-
 if TYPE_CHECKING:
     from apexdevkit.formatter import Formatter
+    from apexdevkit.repository import Entity, Repository
 
 RawItem = Mapping[str, Any]
 RawCollection = Iterable[RawItem]
@@ -23,7 +22,7 @@ class NoFormatter[T]:
         raise NotImplementedError
 
 
-class NoService[T: Entity]:
+class NoService[T]:
     def create_one(self, item: T) -> T:
         raise NotImplementedError
 
@@ -44,7 +43,7 @@ class NoService[T: Entity]:
 
 
 @dataclass(frozen=True, kw_only=True)
-class RestfulService[T: Entity]:
+class RestfulService[T]:
     inner: _Service[T] = field(default_factory=NoService)
     formatter: Formatter[RawItem, T] = field(default_factory=NoFormatter)
 
@@ -84,7 +83,7 @@ class RestfulService[T: Entity]:
         self.inner.delete_one(with_id=item_id)
 
 
-class _Service[T: Entity](Protocol):
+class _Service[T](Protocol):
     def create_one(self, item: T) -> T:
         pass
 
