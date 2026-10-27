@@ -34,7 +34,7 @@ _Endpoint = Callable[..., _Response]
 class RestfulResource:
     response: RestfulResponse
 
-    def create_one(self, Service, Item) -> _Endpoint:  # type: ignore
+    def create_one_endpoint(self, Service, Item) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, item: Item) -> _Response:
             try:
                 item = service.create_one(item)
@@ -47,7 +47,7 @@ class RestfulResource:
 
         return endpoint
 
-    def create_many(self, Service, Collection) -> _Endpoint:  # type: ignore
+    def create_many_endpoint(self, Service, Collection) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, items: Collection) -> _Response:
             try:
                 return self.response.created_many(service.create_many(items))
@@ -58,7 +58,7 @@ class RestfulResource:
 
         return endpoint
 
-    def read_one(self, Service, ItemId) -> _Endpoint:  # type: ignore
+    def read_one_endpoint(self, Service, ItemId) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, item_id: ItemId) -> _Response:
             try:
                 return self.response.found_one(service.read_one(item_id))
@@ -69,7 +69,7 @@ class RestfulResource:
 
         return endpoint
 
-    def read_many(self, Service, QueryParams) -> _Endpoint:  # type: ignore
+    def read_many_endpoint(self, Service, QueryParams) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, params: QueryParams) -> _Response:
             try:
                 return self.response.found_many(list(service.read_many(**dict(params))))
@@ -78,7 +78,7 @@ class RestfulResource:
 
         return endpoint
 
-    def filter_with(self, Service, QueryOptions) -> _Endpoint:  # type: ignore
+    def filter_with_endpoint(self, Service, QueryOptions) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, options: QueryOptions) -> _Response:
             try:
                 return self.response.found_many(list(service.filter_with(options)))
@@ -87,7 +87,7 @@ class RestfulResource:
 
         return endpoint
 
-    def aggregation_with(self, Service, FilterOptions) -> _Endpoint:  # type: ignore
+    def aggregation_with_endpoint(self, Service, FilterOptions) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, options: FilterOptions) -> _Response:
             try:
                 return {
@@ -100,7 +100,7 @@ class RestfulResource:
 
         return endpoint
 
-    def read_all(self, Service) -> _Endpoint:  # type: ignore
+    def read_all_endpoint(self, Service) -> _Endpoint:  # type: ignore
         def endpoint(service: Service) -> _Response:
             try:
                 return self.response.found_many(list(service.read_all()))
@@ -109,7 +109,7 @@ class RestfulResource:
 
         return endpoint
 
-    def update_one(self, Service, ItemId, Updates) -> _Endpoint:  # type: ignore
+    def update_one_endpoint(self, Service, ItemId, Updates) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, item_id: ItemId, updates: Updates) -> _Response:
             try:
                 service.update_one(item_id, **updates)
@@ -122,7 +122,7 @@ class RestfulResource:
 
         return endpoint
 
-    def update_many(self, Service, Collection) -> _Endpoint:  # type: ignore
+    def update_many_endpoint(self, Service, Collection) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, items: Collection) -> _Response:
             try:
                 service.update_many(items)
@@ -135,7 +135,7 @@ class RestfulResource:
 
         return endpoint
 
-    def replace_one(self, Service, Item) -> _Endpoint:  # type: ignore
+    def replace_one_endpoint(self, Service, Item) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, item: Item) -> _Response:
             try:
                 service.replace_one(item)
@@ -148,7 +148,7 @@ class RestfulResource:
 
         return endpoint
 
-    def replace_many(self, Service, Collection) -> _Endpoint:  # type: ignore
+    def replace_many_endpoint(self, Service, Collection) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, items: Collection) -> _Response:
             try:
                 service.replace_many(items)
@@ -161,7 +161,7 @@ class RestfulResource:
 
         return endpoint
 
-    def delete_one(self, Service, ItemId) -> _Endpoint:  # type: ignore
+    def delete_one_endpoint(self, Service, ItemId) -> _Endpoint:  # type: ignore
         def endpoint(service: Service, item_id: ItemId) -> _Response:
             try:
                 service.delete_one(item_id)

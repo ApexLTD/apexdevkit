@@ -128,7 +128,7 @@ class RestfulRouter:
     ) -> Self:
         self.router.add_api_route(
             "",
-            self.resource.create_one(
+            self.resource.create_one_endpoint(
                 Service=self._resolve(dependency),
                 Item=Annotated[
                     RawItem,
@@ -153,7 +153,7 @@ class RestfulRouter:
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
-            self.resource.read_one(
+            self.resource.read_one_endpoint(
                 Service=self._resolve(dependency),
                 ItemId=Annotated[
                     str,
@@ -179,7 +179,7 @@ class RestfulRouter:
     ) -> Self:
         self.router.add_api_route(
             "",
-            self.resource.read_many(
+            self.resource.read_many_endpoint(
                 Service=self._resolve(dependency),
                 QueryParams=Annotated[
                     Schema(self.name.singular).optional_schema_for("ReadMany", query),
@@ -204,7 +204,7 @@ class RestfulRouter:
     ) -> Self:
         self.router.add_api_route(
             "",
-            self.resource.read_all(Service=self._resolve(dependency)),
+            self.resource.read_all_endpoint(Service=self._resolve(dependency)),
             methods=["GET"],
             status_code=200,
             responses={},
@@ -223,7 +223,7 @@ class RestfulRouter:
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
-            self.resource.update_one(
+            self.resource.update_one_endpoint(
                 Service=self._resolve(dependency),
                 ItemId=Annotated[
                     str,
@@ -252,7 +252,7 @@ class RestfulRouter:
     ) -> Self:
         self.router.add_api_route(
             "",
-            self.resource.replace_one(
+            self.resource.replace_one_endpoint(
                 Service=self._resolve(dependency),
                 Item=Annotated[
                     RawItem,
@@ -277,7 +277,7 @@ class RestfulRouter:
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
-            self.resource.delete_one(
+            self.resource.delete_one_endpoint(
                 Service=self._resolve(dependency),
                 ItemId=Annotated[
                     str,
