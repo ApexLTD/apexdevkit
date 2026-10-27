@@ -118,20 +118,19 @@ class PriceFields(SchemaFields):
 
 @dataclass(frozen=True)
 class FakeApple:
-    id: str | None = None
-    name: Name | None = None
     fake: Fake = field(default_factory=Fake)
 
     @cached_property
     def _raw(self) -> dict[str, Any]:
         return {
-            "id": self.id or self.fake.uuid(),
+            "id": self.fake.uuid(),
             "name": self._name(),
             "color": random.choice(list(Color)).value,
         }
 
     def _name(self) -> dict[str, Any]:
-        name = self.name or Name(self.fake.text(length=10), self.fake.text(length=10))
+        name = Name(self.fake.text(length=10), self.fake.text(length=10))
+
         return {"scientific": name.scientific, "common": name.common}
 
     def unknown_id(self) -> str:
