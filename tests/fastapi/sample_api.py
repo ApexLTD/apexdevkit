@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import random
-from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import Enum
 from functools import cached_property
@@ -20,7 +19,7 @@ from apexdevkit.repository import Entity
 from tests.fake import Fake
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Mapping
 
     from fastapi import FastAPI
 
@@ -169,6 +168,7 @@ class AppleFormatter:
 @dataclass
 class SuccessfulService(RestfulServiceBuilder):
     always_return: Apple
+
     called_with: Any | None = None
 
     def build(self) -> RestfulService:
