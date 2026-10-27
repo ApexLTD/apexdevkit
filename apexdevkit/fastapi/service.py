@@ -36,7 +36,7 @@ class NoService[T]:
 
 @dataclass(frozen=True, kw_only=True)
 class RestfulServiceShell[T]:
-    inner: _Service[T] = field(default_factory=NoService)
+    inner: RestfulService[T] = field(default_factory=NoService)
     formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
 
     def create_one(self, item: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -75,7 +75,7 @@ class RestfulServiceShell[T]:
         self.inner.delete_one(with_id=item_id)
 
 
-class _Service[T](Protocol):
+class RestfulService[T](Protocol):
     def create_one(self, item: T) -> T:
         pass
 
@@ -96,7 +96,7 @@ class _Service[T](Protocol):
 
 
 @dataclass(frozen=True)
-class RepositoryBasedService[T: Entity](_Service[T]):
+class RepositoryBasedService[T: Entity](RestfulService[T]):
     repository: Repository[T]
 
     def create_one(self, item: T) -> T:
