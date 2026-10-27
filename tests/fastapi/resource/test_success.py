@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from typing import TYPE_CHECKING
 from unittest.mock import ANY
 from uuid import uuid4
 
@@ -11,18 +10,10 @@ from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.testing import RestRequest, RestTransport
 from tests.fastapi.sample_api import AppleFormatter, FakeApple, SuccessfulService
 
-if TYPE_CHECKING:
-    from pypebbles import JsonDict
-
 
 @pytest.fixture
 def fake_apple() -> FakeApple:
     return FakeApple()
-
-
-@pytest.fixture
-def apple(fake_apple: FakeApple) -> JsonDict:
-    return fake_apple.json()
 
 
 @pytest.fixture
@@ -32,9 +23,11 @@ def service(fake_apple: FakeApple) -> SuccessfulService:
 
 def test_should_create(
     transport: RestTransport,
-    apple: JsonDict,
+    fake_apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
+    apple = fake_apple.json()
+
     (
         RestRequest()
         .with_data(apple)
@@ -51,9 +44,11 @@ def test_should_create(
 
 def test_should_read_one(
     transport: RestTransport,
-    apple: JsonDict,
+    fake_apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
+    apple = fake_apple.json()
+
     (
         RestRequest()
         .item(with_id=apple.value_of("id").to(str))
@@ -70,9 +65,11 @@ def test_should_read_one(
 
 def test_should_read_many(
     transport: RestTransport,
-    apple: JsonDict,
+    fake_apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
+    apple = fake_apple.json()
+
     (
         RestRequest()
         .with_params(color="red")
@@ -89,9 +86,11 @@ def test_should_read_many(
 
 def test_should_read_all(
     transport: RestTransport,
-    apple: JsonDict,
+    fake_apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
+    apple = fake_apple.json()
+
     (
         RestRequest()
         .using(transport)
@@ -107,9 +106,11 @@ def test_should_read_all(
 
 def test_should_update_one(
     transport: RestTransport,
-    apple: JsonDict,
+    fake_apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
+    apple = fake_apple.json()
+
     (
         RestRequest()
         .item(with_id=apple.value_of("id"))
@@ -126,9 +127,11 @@ def test_should_update_one(
 
 def test_should_replace_one(
     transport: RestTransport,
-    apple: JsonDict,
+    fake_apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
+    apple = fake_apple.json()
+
     (
         RestRequest()
         .with_data(apple)
@@ -144,9 +147,11 @@ def test_should_replace_one(
 
 def test_should_delete_one(
     transport: RestTransport,
-    apple: JsonDict,
+    fake_apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
+    apple = fake_apple.json()
+
     (
         RestRequest()
         .item(with_id=apple.value_of("id"))
