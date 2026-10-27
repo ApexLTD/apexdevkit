@@ -2,7 +2,7 @@ import pytest
 
 from apexdevkit.error import ExistsError
 from apexdevkit.fastapi.builder import PreBuilt
-from apexdevkit.fastapi.service import RestfulServiceShell
+from apexdevkit.fastapi.service import RestfulApi
 from apexdevkit.testing import RestRequest, RestTransport
 from tests.fastapi.sample_api import AppleFormatter, FailingService, FakeApple
 
@@ -10,7 +10,7 @@ from tests.fastapi.sample_api import AppleFormatter, FailingService, FakeApple
 @pytest.fixture
 def builder() -> PreBuilt:
     return PreBuilt(
-        RestfulServiceShell(
+        RestfulApi(
             inner=FailingService(ExistsError),
             formatter=AppleFormatter(),
         )

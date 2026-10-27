@@ -35,7 +35,7 @@ class NoService[T]:
 
 
 @dataclass(frozen=True, kw_only=True)
-class RestfulServiceShell[T]:
+class RestfulApi[T]:
     inner: RestfulService[T] = field(default_factory=NoService)
     formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
 

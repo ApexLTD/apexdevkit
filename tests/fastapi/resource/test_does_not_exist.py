@@ -5,7 +5,7 @@ from pypebbles import JsonDict
 
 from apexdevkit.error import DoesNotExistError
 from apexdevkit.fastapi.builder import PreBuilt
-from apexdevkit.fastapi.service import RestfulServiceShell
+from apexdevkit.fastapi.service import RestfulApi
 from apexdevkit.testing import RestRequest, RestTransport
 from tests.fastapi.sample_api import AppleFormatter, FailingService, FakeApple
 
@@ -18,7 +18,7 @@ def apple() -> JsonDict:
 @pytest.fixture
 def builder() -> PreBuilt:
     return PreBuilt(
-        RestfulServiceShell(
+        RestfulApi(
             inner=FailingService(DoesNotExistError),
             formatter=AppleFormatter(),
         )
