@@ -17,8 +17,6 @@ from apexdevkit.fastapi.service import (
     RestfulServiceWithFormatter,
 )
 from apexdevkit.formatter import DataclassFormatter
-from apexdevkit.query import Filter
-from apexdevkit.query.query import Operator, Page, Sort
 from apexdevkit.repository import Entity
 from tests.fake import FakeResource
 
@@ -113,18 +111,6 @@ class AppleFields(SchemaFields):
         return JsonDict().with_a(
             name=JsonDict().with_a(common=str).and_a(scientific=str)
         )
-
-    def filters(self) -> JsonDict:
-        return (
-            JsonDict()
-            .with_a(filter=Filter | None)
-            .and_a(condition=Operator | None)
-            .and_a(ordering=list[Sort])
-            .and_a(paging=Page)
-        )
-
-    def aggregation_filters(self) -> JsonDict:
-        return JsonDict().with_a(is_rotten=bool)
 
 
 class PriceFields(SchemaFields):
