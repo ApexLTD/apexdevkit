@@ -15,29 +15,6 @@ RawItem = Mapping[str, Any]
 RawCollection = Iterable[RawItem]
 
 
-class RestfulService:  # pragma: no cover
-    def create_one(self, item: RawItem) -> RawItem:
-        raise NotImplementedError(self.create_one.__name__)
-
-    def read_one(self, item_id: str) -> RawItem:
-        raise NotImplementedError(self.read_one.__name__)
-
-    def read_many(self, **params: Any) -> RawCollection:
-        raise NotImplementedError(self.read_many.__name__)
-
-    def read_all(self) -> RawCollection:
-        raise NotImplementedError(self.read_all.__name__)
-
-    def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
-        raise NotImplementedError(self.update_one.__name__)
-
-    def replace_one(self, item: RawItem) -> RawItem:
-        raise NotImplementedError(self.replace_one.__name__)
-
-    def delete_one(self, item_id: str) -> None:
-        raise NotImplementedError(self.delete_one.__name__)
-
-
 class NoFormatter[T]:
     def load(self, source: RawItem) -> T:
         raise NotImplementedError
@@ -67,7 +44,7 @@ class NoService[T: Entity]:
 
 
 @dataclass(frozen=True, kw_only=True)
-class RestfulServiceWithFormatter[T: Entity](RestfulService):
+class RestfulService[T: Entity]:
     inner: _Service[T] = field(default_factory=NoService)
     formatter: Formatter[RawItem, T] = field(default_factory=NoFormatter)
 

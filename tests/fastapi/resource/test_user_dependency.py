@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from apexdevkit.fastapi.builder import PreBuilt
-from apexdevkit.fastapi.service import RestfulServiceWithFormatter
+from apexdevkit.fastapi.service import RestfulService
 from apexdevkit.testing import RestRequest, RestTransport
 from tests.fastapi.sample_api import AppleFormatter, FakeApple, SuccessfulService
 
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 @pytest.fixture
 def builder() -> PreBuilt:
     return PreBuilt(
-        RestfulServiceWithFormatter(
+        RestfulService(
             inner=SuccessfulService(always_return=FakeApple().entity()),
             formatter=AppleFormatter(),
         )

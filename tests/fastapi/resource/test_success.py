@@ -8,7 +8,7 @@ import pytest
 
 from apexdevkit.fastapi.builder import PreBuilt
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.fastapi.service import RestfulServiceWithFormatter
+from apexdevkit.fastapi.service import RestfulService
 from apexdevkit.testing import RestRequest, RestTransport
 from tests.fastapi.sample_api import AppleFormatter, FakeApple, SuccessfulService
 
@@ -26,7 +26,7 @@ def service(apple: FakeApple) -> SuccessfulService:
 @pytest.fixture
 def builder(service: SuccessfulService) -> PreBuilt:
     return PreBuilt(
-        RestfulServiceWithFormatter(
+        RestfulService(
             inner=service,
             formatter=AppleFormatter(),
         )
