@@ -8,7 +8,7 @@ from faker import Faker
 from apexdevkit.fastapi.builder import PreBuilt
 from apexdevkit.fastapi.service import RestfulServiceWithFormatter
 from apexdevkit.testing import RestRequest, RestTransport
-from tests.fastapi.sample_api import FakeApple, SuccessfulService, AppleFormatter
+from tests.fastapi.sample_api import AppleFormatter, FakeApple, SuccessfulService
 
 if TYPE_CHECKING:
     from apexdevkit.fastapi import RestfulServiceBuilder
@@ -16,15 +16,10 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture
-def service() -> SuccessfulService:
-    return SuccessfulService(always_return=FakeApple().entity())
-
-
-@pytest.fixture
-def builder(service: SuccessfulService) -> RestfulServiceBuilder:
+def builder() -> RestfulServiceBuilder:
     return PreBuilt(
         RestfulServiceWithFormatter(
-            inner=service,
+            inner=SuccessfulService(always_return=FakeApple().entity()),
             formatter=AppleFormatter(),
         )
     )
