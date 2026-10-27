@@ -96,7 +96,7 @@ class RestfulService[T](Protocol):
 
 
 @dataclass(frozen=True)
-class RepositoryBasedService[T: Entity](RestfulService[T]):
+class RestfulRepository[T: Entity](RestfulService[T]):
     repository: Repository[T]
 
     def create_one(self, item: T) -> T:

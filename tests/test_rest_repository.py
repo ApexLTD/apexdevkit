@@ -6,7 +6,7 @@ import pytest
 
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.fastapi.service import (
-    RepositoryBasedService,
+    RestfulRepository,
     RestfulServiceShell,
 )
 from apexdevkit.formatter import DataclassFormatter
@@ -49,7 +49,7 @@ def repository() -> Repository[Animal]:
 @pytest.fixture
 def service(repository: Repository[Animal]) -> RestfulServiceShell[Animal]:
     return RestfulServiceShell(
-        inner=RepositoryBasedService(repository),
+        inner=RestfulRepository(repository),
         formatter=DataclassFormatter(Animal),
     )
 
