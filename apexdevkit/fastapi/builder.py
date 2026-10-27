@@ -57,7 +57,7 @@ class FastApiBuilder:
         for key, value in values.items():
             self.app.include_router(
                 value,
-                prefix=_Endpoint(key).normilized(),
+                prefix=_Endpoint(key).normalized(),
                 tags=value.tags or [key.title()],
             )
 
@@ -65,7 +65,7 @@ class FastApiBuilder:
 
     def with_mounted(self, **apps: FastAPI) -> Self:
         for path, app in apps.items():
-            self.app.mount(_Endpoint(path).normilized(), app)
+            self.app.mount(_Endpoint(path).normalized(), app)
 
         return self
 
@@ -160,8 +160,8 @@ class PreBuilt(RestfulServiceBuilder):  # pragma: no cover
 class _Endpoint:
     raw: str
 
-    def normilized(self) -> str:
+    def normalized(self) -> str:
         return f"/{self.raw.replace('_', '-')}"
 
     def __str__(self) -> str:  # pragma: no cover
-        return self.normilized()
+        return self.normalized()
