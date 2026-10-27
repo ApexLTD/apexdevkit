@@ -15,7 +15,7 @@ from apexdevkit.fastapi.dependable import DependableBuilder
 if TYPE_CHECKING:
     from collections.abc import Mapping, MutableSet
 
-    from apexdevkit.fastapi.service import RestfulService
+    from apexdevkit.fastapi.service import RestfulServiceShell
 
 
 @dataclass
@@ -144,15 +144,15 @@ class RestfulServiceBuilder(ABC):
         return self
 
     @abstractmethod
-    def build(self) -> RestfulService:  # pragma: no cover
+    def build(self) -> RestfulServiceShell:  # pragma: no cover
         pass
 
 
 @dataclass
 class PreBuilt(RestfulServiceBuilder):  # pragma: no cover
-    service: RestfulService
+    service: RestfulServiceShell
 
-    def build(self) -> RestfulService:
+    def build(self) -> RestfulServiceShell:
         return self.service
 
 
