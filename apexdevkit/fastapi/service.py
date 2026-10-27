@@ -2,33 +2,20 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from functools import cached_property
 from typing import TYPE_CHECKING, Any
 
-from apexdevkit.repository import BruteForceBatch, Entity, Repository
+from apexdevkit.repository import Entity, Repository
 
 if TYPE_CHECKING:
     from apexdevkit.formatter import Formatter
-    from apexdevkit.repository.core.interface import BatchRepository
 
 RawItem = Mapping[str, Any]
 RawCollection = Iterable[RawItem]
 
 
-class _RawItemWithId(dict[str, Any]):
-    def __post_init__(self) -> None:
-        assert "id" in self
-
-
-RawCollectionWithId = Iterable[_RawItemWithId]
-
-
 class RestfulService:  # pragma: no cover
     def create_one(self, item: RawItem) -> RawItem:
         raise NotImplementedError(self.create_one.__name__)
-
-    def create_many(self, items: RawCollection) -> RawCollection:
-        raise NotImplementedError(self.create_many.__name__)
 
     def read_one(self, item_id: str) -> RawItem:
         raise NotImplementedError(self.read_one.__name__)
@@ -36,26 +23,14 @@ class RestfulService:  # pragma: no cover
     def read_many(self, **params: Any) -> RawCollection:
         raise NotImplementedError(self.read_many.__name__)
 
-    def filter_with(self, options: RawItem) -> RawCollection:
-        raise NotImplementedError(self.filter_with.__name__)
-
-    def aggregation_with(self, options: RawItem) -> RawItem:
-        raise NotImplementedError(self.filter_with.__name__)
-
     def read_all(self) -> RawCollection:
         raise NotImplementedError(self.read_all.__name__)
 
     def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
         raise NotImplementedError(self.update_one.__name__)
 
-    def update_many(self, items: RawCollectionWithId) -> RawCollection:
-        raise NotImplementedError(self.update_many.__name__)
-
     def replace_one(self, item: RawItem) -> RawItem:
         raise NotImplementedError(self.replace_one.__name__)
-
-    def replace_many(self, items: RawCollection) -> RawCollection:
-        raise NotImplementedError(self.replace_many.__name__)
 
     def delete_one(self, item_id: str) -> None:
         raise NotImplementedError(self.delete_one.__name__)
@@ -67,20 +42,8 @@ class RestfulRepository[ItemT: Entity](RestfulService):
 
     formatter: Formatter[Mapping[str, Any], ItemT]
 
-    @cached_property
-    def _batch(self) -> BatchRepository[ItemT]:
-        return BruteForceBatch(inner=self.repository)
-
     def create_one(self, item: RawItem) -> RawItem:
         return self.formatter.dump(self.repository.create(self.formatter.load(item)))
-
-    def create_many(self, items: RawCollection) -> RawCollection:
-        return [
-            self.formatter.dump(item)
-            for item in self._batch.load(
-                [self.formatter.load(fields) for fields in items]
-            )
-        ]
 
     def read_one(self, item_id: str) -> RawItem:
         return self.formatter.dump(self.repository.read(item_id))
@@ -96,25 +59,10 @@ class RestfulRepository[ItemT: Entity](RestfulService):
 
         return data
 
-    def update_many(self, items: RawCollectionWithId) -> RawCollection:
-        updates = []
-        for fields in items:
-            data = dict(self.formatter.dump(self.repository.read(fields["id"])))
-            data.update(**fields)
-
-            updates.append(self.formatter.load(data))
-
-        return [self.formatter.dump(item) for item in self._batch.renew(updates)]
-
     def replace_one(self, item: RawItem) -> RawItem:
         self.repository.update(self.formatter.load(item))
 
         return item
-
-    def replace_many(self, items: RawCollection) -> RawCollection:
-        updated = self._batch.renew([self.formatter.load(item) for item in items])
-
-        return [self.formatter.dump(item) for item in updated]
 
     def delete_one(self, item_id: str) -> None:
         self.repository.delete(item_id)

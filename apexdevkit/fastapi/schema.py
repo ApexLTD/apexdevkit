@@ -11,9 +11,6 @@ from apexdevkit.fastapi.name import RestfulName
 
 
 class SchemaFields(ABC):
-    def id(self) -> FluentDict[type]:
-        return self.readable().select("id")
-
     def writable(self) -> FluentDict[type]:
         return self.readable().drop("id")
 

@@ -69,31 +69,6 @@ def test_should_not_create_one(
         service.create_one(animal.json())
 
 
-def test_should_create_many(
-    repository: Repository[Animal],
-    service: RestfulService,
-) -> None:
-    animal_1 = FakeAnimal()
-    animal_2 = FakeAnimal()
-
-    assert service.create_many([animal_1.json(), animal_2.json()]) == [
-        animal_1.json(),
-        animal_2.json(),
-    ]
-    assert list(repository) == [animal_1.entity(), animal_2.entity()]
-
-
-def test_should_skip_existing_when_create_many(
-    repository: Repository[Animal],
-    service: RestfulService,
-) -> None:
-    animal_1 = FakeAnimal()
-    animal_2 = FakeAnimal()
-    repository.create(animal_1.entity())
-
-    assert service.create_many([animal_1.json(), animal_2.json()]) == [animal_2.json()]
-
-
 def test_should_read_one(
     repository: Repository[Animal],
     service: RestfulService,
@@ -145,36 +120,6 @@ def test_should_not_update_unknown(service: RestfulService) -> None:
         service.update_one(updated.entity().id, age=updated.entity().age)
 
 
-def test_should_update_many(
-    repository: Repository[Animal],
-    service: RestfulService,
-) -> None:
-    initial_1 = FakeAnimal().entity()
-    initial_2 = FakeAnimal().entity()
-    repository.create(initial_1)
-    repository.create(initial_2)
-
-    updated_1 = FakeAnimal(id=initial_1.id, name=initial_1.name)
-    updated_2 = FakeAnimal(id=initial_2.id, name=initial_2.name)
-
-    assert service.update_many(
-        [updated_1.json().drop("name"), updated_2.json().drop("name")]  # type: ignore
-    ) == [updated_1.json(), updated_2.json()]
-    assert list(repository) == [updated_1.entity(), updated_2.entity()]
-
-
-def test_should_not_update_unknown_many(
-    service: RestfulService,
-) -> None:
-    updated_1 = FakeAnimal()
-    updated_2 = FakeAnimal()
-
-    with pytest.raises(DoesNotExistError):
-        service.update_many(
-            [updated_1.json().drop("name"), updated_2.json().drop("name")]  # type: ignore
-        )
-
-
 def test_should_replace_one(
     repository: Repository[Animal],
     service: RestfulService,
@@ -192,36 +137,6 @@ def test_should_not_replace_unknown(service: RestfulService) -> None:
 
     with pytest.raises(DoesNotExistError):
         service.replace_one(replaced.json())
-
-
-def test_should_replace_many(
-    repository: Repository[Animal],
-    service: RestfulService,
-) -> None:
-    initial_1 = FakeAnimal().entity()
-    initial_2 = FakeAnimal().entity()
-    repository.create(initial_1)
-    repository.create(initial_2)
-
-    replaced_1 = FakeAnimal(id=initial_1.id)
-    replaced_2 = FakeAnimal(id=initial_2.id)
-
-    assert service.replace_many([replaced_1.json(), replaced_2.json()]) == [
-        replaced_1.json(),
-        replaced_2.json(),
-    ]
-    assert list(repository) == [replaced_1.entity(), replaced_2.entity()]
-
-
-def test_should_skip_unknown_when_updating_many(
-    repository: Repository[Animal],
-    service: RestfulService,
-) -> None:
-    animal_1 = FakeAnimal()
-    animal_2 = FakeAnimal()
-    repository.create(animal_1.entity())
-
-    assert service.replace_many([animal_1.json(), animal_2.json()]) == [animal_1.json()]
 
 
 def test_should_delete_one(
