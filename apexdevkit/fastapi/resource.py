@@ -18,20 +18,20 @@ class RestfulResource:
     def create_one_endpoint(self, Service, Item) -> _Endpoint:
         def endpoint(service: Service, item: Item) -> _Response:
             try:
-                item = service.create_one(item)
+                result = service.create_one(item)
+                return self.response.created_one(result)
             except ExistsError as e:
                 return JSONResponse(self.response.exists(e), 409)
             except ForbiddenError as e:
                 return JSONResponse(self.response.forbidden(e), 403)
-
-            return self.response.created_one(item)
 
         return endpoint
 
     def read_one_endpoint(self, Service, ItemId) -> _Endpoint:
         def endpoint(service: Service, item_id: ItemId) -> _Response:
             try:
-                return self.response.found_one(service.read_one(item_id))
+                result = service.read_one(item_id)
+                return self.response.found_one(result)
             except DoesNotExistError as e:
                 return JSONResponse(self.response.not_found(e), 404)
             except ForbiddenError as e:
@@ -42,7 +42,8 @@ class RestfulResource:
     def read_many_endpoint(self, Service, QueryParams) -> _Endpoint:
         def endpoint(service: Service, params: QueryParams) -> _Response:
             try:
-                return self.response.found_many(list(service.read_many(**dict(params))))
+                result = list(service.read_many(**dict(params)))
+                return self.response.found_many(result)
             except ForbiddenError as e:
                 return JSONResponse(self.response.forbidden(e), 403)
 
@@ -51,7 +52,8 @@ class RestfulResource:
     def read_all_endpoint(self, Service) -> _Endpoint:
         def endpoint(service: Service) -> _Response:
             try:
-                return self.response.found_many(list(service.read_all()))
+                result = list(service.read_all())
+                return self.response.found_many(result)
             except ForbiddenError as e:
                 return JSONResponse(self.response.forbidden(e), 403)
 
