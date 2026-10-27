@@ -1,29 +1,14 @@
 import pytest
+from faker import Faker
 from fastapi.testclient import TestClient
 from pypebbles.http.drivers import Httpx
 
-from apexdevkit.fastapi import RestfulApiBuilder
 from apexdevkit.fastapi.builder import PreBuilt
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.service import RestfulApi, RestfulService
 from apexdevkit.testing import RestTransport
 from tests.fastapi.sample_api import AppleFormatter, setup
-
-
-@pytest.fixture
-def builder(service: RestfulService) -> PreBuilt:
-    return PreBuilt(
-        RestfulApi(
-            inner=service,
-            formatter=AppleFormatter(),
-        )
-    )
-
-
-@pytest.fixture
-def dependency(builder: RestfulApiBuilder) -> DependableBuilder:
-    return builder.as_dependable()
 
 
 @pytest.fixture
@@ -37,3 +22,18 @@ def transport(dependency: DependableBuilder) -> RestTransport:
             )
         ),
     )
+
+
+@pytest.fixture
+def dependency(builder: PreBuilt, username: str) -> DependableBuilder:
+    return builder.as_dependable().with_user(lambda: username)
+
+
+@pytest.fixture
+def builder(service: RestfulService) -> PreBuilt:
+    return PreBuilt(RestfulApi(inner=service, formatter=AppleFormatter()))
+
+
+@pytest.fixture
+def username(faker: Faker) -> str:
+    return faker.word()

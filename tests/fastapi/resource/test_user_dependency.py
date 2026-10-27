@@ -8,25 +8,12 @@ from apexdevkit.testing import RestRequest, RestTransport
 from tests.fastapi.sample_api import FakeApple, SuccessfulService
 
 if TYPE_CHECKING:
-    from faker import Faker
-
     from apexdevkit.fastapi.builder import PreBuilt
-    from apexdevkit.fastapi.dependable import DependableBuilder
 
 
 @pytest.fixture
 def service() -> SuccessfulService:
     return SuccessfulService(always_return=FakeApple().entity())
-
-
-@pytest.fixture
-def username(faker: Faker) -> str:
-    return faker.word()
-
-
-@pytest.fixture
-def dependency(builder: PreBuilt, username: str) -> DependableBuilder:
-    return builder.as_dependable().with_user(lambda: username)
 
 
 def test_should_persist_user_for_create_one(
