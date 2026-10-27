@@ -151,7 +151,7 @@ class RestfulApiBuilder(ABC):
 
 @dataclass
 class PreBuilt[T](RestfulApiBuilder):  # pragma: no cover
-    service: RestfulService[T]
+    instance: RestfulService[T]
 
     formatter: Formatter[Mapping[str, Any], T] = field(init=False)
 
@@ -161,7 +161,7 @@ class PreBuilt[T](RestfulApiBuilder):  # pragma: no cover
         return self
 
     def build(self) -> RestfulApi[T]:
-        return RestfulApi(service=self.service, formatter=self.formatter)
+        return RestfulApi(service=self.instance, formatter=self.formatter)
 
 
 @dataclass(frozen=True)
