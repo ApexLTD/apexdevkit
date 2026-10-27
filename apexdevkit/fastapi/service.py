@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Protocol
 
 from pypebbles import JsonDict
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Mapping
+
     from apexdevkit.formatter import Formatter
     from apexdevkit.repository import Entity, Repository
-
-RawItem = Mapping[str, Any]
 
 
 class NoFormatter[T]:

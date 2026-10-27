@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Annotated, Any, Protocol, Self
@@ -11,7 +11,9 @@ from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.resource import RestfulResource
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.schema import RestfulSchema, Schema, SchemaFields
-from apexdevkit.fastapi.service import RawItem, RestfulService
+from apexdevkit.fastapi.service import RestfulService
+
+RawItem = Mapping[str, Any]
 
 
 class RouterWithHiddenUnderscoreRoutes(APIRouter):
