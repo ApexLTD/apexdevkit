@@ -15,7 +15,7 @@ def apple() -> JsonDict:
 
 
 @pytest.fixture
-def service() -> FailingService:
+def builder() -> FailingService:
     return FailingService(DoesNotExistError)
 
 

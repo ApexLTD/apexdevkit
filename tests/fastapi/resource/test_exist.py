@@ -7,7 +7,7 @@ from ..sample_api import FailingService, FakeApple
 
 
 @pytest.fixture
-def service() -> FailingService:
+def builder() -> FailingService:
     return FailingService(ExistsError)
 
 

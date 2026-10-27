@@ -10,8 +10,8 @@ from tests.fastapi.sample_api import setup
 
 
 @pytest.fixture
-def dependency(service: RestfulServiceBuilder) -> DependableBuilder:
-    return service.as_dependable()
+def dependency(builder: RestfulServiceBuilder) -> DependableBuilder:
+    return builder.as_dependable()
 
 
 @pytest.fixture
