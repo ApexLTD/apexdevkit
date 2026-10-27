@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Annotated, Any, Protocol, Self, TypeVar
+from typing import Annotated, Any, Protocol, Self
 
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.responses import JSONResponse
@@ -46,8 +46,6 @@ class RouterWithHiddenUnderscoreRoutes(APIRouter):
 
 
 _Response = JSONResponse | dict[str, Any]
-
-T = TypeVar("T")
 
 
 class Dependency(Protocol):  # pragma: no cover
