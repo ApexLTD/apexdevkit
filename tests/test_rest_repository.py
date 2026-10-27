@@ -59,9 +59,14 @@ def test_should_create_one(
     repository: Repository[Animal],
     service: RestfulService,
 ) -> None:
+    # Given
     animal = FakeAnimal()
 
-    assert service.create_one(animal.json()) == animal.json()
+    # When
+    result = service.create_one(animal.json())
+
+    # Then
+    assert result == animal.json()
     assert repository.read(animal.entity().id) == animal.entity()
 
 
@@ -69,10 +74,13 @@ def test_should_not_create_one(
     repository: Repository[Animal],
     service: RestfulService,
 ) -> None:
+    # Given
     animal = FakeAnimal()
     repository.create(animal.entity())
 
+    # Then
     with pytest.raises(ExistsError):
+        # When
         service.create_one(animal.json())
 
 
@@ -80,16 +88,24 @@ def test_should_read_one(
     repository: Repository[Animal],
     service: RestfulService,
 ) -> None:
+    # Given
     animal = FakeAnimal()
     repository.create(animal.entity())
 
-    assert service.read_one(animal.entity().id) == animal.json()
+    # When
+    result = service.read_one(animal.entity().id)
+
+    # Then
+    assert result == animal.json()
 
 
 def test_should_not_read_unknown(service: RestfulService) -> None:
+    # Given
     animal = FakeAnimal()
 
+    # Then
     with pytest.raises(DoesNotExistError):
+        # When
         service.read_one(animal.entity().id)
 
 
@@ -97,33 +113,43 @@ def test_should_read_all(
     repository: Repository[Animal],
     service: RestfulService,
 ) -> None:
+    # Given
     animal_1 = FakeAnimal()
     animal_2 = FakeAnimal()
     repository.create(animal_1.entity())
     repository.create(animal_2.entity())
 
-    assert service.read_all() == [animal_1.json(), animal_2.json()]
+    # When
+    result = service.read_all()
+
+    # Then
+    assert result == [animal_1.json(), animal_2.json()]
 
 
 def test_should_update_one(
     repository: Repository[Animal],
     service: RestfulService,
 ) -> None:
+    # Given
     initial = FakeAnimal().entity()
     updated = FakeAnimal(id=initial.id, name=initial.name)
     repository.create(initial)
 
-    assert (
-        service.update_one(updated.entity().id, age=updated.entity().age)
-        == updated.json()
-    )
+    # When
+    result = service.update_one(updated.entity().id, age=updated.entity().age)
+
+    # Then
+    assert result == updated.json()
     assert repository.read(updated.entity().id) == updated.entity()
 
 
 def test_should_not_update_unknown(service: RestfulService) -> None:
+    # Given
     updated = FakeAnimal()
 
+    # Then
     with pytest.raises(DoesNotExistError):
+        # When
         service.update_one(updated.entity().id, age=updated.entity().age)
 
 
@@ -131,18 +157,26 @@ def test_should_replace_one(
     repository: Repository[Animal],
     service: RestfulService,
 ) -> None:
+    # Given
     initial = FakeAnimal().entity()
     replaced = FakeAnimal(id=initial.id)
     repository.create(initial)
 
-    assert service.replace_one(replaced.json()) == replaced.json()
+    # When
+    result = service.replace_one(replaced.json())
+
+    # Then
+    assert result == replaced.json()
     assert repository.read(replaced.entity().id) == replaced.entity()
 
 
 def test_should_not_replace_unknown(service: RestfulService) -> None:
+    # Given
     replaced = FakeAnimal()
 
+    # Then
     with pytest.raises(DoesNotExistError):
+        # When
         service.replace_one(replaced.json())
 
 
@@ -150,15 +184,22 @@ def test_should_delete_one(
     repository: Repository[Animal],
     service: RestfulService,
 ) -> None:
+    # Given
     animal = FakeAnimal()
     repository.create(animal.entity())
 
+    # When
     service.delete_one(animal.entity().id)
+
+    # Then
     assert len(repository) == 0
 
 
 def test_should_not_delete_unknown(service: RestfulService) -> None:
+    # Given
     animal = FakeAnimal()
 
+    # Then
     with pytest.raises(DoesNotExistError):
+        # When
         service.delete_one(animal.entity().id)
