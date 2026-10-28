@@ -4,7 +4,6 @@ from fastapi.testclient import TestClient
 from pypebbles.http.drivers import Httpx
 
 from apexdevkit.fastapi import RestfulResource
-from apexdevkit.fastapi.builder import PreBuilt
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.service import RestfulService
@@ -46,7 +45,7 @@ def username(faker: Faker) -> str:
 
 @pytest.fixture
 def builder(service: RestfulService[Apple]) -> RestfulResource.Builder[Apple]:
-    return PreBuilt(instance=service, formatter=AppleFormatter())
+    return RestfulResource.PreBuilt(instance=service, formatter=AppleFormatter())
 
 
 @pytest.fixture

@@ -9,7 +9,6 @@ from fastapi.responses import JSONResponse
 
 from apexdevkit.annotation import deprecated
 from apexdevkit.error import ApiError
-from apexdevkit.fastapi.service import RestfulResource, RestfulService
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, MutableSet
@@ -120,14 +119,6 @@ class CORSApplicator:
             allow_methods=["*"],
             allow_headers=["*"],
         )
-
-
-@dataclass
-class PreBuilt[T](RestfulResource.Builder[T]):  # pragma: no cover
-    instance: RestfulService[T]
-
-    def service(self) -> RestfulService[T]:
-        return self.instance
 
 
 @dataclass(frozen=True)

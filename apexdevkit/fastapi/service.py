@@ -80,6 +80,13 @@ class RestfulResource[T]:
         def service(self) -> RestfulService[BT]:
             pass
 
+    @dataclass(kw_only=True)
+    class PreBuilt[PBT](Builder[PBT]):  # pragma: no cover
+        instance: RestfulService[PBT]
+
+        def service(self) -> RestfulService[PBT]:
+            return self.instance
+
 
 class RestfulService[T]:
     def create_one(self, item: T) -> T:

@@ -1,6 +1,5 @@
 from apexdevkit.fastapi.builder import FastApiBuilder
-from apexdevkit.fastapi.dependable import inject
-from apexdevkit.fastapi.router import RestfulRouter, RouterWithHiddenUnderscoreRoutes
+from apexdevkit.fastapi.router import RestfulRouter
 from apexdevkit.fastapi.service import (
     RestfulRepository,
     RestfulResource,
@@ -13,6 +12,4 @@ __all__ = [
     "RestfulResource",
     "RestfulRouter",
     "RestfulService",
-    "RouterWithHiddenUnderscoreRoutes",
-    "inject",
 ]
