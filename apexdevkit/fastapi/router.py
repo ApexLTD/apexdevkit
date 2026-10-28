@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from pypebbles import FluentDict
 
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.fastapi.resource import RestfulResource
+from apexdevkit.fastapi.resource import RestfulEndpoints
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.schema import RestfulSchema, Schema, SchemaFields
 from apexdevkit.fastapi.service import RestfulApi
@@ -81,8 +81,8 @@ class RestfulRouter[T]:
         return self
 
     @property
-    def resource(self) -> RestfulResource:
-        return RestfulResource(RestfulResponse(self.name))
+    def endpoints(self) -> RestfulEndpoints:
+        return RestfulEndpoints(RestfulResponse(self.name))
 
     @property
     def id_alias(self) -> str:
@@ -128,7 +128,7 @@ class RestfulRouter[T]:
     ) -> Self:
         self.router.add_api_route(
             "",
-            self.resource.create_one_endpoint(
+            self.endpoints.create_one_endpoint(
                 Service=self._resolve(dependency),
                 Item=Annotated[
                     RawItem,
@@ -153,7 +153,7 @@ class RestfulRouter[T]:
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
-            self.resource.read_one_endpoint(
+            self.endpoints.read_one_endpoint(
                 Service=self._resolve(dependency),
                 ItemId=Annotated[
                     str,
@@ -179,7 +179,7 @@ class RestfulRouter[T]:
     ) -> Self:
         self.router.add_api_route(
             "",
-            self.resource.read_many_endpoint(
+            self.endpoints.read_many_endpoint(
                 Service=self._resolve(dependency),
                 QueryParams=Annotated[
                     Schema(self.name.singular).optional_schema_for(
@@ -207,7 +207,7 @@ class RestfulRouter[T]:
     ) -> Self:
         self.router.add_api_route(
             "",
-            self.resource.read_all_endpoint(
+            self.endpoints.read_all_endpoint(
                 Service=self._resolve(dependency),
             ),
             methods=["GET"],
@@ -228,7 +228,7 @@ class RestfulRouter[T]:
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
-            self.resource.update_one_endpoint(
+            self.endpoints.update_one_endpoint(
                 Service=self._resolve(dependency),
                 ItemId=Annotated[
                     str,
@@ -257,7 +257,7 @@ class RestfulRouter[T]:
     ) -> Self:
         self.router.add_api_route(
             "",
-            self.resource.replace_one_endpoint(
+            self.endpoints.replace_one_endpoint(
                 Service=self._resolve(dependency),
                 Item=Annotated[
                     RawItem,
@@ -282,7 +282,7 @@ class RestfulRouter[T]:
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
-            self.resource.delete_one_endpoint(
+            self.endpoints.delete_one_endpoint(
                 Service=self._resolve(dependency),
                 ItemId=Annotated[
                     str,
