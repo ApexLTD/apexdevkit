@@ -11,7 +11,7 @@ from apexdevkit.fastapi.endpoints import RestfulEndpoints
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.schema import RestfulSchema, Schema, SchemaFields
-from apexdevkit.fastapi.service import RestfulApi
+from apexdevkit.fastapi.service import RestfulResource
 
 RawItem = Mapping[str, Any]
 
@@ -51,7 +51,7 @@ _Response = JSONResponse | dict[str, Any]
 
 
 class Dependency[T](Protocol):  # pragma: no cover
-    def as_dependable(self) -> type[RestfulApi[T]]:
+    def as_dependable(self) -> type[RestfulResource[T]]:
         pass
 
 
@@ -317,7 +317,7 @@ class RestfulRouter[T]:
     def build(self) -> APIRouter:
         return self.router
 
-    def _resolve(self, dependency: Dependency[T] | None) -> type[RestfulApi[T]]:
+    def _resolve(self, dependency: Dependency[T] | None) -> type[RestfulResource[T]]:
         resolved = dependency or self._dependency
         assert resolved, "One of default or endpoint dependency must be specified"
 

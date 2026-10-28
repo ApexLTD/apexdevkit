@@ -8,7 +8,7 @@ from fastapi.requests import Request
 from apexdevkit.error import ApiError, DoesNotExistError, ForbiddenError
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.response import RestfulResponse
-from apexdevkit.fastapi.service import RestfulApi
+from apexdevkit.fastapi.service import RestfulResource
 
 
 def inject(dependency: str) -> Any:  # pragma: no cover
@@ -25,7 +25,7 @@ class _ServiceBuilder(Protocol):
     def with_parent(self, identity: str) -> "_ServiceBuilder":
         pass
 
-    def build(self) -> RestfulApi:  # pragma: no cover
+    def build(self) -> RestfulResource:  # pragma: no cover
         pass
 
 
@@ -38,10 +38,10 @@ class _Dependency(Protocol):
 class ServiceDependency:
     dependency: _Dependency
 
-    def as_dependable(self) -> type[RestfulApi]:
+    def as_dependable(self) -> type[RestfulResource]:
         Builder = self.dependency.as_dependable()
 
-        def _(builder: Builder) -> RestfulApi:
+        def _(builder: Builder) -> RestfulResource:
             try:
                 return builder.build()
             except ForbiddenError as e:
@@ -49,7 +49,7 @@ class ServiceDependency:
                     403, RestfulResponse(RestfulName("unknown")).forbidden(e)
                 ) from e
 
-        return Annotated[RestfulApi, Depends(_)]
+        return Annotated[RestfulResource, Depends(_)]
 
 
 @dataclass(frozen=True)
@@ -119,5 +119,5 @@ class DependableBuilder:
     def with_user(self, extract_user: Callable[..., Any]) -> "DependableBuilder":
         return DependableBuilder(UserDependency(extract_user, self.dependency))
 
-    def as_dependable(self) -> type[RestfulApi]:
+    def as_dependable(self) -> type[RestfulResource]:
         return ServiceDependency(self.dependency).as_dependable()

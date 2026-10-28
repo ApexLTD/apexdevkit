@@ -80,7 +80,7 @@ ignore = [
 [tool.mypy]
 exclude = [
     "apexdevkit/fastapi/dependable.py",
-    "apexdevkit/fastapi/resource.py",
+    "apexdevkit/fastapi/endpoints.py",
     "apexdevkit/fastapi/schema.py",
 ]
 ignore_missing_imports = true

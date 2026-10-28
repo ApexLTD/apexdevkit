@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 
 from apexdevkit.annotation import deprecated
 from apexdevkit.error import ApiError
-from apexdevkit.fastapi.service import RestfulApi, RestfulService
+from apexdevkit.fastapi.service import RestfulResource, RestfulService
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, MutableSet
@@ -149,8 +149,8 @@ class RestfulApiBuilder[T](ABC):
 
         return self
 
-    def build(self) -> RestfulApi[T]:
-        return RestfulApi(service=self.service(), formatter=self.formatter)
+    def build(self) -> RestfulResource[T]:
+        return RestfulResource(service=self.service(), formatter=self.formatter)
 
     @abstractmethod
     def service(self) -> RestfulService[T]:
