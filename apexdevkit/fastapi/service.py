@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from pypebbles import JsonDict
-
-from apexdevkit.formatter import NoFormatter
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
@@ -17,8 +15,7 @@ if TYPE_CHECKING:
 @dataclass(frozen=True, kw_only=True)
 class RestfulResource[T]:
     service: RestfulService[T]
-
-    formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
+    formatter: Formatter[Mapping[str, Any], T]
 
     def create_one(self, item: Mapping[str, Any]) -> Mapping[str, Any]:
         result = self.service.create_one(self.formatter.load(item))
