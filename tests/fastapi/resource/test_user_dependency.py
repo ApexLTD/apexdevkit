@@ -6,12 +6,12 @@ from apexdevkit.testing import RestRequest, RestTransport
 from tests.fastapi.sample_api import Apple, FakeApple
 
 if TYPE_CHECKING:
-    from apexdevkit.fastapi.builder import RestfulApiBuilder
+    from apexdevkit.fastapi import RestfulResource
 
 
 def test_should_persist_user_for_create_one(
     transport: RestTransport,
-    builder: RestfulApiBuilder[Apple],
+    builder: RestfulResource.Builder[Apple],
     username: str,
 ) -> None:
     RestRequest().with_data(FakeApple().json()).using(transport).create()
@@ -21,7 +21,7 @@ def test_should_persist_user_for_create_one(
 
 def test_should_persist_user_for_read_one(
     transport: RestTransport,
-    builder: RestfulApiBuilder[Apple],
+    builder: RestfulResource.Builder[Apple],
     username: str,
 ) -> None:
     RestRequest().item(with_id=FakeApple().json().get("id")).using(transport).read()
@@ -31,7 +31,7 @@ def test_should_persist_user_for_read_one(
 
 def test_should_persist_user_for_read_all(
     transport: RestTransport,
-    builder: RestfulApiBuilder[Apple],
+    builder: RestfulResource.Builder[Apple],
     username: str,
 ) -> None:
     RestRequest().using(transport).read()
@@ -41,7 +41,7 @@ def test_should_persist_user_for_read_all(
 
 def test_should_persist_user_for_update_one(
     transport: RestTransport,
-    builder: RestfulApiBuilder[Apple],
+    builder: RestfulResource.Builder[Apple],
     username: str,
 ) -> None:
     (
@@ -57,7 +57,7 @@ def test_should_persist_user_for_update_one(
 
 def test_should_persist_user_for_replace_one(
     transport: RestTransport,
-    builder: RestfulApiBuilder[Apple],
+    builder: RestfulResource.Builder[Apple],
     username: str,
 ) -> None:
     RestRequest().with_data(FakeApple().json()).using(transport).replace()
@@ -67,7 +67,7 @@ def test_should_persist_user_for_replace_one(
 
 def test_should_persist_user_for_delete_one(
     transport: RestTransport,
-    builder: RestfulApiBuilder[Apple],
+    builder: RestfulResource.Builder[Apple],
     username: str,
 ) -> None:
     RestRequest().item(with_id=FakeApple().json().get("id")).using(transport).delete()

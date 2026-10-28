@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 from pypebbles import JsonDict
@@ -51,6 +52,33 @@ class RestfulResource[T]:
 
     def delete_one(self, item_id: str) -> None:
         self.service.delete_one(with_id=item_id)
+
+    @dataclass(kw_only=True)
+    class Builder[BT](ABC):
+        formatter: Formatter[Mapping[str, Any], BT]
+
+        parent_id: str = field(init=False)
+        user: Any = field(init=False)
+
+        def with_user(self, user: Any) -> RestfulResource.Builder[BT]:
+            self.user = user
+
+            return self
+
+        def with_parent(self, identity: str) -> RestfulResource.Builder[BT]:
+            self.parent_id = identity
+
+            return self
+
+        def build(self) -> RestfulResource[BT]:
+            return RestfulResource(
+                service=self.service(),
+                formatter=self.formatter,
+            )
+
+        @abstractmethod
+        def service(self) -> RestfulService[BT]:
+            pass
 
 
 class RestfulService[T]:

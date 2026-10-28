@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Protocol, Self
 
@@ -14,8 +13,6 @@ from apexdevkit.fastapi.service import RestfulResource, RestfulService
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, MutableSet
-
-    from apexdevkit.formatter import Formatter
 
 
 @dataclass
@@ -126,39 +123,7 @@ class CORSApplicator:
 
 
 @dataclass
-class RestfulApiBuilder[T](ABC):
-    parent_id: str = field(init=False)
-    user: Any = field(init=False)
-
-    formatter: Formatter[Mapping[str, Any], T] = field(init=False)
-
-    def with_formatter(
-        self, formatter: Formatter[Mapping[str, Any], T]
-    ) -> RestfulApiBuilder[T]:
-        self.formatter = formatter
-
-        return self
-
-    def with_user(self, user: Any) -> RestfulApiBuilder[T]:
-        self.user = user
-
-        return self
-
-    def with_parent(self, identity: str) -> RestfulApiBuilder[T]:
-        self.parent_id = identity
-
-        return self
-
-    def build(self) -> RestfulResource[T]:
-        return RestfulResource(service=self.service(), formatter=self.formatter)
-
-    @abstractmethod
-    def service(self) -> RestfulService[T]:
-        pass
-
-
-@dataclass
-class PreBuilt[T](RestfulApiBuilder[T]):  # pragma: no cover
+class PreBuilt[T](RestfulResource.Builder[T]):  # pragma: no cover
     instance: RestfulService[T]
 
     def service(self) -> RestfulService[T]:
