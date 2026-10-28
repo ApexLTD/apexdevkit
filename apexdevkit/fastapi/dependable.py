@@ -3,19 +3,11 @@ from dataclasses import dataclass
 from typing import Annotated, Any, Protocol
 
 from fastapi import Depends, Path
-from fastapi.requests import Request
 
 from apexdevkit.error import ApiError, DoesNotExistError, ForbiddenError
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.service import RestfulResource
-
-
-def inject(dependency: str) -> Any:  # pragma: no cover
-    def get(request: Request) -> Any:
-        return getattr(request.app.state, dependency)
-
-    return Depends(get)
 
 
 class _ServiceBuilder(Protocol):
