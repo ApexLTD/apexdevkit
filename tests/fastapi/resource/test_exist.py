@@ -1,12 +1,15 @@
+from typing import Any
+
 import pytest
 
 from apexdevkit.error import ExistsError
+from apexdevkit.fastapi.service import RestfulService
 from apexdevkit.testing import RestRequest, RestTransport
 from tests.fastapi.sample_api import FailingService, FakeApple
 
 
 @pytest.fixture
-def service() -> FailingService:
+def service() -> RestfulService[Any]:
     return FailingService(ExistsError)
 
 

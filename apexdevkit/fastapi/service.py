@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any
 
 from pypebbles import JsonDict
 
@@ -14,29 +14,10 @@ if TYPE_CHECKING:
     from apexdevkit.repository import Entity, Repository
 
 
-class NoService[T]:
-    def create_one(self, item: T) -> T:
-        raise NotImplementedError
-
-    def read_one(self, *, with_id: str) -> T:
-        raise NotImplementedError
-
-    def read_all(self) -> Iterable[T]:
-        raise NotImplementedError
-
-    def read_many(self, query: JsonDict) -> Iterable[T]:
-        raise NotImplementedError
-
-    def update_one(self, item: T) -> T:
-        raise NotImplementedError
-
-    def delete_one(self, with_id: str) -> T:
-        raise NotImplementedError
-
-
 @dataclass(frozen=True, kw_only=True)
 class RestfulResource[T]:
-    service: RestfulService[T] = field(default_factory=NoService)
+    service: RestfulService[T]
+
     formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
 
     def create_one(self, item: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -75,24 +56,24 @@ class RestfulResource[T]:
         self.service.delete_one(with_id=item_id)
 
 
-class RestfulService[T](Protocol):
+class RestfulService[T]:
     def create_one(self, item: T) -> T:
-        pass
+        raise NotImplementedError
 
     def read_one(self, *, with_id: str) -> T:
-        pass
+        raise NotImplementedError
 
     def read_all(self) -> Iterable[T]:
-        pass
+        raise NotImplementedError
 
     def read_many(self, query: JsonDict) -> Iterable[T]:
-        pass
+        raise NotImplementedError
 
     def update_one(self, item: T) -> T:
-        pass
+        raise NotImplementedError
 
     def delete_one(self, with_id: str) -> T:
-        pass
+        raise NotImplementedError
 
 
 @dataclass(frozen=True)

@@ -11,6 +11,7 @@ from pypebbles import JsonDict
 
 from apexdevkit.fastapi import FastApiBuilder, RestfulRouter
 from apexdevkit.fastapi.schema import SchemaFields
+from apexdevkit.fastapi.service import RestfulService
 from apexdevkit.repository import Entity
 from tests.fake import Fake
 
@@ -140,7 +141,7 @@ class AppleFormatter:
 
 
 @dataclass(frozen=True)
-class SuccessfulService:
+class SuccessfulService(RestfulService[Apple]):
     always_return: Apple
 
     log: MagicMock = field(default_factory=MagicMock)
@@ -182,15 +183,33 @@ class SuccessfulService:
 
 
 @dataclass(frozen=True)
-class FailingService:
+class FailingService(RestfulService[Any]):
     error: Exception | type[Exception]
 
-    def fail(self, *_: Any, **__: Any) -> Any:
+    def create_one(self, item: Any) -> Any:
+        _ = item
+
         raise self.error
 
-    create_one = fail
-    read_one = fail
-    read_many = fail
-    read_all = fail
-    update_one = fail
-    delete_one = fail
+    def read_one(self, *, with_id: str) -> Any:
+        _ = with_id
+
+        raise self.error
+
+    def read_all(self) -> Iterable[Any]:
+        raise self.error
+
+    def read_many(self, query: JsonDict) -> Iterable[Any]:
+        _ = query
+
+        raise self.error
+
+    def update_one(self, item: Any) -> Any:
+        _ = item
+
+        raise self.error
+
+    def delete_one(self, with_id: str) -> Any:
+        _ = with_id
+
+        raise self.error
