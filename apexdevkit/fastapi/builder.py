@@ -149,12 +149,12 @@ class RestfulApiBuilder[T](ABC):
 
         return self
 
+    def build(self) -> RestfulApi[T]:
+        return RestfulApi(service=self.service(), formatter=self.formatter)
+
     @abstractmethod
     def service(self) -> RestfulService[T]:
         pass
-
-    def build(self) -> RestfulApi[T]:
-        return RestfulApi(service=self.service(), formatter=self.formatter)
 
 
 @dataclass
