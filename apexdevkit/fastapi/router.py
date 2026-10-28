@@ -7,8 +7,8 @@ from fastapi import APIRouter, Depends, Path, Query
 from fastapi.responses import JSONResponse
 from pypebbles import FluentDict
 
+from apexdevkit.fastapi.endpoints import RestfulEndpoints
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.fastapi.resource import RestfulEndpoints
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.schema import RestfulSchema, Schema, SchemaFields
 from apexdevkit.fastapi.service import RestfulApi

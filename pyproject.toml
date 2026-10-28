@@ -31,7 +31,7 @@ pytest-env = "*"
 pytest-recording = "*"
 
 [tool.ruff.lint.per-file-ignores]
-"apexdevkit/fastapi/resource.py" = [ "N803" ]
+"apexdevkit/fastapi/endpoints.py" = [ "N803" ]
 "apexdevkit/fastapi/dependable.py" = [ "N806" ]
 
 [tool.ruff.lint.mccabe]
