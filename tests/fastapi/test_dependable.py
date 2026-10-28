@@ -1,3 +1,4 @@
+from typing import Any
 from unittest.mock import MagicMock
 
 from faker import Faker
@@ -17,7 +18,7 @@ _PARENT = RestfulName("apple")
 _CHILD = RestfulName("price")
 
 
-def _transport(using: Dependency) -> RestTransport:
+def _transport(using: Dependency[Any]) -> RestTransport:
     return RestTransport(
         resource=RestfulName("apple"),
         transport=Httpx(
@@ -29,7 +30,7 @@ def _transport(using: Dependency) -> RestTransport:
     )
 
 
-def _setup(using: Dependency) -> FastAPI:
+def _setup(using: Dependency[Any]) -> FastAPI:
     return (
         FastApiBuilder()
         .with_route(

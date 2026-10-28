@@ -50,23 +50,23 @@ class RouterWithHiddenUnderscoreRoutes(APIRouter):
 _Response = JSONResponse | dict[str, Any]
 
 
-class Dependency(Protocol):  # pragma: no cover
-    def as_dependable(self) -> type[RestfulApi]:
+class Dependency[T](Protocol):  # pragma: no cover
+    def as_dependable(self) -> type[RestfulApi[T]]:
         pass
 
 
 @dataclass
-class RestfulRouter:
+class RestfulRouter[T]:
     name: RestfulName
 
     parent: RestfulName | None = None
     router: APIRouter = field(default_factory=RouterWithHiddenUnderscoreRoutes)
 
     _schema: RestfulSchema = field(init=False)
-    _dependency: Dependency | None = field(init=False, default=None)
+    _dependency: Dependency[T] | None = field(init=False, default=None)
 
     @classmethod
-    def named(cls, singular: str, *, plural: str | None = None) -> "RestfulRouter":
+    def named(cls, singular: str, *, plural: str | None = None) -> "RestfulRouter[T]":
         if plural:
             return cls(RestfulName(singular, plural))
 
@@ -115,14 +115,14 @@ class RestfulRouter:
 
         return self
 
-    def with_default_dependency(self, value: Dependency) -> Self:
+    def with_default_dependency(self, value: Dependency[T]) -> Self:
         self._dependency = value
 
         return self
 
     def with_create_one(
         self,
-        dependency: Dependency | None = None,
+        dependency: Dependency[T] | None = None,
         *,
         is_documented: bool = True,
     ) -> Self:
@@ -147,7 +147,7 @@ class RestfulRouter:
 
     def with_read_one(
         self,
-        dependency: Dependency | None = None,
+        dependency: Dependency[T] | None = None,
         *,
         is_documented: bool = True,
     ) -> Self:
@@ -173,7 +173,7 @@ class RestfulRouter:
     def with_read_many(
         self,
         query: FluentDict[Any],
-        dependency: Dependency | None = None,
+        dependency: Dependency[T] | None = None,
         *,
         is_documented: bool = True,
     ) -> Self:
@@ -201,7 +201,7 @@ class RestfulRouter:
 
     def with_read_all(
         self,
-        dependency: Dependency | None = None,
+        dependency: Dependency[T] | None = None,
         *,
         is_documented: bool = True,
     ) -> Self:
@@ -222,7 +222,7 @@ class RestfulRouter:
 
     def with_update_one(
         self,
-        dependency: Dependency | None = None,
+        dependency: Dependency[T] | None = None,
         *,
         is_documented: bool = True,
     ) -> Self:
@@ -251,7 +251,7 @@ class RestfulRouter:
 
     def with_replace_one(
         self,
-        dependency: Dependency | None = None,
+        dependency: Dependency[T] | None = None,
         *,
         is_documented: bool = True,
     ) -> Self:
@@ -276,7 +276,7 @@ class RestfulRouter:
 
     def with_delete_one(
         self,
-        dependency: Dependency | None = None,
+        dependency: Dependency[T] | None = None,
         *,
         is_documented: bool = True,
     ) -> Self:
@@ -317,7 +317,7 @@ class RestfulRouter:
     def build(self) -> APIRouter:
         return self.router
 
-    def _resolve(self, dependency: Dependency | None) -> type[RestfulApi]:
+    def _resolve(self, dependency: Dependency[T] | None) -> type[RestfulApi[T]]:
         resolved = dependency or self._dependency
         assert resolved, "One of default or endpoint dependency must be specified"
 
