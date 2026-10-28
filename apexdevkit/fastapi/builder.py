@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Protocol, Self
 
@@ -10,12 +9,9 @@ from fastapi.responses import JSONResponse
 
 from apexdevkit.annotation import deprecated
 from apexdevkit.error import ApiError
-from apexdevkit.fastapi.dependable import DependableBuilder
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, MutableSet
-
-    from apexdevkit.fastapi.service import RestfulService
 
 
 @dataclass
@@ -57,7 +53,7 @@ class FastApiBuilder:
         for key, value in values.items():
             self.app.include_router(
                 value,
-                prefix=_Endpoint(key).normilized(),
+                prefix=_Endpoint(key).normalized(),
                 tags=value.tags or [key.title()],
             )
 
@@ -65,7 +61,7 @@ class FastApiBuilder:
 
     def with_mounted(self, **apps: FastAPI) -> Self:
         for path, app in apps.items():
-            self.app.mount(_Endpoint(path).normilized(), app)
+            self.app.mount(_Endpoint(path).normalized(), app)
 
         return self
 
@@ -125,43 +121,12 @@ class CORSApplicator:
         )
 
 
-@dataclass
-class RestfulServiceBuilder(ABC):
-    parent_id: str = field(init=False)
-    user: Any = field(init=False)
-
-    def as_dependable(self) -> DependableBuilder:
-        return DependableBuilder.from_builder(self)
-
-    def with_user(self, user: Any) -> RestfulServiceBuilder:
-        self.user = user
-
-        return self
-
-    def with_parent(self, identity: str) -> RestfulServiceBuilder:
-        self.parent_id = identity
-
-        return self
-
-    @abstractmethod
-    def build(self) -> RestfulService:  # pragma: no cover
-        pass
-
-
-@dataclass
-class PreBuilt(RestfulServiceBuilder):  # pragma: no cover
-    service: RestfulService
-
-    def build(self) -> RestfulService:
-        return self.service
-
-
 @dataclass(frozen=True)
 class _Endpoint:
     raw: str
 
-    def normilized(self) -> str:
+    def normalized(self) -> str:
         return f"/{self.raw.replace('_', '-')}"
 
     def __str__(self) -> str:  # pragma: no cover
-        return self.normilized()
+        return self.normalized()

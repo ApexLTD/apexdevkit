@@ -127,9 +127,10 @@ class ResponseProbe:
         return self.with_item(value)
 
     def with_item(self, value: Any) -> Self:
-        assert self.response.item() == value, self.response.raw
+        if self.response.item() == value:
+            return self
 
-        return self
+        raise AssertionError("expected=", self.response.item(), "actual=", value)
 
     def and_collection(self, values: Collection[Any]) -> Self:
         return self.with_collection(values)

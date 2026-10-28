@@ -1,12 +1,13 @@
+from typing import Any
 from uuid import uuid4
 
 import pytest
 from pypebbles import JsonDict
 
 from apexdevkit.error import DoesNotExistError
+from apexdevkit.fastapi.service import RestfulService
 from apexdevkit.testing import RestRequest, RestTransport
-
-from ..sample_api import FailingService, FakeApple
+from tests.fastapi.sample_api import FailingService, FakeApple
 
 
 @pytest.fixture
@@ -15,7 +16,7 @@ def apple() -> JsonDict:
 
 
 @pytest.fixture
-def service() -> FailingService:
+def service() -> RestfulService[Any]:
     return FailingService(DoesNotExistError)
 
 

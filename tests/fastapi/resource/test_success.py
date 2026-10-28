@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from unittest import mock
+from unittest.mock import ANY
 from uuid import uuid4
 
 import pytest
@@ -9,61 +10,58 @@ from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.testing import RestRequest, RestTransport
 from tests.fastapi.sample_api import FakeApple, SuccessfulService
 
-if TYPE_CHECKING:
-    from pypebbles import JsonDict
+
+@pytest.fixture
+def apple() -> FakeApple:
+    return FakeApple()
 
 
 @pytest.fixture
-def apple() -> JsonDict:
-    return FakeApple().json()
-
-
-@pytest.fixture
-def service(apple: JsonDict) -> SuccessfulService:
-    return SuccessfulService(always_return=apple)
+def service(apple: FakeApple) -> SuccessfulService:
+    return SuccessfulService(always_return=apple.entity())
 
 
 def test_should_create(
     transport: RestTransport,
-    apple: JsonDict,
+    apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
     (
         RestRequest()
-        .with_data(apple)
+        .with_data(apple.json())
         .using(transport)
         .create()
         .ensure(http_code=201)
         .and_api_success()
         .with_code(201)
-        .and_item(apple)
+        .and_item(apple.json().with_a(id=ANY))
     )
 
-    assert service.called_with == apple.drop("id")
+    service.log.assert_called_once_with(create_one=apple.entity(id=ANY))
 
 
 def test_should_read_one(
     transport: RestTransport,
-    apple: JsonDict,
+    apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
     (
         RestRequest()
-        .item(with_id=apple.value_of("id").to(str))
+        .item(with_id=apple.entity().id)
         .using(transport)
         .read()
         .ensure(http_code=200)
         .and_api_success()
         .with_code(200)
-        .and_item(apple)
+        .and_item(apple.json().with_a(id=ANY))
     )
 
-    assert service.called_with == apple.value_of("id").to(str)
+    service.log.assert_called_once_with(read_one=apple.entity().id)
 
 
 def test_should_read_many(
     transport: RestTransport,
-    apple: JsonDict,
+    apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
     (
@@ -74,15 +72,15 @@ def test_should_read_many(
         .ensure(http_code=200)
         .and_api_success()
         .with_code(200)
-        .and_collection([apple])
+        .and_collection([apple.json().with_a(id=ANY)])
     )
 
-    assert service.called_with == {"color": "red"}
+    service.log.assert_called_once_with(read_many={"color": "red"})
 
 
 def test_should_read_all(
     transport: RestTransport,
-    apple: JsonDict,
+    apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
     (
@@ -92,21 +90,21 @@ def test_should_read_all(
         .ensure(http_code=200)
         .and_api_success()
         .with_code(200)
-        .and_collection([apple])
+        .and_collection([apple.json().with_a(id=ANY)])
     )
 
-    assert service.called_with == {"color": None}
+    service.log.assert_called_once_with(read_many={"color": None})
 
 
 def test_should_update_one(
     transport: RestTransport,
-    apple: JsonDict,
+    apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
     (
         RestRequest()
-        .item(with_id=apple.value_of("id"))
-        .with_data(apple)
+        .item(with_id=apple.entity().id)
+        .with_data(apple.json())
         .using(transport)
         .update()
         .ensure(http_code=200)
@@ -114,17 +112,22 @@ def test_should_update_one(
         .with_code(200)
     )
 
-    assert service.called_with == (apple["id"], apple.drop("id").drop("color"))
+    service.log.assert_has_calls(
+        [
+            mock.call(read_one=apple.entity().id),
+            mock.call(update_one=apple.entity(id=ANY)),
+        ]
+    )
 
 
 def test_should_replace_one(
     transport: RestTransport,
-    apple: JsonDict,
+    apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
     (
         RestRequest()
-        .with_data(apple)
+        .with_data(apple.json())
         .using(transport)
         .replace()
         .ensure(http_code=200)
@@ -132,17 +135,19 @@ def test_should_replace_one(
         .with_code(200)
     )
 
-    assert service.called_with == apple
+    service.log.assert_called_once_with(
+        update_one=apple.entity(id=apple.json().get("id"))
+    )
 
 
 def test_should_delete_one(
     transport: RestTransport,
-    apple: JsonDict,
+    apple: FakeApple,
     service: SuccessfulService,
 ) -> None:
     (
         RestRequest()
-        .item(with_id=apple.value_of("id"))
+        .item(with_id=apple.entity().id)
         .using(transport)
         .delete()
         .ensure(http_code=200)
@@ -150,7 +155,7 @@ def test_should_delete_one(
         .with_code(200)
     )
 
-    assert service.called_with == apple["id"]
+    service.log.assert_called_once_with(delete_one=apple.entity().id)
 
 
 def test_should_sub_resource(transport: RestTransport) -> None:

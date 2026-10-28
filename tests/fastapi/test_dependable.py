@@ -1,3 +1,4 @@
+from typing import Any
 from unittest.mock import MagicMock
 
 from faker import Faker
@@ -6,7 +7,11 @@ from fastapi.testclient import TestClient
 from pypebbles.http.drivers import Httpx
 
 from apexdevkit.error import DoesNotExistError
-from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
+from apexdevkit.fastapi import (
+    FastApiBuilder,
+    RestfulResource,
+    RestfulRouter,
+)
 from apexdevkit.fastapi.dependable import DependableBuilder
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.router import Dependency
@@ -17,7 +22,7 @@ _PARENT = RestfulName("apple")
 _CHILD = RestfulName("price")
 
 
-def _transport(using: Dependency) -> RestTransport:
+def _transport(using: Dependency[Any]) -> RestTransport:
     return RestTransport(
         resource=RestfulName("apple"),
         transport=Httpx(
@@ -29,7 +34,7 @@ def _transport(using: Dependency) -> RestTransport:
     )
 
 
-def _setup(using: Dependency) -> FastAPI:
+def _setup(using: Dependency[Any]) -> FastAPI:
     return (
         FastApiBuilder()
         .with_route(
@@ -57,7 +62,7 @@ def _setup(using: Dependency) -> FastAPI:
 
 def test_should_build_dependable_with_user(faker: Faker) -> None:
     user = faker.name()
-    builder = MagicMock(spec=RestfulServiceBuilder)
+    builder = MagicMock(spec=RestfulResource.Builder)
     dependency = DependableBuilder.from_builder(builder).with_user(lambda: user)
 
     RestRequest().using(_transport(dependency)).read()
@@ -68,7 +73,7 @@ def test_should_build_dependable_with_user(faker: Faker) -> None:
 
 def test_should_build_dependable_with_parent(faker: Faker) -> None:
     parent_id = str(faker.uuid4())
-    builder = MagicMock(spec=RestfulServiceBuilder)
+    builder = MagicMock(spec=RestfulResource.Builder)
     dependency = DependableBuilder.from_builder(builder).with_parent(_PARENT)
 
     (
@@ -87,7 +92,7 @@ def test_should_build_dependable_with_parent(faker: Faker) -> None:
 
 def test_should_not_build_dependable_when_no_parent(faker: Faker) -> None:
     parent_id = str(faker.uuid4())
-    builder = MagicMock(spec=RestfulServiceBuilder)
+    builder = MagicMock(spec=RestfulResource.Builder)
     builder.with_parent.side_effect = DoesNotExistError(parent_id)
 
     dependency = DependableBuilder.from_builder(builder).with_parent(_PARENT)

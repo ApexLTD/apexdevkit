@@ -1,6 +1,6 @@
 [project]
 name = "apexdevkit"
-version = "2.2.1"
+version = "2.3.0"
 description = "Apex Development Tools for python."
 readme = "README.md"
 authors = [
@@ -31,7 +31,7 @@ pytest-env = "*"
 pytest-recording = "*"
 
 [tool.ruff.lint.per-file-ignores]
-"apexdevkit/fastapi/resource.py" = [ "N803" ]
+"apexdevkit/fastapi/endpoints.py" = [ "N803" ]
 "apexdevkit/fastapi/dependable.py" = [ "N806" ]
 
 [tool.ruff.lint.mccabe]
@@ -80,7 +80,7 @@ ignore = [
 [tool.mypy]
 exclude = [
     "apexdevkit/fastapi/dependable.py",
-    "apexdevkit/fastapi/resource.py",
+    "apexdevkit/fastapi/endpoints.py",
     "apexdevkit/fastapi/schema.py",
 ]
 ignore_missing_imports = true

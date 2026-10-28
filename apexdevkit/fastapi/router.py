@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Annotated, Any, Protocol, Self
@@ -7,11 +7,13 @@ from fastapi import APIRouter, Depends, Path, Query
 from fastapi.responses import JSONResponse
 from pypebbles import FluentDict
 
+from apexdevkit.fastapi.endpoints import RestfulEndpoints
 from apexdevkit.fastapi.name import RestfulName
-from apexdevkit.fastapi.resource import RestfulResource
 from apexdevkit.fastapi.response import RestfulResponse
 from apexdevkit.fastapi.schema import RestfulSchema, Schema, SchemaFields
-from apexdevkit.fastapi.service import RawItem, RestfulService
+from apexdevkit.fastapi.service import RestfulResource
+
+RawItem = Mapping[str, Any]
 
 
 class RouterWithHiddenUnderscoreRoutes(APIRouter):
@@ -48,23 +50,23 @@ class RouterWithHiddenUnderscoreRoutes(APIRouter):
 _Response = JSONResponse | dict[str, Any]
 
 
-class Dependency(Protocol):  # pragma: no cover
-    def as_dependable(self) -> type[RestfulService]:
+class Dependency[T](Protocol):  # pragma: no cover
+    def as_dependable(self) -> type[RestfulResource[T]]:
         pass
 
 
 @dataclass
-class RestfulRouter:
+class RestfulRouter[T]:
     name: RestfulName
 
     parent: RestfulName | None = None
     router: APIRouter = field(default_factory=RouterWithHiddenUnderscoreRoutes)
 
     _schema: RestfulSchema = field(init=False)
-    _dependency: Dependency | None = field(init=False, default=None)
+    _dependency: Dependency[T] | None = field(init=False, default=None)
 
     @classmethod
-    def named(cls, singular: str, *, plural: str | None = None) -> "RestfulRouter":
+    def named(cls, singular: str, *, plural: str | None = None) -> "RestfulRouter[T]":
         if plural:
             return cls(RestfulName(singular, plural))
 
@@ -79,8 +81,8 @@ class RestfulRouter:
         return self
 
     @property
-    def resource(self) -> RestfulResource:
-        return RestfulResource(RestfulResponse(self.name))
+    def endpoints(self) -> RestfulEndpoints:
+        return RestfulEndpoints(RestfulResponse(self.name))
 
     @property
     def id_alias(self) -> str:
@@ -113,20 +115,20 @@ class RestfulRouter:
 
         return self
 
-    def with_default_dependency(self, value: Dependency) -> Self:
+    def with_default_dependency(self, value: Dependency[T]) -> Self:
         self._dependency = value
 
         return self
 
     def with_create_one(
         self,
-        dependency: Dependency | None = None,
+        dependency: Dependency[T] | None = None,
         *,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "",
-            self.resource.create_one_endpoint(
+            self.endpoints.create_one_endpoint(
                 Service=self._resolve(dependency),
                 Item=Annotated[
                     RawItem,
@@ -145,13 +147,13 @@ class RestfulRouter:
 
     def with_read_one(
         self,
-        dependency: Dependency | None = None,
+        dependency: Dependency[T] | None = None,
         *,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
-            self.resource.read_one_endpoint(
+            self.endpoints.read_one_endpoint(
                 Service=self._resolve(dependency),
                 ItemId=Annotated[
                     str,
@@ -171,13 +173,13 @@ class RestfulRouter:
     def with_read_many(
         self,
         query: FluentDict[Any],
-        dependency: Dependency | None = None,
+        dependency: Dependency[T] | None = None,
         *,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "",
-            self.resource.read_many_endpoint(
+            self.endpoints.read_many_endpoint(
                 Service=self._resolve(dependency),
                 QueryParams=Annotated[
                     Schema(self.name.singular).optional_schema_for(
@@ -199,13 +201,13 @@ class RestfulRouter:
 
     def with_read_all(
         self,
-        dependency: Dependency | None = None,
+        dependency: Dependency[T] | None = None,
         *,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "",
-            self.resource.read_all_endpoint(
+            self.endpoints.read_all_endpoint(
                 Service=self._resolve(dependency),
             ),
             methods=["GET"],
@@ -220,13 +222,13 @@ class RestfulRouter:
 
     def with_update_one(
         self,
-        dependency: Dependency | None = None,
+        dependency: Dependency[T] | None = None,
         *,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
-            self.resource.update_one_endpoint(
+            self.endpoints.update_one_endpoint(
                 Service=self._resolve(dependency),
                 ItemId=Annotated[
                     str,
@@ -249,13 +251,13 @@ class RestfulRouter:
 
     def with_replace_one(
         self,
-        dependency: Dependency | None = None,
+        dependency: Dependency[T] | None = None,
         *,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             "",
-            self.resource.replace_one_endpoint(
+            self.endpoints.replace_one_endpoint(
                 Service=self._resolve(dependency),
                 Item=Annotated[
                     RawItem,
@@ -274,13 +276,13 @@ class RestfulRouter:
 
     def with_delete_one(
         self,
-        dependency: Dependency | None = None,
+        dependency: Dependency[T] | None = None,
         *,
         is_documented: bool = True,
     ) -> Self:
         self.router.add_api_route(
             self.item_path,
-            self.resource.delete_one_endpoint(
+            self.endpoints.delete_one_endpoint(
                 Service=self._resolve(dependency),
                 ItemId=Annotated[
                     str,
@@ -315,7 +317,7 @@ class RestfulRouter:
     def build(self) -> APIRouter:
         return self.router
 
-    def _resolve(self, dependency: Dependency | None) -> type[RestfulService]:
+    def _resolve(self, dependency: Dependency[T] | None) -> type[RestfulResource[T]]:
         resolved = dependency or self._dependency
         assert resolved, "One of default or endpoint dependency must be specified"
 

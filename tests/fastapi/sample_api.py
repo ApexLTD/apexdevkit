@@ -1,25 +1,23 @@
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import Enum
 from functools import cached_property
 from typing import TYPE_CHECKING, Any
+from unittest.mock import MagicMock
 
 from pypebbles import JsonDict
 
-from apexdevkit.fastapi import FastApiBuilder, RestfulRouter, RestfulServiceBuilder
+from apexdevkit.fastapi import FastApiBuilder, RestfulRouter
 from apexdevkit.fastapi.schema import SchemaFields
-from apexdevkit.fastapi.service import (
-    RawCollection,
-    RawItem,
-    RestfulService,
-)
-from apexdevkit.query import Filter
-from apexdevkit.query.query import Operator, Page, Sort
-from tests.fake import FakeResource
+from apexdevkit.fastapi.service import RestfulService
+from apexdevkit.repository import Entity
+from tests.fake import Fake
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Mapping
+
     from fastapi import FastAPI
 
     from apexdevkit.fastapi.dependable import DependableBuilder
@@ -55,31 +53,6 @@ def setup(dependency: DependableBuilder) -> FastAPI:
     )
 
 
-@dataclass
-class FailingService(RestfulServiceBuilder, RestfulService):
-    error: Exception | type[Exception]
-
-    def fail(self, *_: Any, **__: Any) -> Any:
-        raise self.error
-
-    def build(self) -> RestfulService:
-        return self
-
-    create_one = fail
-    create_many = fail
-    read_one = fail
-    filter_with = fail
-    aggregation_with = fail
-    sum_with = fail
-    read_many = fail
-    read_all = fail
-    update_one = fail
-    update_many = fail
-    replace_one = fail
-    replace_many = fail
-    delete_one = fail
-
-
 class Color(Enum):
     red = "RED"
     gold = "GOLD"
@@ -96,8 +69,7 @@ class Name:
 
 
 @dataclass(frozen=True)
-class Apple:
-    id: str
+class Apple(Entity):
     name: Name
     color: Color
 
@@ -112,21 +84,7 @@ class AppleFields(SchemaFields):
         )
 
     def editable(self) -> JsonDict:
-        return JsonDict().with_a(
-            name=JsonDict().with_a(common=str).and_a(scientific=str)
-        )
-
-    def filters(self) -> JsonDict:
-        return (
-            JsonDict()
-            .with_a(filter=Filter | None)
-            .and_a(condition=Operator | None)
-            .and_a(ordering=list[Sort])
-            .and_a(paging=Page)
-        )
-
-    def aggregation_filters(self) -> JsonDict:
-        return JsonDict().with_a(is_rotten=bool)
+        return self.readable().select("name")
 
 
 class PriceFields(SchemaFields):
@@ -135,55 +93,123 @@ class PriceFields(SchemaFields):
 
 
 @dataclass(frozen=True)
-class FakeApple(FakeResource[Apple]):
-    id: str | None = None
-    name: Name | None = None
-    item_type: type[Apple] = field(default=Apple)
+class FakeApple:
+    fake: Fake = field(default_factory=Fake)
 
     @cached_property
     def _raw(self) -> dict[str, Any]:
         return {
-            "id": self.id or self.fake.uuid(),
-            "name": self._name(),
+            "id": self.fake.uuid(),
+            "name": {
+                "scientific": self.fake.text(length=10),
+                "common": self.fake.text(length=10),
+            },
             "color": random.choice(list(Color)).value,
         }
 
-    def _name(self) -> dict[str, Any]:
-        name = self.name or Name(self.fake.text(length=10), self.fake.text(length=10))
-        return {"scientific": name.scientific, "common": name.common}
+    def unknown_id(self) -> str:
+        return self.fake.text(length=32)
+
+    def json(self) -> JsonDict:
+        return JsonDict(self._raw)
+
+    def entity(self, **fields: Any) -> Apple:
+        return AppleFormatter().load(self.json().merge(JsonDict(fields)))
 
 
-@dataclass
-class SuccessfulService(RestfulServiceBuilder, RestfulService):
-    always_return: JsonDict
-    called_with: Any | None = None
+class AppleFormatter:
+    def load(self, source: Mapping[str, Any]) -> Apple:
+        result = Apple(
+            name=Name(
+                common=source["name"]["common"],
+                scientific=source["name"]["scientific"],
+            ),
+            color=Color(source["color"]),
+        )
 
-    def build(self) -> RestfulService:
-        return self
+        return replace(result, id=source.get("id", result.id))
 
-    def create_one(self, item: RawItem) -> RawItem:
-        self.called_with = item
+    def dump(self, target: Apple) -> Mapping[str, Any]:
+        return {
+            "id": target.id,
+            "name": {
+                "scientific": target.name.scientific,
+                "common": target.name.common,
+            },
+            "color": target.color.value,
+        }
+
+
+@dataclass(frozen=True)
+class SuccessfulService(RestfulService[Apple]):
+    always_return: Apple
+
+    log: MagicMock = field(default_factory=MagicMock)
+
+    def create_one(self, item: Apple) -> Apple:
+        self.log(create_one=item)
+
         return self.always_return
 
-    def read_one(self, item_id: str) -> RawItem:
-        self.called_with = item_id
+    def read_one(self, with_id: str) -> Apple:
+        self.log(read_one=with_id)
+
         return self.always_return
 
-    def read_many(self, **params: Any) -> RawCollection:
-        self.called_with = params
+    def read_many(self, query: JsonDict) -> Iterable[Apple]:
+        self.log(read_many=query)
+
         return [self.always_return]
 
-    def read_all(self) -> RawCollection:
-        self.called_with = None
+    def read_all(self) -> Iterable[Apple]:
+        self.log(read_all=None)
+
         return [self.always_return]
 
-    def update_one(self, item_id: str, **with_fields: Any) -> RawItem:
-        self.called_with = (item_id, with_fields)
+    def update_one(self, item: Apple) -> Apple:
+        self.log(update_one=item)
+
         return self.always_return
 
-    def replace_one(self, item: RawItem) -> RawItem:
-        self.called_with = item
+    def replace_one(self, item: Apple) -> Apple:
+        self.log(replace_one=item)
+
         return self.always_return
 
-    def delete_one(self, item_id: str) -> None:
-        self.called_with = item_id
+    def delete_one(self, with_id: str) -> Apple:
+        self.log(delete_one=with_id)
+
+        return self.always_return
+
+
+@dataclass(frozen=True)
+class FailingService(RestfulService[Any]):
+    error: Exception | type[Exception]
+
+    def create_one(self, item: Any) -> Any:
+        _ = item
+
+        raise self.error
+
+    def read_one(self, *, with_id: str) -> Any:
+        _ = with_id
+
+        raise self.error
+
+    def read_all(self) -> Iterable[Any]:
+        raise self.error
+
+    def read_many(self, query: JsonDict) -> Iterable[Any]:
+        _ = query
+
+        raise self.error
+
+    def update_one(self, item: Any) -> Any:
+        _ = item
+
+        raise self.error
+
+    def delete_one(self, with_id: str) -> Any:
+        _ = with_id
+
+        raise self.error

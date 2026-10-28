@@ -3,19 +3,11 @@ from dataclasses import dataclass
 from typing import Annotated, Any, Protocol
 
 from fastapi import Depends, Path
-from fastapi.requests import Request
 
 from apexdevkit.error import ApiError, DoesNotExistError, ForbiddenError
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.response import RestfulResponse
-from apexdevkit.fastapi.service import RestfulService
-
-
-def inject(dependency: str) -> Any:  # pragma: no cover
-    def get(request: Request) -> Any:
-        return getattr(request.app.state, dependency)
-
-    return Depends(get)
+from apexdevkit.fastapi.service import RestfulResource
 
 
 class _ServiceBuilder(Protocol):
@@ -25,7 +17,7 @@ class _ServiceBuilder(Protocol):
     def with_parent(self, identity: str) -> "_ServiceBuilder":
         pass
 
-    def build(self) -> RestfulService:  # pragma: no cover
+    def build(self) -> RestfulResource:  # pragma: no cover
         pass
 
 
@@ -38,10 +30,10 @@ class _Dependency(Protocol):
 class ServiceDependency:
     dependency: _Dependency
 
-    def as_dependable(self) -> type[RestfulService]:
+    def as_dependable(self) -> type[RestfulResource]:
         Builder = self.dependency.as_dependable()
 
-        def _(builder: Builder) -> RestfulService:
+        def _(builder: Builder) -> RestfulResource:
             try:
                 return builder.build()
             except ForbiddenError as e:
@@ -49,7 +41,7 @@ class ServiceDependency:
                     403, RestfulResponse(RestfulName("unknown")).forbidden(e)
                 ) from e
 
-        return Annotated[RestfulService, Depends(_)]
+        return Annotated[RestfulResource, Depends(_)]
 
 
 @dataclass(frozen=True)
@@ -119,5 +111,5 @@ class DependableBuilder:
     def with_user(self, extract_user: Callable[..., Any]) -> "DependableBuilder":
         return DependableBuilder(UserDependency(extract_user, self.dependency))
 
-    def as_dependable(self) -> type[RestfulService]:
+    def as_dependable(self) -> type[RestfulResource]:
         return ServiceDependency(self.dependency).as_dependable()

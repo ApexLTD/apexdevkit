@@ -1,6 +1,6 @@
 from typing import Any
 
-from starlette.testclient import TestClient
+from fastapi.testclient import TestClient
 
 from apexdevkit.fastapi import FastApiBuilder
 

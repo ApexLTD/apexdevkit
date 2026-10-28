@@ -12,7 +12,7 @@ _Endpoint = Callable[..., _Response]
 
 
 @dataclass(frozen=True)
-class RestfulResource:
+class RestfulEndpoints:
     response: RestfulResponse
 
     def create_one_endpoint(self, Service, Item) -> _Endpoint:
