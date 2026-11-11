@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from unittest.mock import ANY
+from uuid import uuid4
 
 from apexdevkit.formatter import DataclassFormatter, ListFormatter
+from apexdevkit.repository.core import Entity
 
 
 @dataclass
@@ -11,8 +14,8 @@ class Name:
     ordering: int
 
 
-@dataclass
-class SampleDataclass:
+@dataclass(frozen=True)
+class SampleDataclass(Entity):
     name: Name
     field: int
 
@@ -55,8 +58,18 @@ def test_should_dump() -> None:
     assert result == {
         "name": "a",
         "field": 1,
-        "sample": {"name": {"name": "b", "ordering": 1}, "field": 2},
-        "other_sample": {"name": {"name": "c", "ordering": 1}, "field": 3},
+        "sample": {
+            "id": ANY,
+            "idempotency_id": None,
+            "name": {"name": "b", "ordering": 1},
+            "field": 2,
+        },
+        "other_sample": {
+            "id": ANY,
+            "idempotency_id": None,
+            "name": {"name": "c", "ordering": 1},
+            "field": 3,
+        },
     }
 
 
@@ -65,16 +78,26 @@ def test_should_load() -> None:
         {
             "name": "a",
             "field": 1,
-            "sample": {"name": {"name": "b", "ordering": 1}, "field": 2},
-            "other_sample": {"name": {"name": "c", "ordering": 1}, "field": 3},
+            "sample": {
+                "id": uuid4(),
+                "idempotency_id": None,
+                "name": {"name": "b", "ordering": 1},
+                "field": 2,
+            },
+            "other_sample": {
+                "id": uuid4(),
+                "idempotency_id": None,
+                "name": {"name": "c", "ordering": 1},
+                "field": 3,
+            },
         }
     )
 
     assert result == NestedDataclass(
         name="a",
         field=1,
-        sample=SampleDataclass(name=Name("b", 1), field=2),
-        other_sample=SampleDataclass(name=Name("c", 1), field=3),
+        sample=SampleDataclass(id=ANY, name=Name("b", 1), field=2),
+        other_sample=SampleDataclass(id=ANY, name=Name("c", 1), field=3),
     )
 
 
@@ -106,8 +129,18 @@ def test_should_retain_dumped_integrity() -> None:
     assert dumped == {
         "name": "a",
         "field": 1,
-        "sample": {"name": {"name": "b", "ordering": 1}, "field": 2},
-        "other_sample": {"name": {"name": "c", "ordering": 1}, "field": 3},
+        "sample": {
+            "id": ANY,
+            "idempotency_id": None,
+            "name": {"name": "b", "ordering": 1},
+            "field": 2,
+        },
+        "other_sample": {
+            "id": ANY,
+            "idempotency_id": None,
+            "name": {"name": "c", "ordering": 1},
+            "field": 3,
+        },
     }
 
 
@@ -118,8 +151,18 @@ def test_should_retain_loaded_integrity() -> None:
         {
             "name": "a",
             "field": 1,
-            "sample": {"name": {"name": "b", "ordering": 1}, "field": 2},
-            "other_sample": {"name": {"name": "c", "ordering": 1}, "field": 3},
+            "sample": {
+                "id": uuid4(),
+                "idempotency_id": None,
+                "name": {"name": "b", "ordering": 1},
+                "field": 2,
+            },
+            "other_sample": {
+                "id": uuid4(),
+                "idempotency_id": None,
+                "name": {"name": "c", "ordering": 1},
+                "field": 3,
+            },
         }
     )
     formatter.dump(loaded)
@@ -127,8 +170,8 @@ def test_should_retain_loaded_integrity() -> None:
     assert loaded == NestedDataclass(
         name="a",
         field=1,
-        sample=SampleDataclass(name=Name("b", 1), field=2),
-        other_sample=SampleDataclass(name=Name("c", 1), field=3),
+        sample=SampleDataclass(id=ANY, name=Name("b", 1), field=2),
+        other_sample=SampleDataclass(id=ANY, name=Name("c", 1), field=3),
     )
 
 
@@ -167,7 +210,14 @@ def test_should_load_with_list() -> None:
         {
             "name": "a",
             "field": 1,
-            "samples": [{"name": {"name": "b", "ordering": 1}, "field": 1}],
+            "samples": [
+                {
+                    "id": uuid4(),
+                    "idempotency_id": None,
+                    "name": {"name": "b", "ordering": 1},
+                    "field": 1,
+                }
+            ],
             "primitives": [1],
             "map": {"0": "0"},
         }
@@ -176,7 +226,7 @@ def test_should_load_with_list() -> None:
     assert result == NestedListDataclass(
         name="a",
         field=1,
-        samples=[SampleDataclass(name=Name("b", 1), field=1)],
+        samples=[SampleDataclass(id=ANY, name=Name("b", 1), field=1)],
         primitives=[1],
         map={"0": "0"},
     )
@@ -190,7 +240,14 @@ def test_should_load_nested_formatter_with_list() -> None:
             {
                 "name": "a",
                 "field": 1,
-                "samples": [{"name": {"name": "b", "ordering": 1}, "field": 1}],
+                "samples": [
+                    {
+                        "id": uuid4(),
+                        "idempotency_id": None,
+                        "name": {"name": "b", "ordering": 1},
+                        "field": 1,
+                    }
+                ],
                 "primitives": [1],
                 "map": {"0": "0"},
             }
@@ -200,7 +257,7 @@ def test_should_load_nested_formatter_with_list() -> None:
     assert result == NestedListDataclass(
         name="a",
         field=1,
-        samples=[SampleDataclass(name=Name("b", 1), field=1)],
+        samples=[SampleDataclass(id=ANY, name=Name("b", 1), field=1)],
         primitives=[1],
         map={"0": "0"},
     )
@@ -218,4 +275,28 @@ def test_should_assign_default_to_nonexistent_keys() -> None:
         count=3,
         sample=None,
         samples=[],
+    )
+
+
+@dataclass(frozen=True)
+class InheritedDataclass(SampleDataclass):
+    other: int
+
+
+def test_should_load_inherited_dataclass() -> None:
+    result = DataclassFormatter(InheritedDataclass).load(
+        {
+            "id": uuid4(),
+            "idempotency_id": None,
+            "name": {"name": "b", "ordering": 1},
+            "field": 1,
+            "other": 0,
+        }
+    )
+
+    assert result == InheritedDataclass(
+        id=ANY,
+        name=Name("b", 1),
+        field=1,
+        other=0,
     )
