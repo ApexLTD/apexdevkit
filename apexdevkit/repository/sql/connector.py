@@ -42,6 +42,7 @@ class MsSqlConnector:
         return MsSqlConnectionAdapter(
             pymssql.connect(
                 server=self.db_host,
+                port=self.db_port,
                 user=self.db_user,
                 password=self.db_password,
                 database=self.db_name,
