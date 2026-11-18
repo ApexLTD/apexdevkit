@@ -1,12 +1,12 @@
 [project]
 name = "apexdevkit"
-version = "2.3.3"
+version = "2.4.0"
 description = "Apex Development Tools for python."
 readme = "README.md"
 authors = [
     { name = "Apex Dev", email = "dev@apex.ge" },
 ]
-requires-python = ">=3.12,<4"
+requires-python = ">=3.13,<4"
 dynamic = [
     "dependencies",
 ]
@@ -15,18 +15,16 @@ dynamic = [
 fastapi = "*"
 pydantic = "*"
 pymssql = "2.*"
-pypebbles = "0.4.*"
+pypebbles = "0.5.*"
 python-dotenv = "*"
 sentry-sdk = { extras = [ "fastapi" ], version = "*" }
 uvicorn = "*"
 
 [tool.poetry.group.dev.dependencies]
 apexcodexpy = "0.8.*"
-coverage = "*"
 faker = "*"
 pytest = "*"
-pytest-approvaltests = "*"
-pytest-cov = "*"
+pytest-apex = "0.2.*"
 pytest-env = "*"
 pytest-recording = "*"
 
