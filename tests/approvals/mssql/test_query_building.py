@@ -23,7 +23,7 @@ def test_filter_query(approve: ApprovalCase) -> None:
 
 
 def test_filter_payload(approve: ApprovalCase) -> None:
-    approve.json().mapping(_Target().filter_query().payload)
+    approve.json().mapping({"payload": _Target().filter_query().payload})
 
 
 def test_aggregate_query(approve: ApprovalCase) -> None:
@@ -31,7 +31,7 @@ def test_aggregate_query(approve: ApprovalCase) -> None:
 
 
 def test_aggregate_payload(approve: ApprovalCase) -> None:
-    approve.json().mapping(_Target().aggregation_query().payload)
+    approve.json().mapping({"payload": _Target().aggregation_query().payload})
 
 
 @dataclass(frozen=True)
