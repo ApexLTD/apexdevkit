@@ -1,9 +1,9 @@
 import pytest
+from pytest_apex import ApprovalCase
 
 from apexdevkit.formatter import AliasFormatter, AliasMapping, DataclassFormatter
 from apexdevkit.repository.sql.field import SqlFieldBuilder
 from apexdevkit.repository.sql.mssql import MsSqlTableBuilder, SqlTable
-from tests.approvals.conftest import Approver
 from tests.approvals.repository.conftest import Apple
 
 _FORMATTER = AliasFormatter(
@@ -48,51 +48,51 @@ def table() -> SqlTable[Apple]:
     )
 
 
-def test_should_count(approver: Approver, table: SqlTable[Apple]) -> None:
-    approver.verify_sql("count", str(table.count_all()))
+def test_should_count(approve: ApprovalCase, table: SqlTable[Apple]) -> None:
+    approve.sql().compact(str(table.count_all()))
 
 
 def test_should_insert(
-    approver: Approver,
+    approve: ApprovalCase,
     table: SqlTable[Apple],
     apple: Apple,
 ) -> None:
-    approver.verify_sql("insert", str(table.insert(apple)))
+    approve.sql().compact(str(table.insert(apple)))
 
 
 def test_should_select(
-    approver: Approver,
+    approve: ApprovalCase,
     table: SqlTable[Apple],
     apple: Apple,
 ) -> None:
-    approver.verify_sql("select", str(table.select(apple.id)))
+    approve.sql().compact(str(table.select(apple.id)))
 
 
 def test_should_select_all(
-    approver: Approver,
+    approve: ApprovalCase,
     table: SqlTable[Apple],
 ) -> None:
-    approver.verify_sql("select_all", str(table.select_all()))
+    approve.sql().compact(str(table.select_all()))
 
 
 def test_should_update(
-    approver: Approver,
+    approve: ApprovalCase,
     table: SqlTable[Apple],
     apple: Apple,
 ) -> None:
-    approver.verify_sql("update", str(table.update(apple)))
+    approve.sql().compact(str(table.update(apple)))
 
 
 def test_should_delete(
-    approver: Approver,
+    approve: ApprovalCase,
     table: SqlTable[Apple],
     apple: Apple,
 ) -> None:
-    approver.verify_sql("delete", str(table.delete(apple.id)))
+    approve.sql().compact(str(table.delete(apple.id)))
 
 
 def test_should_delete_all(
-    approver: Approver,
+    approve: ApprovalCase,
     table: SqlTable[Apple],
 ) -> None:
-    approver.verify_sql("delete_all", str(table.delete_all()))
+    approve.sql().compact(str(table.delete_all()))

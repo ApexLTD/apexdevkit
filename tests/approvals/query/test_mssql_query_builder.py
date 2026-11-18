@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from pytest_apex import ApprovalCase
+
 from apexdevkit.query import (
     Aggregation,
     AggregationOption,
@@ -13,7 +15,6 @@ from apexdevkit.query import (
     StringValue,
 )
 from apexdevkit.query.generator import MsSqlField, MsSqlQueryBuilder
-from pytest_apex import ApprovalCase
 from apexdevkit.repository.core import DatabaseCommand
 
 

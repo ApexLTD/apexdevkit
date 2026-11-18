@@ -1,12 +1,10 @@
 import pytest
+from pytest_apex import ApprovalCase
 
 from apexdevkit.formatter import AliasFormatter, AliasMapping, DataclassFormatter
 from apexdevkit.repository.sql.field import SqlFieldBuilder
 from apexdevkit.repository.sql.mssql import MsSqlTableBuilder, SqlTable
-
 from tests.approvals.repository.conftest import Apple
-from pytest_apex import ApprovalCase
-
 
 _FORMATTER = AliasFormatter(
     DataclassFormatter(Apple),

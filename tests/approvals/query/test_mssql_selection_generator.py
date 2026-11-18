@@ -1,5 +1,6 @@
-from apexdevkit.query.generator import MsSqlField, MsSqlSelectionGenerator
 from pytest_apex import ApprovalCase
+
+from apexdevkit.query.generator import MsSqlField, MsSqlSelectionGenerator
 
 
 def test_without_field_alias(approve: ApprovalCase) -> None:
