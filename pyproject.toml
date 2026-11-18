@@ -24,7 +24,7 @@ uvicorn = "*"
 apexcodexpy = "0.8.*"
 faker = "*"
 pytest = "*"
-pytest-apex = "*"
+pytest-apex = "0.2.*"
 pytest-env = "*"
 pytest-recording = "*"
 
