@@ -6,7 +6,7 @@ from apexdevkit.query import Sort
 from apexdevkit.query.generator import MsSqlField, MsSqlOrderGenerator
 
 
-def test_order_ascending(approve: ApprovalCase) -> None:
+def test_ascending(approve: ApprovalCase) -> None:
     fields = [MsSqlField("id")]
     ordering = [Sort("id", is_descending=False)]
 
@@ -15,7 +15,7 @@ def test_order_ascending(approve: ApprovalCase) -> None:
     approve.sql().compact(generator.generate())
 
 
-def test_order_descending(approve: ApprovalCase) -> None:
+def test_descending(approve: ApprovalCase) -> None:
     fields = [MsSqlField("id")]
     ordering = [Sort("id", is_descending=True)]
 
@@ -24,7 +24,7 @@ def test_order_descending(approve: ApprovalCase) -> None:
     approve.sql().compact(generator.generate())
 
 
-def test_order_with_alias(approve: ApprovalCase) -> None:
+def test_with_alias(approve: ApprovalCase) -> None:
     fields = [MsSqlField("id", alias="item_id")]
     ordering = [Sort("item_id", is_descending=False)]
 
@@ -33,7 +33,7 @@ def test_order_with_alias(approve: ApprovalCase) -> None:
     approve.sql().compact(generator.generate())
 
 
-def test_should_order_with_multiple_fields(approve: ApprovalCase) -> None:
+def test_with_multiple_fields(approve: ApprovalCase) -> None:
     fields = [MsSqlField("id", alias="item_id"), MsSqlField("name")]
     ordering = [Sort("item_id", is_descending=True), Sort("name", is_descending=False)]
 
@@ -42,7 +42,7 @@ def test_should_order_with_multiple_fields(approve: ApprovalCase) -> None:
     approve.sql().compact(generator.generate())
 
 
-def test_should_not_accept_unknown_field() -> None:
+def test_should_reject_unknown_field() -> None:
     fields = [MsSqlField("name")]
     generator = MsSqlOrderGenerator([Sort("id", is_descending=True)], fields)
 
