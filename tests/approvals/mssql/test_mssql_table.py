@@ -1,10 +1,24 @@
+from dataclasses import dataclass
+
 import pytest
 from pytest_apex import ApprovalCase
 
 from apexdevkit.formatter import AliasFormatter, AliasMapping, DataclassFormatter
+from apexdevkit.repository import Entity
 from apexdevkit.repository.sql.field import SqlFieldBuilder
 from apexdevkit.repository.sql.mssql import MsSqlTableBuilder, SqlTable
-from tests.approvals.repository.conftest import Apple
+
+
+@dataclass(frozen=True, kw_only=True)
+class Apple(Entity):
+    color: str
+    parent: str | None
+
+
+@pytest.fixture
+def apple() -> Apple:
+    return Apple(color="red", parent="test", id="1")
+
 
 _FORMATTER = AliasFormatter(
     DataclassFormatter(Apple),
