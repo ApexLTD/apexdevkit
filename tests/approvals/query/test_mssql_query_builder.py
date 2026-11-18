@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from apexdevkit.query import (
     Aggregation,
     AggregationOption,
@@ -11,79 +13,84 @@ from apexdevkit.query import (
     StringValue,
 )
 from apexdevkit.query.generator import MsSqlField, MsSqlQueryBuilder
-from tests.approvals.conftest import Approver
+from pytest_apex import ApprovalCase
+from apexdevkit.repository.core import DatabaseCommand
 
 
-def test_filter(approver: Approver) -> None:
-    builder = (
-        MsSqlQueryBuilder()
-        .with_source("TABLE")
-        .with_username("John")
-        .with_fields(
-            [
-                MsSqlField("item_id", alias="id"),
-                MsSqlField("item_name", alias="name"),
-                MsSqlField("date"),
-            ]
+def test_filter(approve: ApprovalCase) -> None:
+    approve.sql().compact(_Target().filter_query().value)
+
+
+def test_filter_payload(approve: ApprovalCase) -> None:
+    approve.json().mapping(_Target().filter_query().payload)
+
+
+def test_aggregate(approve: ApprovalCase) -> None:
+    approve.sql().compact(_Target().aggregation_query().value)
+
+
+def test_aggregation_payload(approve: ApprovalCase) -> None:
+    approve.json().mapping(_Target().aggregation_query().payload)
+
+
+@dataclass(frozen=True)
+class _Target:
+    source: str = "TABLE"
+    username: str = "John"
+
+    def builder(self) -> MsSqlQueryBuilder:
+        return (
+            MsSqlQueryBuilder()
+            .with_source(self.source)
+            .with_username(self.username)
+            .with_fields(
+                [
+                    MsSqlField("item_id", alias="id"),
+                    MsSqlField("item_name", alias="name"),
+                    MsSqlField("date"),
+                ]
+            )
         )
-    )
 
-    query = builder.filter(
-        QueryOptions(
-            filter=None,
-            condition=Operator(
-                Operation.OR,
-                operands=[
-                    Operator(
-                        Operation.BEGINS,
-                        operands=[Leaf("id", values=[StringValue("begin")])],
-                    ),
-                    Operator(
-                        Operation.ENDS,
-                        operands=[Leaf("name", values=[StringValue("end")])],
-                    ),
-                ],
-            ),
-            ordering=[Sort("date", is_descending=True)],
-            paging=Page(20, 100, 500),
+    def filter_query(self) -> DatabaseCommand:
+        return self.builder().filter(
+            QueryOptions(
+                filter=None,
+                condition=Operator(
+                    Operation.OR,
+                    operands=[
+                        Operator(
+                            Operation.BEGINS,
+                            operands=[Leaf("id", values=[StringValue("begin")])],
+                        ),
+                        Operator(
+                            Operation.ENDS,
+                            operands=[Leaf("name", values=[StringValue("end")])],
+                        ),
+                    ],
+                ),
+                ordering=[Sort("date", is_descending=True)],
+                paging=Page(20, 100, 500),
+            )
         )
-    )
 
-    approver.verify_db_command("filter", query)
-
-
-def test_aggregate(approver: Approver) -> None:
-    builder = (
-        MsSqlQueryBuilder()
-        .with_source("TABLE")
-        .with_username("John")
-        .with_fields(
-            [
-                MsSqlField("item_id", alias="id"),
-                MsSqlField("item_name", alias="name"),
-                MsSqlField("date"),
-            ]
+    def aggregation_query(self) -> DatabaseCommand:
+        return self.builder().aggregate(
+            FooterOptions(
+                filter=None,
+                condition=Operator(
+                    Operation.OR,
+                    operands=[
+                        Operator(
+                            Operation.BEGINS,
+                            operands=[Leaf("id", values=[StringValue("begin")])],
+                        ),
+                        Operator(
+                            Operation.ENDS,
+                            operands=[Leaf("name", values=[StringValue("end")])],
+                        ),
+                    ],
+                ),
+                aggregations=[AggregationOption("name", Aggregation.COUNT)],
+            )
         )
-    )
-
-    query = builder.aggregate(
-        FooterOptions(
-            filter=None,
-            condition=Operator(
-                Operation.OR,
-                operands=[
-                    Operator(
-                        Operation.BEGINS,
-                        operands=[Leaf("id", values=[StringValue("begin")])],
-                    ),
-                    Operator(
-                        Operation.ENDS,
-                        operands=[Leaf("name", values=[StringValue("end")])],
-                    ),
-                ],
-            ),
-            aggregations=[AggregationOption("name", Aggregation.COUNT)],
-        )
-    )
-
-    approver.verify_db_command("aggregate", query)
