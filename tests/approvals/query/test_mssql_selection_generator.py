@@ -1,26 +1,26 @@
 from apexdevkit.query.generator import MsSqlField, MsSqlSelectionGenerator
-from tests.approvals.conftest import Approver
+from pytest_apex import ApprovalCase
 
 
-def test_select_without_field_alias(approver: Approver) -> None:
+def test_without_field_alias(approve: ApprovalCase) -> None:
     fields = [MsSqlField("id")]
 
     generator = MsSqlSelectionGenerator(fields)
 
-    approver.verify_sql("without_field_alias", generator.generate())
+    approve.sql().compact(generator.generate())
 
 
-def test_select_with_field_alias(approver: Approver) -> None:
+def test_with_field_alias(approve: ApprovalCase) -> None:
     fields = [MsSqlField("item_id", alias="id")]
 
     generator = MsSqlSelectionGenerator(fields)
 
-    approver.verify_sql("with_field_alias", generator.generate())
+    approve.sql().compact(generator.generate())
 
 
-def test_select_with_multiple_fields(approver: Approver) -> None:
+def test_with_multiple_fields(approve: ApprovalCase) -> None:
     fields = [MsSqlField("item_id", alias="id"), MsSqlField("name")]
 
     generator = MsSqlSelectionGenerator(fields)
 
-    approver.verify_sql("with_multiple_fields", generator.generate())
+    approve.sql().compact(generator.generate())
