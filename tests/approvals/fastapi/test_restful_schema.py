@@ -3,10 +3,10 @@ from typing import Annotated
 
 from pydantic import Field
 from pypebbles import FluentDict, JsonDict
+from pytest_apex import ApprovalCase
 
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.schema import RestfulSchema, Schema, SchemaFields
-from pytest_apex import ApprovalCase
 
 
 class Color(StrEnum):
