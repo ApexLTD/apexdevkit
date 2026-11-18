@@ -780,7 +780,6 @@ httpcore2 = {version = "2.16.2", markers = "sys_platform != \"emscripten\""}
 httpx2-jsfetch = {version = "*", markers = "sys_platform == \"emscripten\" and python_version >= \"3.12\""}
 idna = ">=3.18"
 truststore = {version = ">=0.10", markers = "sys_platform != \"emscripten\""}
-typing-extensions = {version = ">=4.5.0", markers = "python_version < \"3.13\""}
 
 [package.extras]
 brotli = ["brotli (>=1.2.0) ; platform_python_implementation == \"CPython\"", "brotlicffi (>=1.2.0.2) ; platform_python_implementation != \"CPython\""]
@@ -1593,6 +1592,26 @@ pygments = ">=2.15"
 dev = ["argcomplete", "asynctest ; python_version < \"3.11\"", "attrs (>=23.1)", "coverage (>=7.5)", "hypothesis (>=6.75)", "mock", "numpy (>=1.26)", "pexpect (>=4.9)", "pytest-xdist (>=3.5)", "pyyaml", "requests", "setuptools", "xmlschema"]
 
 [[package]]
+name = "pytest-apex"
+version = "0.2.3"
+description = "Shared pytest fixtures"
+optional = false
+python-versions = "<4,>=3.13"
+groups = ["dev"]
+files = [
+    {file = "pytest_apex-0.2.3-py3-none-any.whl", hash = "sha256:126bed2f581586f84f0db42ce225a7bd94fd0707266483e50ea3fe0549211487"},
+    {file = "pytest_apex-0.2.3.tar.gz", hash = "sha256:1e79e9821f10cbc558610a81851e7c2ad84b884dfc80731cfc176631ced50456"},
+]
+
+[package.dependencies]
+approvaltests = "*"
+coverage = "*"
+pytest = "*"
+pytest-approvaltests = "*"
+pytest-cov = "*"
+pytest-sugar = "*"
+
+[[package]]
 name = "pytest-approvaltests"
 version = "0.2.4"
 description = "A plugin to use approvaltests with pytest"
@@ -1663,6 +1682,25 @@ vcrpy = ">=4.0.2"
 [package.extras]
 dev = ["pytest-httpbin", "pytest-mock", "requests", "werkzeug (==3.1.9)"]
 tests = ["pytest-httpbin", "pytest-mock", "requests", "werkzeug (==3.1.9)"]
+
+[[package]]
+name = "pytest-sugar"
+version = "1.1.1"
+description = "pytest-sugar is a plugin for pytest that changes the default look and feel of pytest (e.g. progressbar, show tests that fail instantly)."
+optional = false
+python-versions = "*"
+groups = ["dev"]
+files = [
+    {file = "pytest-sugar-1.1.1.tar.gz", hash = "sha256:73b8b65163ebf10f9f671efab9eed3d56f20d2ca68bda83fa64740a92c08f65d"},
+    {file = "pytest_sugar-1.1.1-py3-none-any.whl", hash = "sha256:2f8319b907548d5b9d03a171515c1d43d2e38e32bd8182a1781eb20b43344cc8"},
+]
+
+[package.dependencies]
+pytest = ">=6.2.0"
+termcolor = ">=2.1.0"
+
+[package.extras]
+dev = ["black", "flake8", "pre-commit"]
 
 [[package]]
 name = "python-dotenv"
@@ -1967,10 +2005,24 @@ files = [
 
 [package.dependencies]
 anyio = ">=4.0.0,<5"
-typing-extensions = {version = ">=4.10.0", markers = "python_version < \"3.13\""}
 
 [package.extras]
 full = ["httpx (>=0.27.0,<0.29.0)", "httpx2 (>=2.0.0)", "itsdangerous", "jinja2", "opentelemetry-api", "python-multipart (>=0.0.18)", "pyyaml"]
+
+[[package]]
+name = "termcolor"
+version = "3.3.0"
+description = "ANSI color formatting for output in terminal"
+optional = false
+python-versions = ">=3.10"
+groups = ["dev"]
+files = [
+    {file = "termcolor-3.3.0-py3-none-any.whl", hash = "sha256:cf642efadaf0a8ebbbf4bc7a31cec2f9b5f21a9f726f4ccbb08192c9c26f43a5"},
+    {file = "termcolor-3.3.0.tar.gz", hash = "sha256:348871ca648ec6a9a983a13ab626c0acce02f515b9e1983332b17af7979521c5"},
+]
+
+[package.extras]
+tests = ["pytest", "pytest-cov"]
 
 [[package]]
 name = "testfixtures"
@@ -2325,5 +2377,5 @@ dev = ["pytest", "setuptools"]
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.12,<4"
-content-hash = "5b24ba97ab2ead8242d4f195512702a7c6c73287f7fe6beb8ef40236dfdbff40"
+python-versions = ">=3.13,<4"
+content-hash = "81f6298ee282aa960c258edee7a97d2164136357d6aa9b700f27b4a65120b7df"

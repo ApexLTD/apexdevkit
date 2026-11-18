@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { name = "Apex Dev", email = "dev@apex.ge" },
 ]
-requires-python = ">=3.12,<4"
+requires-python = ">=3.13,<4"
 dynamic = [
     "dependencies",
 ]
@@ -21,12 +21,11 @@ sentry-sdk = { extras = [ "fastapi" ], version = "*" }
 uvicorn = "*"
 
 [tool.poetry.group.dev.dependencies]
+pytest-apex = "*"
 apexcodexpy = "0.8.*"
-coverage = "*"
 faker = "*"
 pytest = "*"
 pytest-approvaltests = "*"
-pytest-cov = "*"
 pytest-env = "*"
 pytest-recording = "*"
 
