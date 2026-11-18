@@ -1,0 +1,223 @@
+{
+  "Apple": {
+    "$defs": {
+      "Color": {
+        "enum": [
+          "red",
+          "green",
+          "blue"
+        ],
+        "title": "Color",
+        "type": "string"
+      }
+    },
+    "properties": {
+      "id": {
+        "title": "Id",
+        "type": "string"
+      },
+      "name": {
+        "title": "Name",
+        "type": "string"
+      },
+      "color": {
+        "$ref": "#/$defs/Color",
+        "default": "red"
+      }
+    },
+    "required": [
+      "id",
+      "name"
+    ],
+    "title": "Apple",
+    "type": "object"
+  },
+  "AppleItem": {
+    "$defs": {
+      "Apple": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "color": {
+            "$ref": "#/$defs/Color",
+            "default": "red"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "Apple",
+        "type": "object"
+      },
+      "Color": {
+        "enum": [
+          "red",
+          "green",
+          "blue"
+        ],
+        "title": "Color",
+        "type": "string"
+      }
+    },
+    "properties": {
+      "apple": {
+        "$ref": "#/$defs/Apple"
+      }
+    },
+    "required": [
+      "apple"
+    ],
+    "title": "AppleItem",
+    "type": "object"
+  },
+  "AppleCollection": {
+    "$defs": {
+      "Apple": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "color": {
+            "$ref": "#/$defs/Color",
+            "default": "red"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "Apple",
+        "type": "object"
+      },
+      "Color": {
+        "enum": [
+          "red",
+          "green",
+          "blue"
+        ],
+        "title": "Color",
+        "type": "string"
+      }
+    },
+    "properties": {
+      "apples": {
+        "items": {
+          "$ref": "#/$defs/Apple"
+        },
+        "title": "Apples",
+        "type": "array"
+      },
+      "count": {
+        "title": "Count",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "apples",
+      "count"
+    ],
+    "title": "AppleCollection",
+    "type": "object"
+  },
+  "AppleCreate": {
+    "$defs": {
+      "Color": {
+        "enum": [
+          "red",
+          "green",
+          "blue"
+        ],
+        "title": "Color",
+        "type": "string"
+      }
+    },
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string"
+      },
+      "color": {
+        "$ref": "#/$defs/Color",
+        "default": "red"
+      }
+    },
+    "required": [
+      "name"
+    ],
+    "title": "AppleCreate",
+    "type": "object"
+  },
+  "AppleUpdate": {
+    "$defs": {
+      "Color": {
+        "enum": [
+          "red",
+          "green",
+          "blue"
+        ],
+        "title": "Color",
+        "type": "string"
+      }
+    },
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string"
+      },
+      "color": {
+        "$ref": "#/$defs/Color",
+        "default": "red"
+      }
+    },
+    "required": [
+      "name"
+    ],
+    "title": "AppleUpdate",
+    "type": "object"
+  },
+  "AppleReplace": {
+    "$defs": {
+      "Color": {
+        "enum": [
+          "red",
+          "green",
+          "blue"
+        ],
+        "title": "Color",
+        "type": "string"
+      }
+    },
+    "properties": {
+      "id": {
+        "title": "Id",
+        "type": "string"
+      },
+      "name": {
+        "title": "Name",
+        "type": "string"
+      },
+      "color": {
+        "$ref": "#/$defs/Color",
+        "default": "red"
+      }
+    },
+    "required": [
+      "id",
+      "name"
+    ],
+    "title": "AppleReplace",
+    "type": "object"
+  }
+}

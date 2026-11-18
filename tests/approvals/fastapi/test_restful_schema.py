@@ -6,7 +6,7 @@ from pypebbles import FluentDict, JsonDict
 
 from apexdevkit.fastapi.name import RestfulName
 from apexdevkit.fastapi.schema import RestfulSchema, Schema, SchemaFields
-from tests.approvals.conftest import Approver
+from pytest_apex import ApprovalCase
 
 
 class Color(StrEnum):
@@ -25,12 +25,14 @@ class _AppleFields(SchemaFields):
         )
 
 
-def test(approver: Approver) -> None:
-    schema = RestfulSchema(
-        name=RestfulName("apple"),
-        fields=_AppleFields(),
-        generator=Schema("Apple"),
+def test_models(approve: ApprovalCase) -> None:
+    approve.json().mapping(
+        {
+            model.__name__: model.model_json_schema()
+            for model in RestfulSchema(
+                name=RestfulName("apple"),
+                fields=_AppleFields(),
+                generator=Schema("Apple"),
+            )
+        }
     )
-
-    for model in schema:
-        approver.verify_json(model.__name__, model.model_json_schema())
