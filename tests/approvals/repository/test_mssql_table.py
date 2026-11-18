@@ -16,36 +16,61 @@ _FORMATTER = AliasFormatter(
 )
 
 
-@pytest.fixture
-def table() -> SqlTable[Apple]:
-    return (
-        MsSqlTableBuilder[Apple]()
-        .with_username("test")
-        .with_schema("test")
-        .with_table("apples")
-        .with_formatter(_FORMATTER)
-        .with_fields(
-            [
+TABLE_WITHOUT_PARENT = (
+    MsSqlTableBuilder[Apple]()
+    .with_username("test")
+    .with_schema("test")
+    .with_table("apples")
+    .with_formatter(_FORMATTER)
+    .with_fields(
+        [
+            SqlFieldBuilder()
+            .with_name("apid")
+            .as_id()
+            .in_ordering(descending=True)
+            .build(),
+            SqlFieldBuilder().with_name("clr").build(),
+            SqlFieldBuilder().with_name("pid").build(),
+            SqlFieldBuilder().with_name("kingdom").as_fixed("fruits").build(),
+            (
                 SqlFieldBuilder()
-                .with_name("apid")
-                .as_id()
-                .in_ordering(descending=True)
-                .build(),
-                SqlFieldBuilder().with_name("clr").build(),
-                SqlFieldBuilder().with_name("pid").build(),
-                SqlFieldBuilder().with_name("kingdom").as_fixed("fruits").build(),
-                (
-                    SqlFieldBuilder()
-                    .with_name("manager")
-                    .as_fixed(None)
-                    .as_filter([5, 4])
-                    .build()
-                ),
-            ]
-        )
-        .with_custom_filters(["pid > 5"])
-        .build()
+                .with_name("manager")
+                .as_fixed(None)
+                .as_filter([5, 4])
+                .build()
+            ),
+        ]
     )
+    .with_custom_filters(["pid > 5"])
+    .build()
+)
+
+TABLE_WITH_PARENT = (
+    MsSqlTableBuilder[Apple]()
+    .with_username("test")
+    .with_schema("test")
+    .with_table("apples")
+    .with_formatter(_FORMATTER)
+    .with_fields(
+        [
+            SqlFieldBuilder().with_name("apid").as_id().in_ordering().build(),
+            SqlFieldBuilder().with_name("clr").build(),
+            SqlFieldBuilder().with_name("pid").as_parent("test").build(),
+        ]
+    )
+    .build()
+)
+
+
+@pytest.fixture(params=["without_parent", "with_parent"])
+def table(request: pytest.FixtureRequest) -> SqlTable[Apple]:
+    match request.param:
+        case "with_parent":
+            return TABLE_WITH_PARENT
+        case "without_parent":
+            return TABLE_WITHOUT_PARENT
+        case _ as kind:
+            raise RuntimeError(f"Unknown table type: {kind}")
 
 
 def test_should_count(approve: ApprovalCase, table: SqlTable[Apple]) -> None:

@@ -21,10 +21,10 @@ sentry-sdk = { extras = [ "fastapi" ], version = "*" }
 uvicorn = "*"
 
 [tool.poetry.group.dev.dependencies]
-pytest-apex = "*"
 apexcodexpy = "0.8.*"
 faker = "*"
 pytest = "*"
+pytest-apex = "*"
 pytest-approvaltests = "*"
 pytest-env = "*"
 pytest-recording = "*"
