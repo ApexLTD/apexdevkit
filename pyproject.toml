@@ -15,7 +15,7 @@ dynamic = [
 fastapi = "*"
 pydantic = "*"
 pymssql = "2.*"
-pypebbles = "0.4.*"
+pypebbles = "0.5.*"
 python-dotenv = "*"
 sentry-sdk = { extras = [ "fastapi" ], version = "*" }
 uvicorn = "*"
@@ -25,7 +25,6 @@ apexcodexpy = "0.8.*"
 faker = "*"
 pytest = "*"
 pytest-apex = "*"
-pytest-approvaltests = "*"
 pytest-env = "*"
 pytest-recording = "*"
 
