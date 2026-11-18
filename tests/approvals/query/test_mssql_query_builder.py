@@ -17,7 +17,7 @@ from pytest_apex import ApprovalCase
 from apexdevkit.repository.core import DatabaseCommand
 
 
-def test_filter(approve: ApprovalCase) -> None:
+def test_filter_query(approve: ApprovalCase) -> None:
     approve.sql().compact(_Target().filter_query().value)
 
 
@@ -25,11 +25,11 @@ def test_filter_payload(approve: ApprovalCase) -> None:
     approve.json().mapping(_Target().filter_query().payload)
 
 
-def test_aggregate(approve: ApprovalCase) -> None:
+def test_aggregate_query(approve: ApprovalCase) -> None:
     approve.sql().compact(_Target().aggregation_query().value)
 
 
-def test_aggregation_payload(approve: ApprovalCase) -> None:
+def test_aggregate_payload(approve: ApprovalCase) -> None:
     approve.json().mapping(_Target().aggregation_query().payload)
 
 
