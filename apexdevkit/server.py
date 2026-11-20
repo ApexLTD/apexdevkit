@@ -6,8 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 import sentry_sdk
 import uvicorn
-from dotenv import load_dotenv
-from pypebbles.runtime import Environment
+from pypebbles import Environment
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -28,7 +27,7 @@ class UvicornServer:
 
     @classmethod
     def from_env(cls, path: str = ".env") -> UvicornServer:
-        load_dotenv(path)
+        Environment().load(path)
         Sentry().setup()
 
         return cls(LoggingConfig().setup().as_dict())
