@@ -16,7 +16,6 @@ fastapi = "*"
 pydantic = "*"
 pymssql = "2.*"
 pypebbles = "0.5.*"
-python-dotenv = "*"
 sentry-sdk = { extras = [ "fastapi" ], version = "*" }
 uvicorn = "*"
 
@@ -25,15 +24,16 @@ apexcodexpy = "0.8.*"
 faker = "*"
 pytest = "*"
 pytest-apex = "0.2.*"
-pytest-env = "*"
 pytest-recording = "*"
+
+[tool.ruff]
+extend-exclude = [
+    "migrations",
+]
 
 [tool.ruff.lint.per-file-ignores]
 "apexdevkit/fastapi/endpoints.py" = [ "N803" ]
 "apexdevkit/fastapi/dependable.py" = [ "N806" ]
-
-[tool.ruff.lint.mccabe]
-max-complexity = 10
 
 [tool.ruff.lint]
 select = [
@@ -75,6 +75,11 @@ ignore = [
     "TRY003",
 ]
 
+[tool.deptry]
+extend_exclude = [
+    "migrations",
+]
+
 [tool.mypy]
 exclude = [
     "apexdevkit/fastapi/dependable.py",
@@ -99,6 +104,12 @@ source = [
 branch = true
 
 [tool.coverage.report]
+exclude_also = [
+    "@(abc\\.)?abstractmethod",
+    "class .*\\bProtocol\\)",
+    "if TYPE_CHECKING:",
+]
 skip_covered = true
 skip_empty = true
 show_missing = true
+sort = "Cover"
