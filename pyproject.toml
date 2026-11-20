@@ -24,7 +24,6 @@ apexcodexpy = "0.8.*"
 faker = "*"
 pytest = "*"
 pytest-apex = "0.2.*"
-pytest-recording = "*"
 
 [tool.ruff]
 extend-exclude = [
