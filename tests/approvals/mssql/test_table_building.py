@@ -12,7 +12,8 @@ from apexdevkit.repository.sql.mssql import MsSqlTableBuilder, SqlTable
 @dataclass(frozen=True, kw_only=True)
 class Apple(Entity):
     color: str
-    parent: str | None
+
+    parent: str | None = None
 
 
 @pytest.fixture
@@ -73,10 +74,28 @@ TABLE_WITH_PARENT = (
     .with_a(formatter=_FORMATTER)
 )
 
+TABLE_WITHOUT_USERNAME = (
+    MsSqlTableBuilder[Apple]()
+    .with_schema("test")
+    .with_table("apples")
+    .with_a(sql_field=SqlFieldBuilder().with_name("apid").as_id().build())
+    .with_a(sql_field=SqlFieldBuilder().with_name("clr").build())
+    .build()
+    .with_a(formatter=_FORMATTER)
+)
 
-@pytest.fixture(params=["without_parent", "with_parent"])
+
+@pytest.fixture(
+    params=[
+        "no_username",
+        "without_parent",
+        "with_parent",
+    ]
+)
 def table(request: pytest.FixtureRequest) -> SqlTable[Apple]:
     match request.param:
+        case "no_username":
+            return TABLE_WITHOUT_USERNAME
         case "with_parent":
             return TABLE_WITH_PARENT
         case "without_parent":
