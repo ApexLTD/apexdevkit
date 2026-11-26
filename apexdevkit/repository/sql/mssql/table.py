@@ -117,7 +117,7 @@ class MsSqlTableBuilder[T]:
 
         return AutoMsSqlTable[T](
             fields=fields,
-            generator=SqlTemplateGenerator(
+            templates=SqlTemplates(
                 schema=self.schema,
                 table=self.table,
                 fields=fields,
@@ -128,7 +128,7 @@ class MsSqlTableBuilder[T]:
 @dataclass(frozen=True, kw_only=True)
 class AutoMsSqlTable[T](SqlTable[T]):
     fields: SqlFieldManager
-    generator: SqlTemplateGenerator
+    templates: SqlTemplates
 
     formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
 
@@ -143,43 +143,43 @@ class AutoMsSqlTable[T](SqlTable[T]):
 
     def count_all(self) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.generator.count_all(),
+            value=self.templates.count_all(),
             payload=self.fields.with_fixed({}),
         )
 
     def insert(self, item: T) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.generator.insert(),
+            value=self.templates.insert(),
             payload=self.fields.with_fixed(self.formatter.dump(item)),
         )
 
     def select(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.generator.select(),
+            value=self.templates.select(),
             payload=self.fields.with_fixed({self.fields.id: item_id}),
         )
 
     def select_all(self) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.generator.select_all(),
+            value=self.templates.select_all(),
             payload=self.fields.with_fixed({}),
         )
 
     def update(self, item: T) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.generator.update(),
+            value=self.templates.update(),
             payload=self.fields.with_fixed(self.formatter.dump(item)),
         )
 
     def delete(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.generator.delete(),
+            value=self.templates.delete(),
             payload=self.fields.with_fixed({self.fields.id: item_id}),
         )
 
     def delete_all(self) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.generator.delete_all(),
+            value=self.templates.delete_all(),
             payload=self.fields.with_fixed({}),
         )
 
@@ -194,7 +194,7 @@ class AutoMsSqlTable[T](SqlTable[T]):
 
 
 @dataclass(frozen=True, kw_only=True)
-class SqlTemplateGenerator:
+class SqlTemplates:
     schema: str
     table: str
     fields: SqlFieldManager
