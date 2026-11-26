@@ -35,7 +35,6 @@ TABLE_WITHOUT_PARENT = (
     .with_username("test")
     .with_schema("test")
     .with_table("apples")
-    .with_formatter(_FORMATTER)
     .with_a(
         sql_field=(
             SqlFieldBuilder()
@@ -59,6 +58,7 @@ TABLE_WITHOUT_PARENT = (
     )
     .with_custom_filters(["pid > 5"])
     .build()
+    .with_a(formatter=_FORMATTER)
 )
 
 TABLE_WITH_PARENT = (
@@ -66,11 +66,11 @@ TABLE_WITH_PARENT = (
     .with_username("test")
     .with_schema("test")
     .with_table("apples")
-    .with_formatter(_FORMATTER)
     .with_a(sql_field=SqlFieldBuilder().with_name("apid").as_id().in_ordering().build())
     .with_a(sql_field=SqlFieldBuilder().with_name("clr").build())
     .with_a(sql_field=SqlFieldBuilder().with_name("pid").as_parent("test").build())
     .build()
+    .with_a(formatter=_FORMATTER)
 )
 
 

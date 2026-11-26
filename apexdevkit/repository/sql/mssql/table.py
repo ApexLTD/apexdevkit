@@ -96,6 +96,7 @@ class MsSqlTableBuilder[T]:
     def with_table(self, value: str) -> Self:
         return replace(self, table=value)
 
+    @deprecated("Use .build().with_a(formatter) instead")
     def with_formatter(self, value: Formatter[Mapping[str, Any], T]) -> Self:
         return replace(self, formatter=value)
 

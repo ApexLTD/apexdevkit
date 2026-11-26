@@ -14,10 +14,10 @@ TABLE = (
     MsSqlTableBuilder[AppleItem]()
     .with_schema("test")
     .with_table("apples")
-    .with_formatter(DataclassFormatter(AppleItem))
     .with_a(sql_field=SqlFieldBuilder().with_name("id").as_id().build())
     .with_a(sql_field=SqlFieldBuilder().with_name("color").build())
     .build()
+    .with_a(formatter=DataclassFormatter(AppleItem))
 )
 
 
