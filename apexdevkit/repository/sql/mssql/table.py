@@ -55,7 +55,7 @@ class SqlFieldSet:
         return iter(self.items)
 
     def contains_id(self) -> bool:
-        return any([i.is_id for i in self.items])
+        return any(i.is_id for i in self.items)
 
     def add(self, item: _SqlField) -> Self:
         self.items.append(self.validate(item))
@@ -66,7 +66,7 @@ class SqlFieldSet:
         if item.is_id and self.contains_id():
             raise ValueError("Pass only one identifier key.")
 
-        if item.is_parent and any([i.is_parent for i in self.items]):
+        if item.is_parent and any(i.is_parent for i in self.items):
             raise ValueError("Pass only one parent key.")
 
         if not item.is_filter and isinstance(item.fixed_value, NotNone):
