@@ -122,15 +122,17 @@ class MsSqlTableBuilder[T]:
         if not self.schema or not self.table or not self.formatter:
             raise ValueError("Cannot build sql table.")
 
-        field_manager = SqlFieldManager.Builder().with_fields(list(self.fields))
-        if self.custom_filters:
-            field_manager = field_manager.with_custom_filters(self.custom_filters)
-
         return AutoMsSqlTable(
             self.schema,
             self.table,
             self.formatter,
-            field_manager.for_mssql().build(),
+            (
+                SqlFieldManager.Builder()
+                .with_fields(list(self.fields))
+                .with_custom_filters(list(self.custom_filters))
+                .for_mssql()
+                .build()
+            ),
             self.username,
         )
 
