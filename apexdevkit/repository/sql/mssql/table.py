@@ -123,26 +123,27 @@ class MsSqlTableBuilder[T]:
             raise ValueError("Cannot build sql table.")
 
         return AutoMsSqlTable(
-            self.schema,
-            self.table,
-            self.formatter,
-            (
+            username=self.username,
+            schema=self.schema,
+            table=self.table,
+            formatter=self.formatter,
+            fields=(
                 SqlFieldManager.Builder()
                 .with_fields(list(self.fields))
                 .with_custom_filters(list(self.custom_filters))
                 .for_mssql()
                 .build()
             ),
-            self.username,
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class AutoMsSqlTable[T](SqlTable[T]):
     schema: str
     table: str
     formatter: Formatter[Mapping[str, Any], T]
     fields: SqlFieldManager
+
     username: str | None = None
 
     def count_all(self) -> DatabaseCommand:
