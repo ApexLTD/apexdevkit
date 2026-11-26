@@ -4,6 +4,7 @@ from collections.abc import Iterator
 from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any, Self
 
+from apexdevkit.annotation import deprecated
 from apexdevkit.error import ExistsError
 from apexdevkit.repository.core import DatabaseCommand
 from apexdevkit.repository.sql.field import NotNone, SqlFieldManager, _SqlField
@@ -96,6 +97,7 @@ class MsSqlTableBuilder[T]:
     def with_formatter(self, value: Formatter[Mapping[str, Any], T]) -> Self:
         return replace(self, formatter=value)
 
+    @deprecated("Use .with_a/and_a method(s) instead")
     def with_fields(self, value: Iterable[_SqlField]) -> Self:
         for sql_field in value:
             self.with_a(sql_field=sql_field)
