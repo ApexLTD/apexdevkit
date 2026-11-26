@@ -162,19 +162,79 @@ class AutoMsSqlTable[T](SqlTable[T]):
         return AsUser(user=username, inner=self)
 
     def count_all(self) -> DatabaseCommand:
-        sql = f"""
+        return DatabaseCommand(
+            value=self.gen().count_all(),
+            payload=self.fields.with_fixed({}),
+        )
+
+    def insert(self, item: T) -> DatabaseCommand:
+        return DatabaseCommand(
+            value=self.gen().insert(),
+            payload=self.fields.with_fixed(self.formatter.dump(item)),
+        )
+
+    def select(self, item_id: str) -> DatabaseCommand:
+        return DatabaseCommand(
+            value=self.gen().select(),
+            payload=self.fields.with_fixed({self.fields.id: item_id}),
+        )
+
+    def select_all(self) -> DatabaseCommand:
+        return DatabaseCommand(
+            value=self.gen().select_all(),
+            payload=self.fields.with_fixed({}),
+        )
+
+    def update(self, item: T) -> DatabaseCommand:
+        return DatabaseCommand(
+            value=self.gen().update(),
+            payload=self.fields.with_fixed(self.formatter.dump(item)),
+        )
+
+    def delete(self, item_id: str) -> DatabaseCommand:
+        return DatabaseCommand(
+            value=self.gen().delete(),
+            payload=self.fields.with_fixed({self.fields.id: item_id}),
+        )
+
+    def delete_all(self) -> DatabaseCommand:
+        return DatabaseCommand(
+            value=self.gen().delete_all(),
+            payload=self.fields.with_fixed({}),
+        )
+
+    def load(self, data: Mapping[str, Any]) -> T:
+        return self.formatter.load(data)
+
+    def exists(self, duplicate: T) -> ExistsError:
+        raw = self.formatter.dump(duplicate)
+        return ExistsError(duplicate).with_duplicate(
+            lambda _: f"{self.fields.id}<{raw[self.fields.id]}>"
+        )
+
+    def gen(self) -> SqlTemplateGenerator:
+        return SqlTemplateGenerator(
+            schema=self.schema,
+            table=self.table,
+            fields=self.fields,
+        )
+
+
+@dataclass(frozen=True, kw_only=True)
+class SqlTemplateGenerator:
+    schema: str
+    table: str
+    fields: SqlFieldManager
+
+    def count_all(self) -> str:
+        return f"""
             SELECT count(*) AS n_items
             FROM [{self.schema}].[{self.table}]
             {self.fields.where_statement(include_id=False)}
             REVERT
         """
 
-        return DatabaseCommand(
-            sql,
-            payload=self.fields.with_fixed({}),
-        )
-
-    def insert(self, item: T) -> DatabaseCommand:
+    def insert(self) -> DatabaseCommand:
         columns = ", ".join(
             ["[" + field.name + "]" for field in self.fields if field.include_in_insert]
         )
@@ -196,7 +256,7 @@ class AutoMsSqlTable[T](SqlTable[T]):
             )
             where_statement = ""
 
-        sql = f"""
+        return f"""
             INSERT INTO [{self.schema}].[{self.table}] (
                 {columns}
             )
@@ -209,15 +269,10 @@ class AutoMsSqlTable[T](SqlTable[T]):
             REVERT
         """
 
-        return DatabaseCommand(
-            sql,
-            payload=self.fields.with_fixed(self.formatter.dump(item)),
-        )
-
-    def select(self, item_id: str) -> DatabaseCommand:
+    def select(self) -> DatabaseCommand:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
 
-        sql = f"""
+        return f"""
             SELECT
                 {columns}
             FROM [{self.schema}].[{self.table}]
@@ -225,15 +280,10 @@ class AutoMsSqlTable[T](SqlTable[T]):
             REVERT
         """
 
-        return DatabaseCommand(
-            sql,
-            payload=self.fields.with_fixed({self.fields.id: item_id}),
-        )
-
     def select_all(self) -> DatabaseCommand:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
 
-        sql = f"""
+        return f"""
             SELECT
                 {columns}
             FROM [{self.schema}].[{self.table}]
@@ -242,9 +292,7 @@ class AutoMsSqlTable[T](SqlTable[T]):
             REVERT
         """
 
-        return DatabaseCommand(sql, payload=self.fields.with_fixed({}))
-
-    def update(self, item: T) -> DatabaseCommand:
+    def update(self) -> DatabaseCommand:
         updates = ", ".join(
             [
                 f"{field.name} = %({field.name})s"
@@ -253,7 +301,7 @@ class AutoMsSqlTable[T](SqlTable[T]):
             ]
         )
 
-        sql = f"""
+        return f"""
             UPDATE [{self.schema}].[{self.table}]
             SET
                 {updates}
@@ -261,45 +309,21 @@ class AutoMsSqlTable[T](SqlTable[T]):
             REVERT
         """
 
-        return DatabaseCommand(
-            sql,
-            payload=self.fields.with_fixed(self.formatter.dump(item)),
-        )
-
-    def delete(self, item_id: str) -> DatabaseCommand:
-        sql = f"""
+    def delete(self) -> DatabaseCommand:
+        return f"""
             DELETE
             FROM [{self.schema}].[{self.table}]
             {self.fields.where_statement(include_id=True)}
             REVERT
         """
 
-        return DatabaseCommand(
-            sql,
-            payload=self.fields.with_fixed({self.fields.id: item_id}),
-        )
-
     def delete_all(self) -> DatabaseCommand:
-        sql = f"""
+        return f"""
             DELETE
             FROM [{self.schema}].[{self.table}]
             {self.fields.where_statement(include_id=False)}
             REVERT
         """
-
-        return DatabaseCommand(
-            sql,
-            payload=self.fields.with_fixed({}),
-        )
-
-    def load(self, data: Mapping[str, Any]) -> T:
-        return self.formatter.load(data)
-
-    def exists(self, duplicate: T) -> ExistsError:
-        raw = self.formatter.dump(duplicate)
-        return ExistsError(duplicate).with_duplicate(
-            lambda _: f"{self.fields.id}<{raw[self.fields.id]}>"
-        )
 
 
 @dataclass(frozen=True, kw_only=True)
