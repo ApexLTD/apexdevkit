@@ -78,9 +78,9 @@ class SqlFieldSet:
 
 @dataclass(frozen=True)
 class MsSqlTableBuilder[T]:
-    username: str | None = None
-    schema: str | None = None
-    table: str | None = None
+    username: str = ""
+    schema: str = ""
+    table: str = ""
 
     fields: SqlFieldSet = field(default_factory=SqlFieldSet)
     custom_filters: list[str] = field(default_factory=list)
