@@ -127,27 +127,21 @@ class MsSqlTableBuilder[T]:
         if not self.schema or not self.table:
             raise ValueError("Cannot build sql table.")
 
+        fields = (
+            SqlFieldManager.Builder()
+            .with_fields(list(self.fields))
+            .with_custom_filters(list(self.custom_filters))
+            .for_mssql()
+            .build()
+        )
+
         return (
             AutoMsSqlTable(
-                schema=self.schema,
-                table=self.table,
-                fields=(
-                    SqlFieldManager.Builder()
-                    .with_fields(list(self.fields))
-                    .with_custom_filters(list(self.custom_filters))
-                    .for_mssql()
-                    .build()
-                ),
+                fields=fields,
                 generator=SqlTemplateGenerator(
                     schema=self.schema,
                     table=self.table,
-                    fields=(
-                        SqlFieldManager.Builder()
-                        .with_fields(list(self.fields))
-                        .with_custom_filters(list(self.custom_filters))
-                        .for_mssql()
-                        .build()
-                    ),
+                    fields=fields,
                 ),
             )
             .with_a(formatter=self.formatter)
@@ -157,10 +151,7 @@ class MsSqlTableBuilder[T]:
 
 @dataclass(frozen=True, kw_only=True)
 class AutoMsSqlTable[T](SqlTable[T]):
-    schema: str
-    table: str
     fields: SqlFieldManager
-
     generator: SqlTemplateGenerator
 
     formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
