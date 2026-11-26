@@ -81,10 +81,11 @@ class MsSqlTableBuilder[T]:
     username: str | None = None
     schema: str | None = None
     table: str | None = None
-    formatter: Formatter[Mapping[str, Any], T] | None = None
 
     fields: SqlFieldSet = field(default_factory=SqlFieldSet)
     custom_filters: list[str] = field(default_factory=list)
+
+    formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
 
     def with_username(self, value: str) -> Self:
         return replace(self, username=value)
