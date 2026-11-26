@@ -42,7 +42,7 @@ class SqlTable[T]:  # pragma: no cover
         raise NotImplementedError
 
     def exists(self, duplicate: T) -> ExistsError:
-        raise NotImplementedError
+        return ExistsError(duplicate).with_duplicate(lambda _: "Unknown")
 
 
 @dataclass

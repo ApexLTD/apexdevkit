@@ -41,8 +41,8 @@ class SqlTable[T]:  # pragma: no cover
     def load(self, data: Mapping[str, Any]) -> T:
         raise NotImplementedError
 
-    def duplicate(self, item: T) -> ExistsError:
-        return ExistsError(item).with_duplicate(lambda _: "Unknown")
+    def exists(self, duplicate: T) -> ExistsError:
+        return ExistsError(duplicate).with_duplicate(lambda _: "Unknown")
 
 
 @dataclass(frozen=True)
@@ -217,7 +217,7 @@ class _DefaultSqlTable[T](SqlTable[T]):
     def load(self, data: Mapping[str, Any]) -> T:
         return self.formatter.load(data)
 
-    def duplicate(self, item: T) -> ExistsError:
+    def exists(self, item: T) -> ExistsError:
         raw = self.formatter.dump(item)
         return ExistsError(item).with_duplicate(
             lambda _: ",".join(
