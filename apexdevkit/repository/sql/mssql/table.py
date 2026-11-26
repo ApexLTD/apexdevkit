@@ -91,7 +91,7 @@ class MsSqlTableBuilder[T]:
     def with_custom_filters(self, filters: Iterable[str]) -> Self:
         return replace(self, custom_filters=list(filters))
 
-    def build(self) -> DefaultSqlTable[T]:
+    def build(self) -> AutoMsSqlTable[T]:
         if not self.schema or not self.table or not self.formatter or not self.fields:
             raise ValueError("Cannot build sql table.")
 
@@ -99,7 +99,7 @@ class MsSqlTableBuilder[T]:
         if self.custom_filters and len(self.custom_filters) > 0:
             field_manager = field_manager.with_custom_filters(self.custom_filters)
 
-        return DefaultSqlTable(
+        return AutoMsSqlTable(
             self.schema,
             self.table,
             self.formatter,
@@ -109,7 +109,7 @@ class MsSqlTableBuilder[T]:
 
 
 @dataclass(frozen=True)
-class DefaultSqlTable[T](SqlTable[T]):
+class AutoMsSqlTable[T](SqlTable[T]):
     schema: str
     table: str
     formatter: Formatter[Mapping[str, Any], T]
