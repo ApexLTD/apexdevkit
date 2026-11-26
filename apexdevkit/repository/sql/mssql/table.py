@@ -1,14 +1,17 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from dataclasses import dataclass, field, replace
+from textwrap import dedent
+from typing import TYPE_CHECKING, Any, Self
 
+from apexdevkit.annotation import deprecated
 from apexdevkit.error import ExistsError
+from apexdevkit.formatter import NoFormatter
 from apexdevkit.repository.core import DatabaseCommand
 from apexdevkit.repository.sql.field import NotNone, SqlFieldManager, _SqlField
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Mapping
+    from collections.abc import Iterable, Iterator, Mapping
 
     from apexdevkit.formatter import Formatter
 
@@ -23,179 +26,211 @@ class SqlTable[T]:  # pragma: no cover
     def select(self, item_id: str) -> DatabaseCommand:
         raise NotImplementedError
 
+    def select_duplicate(self, item: T) -> DatabaseCommand:
+        raise NotImplementedError
+
     def select_all(self) -> DatabaseCommand:
+        raise NotImplementedError
+
+    def update(self, item: T) -> DatabaseCommand:
         raise NotImplementedError
 
     def delete(self, item_id: str) -> DatabaseCommand:
         raise NotImplementedError
 
     def delete_all(self) -> DatabaseCommand:
-        raise NotImplementedError
-
-    def update(self, item: T) -> DatabaseCommand:
         raise NotImplementedError
 
     def load(self, data: Mapping[str, Any]) -> T:
         raise NotImplementedError
 
     def exists(self, duplicate: T) -> ExistsError:
-        raise NotImplementedError
+        return ExistsError(duplicate).with_duplicate(lambda _: "Unknown")
 
 
-@dataclass
-class SqlTableDecorator[T]:
-    table: DefaultSqlTable[T]
+@dataclass(frozen=True)
+class SqlFieldSet:
+    items: list[_SqlField] = field(init=False, default_factory=list)
 
-    def count_all(self) -> DatabaseCommand:
-        return self.table.count_all()
+    def __iter__(self) -> Iterator[_SqlField]:
+        return iter(self.items)
 
-    def insert(self, item: T) -> DatabaseCommand:
-        return self.table.insert(item)
+    def contains_id(self) -> bool:
+        return any(i.is_id for i in self.items)
 
-    def select(self, item_id: str) -> DatabaseCommand:
-        return self.table.select(item_id)
+    def add(self, item: _SqlField) -> Self:
+        self.items.append(self.validate(item))
 
-    def select_all(self) -> DatabaseCommand:
-        return self.table.select_all()
+        return self
 
-    def delete(self, item_id: str) -> DatabaseCommand:
-        return self.table.delete(item_id)
+    def validate(self, item: _SqlField) -> _SqlField:
+        if item.is_id and self.contains_id():
+            raise ValueError("Pass only one identifier key.")
 
-    def delete_all(self) -> DatabaseCommand:
-        return self.table.delete_all()
+        if item.is_parent and any(i.is_parent for i in self.items):
+            raise ValueError("Pass only one parent key.")
 
-    def update(self, item: T) -> DatabaseCommand:
-        return self.table.update(item)
+        if not item.is_filter and isinstance(item.fixed_value, NotNone):
+            raise ValueError("Only filter fields can be 'not null'.")
 
-    def load(self, data: dict[str, Any]) -> T:
-        return self.table.load(data)
-
-    def exists(self, duplicate: T) -> ExistsError:
-        return self.table.exists(duplicate)
+        return item
 
 
 @dataclass(frozen=True)
 class MsSqlTableBuilder[T]:
-    username: str | None = None
-    schema: str | None = None
-    table: str | None = None
-    formatter: Formatter[Mapping[str, Any], T] | None = None
-    fields: list[_SqlField] | None = None
-    custom_filters: list[str] | None = None
+    username: str = ""
+    schema: str = ""
+    table: str = ""
 
-    def with_username(self, value: str) -> MsSqlTableBuilder[T]:
-        return MsSqlTableBuilder[T](
-            value,
-            self.schema,
-            self.table,
-            self.formatter,
-            self.fields,
-            self.custom_filters,
-        )
+    fields: SqlFieldSet = field(default_factory=SqlFieldSet)
+    custom_filters: list[str] = field(default_factory=list)
 
-    def with_schema(self, value: str) -> MsSqlTableBuilder[T]:
-        return MsSqlTableBuilder[T](
-            self.username,
-            value,
-            self.table,
-            self.formatter,
-            self.fields,
-            self.custom_filters,
-        )
+    formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
 
-    def with_table(self, value: str) -> MsSqlTableBuilder[T]:
-        return MsSqlTableBuilder[T](
-            self.username,
-            self.schema,
-            value,
-            self.formatter,
-            self.fields,
-            self.custom_filters,
-        )
+    @deprecated("Use .build().for_a(username) instead")
+    def with_username(self, value: str) -> Self:
+        return replace(self, username=value)
 
-    def with_formatter(
-        self, value: Formatter[Mapping[str, Any], T]
-    ) -> MsSqlTableBuilder[T]:
-        return MsSqlTableBuilder[T](
-            self.username,
-            self.schema,
-            self.table,
-            value,
-            self.fields,
-            self.custom_filters,
-        )
+    def with_schema(self, value: str) -> Self:
+        return replace(self, schema=value)
 
-    def with_fields(self, value: Iterable[_SqlField]) -> MsSqlTableBuilder[T]:
-        key_list = list(value)
-        if len([key for key in key_list if key.is_id]) != 1:
-            raise ValueError("Pass only one identifier key.")
-        if len([key for key in key_list if key.is_parent]) > 1:
-            raise ValueError("Pass only one parent key.")
-        if (
-            len(
-                [
-                    key
-                    for key in key_list
-                    if not key.is_filter and isinstance(key.fixed_value, NotNone)
-                ]
-            )
-            > 0
-        ):
-            raise ValueError("Only filter fields can be 'not null'.")
-        return MsSqlTableBuilder[T](
-            self.username,
-            self.schema,
-            self.table,
-            self.formatter,
-            key_list,
-            self.custom_filters,
-        )
+    def with_table(self, value: str) -> Self:
+        return replace(self, table=value)
 
-    def with_custom_filters(self, filters: Iterable[str]) -> MsSqlTableBuilder[T]:
-        return MsSqlTableBuilder[T](
-            self.username,
-            self.schema,
-            self.table,
-            self.formatter,
-            self.fields,
-            list(filters),
-        )
+    @deprecated("Use .build().with_a(formatter) instead")
+    def with_formatter(self, value: Formatter[Mapping[str, Any], T]) -> Self:
+        return replace(self, formatter=value)
 
-    def build(self) -> SqlTable[T]:
-        if not self.schema or not self.table or not self.formatter or not self.fields:
+    @deprecated("Use .with_a/and_a method(s) instead")
+    def with_fields(self, value: Iterable[_SqlField]) -> Self:
+        for sql_field in value:
+            self.with_a(sql_field=sql_field)
+
+        return self
+
+    def and_a(self, sql_field: _SqlField) -> Self:
+        return self.with_a(sql_field=sql_field)
+
+    def with_a(self, sql_field: _SqlField) -> Self:
+        self.fields.add(sql_field)
+
+        return self
+
+    def with_custom_filters(self, filters: Iterable[str]) -> Self:
+        return replace(self, custom_filters=list(filters))
+
+    def build(self) -> AutoMsSqlTable[T] | AsUser[T]:
+        if not self.fields.contains_id():
+            raise ValueError("Id field is not provided!")
+
+        if not self.schema or not self.table:
             raise ValueError("Cannot build sql table.")
 
-        field_manager = SqlFieldManager.Builder().with_fields(self.fields)
-        if self.custom_filters and len(self.custom_filters) > 0:
-            field_manager = field_manager.with_custom_filters(self.custom_filters)
+        fields = (
+            SqlFieldManager.Builder()
+            .with_fields(list(self.fields))
+            .with_custom_filters(list(self.custom_filters))
+            .for_mssql()
+            .build()
+        )
 
-        return DefaultSqlTable(
-            self.schema,
-            self.table,
-            self.formatter,
-            field_manager.for_mssql().build(),
-            self.username,
+        return (
+            AutoMsSqlTable[T](
+                fields=fields,
+                generator=SqlTemplateGenerator(
+                    schema=self.schema,
+                    table=self.table,
+                    fields=fields,
+                ),
+            )
+            .with_a(formatter=self.formatter)
+            .for_a(username=self.username)
         )
 
 
-@dataclass(frozen=True)
-class DefaultSqlTable[T](SqlTable[T]):
-    schema: str
-    table: str
-    formatter: Formatter[Mapping[str, Any], T]
+@dataclass(frozen=True, kw_only=True)
+class AutoMsSqlTable[T](SqlTable[T]):
     fields: SqlFieldManager
-    username: str | None = None
+    generator: SqlTemplateGenerator
+
+    formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
+
+    def with_a(self, formatter: Formatter[Mapping[str, Any], T]) -> AutoMsSqlTable[T]:
+        return replace(self, formatter=formatter)
+
+    def for_a(self, username: str) -> AutoMsSqlTable[T] | AsUser[T]:
+        if not username:
+            return self
+
+        return AsUser(user=username, inner=self)
 
     def count_all(self) -> DatabaseCommand:
-        return DatabaseCommand(f"""
-            {self._user_check}
+        return DatabaseCommand(
+            value=self.generator.count_all(),
+            payload=self.fields.with_fixed({}),
+        )
+
+    def insert(self, item: T) -> DatabaseCommand:
+        return DatabaseCommand(
+            value=self.generator.insert(),
+            payload=self.fields.with_fixed(self.formatter.dump(item)),
+        )
+
+    def select(self, item_id: str) -> DatabaseCommand:
+        return DatabaseCommand(
+            value=self.generator.select(),
+            payload=self.fields.with_fixed({self.fields.id: item_id}),
+        )
+
+    def select_all(self) -> DatabaseCommand:
+        return DatabaseCommand(
+            value=self.generator.select_all(),
+            payload=self.fields.with_fixed({}),
+        )
+
+    def update(self, item: T) -> DatabaseCommand:
+        return DatabaseCommand(
+            value=self.generator.update(),
+            payload=self.fields.with_fixed(self.formatter.dump(item)),
+        )
+
+    def delete(self, item_id: str) -> DatabaseCommand:
+        return DatabaseCommand(
+            value=self.generator.delete(),
+            payload=self.fields.with_fixed({self.fields.id: item_id}),
+        )
+
+    def delete_all(self) -> DatabaseCommand:
+        return DatabaseCommand(
+            value=self.generator.delete_all(),
+            payload=self.fields.with_fixed({}),
+        )
+
+    def load(self, data: Mapping[str, Any]) -> T:
+        return self.formatter.load(data)
+
+    def exists(self, duplicate: T) -> ExistsError:
+        raw = self.formatter.dump(duplicate)
+        return ExistsError(duplicate).with_duplicate(
+            lambda _: f"{self.fields.id}<{raw[self.fields.id]}>"
+        )
+
+
+@dataclass(frozen=True, kw_only=True)
+class SqlTemplateGenerator:
+    schema: str
+    table: str
+    fields: SqlFieldManager
+
+    def count_all(self) -> str:
+        return f"""
             SELECT count(*) AS n_items
             FROM [{self.schema}].[{self.table}]
             {self.fields.where_statement(include_id=False)}
             REVERT
-        """).with_data(self.fields.with_fixed({}))
+        """
 
-    def insert(self, item: T) -> DatabaseCommand:
+    def insert(self) -> str:
         columns = ", ".join(
             ["[" + field.name + "]" for field in self.fields if field.include_in_insert]
         )
@@ -217,8 +252,7 @@ class DefaultSqlTable[T](SqlTable[T]):
             )
             where_statement = ""
 
-        return DatabaseCommand(f"""
-            {self._user_check}
+        return f"""
             INSERT INTO [{self.schema}].[{self.table}] (
                 {columns}
             )
@@ -229,34 +263,32 @@ class DefaultSqlTable[T](SqlTable[T]):
                 {output}
             {where_statement}
             REVERT
-        """).with_data(self.fields.with_fixed(self.formatter.dump(item)))
+        """
 
-    def select(self, item_id: str) -> DatabaseCommand:
+    def select(self) -> str:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
 
-        return DatabaseCommand(f"""
-            {self._user_check}
+        return f"""
             SELECT
                 {columns}
             FROM [{self.schema}].[{self.table}]
             {self.fields.where_statement(include_id=True)}
             REVERT
-        """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
+        """
 
-    def select_all(self) -> DatabaseCommand:
+    def select_all(self) -> str:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
 
-        return DatabaseCommand(f"""
-            {self._user_check}
+        return f"""
             SELECT
                 {columns}
             FROM [{self.schema}].[{self.table}]
             {self.fields.where_statement(include_id=False)}
             {self.fields.order}
             REVERT
-        """).with_data(self.fields.with_fixed({}))
+        """
 
-    def update(self, item: T) -> DatabaseCommand:
+    def update(self) -> str:
         updates = ", ".join(
             [
                 f"{field.name} = %({field.name})s"
@@ -265,44 +297,81 @@ class DefaultSqlTable[T](SqlTable[T]):
             ]
         )
 
-        return DatabaseCommand(f"""
-            {self._user_check}
+        return f"""
             UPDATE [{self.schema}].[{self.table}]
             SET
                 {updates}
             {self.fields.where_statement(include_id=True)}
             REVERT
-        """).with_data(self.fields.with_fixed(self.formatter.dump(item)))
+        """
 
-    def delete(self, item_id: str) -> DatabaseCommand:
-        return DatabaseCommand(f"""
-            {self._user_check}
+    def delete(self) -> str:
+        return f"""
             DELETE
             FROM [{self.schema}].[{self.table}]
             {self.fields.where_statement(include_id=True)}
             REVERT
-        """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
+        """
 
-    def delete_all(self) -> DatabaseCommand:
-        return DatabaseCommand(f"""
-            {self._user_check}
+    def delete_all(self) -> str:
+        return f"""
             DELETE
             FROM [{self.schema}].[{self.table}]
             {self.fields.where_statement(include_id=False)}
             REVERT
-        """).with_data(self.fields.with_fixed({}))
+        """
 
-    def load(self, data: Mapping[str, Any]) -> T:
-        return self.formatter.load(data)
 
-    def exists(self, duplicate: T) -> ExistsError:
-        raw = self.formatter.dump(duplicate)
-        return ExistsError(duplicate).with_duplicate(
-            lambda _: f"{self.fields.id}<{raw[self.fields.id]}>"
+@dataclass(frozen=True, kw_only=True)
+class AsUser[T](SqlTable[T]):
+    user: str
+
+    inner: AutoMsSqlTable[T]
+
+    def __post_init__(self) -> None:
+        if not self.user:
+            raise ValueError("username must be provided")
+
+    def with_a(self, formatter: Formatter[Mapping[str, Any], T]) -> AsUser[T]:
+        return replace(self, inner=self.inner.with_a(formatter=formatter))
+
+    def for_a(self, username: str) -> AsUser[T]:
+        return replace(self, user=username)
+
+    def _wrap(self, command: DatabaseCommand) -> DatabaseCommand:
+        return DatabaseCommand(
+            "\n".join(
+                [
+                    f"EXECUTE AS USER = '{self.user}'",
+                    dedent(command.value),
+                ]
+            ),
+            payload=command.payload,
         )
 
-    @property
-    def _user_check(self) -> str:
-        if self.username is not None:
-            return f"EXECUTE AS USER = '{self.username}'"
-        return ""
+    def count_all(self) -> DatabaseCommand:
+        return self._wrap(self.inner.count_all())
+
+    def insert(self, item: T) -> DatabaseCommand:
+        return self._wrap(self.inner.insert(item))
+
+    def select(self, item_id: str) -> DatabaseCommand:
+        return self._wrap(self.inner.select(item_id))
+
+    def select_all(self) -> DatabaseCommand:
+        return self._wrap(self.inner.select_all())
+
+    def update(self, item: T) -> DatabaseCommand:
+        return self._wrap(self.inner.update(item))
+
+    def delete(self, item_id: str) -> DatabaseCommand:
+        return self._wrap(self.inner.delete(item_id))
+
+    def delete_all(self) -> DatabaseCommand:
+        return self._wrap(self.inner.delete_all())
+
+    def load(self, data: Mapping[str, Any]) -> T:
+        return self.inner.load(data)
+
+    def exists(self, duplicate: T) -> ExistsError:
+        return self.inner.exists(duplicate)

@@ -40,7 +40,7 @@ class SqliteRepository(ContainsMixin, Repository[ItemT]):
             item = self.table.load(
                 self.db.execute(self.table.select_duplicate(item)).fetch_one()
             )
-            self.table.duplicate(item).fire()
+            self.table.exists(item).fire()
             return item
 
     def read(self, item_id: str) -> ItemT:

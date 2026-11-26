@@ -12,7 +12,8 @@ from apexdevkit.repository.sql.mssql import MsSqlTableBuilder, SqlTable
 @dataclass(frozen=True, kw_only=True)
 class Apple(Entity):
     color: str
-    parent: str | None
+
+    parent: str | None = None
 
 
 @pytest.fixture
@@ -32,53 +33,69 @@ _FORMATTER = AliasFormatter(
 
 TABLE_WITHOUT_PARENT = (
     MsSqlTableBuilder[Apple]()
-    .with_username("test")
     .with_schema("test")
     .with_table("apples")
-    .with_formatter(_FORMATTER)
-    .with_fields(
-        [
+    .with_a(
+        sql_field=(
             SqlFieldBuilder()
             .with_name("apid")
             .as_id()
             .in_ordering(descending=True)
-            .build(),
-            SqlFieldBuilder().with_name("clr").build(),
-            SqlFieldBuilder().with_name("pid").build(),
-            SqlFieldBuilder().with_name("kingdom").as_fixed("fruits").build(),
-            (
-                SqlFieldBuilder()
-                .with_name("manager")
-                .as_fixed(None)
-                .as_filter([5, 4])
-                .build()
-            ),
-        ]
+            .build()
+        )
+    )
+    .and_a(sql_field=SqlFieldBuilder().with_name("clr").build())
+    .and_a(sql_field=SqlFieldBuilder().with_name("pid").build())
+    .and_a(sql_field=SqlFieldBuilder().with_name("kingdom").as_fixed("fruits").build())
+    .and_a(
+        sql_field=(
+            SqlFieldBuilder()
+            .with_name("manager")
+            .as_fixed(None)
+            .as_filter([5, 4])
+            .build()
+        )
     )
     .with_custom_filters(["pid > 5"])
     .build()
+    .with_a(formatter=_FORMATTER)
+    .for_a(username="test")
 )
 
 TABLE_WITH_PARENT = (
     MsSqlTableBuilder[Apple]()
-    .with_username("test")
     .with_schema("test")
     .with_table("apples")
-    .with_formatter(_FORMATTER)
-    .with_fields(
-        [
-            SqlFieldBuilder().with_name("apid").as_id().in_ordering().build(),
-            SqlFieldBuilder().with_name("clr").build(),
-            SqlFieldBuilder().with_name("pid").as_parent("test").build(),
-        ]
-    )
+    .with_a(sql_field=SqlFieldBuilder().with_name("apid").as_id().in_ordering().build())
+    .with_a(sql_field=SqlFieldBuilder().with_name("clr").build())
+    .with_a(sql_field=SqlFieldBuilder().with_name("pid").as_parent("test").build())
     .build()
+    .with_a(formatter=_FORMATTER)
+    .for_a(username="test")
+)
+
+TABLE_WITHOUT_USERNAME = (
+    MsSqlTableBuilder[Apple]()
+    .with_schema("test")
+    .with_table("apples")
+    .with_a(sql_field=SqlFieldBuilder().with_name("apid").as_id().build())
+    .with_a(sql_field=SqlFieldBuilder().with_name("clr").build())
+    .build()
+    .with_a(formatter=_FORMATTER)
 )
 
 
-@pytest.fixture(params=["without_parent", "with_parent"])
+@pytest.fixture(
+    params=[
+        "no_username",
+        "without_parent",
+        "with_parent",
+    ]
+)
 def table(request: pytest.FixtureRequest) -> SqlTable[Apple]:
     match request.param:
+        case "no_username":
+            return TABLE_WITHOUT_USERNAME
         case "with_parent":
             return TABLE_WITH_PARENT
         case "without_parent":
