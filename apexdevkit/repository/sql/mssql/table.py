@@ -269,7 +269,7 @@ class AutoMsSqlTable[T](SqlTable[T]):
 
     @property
     def _user_check(self) -> str:
-        if self.username:
-            return f"EXECUTE AS USER = '{self.username}'"
+        if not self.username:
+            return ""
 
-        return ""
+        return f"EXECUTE AS USER = '{self.username}'"
