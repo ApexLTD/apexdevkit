@@ -4,7 +4,6 @@ from dataclasses import dataclass, field, replace
 from textwrap import dedent
 from typing import TYPE_CHECKING, Any, Self
 
-from apexdevkit.annotation import deprecated
 from apexdevkit.error import ExistsError
 from apexdevkit.formatter import NoFormatter
 from apexdevkit.repository.core import DatabaseCommand
@@ -78,35 +77,17 @@ class SqlFieldSet:
 
 @dataclass(frozen=True)
 class MsSqlTableBuilder[T]:
-    username: str = ""
     schema: str = ""
     table: str = ""
 
     fields: SqlFieldSet = field(default_factory=SqlFieldSet)
     custom_filters: list[str] = field(default_factory=list)
 
-    formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
-
-    @deprecated("Use .build().for_a(username) instead")
-    def with_username(self, value: str) -> Self:
-        return replace(self, username=value)
-
     def with_schema(self, value: str) -> Self:
         return replace(self, schema=value)
 
     def with_table(self, value: str) -> Self:
         return replace(self, table=value)
-
-    @deprecated("Use .build().with_a(formatter) instead")
-    def with_formatter(self, value: Formatter[Mapping[str, Any], T]) -> Self:
-        return replace(self, formatter=value)
-
-    @deprecated("Use .with_a/and_a method(s) instead")
-    def with_fields(self, value: Iterable[_SqlField]) -> Self:
-        for sql_field in value:
-            self.with_a(sql_field=sql_field)
-
-        return self
 
     def and_a(self, sql_field: _SqlField) -> Self:
         return self.with_a(sql_field=sql_field)
@@ -134,17 +115,13 @@ class MsSqlTableBuilder[T]:
             .build()
         )
 
-        return (
-            AutoMsSqlTable[T](
+        return AutoMsSqlTable[T](
+            fields=fields,
+            generator=SqlTemplateGenerator(
+                schema=self.schema,
+                table=self.table,
                 fields=fields,
-                generator=SqlTemplateGenerator(
-                    schema=self.schema,
-                    table=self.table,
-                    fields=fields,
-                ),
-            )
-            .with_a(formatter=self.formatter)
-            .for_a(username=self.username)
+            ),
         )
 
 
