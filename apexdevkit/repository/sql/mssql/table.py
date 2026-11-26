@@ -6,13 +6,14 @@ from typing import TYPE_CHECKING, Any, Self
 
 from apexdevkit.annotation import deprecated
 from apexdevkit.error import ExistsError
+from apexdevkit.formatter import NoFormatter
 from apexdevkit.repository.core import DatabaseCommand
 from apexdevkit.repository.sql.field import NotNone, SqlFieldManager, _SqlField
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
 
-    from apexdevkit.formatter import Formatter, NoFormatter
+    from apexdevkit.formatter import Formatter
 
 
 class SqlTable[T]:  # pragma: no cover
@@ -117,7 +118,7 @@ class MsSqlTableBuilder[T]:
 
     def build(self) -> AutoMsSqlTable[T]:
         if not self.fields.contains_id():
-            raise ValueError("Pass only one identifier key.")
+            raise ValueError("Id field is not provided!")
 
         if not self.schema or not self.table or not self.formatter:
             raise ValueError("Cannot build sql table.")
@@ -144,9 +145,7 @@ class AutoMsSqlTable[T](SqlTable[T]):
 
     username: str | None = None
 
-    formatter: Formatter[Mapping[str, Any], T] = field(
-        default_factory=NoFormatter[Mapping[str, Any], T]
-    )
+    formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
 
     def with_a(self, formatter: Formatter[Mapping[str, Any], T]) -> AutoMsSqlTable[T]:
         return replace(self, formatter=formatter)
