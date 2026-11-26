@@ -126,13 +126,7 @@ class MsSqlTableBuilder[T]:
         if not self.schema or not self.table:
             raise ValueError("Cannot build sql table.")
 
-        if self.username:
-            return AsUser(user=self.username, inner=self._asdf())
-
-        return self._asdf()
-
-    def _asdf(self) -> AutoMsSqlTable[T]:
-        return AutoMsSqlTable(
+        result = AutoMsSqlTable(
             schema=self.schema,
             table=self.table,
             fields=(
@@ -143,6 +137,11 @@ class MsSqlTableBuilder[T]:
                 .build()
             ),
         ).with_a(formatter=self.formatter)
+
+        if self.username:
+            return AsUser(user=self.username, inner=result)
+
+        return result
 
 
 @dataclass(frozen=True, kw_only=True)
