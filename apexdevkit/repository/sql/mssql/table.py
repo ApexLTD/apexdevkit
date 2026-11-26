@@ -100,7 +100,7 @@ class MsSqlTableBuilder[T]:
     def with_custom_filters(self, filters: Iterable[str]) -> Self:
         return replace(self, custom_filters=list(filters))
 
-    def build(self) -> AutoMsSqlTable[T] | AsUser[T]:
+    def build(self) -> AutoMsSqlTable[T]:
         if not self.fields.contains_id():
             raise ValueError("Id field is not provided!")
 
@@ -308,12 +308,6 @@ class AsUser[T](SqlTable[T]):
     def __post_init__(self) -> None:
         if not self.user:
             raise ValueError("username must be provided")
-
-    def with_a(self, formatter: Formatter[Mapping[str, Any], T]) -> AsUser[T]:
-        return replace(self, inner=self.inner.with_a(formatter=formatter))
-
-    def for_a(self, username: str) -> AsUser[T]:
-        return replace(self, user=username)
 
     def _wrap(self, command: DatabaseCommand) -> DatabaseCommand:
         return DatabaseCommand(
