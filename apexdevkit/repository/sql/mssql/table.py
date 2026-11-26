@@ -102,6 +102,9 @@ class MsSqlTableBuilder[T]:
 
         return self
 
+    def and_a(self, sql_field: _SqlField) -> Self:
+        return self.with_a(sql_field=sql_field)
+
     def with_a(self, sql_field: _SqlField) -> Self:
         self.fields.add(sql_field)
 

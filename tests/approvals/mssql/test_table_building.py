@@ -36,24 +36,26 @@ TABLE_WITHOUT_PARENT = (
     .with_schema("test")
     .with_table("apples")
     .with_formatter(_FORMATTER)
-    .with_fields(
-        [
+    .with_a(
+        sql_field=(
             SqlFieldBuilder()
             .with_name("apid")
             .as_id()
             .in_ordering(descending=True)
-            .build(),
-            SqlFieldBuilder().with_name("clr").build(),
-            SqlFieldBuilder().with_name("pid").build(),
-            SqlFieldBuilder().with_name("kingdom").as_fixed("fruits").build(),
-            (
-                SqlFieldBuilder()
-                .with_name("manager")
-                .as_fixed(None)
-                .as_filter([5, 4])
-                .build()
-            ),
-        ]
+            .build()
+        )
+    )
+    .and_a(sql_field=SqlFieldBuilder().with_name("clr").build())
+    .and_a(sql_field=SqlFieldBuilder().with_name("pid").build())
+    .and_a(sql_field=SqlFieldBuilder().with_name("kingdom").as_fixed("fruits").build())
+    .and_a(
+        sql_field=(
+            SqlFieldBuilder()
+            .with_name("manager")
+            .as_fixed(None)
+            .as_filter([5, 4])
+            .build()
+        )
     )
     .with_custom_filters(["pid > 5"])
     .build()
@@ -65,13 +67,9 @@ TABLE_WITH_PARENT = (
     .with_schema("test")
     .with_table("apples")
     .with_formatter(_FORMATTER)
-    .with_fields(
-        [
-            SqlFieldBuilder().with_name("apid").as_id().in_ordering().build(),
-            SqlFieldBuilder().with_name("clr").build(),
-            SqlFieldBuilder().with_name("pid").as_parent("test").build(),
-        ]
-    )
+    .with_a(sql_field=SqlFieldBuilder().with_name("apid").as_id().in_ordering().build())
+    .with_a(sql_field=SqlFieldBuilder().with_name("clr").build())
+    .with_a(sql_field=SqlFieldBuilder().with_name("pid").as_parent("test").build())
     .build()
 )
 
