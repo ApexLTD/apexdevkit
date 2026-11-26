@@ -80,8 +80,9 @@ class MsSqlTableBuilder[T]:
     schema: str | None = None
     table: str | None = None
     formatter: Formatter[Mapping[str, Any], T] | None = None
-    fields: list[_SqlField] | None = None
     custom_filters: list[str] | None = None
+
+    fields: SqlFieldSet = field(default_factory=SqlFieldSet)
 
     def with_username(self, value: str) -> Self:
         return replace(self, username=value)
@@ -96,24 +97,22 @@ class MsSqlTableBuilder[T]:
         return replace(self, formatter=value)
 
     def with_fields(self, value: Iterable[_SqlField]) -> Self:
-        fields = SqlFieldSet()
-
         for f in value:
-            fields.add(f)
+            self.fields.add(f)
 
-        if not fields.contains_id():
-            raise ValueError("Pass only one identifier key.")
-
-        return replace(self, fields=list(fields))
+        return self
 
     def with_custom_filters(self, filters: Iterable[str]) -> Self:
         return replace(self, custom_filters=list(filters))
 
     def build(self) -> AutoMsSqlTable[T]:
-        if not self.schema or not self.table or not self.formatter or not self.fields:
+        if not self.fields.contains_id():
+            raise ValueError("Pass only one identifier key.")
+
+        if not self.schema or not self.table or not self.formatter:
             raise ValueError("Cannot build sql table.")
 
-        field_manager = SqlFieldManager.Builder().with_fields(self.fields)
+        field_manager = SqlFieldManager.Builder().with_fields(list(self.fields))
         if self.custom_filters and len(self.custom_filters) > 0:
             field_manager = field_manager.with_custom_filters(self.custom_filters)
 
