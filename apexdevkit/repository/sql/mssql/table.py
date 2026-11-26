@@ -122,7 +122,7 @@ class MsSqlTableBuilder[T]:
         if not self.fields.contains_id():
             raise ValueError("Id field is not provided!")
 
-        if not self.schema or not self.table or not self.formatter:
+        if not self.schema or not self.table:
             raise ValueError("Cannot build sql table.")
 
         return AutoMsSqlTable(
