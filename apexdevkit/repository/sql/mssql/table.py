@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from collections.abc import Iterator
+from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any, Self
 
 from apexdevkit.error import ExistsError
@@ -46,6 +47,34 @@ class SqlTable[T]:  # pragma: no cover
 
 
 @dataclass(frozen=True)
+class SqlFieldSet:
+    items: list[_SqlField] = field(init=False, default_factory=list)
+
+    def __iter__(self) -> Iterator[_SqlField]:
+        return iter(self.items)
+
+    def contains_id(self) -> bool:
+        return any([i.is_id for i in self.items])
+
+    def add(self, item: _SqlField) -> Self:
+        self.items.append(self.validate(item))
+
+        return self
+
+    def validate(self, item: _SqlField) -> _SqlField:
+        if item.is_id and self.contains_id():
+            raise ValueError("Pass only one identifier key.")
+
+        if item.is_parent and any([i.is_parent for i in self.items]):
+            raise ValueError("Pass only one parent key.")
+
+        if not item.is_filter and isinstance(item.fixed_value, NotNone):
+            raise ValueError("Only filter fields can be 'not null'.")
+
+        return item
+
+
+@dataclass(frozen=True)
 class MsSqlTableBuilder[T]:
     username: str | None = None
     schema: str | None = None
@@ -67,26 +96,15 @@ class MsSqlTableBuilder[T]:
         return replace(self, formatter=value)
 
     def with_fields(self, value: Iterable[_SqlField]) -> Self:
-        key_list = list(value)
-        if len([key for key in key_list if key.is_id]) != 1:
+        fields = SqlFieldSet()
+
+        for f in value:
+            fields.add(f)
+
+        if not fields.contains_id():
             raise ValueError("Pass only one identifier key.")
 
-        if len([key for key in key_list if key.is_parent]) > 1:
-            raise ValueError("Pass only one parent key.")
-
-        if (
-            len(
-                [
-                    key
-                    for key in key_list
-                    if not key.is_filter and isinstance(key.fixed_value, NotNone)
-                ]
-            )
-            > 0
-        ):
-            raise ValueError("Only filter fields can be 'not null'.")
-
-        return replace(self, fields=key_list)
+        return replace(self, fields=list(fields))
 
     def with_custom_filters(self, filters: Iterable[str]) -> Self:
         return replace(self, custom_filters=list(filters))
