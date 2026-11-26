@@ -97,8 +97,13 @@ class MsSqlTableBuilder[T]:
         return replace(self, formatter=value)
 
     def with_fields(self, value: Iterable[_SqlField]) -> Self:
-        for f in value:
-            self.fields.add(f)
+        for sql_field in value:
+            self.with_a(sql_field=sql_field)
+
+        return self
+
+    def with_a(self, sql_field: _SqlField) -> Self:
+        self.fields.add(sql_field)
 
         return self
 
