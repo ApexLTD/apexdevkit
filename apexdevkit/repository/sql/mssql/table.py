@@ -81,9 +81,9 @@ class MsSqlTableBuilder[T]:
     schema: str | None = None
     table: str | None = None
     formatter: Formatter[Mapping[str, Any], T] | None = None
-    custom_filters: list[str] | None = None
 
     fields: SqlFieldSet = field(default_factory=SqlFieldSet)
+    custom_filters: list[str] = field(default_factory=list)
 
     def with_username(self, value: str) -> Self:
         return replace(self, username=value)
@@ -123,7 +123,7 @@ class MsSqlTableBuilder[T]:
             raise ValueError("Cannot build sql table.")
 
         field_manager = SqlFieldManager.Builder().with_fields(list(self.fields))
-        if self.custom_filters and len(self.custom_filters) > 0:
+        if self.custom_filters:
             field_manager = field_manager.with_custom_filters(self.custom_filters)
 
         return AutoMsSqlTable(
