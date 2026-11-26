@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from dataclasses import dataclass, field, replace
+from textwrap import dedent
 from typing import TYPE_CHECKING, Any, Self
 
 from apexdevkit.annotation import deprecated
@@ -125,8 +126,14 @@ class MsSqlTableBuilder[T]:
         if not self.schema or not self.table:
             raise ValueError("Cannot build sql table.")
 
+        if self.username:
+            return AsUser(user=self.username, inner=self._asdf())
+
+        return self._asdf()
+
+    def _asdf(self) -> AutoMsSqlTable[T]:
         return AutoMsSqlTable(
-            username=self.username,
+            username="",
             schema=self.schema,
             table=self.table,
             fields=(
@@ -305,3 +312,55 @@ class AutoMsSqlTable[T](SqlTable[T]):
             return ""
 
         return f"EXECUTE AS USER = '{self.username}'"
+
+
+@dataclass(frozen=True, kw_only=True)
+class AsUser[T](SqlTable[T]):
+    user: str
+
+    inner: AutoMsSqlTable[T]
+
+    def __post_init__(self) -> None:
+        if not self.user:
+            raise ValueError("username must be provided")
+
+    def with_a(self, formatter: Formatter[Mapping[str, Any], T]) -> AutoMsSqlTable[T]:
+        return replace(self, inner=self.inner.with_a(formatter=formatter))
+
+    def _wrap(self, command: DatabaseCommand) -> DatabaseCommand:
+        return DatabaseCommand(
+            "\n".join(
+                [
+                    f"EXECUTE AS USER = '{self.user}'",
+                    dedent(command.value),
+                ]
+            ),
+            payload=command.payload,
+        )
+
+    def count_all(self) -> DatabaseCommand:
+        return self._wrap(self.inner.count_all())
+
+    def insert(self, item: T) -> DatabaseCommand:
+        return self._wrap(self.inner.insert(item))
+
+    def select(self, item_id: str) -> DatabaseCommand:
+        return self._wrap(self.inner.select(item_id))
+
+    def select_all(self) -> DatabaseCommand:
+        return self._wrap(self.inner.select_all())
+
+    def update(self, item: T) -> DatabaseCommand:
+        return self._wrap(self.inner.update(item))
+
+    def delete(self, item_id: str) -> DatabaseCommand:
+        return self._wrap(self.inner.delete(item_id))
+
+    def delete_all(self) -> DatabaseCommand:
+        return self._wrap(self.inner.delete_all())
+
+    def load(self, data: Mapping[str, Any]) -> T:
+        return self.inner.load(data)
+
+    def exists(self, duplicate: T) -> ExistsError:
+        return self.inner.exists(duplicate)
