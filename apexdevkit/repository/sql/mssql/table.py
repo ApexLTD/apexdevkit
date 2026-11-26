@@ -91,7 +91,7 @@ class MsSqlTableBuilder[T]:
     def with_custom_filters(self, filters: Iterable[str]) -> Self:
         return replace(self, custom_filters=list(filters))
 
-    def build(self) -> SqlTable[T]:
+    def build(self) -> DefaultSqlTable[T]:
         if not self.schema or not self.table or not self.formatter or not self.fields:
             raise ValueError("Cannot build sql table.")
 
