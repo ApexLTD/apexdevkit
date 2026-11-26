@@ -12,7 +12,7 @@ from apexdevkit.repository.sql.field import NotNone, SqlFieldManager, _SqlField
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
 
-    from apexdevkit.formatter import Formatter
+    from apexdevkit.formatter import Formatter, NoFormatter
 
 
 class SqlTable[T]:  # pragma: no cover
@@ -126,7 +126,6 @@ class MsSqlTableBuilder[T]:
             username=self.username,
             schema=self.schema,
             table=self.table,
-            formatter=self.formatter,
             fields=(
                 SqlFieldManager.Builder()
                 .with_fields(list(self.fields))
@@ -134,17 +133,23 @@ class MsSqlTableBuilder[T]:
                 .for_mssql()
                 .build()
             ),
-        )
+        ).with_a(formatter=self.formatter)
 
 
 @dataclass(frozen=True, kw_only=True)
 class AutoMsSqlTable[T](SqlTable[T]):
     schema: str
     table: str
-    formatter: Formatter[Mapping[str, Any], T]
     fields: SqlFieldManager
 
     username: str | None = None
+
+    formatter: Formatter[Mapping[str, Any], T] = field(
+        default_factory=NoFormatter[Mapping[str, Any], T]
+    )
+
+    def with_a(self, formatter: Formatter[Mapping[str, Any], T]) -> AutoMsSqlTable[T]:
+        return replace(self, formatter=formatter)
 
     def count_all(self) -> DatabaseCommand:
         return DatabaseCommand(f"""
