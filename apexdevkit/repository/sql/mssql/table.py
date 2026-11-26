@@ -23,16 +23,19 @@ class SqlTable[T]:  # pragma: no cover
     def select(self, item_id: str) -> DatabaseCommand:
         raise NotImplementedError
 
+    def select_duplicate(self, item: T) -> DatabaseCommand:
+        raise NotImplementedError
+
     def select_all(self) -> DatabaseCommand:
+        raise NotImplementedError
+
+    def update(self, item: T) -> DatabaseCommand:
         raise NotImplementedError
 
     def delete(self, item_id: str) -> DatabaseCommand:
         raise NotImplementedError
 
     def delete_all(self) -> DatabaseCommand:
-        raise NotImplementedError
-
-    def update(self, item: T) -> DatabaseCommand:
         raise NotImplementedError
 
     def load(self, data: Mapping[str, Any]) -> T:
