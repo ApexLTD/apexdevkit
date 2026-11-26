@@ -126,22 +126,21 @@ class MsSqlTableBuilder[T]:
         if not self.schema or not self.table:
             raise ValueError("Cannot build sql table.")
 
-        result = AutoMsSqlTable(
-            schema=self.schema,
-            table=self.table,
-            fields=(
-                SqlFieldManager.Builder()
-                .with_fields(list(self.fields))
-                .with_custom_filters(list(self.custom_filters))
-                .for_mssql()
-                .build()
-            ),
-        ).with_a(formatter=self.formatter)
-
-        if self.username:
-            return AsUser(user=self.username, inner=result)
-
-        return result
+        return (
+            AutoMsSqlTable(
+                schema=self.schema,
+                table=self.table,
+                fields=(
+                    SqlFieldManager.Builder()
+                    .with_fields(list(self.fields))
+                    .with_custom_filters(list(self.custom_filters))
+                    .for_mssql()
+                    .build()
+                ),
+            )
+            .with_a(formatter=self.formatter)
+            .for_a(username=self.username)
+        )
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -154,6 +153,12 @@ class AutoMsSqlTable[T](SqlTable[T]):
 
     def with_a(self, formatter: Formatter[Mapping[str, Any], T]) -> AutoMsSqlTable[T]:
         return replace(self, formatter=formatter)
+
+    def for_a(self, username: str) -> SqlTable[T]:
+        if not username:
+            return self
+
+        return AsUser(user=username, inner=self)
 
     def count_all(self) -> DatabaseCommand:
         sql = f"""
