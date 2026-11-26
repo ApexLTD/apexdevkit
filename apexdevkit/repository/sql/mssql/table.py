@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Iterator
 from dataclasses import dataclass, field, replace
 from textwrap import dedent
 from typing import TYPE_CHECKING, Any, Self
@@ -12,7 +11,7 @@ from apexdevkit.repository.core import DatabaseCommand
 from apexdevkit.repository.sql.field import NotNone, SqlFieldManager, _SqlField
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Mapping
+    from collections.abc import Iterable, Iterator, Mapping
 
     from apexdevkit.formatter import Formatter
 
@@ -120,7 +119,7 @@ class MsSqlTableBuilder[T]:
     def with_custom_filters(self, filters: Iterable[str]) -> Self:
         return replace(self, custom_filters=list(filters))
 
-    def build(self) -> AutoMsSqlTable[T]:
+    def build(self) -> AutoMsSqlTable[T] | AsUser[T]:
         if not self.fields.contains_id():
             raise ValueError("Id field is not provided!")
 
@@ -136,7 +135,7 @@ class MsSqlTableBuilder[T]:
         )
 
         return (
-            AutoMsSqlTable(
+            AutoMsSqlTable[T](
                 fields=fields,
                 generator=SqlTemplateGenerator(
                     schema=self.schema,
@@ -159,7 +158,7 @@ class AutoMsSqlTable[T](SqlTable[T]):
     def with_a(self, formatter: Formatter[Mapping[str, Any], T]) -> AutoMsSqlTable[T]:
         return replace(self, formatter=formatter)
 
-    def for_a(self, username: str) -> SqlTable[T]:
+    def for_a(self, username: str) -> AutoMsSqlTable[T] | AsUser[T]:
         if not username:
             return self
 
@@ -231,7 +230,7 @@ class SqlTemplateGenerator:
             REVERT
         """
 
-    def insert(self) -> DatabaseCommand:
+    def insert(self) -> str:
         columns = ", ".join(
             ["[" + field.name + "]" for field in self.fields if field.include_in_insert]
         )
@@ -266,7 +265,7 @@ class SqlTemplateGenerator:
             REVERT
         """
 
-    def select(self) -> DatabaseCommand:
+    def select(self) -> str:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
 
         return f"""
@@ -277,7 +276,7 @@ class SqlTemplateGenerator:
             REVERT
         """
 
-    def select_all(self) -> DatabaseCommand:
+    def select_all(self) -> str:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
 
         return f"""
@@ -289,7 +288,7 @@ class SqlTemplateGenerator:
             REVERT
         """
 
-    def update(self) -> DatabaseCommand:
+    def update(self) -> str:
         updates = ", ".join(
             [
                 f"{field.name} = %({field.name})s"
@@ -306,7 +305,7 @@ class SqlTemplateGenerator:
             REVERT
         """
 
-    def delete(self) -> DatabaseCommand:
+    def delete(self) -> str:
         return f"""
             DELETE
             FROM [{self.schema}].[{self.table}]
@@ -314,7 +313,7 @@ class SqlTemplateGenerator:
             REVERT
         """
 
-    def delete_all(self) -> DatabaseCommand:
+    def delete_all(self) -> str:
         return f"""
             DELETE
             FROM [{self.schema}].[{self.table}]
@@ -333,8 +332,11 @@ class AsUser[T](SqlTable[T]):
         if not self.user:
             raise ValueError("username must be provided")
 
-    def with_a(self, formatter: Formatter[Mapping[str, Any], T]) -> AutoMsSqlTable[T]:
+    def with_a(self, formatter: Formatter[Mapping[str, Any], T]) -> AsUser[T]:
         return replace(self, inner=self.inner.with_a(formatter=formatter))
+
+    def for_a(self, username: str) -> AsUser[T]:
+        return replace(self, user=username)
 
     def _wrap(self, command: DatabaseCommand) -> DatabaseCommand:
         return DatabaseCommand(
