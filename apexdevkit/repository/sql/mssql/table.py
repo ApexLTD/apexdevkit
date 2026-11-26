@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from dataclasses import dataclass, replace
+from typing import TYPE_CHECKING, Any, Self
 
 from apexdevkit.error import ExistsError
 from apexdevkit.repository.core import DatabaseCommand
@@ -54,54 +54,26 @@ class MsSqlTableBuilder[T]:
     fields: list[_SqlField] | None = None
     custom_filters: list[str] | None = None
 
-    def with_username(self, value: str) -> MsSqlTableBuilder[T]:
-        return MsSqlTableBuilder[T](
-            value,
-            self.schema,
-            self.table,
-            self.formatter,
-            self.fields,
-            self.custom_filters,
-        )
+    def with_username(self, value: str) -> Self:
+        return replace(self, username=value)
 
-    def with_schema(self, value: str) -> MsSqlTableBuilder[T]:
-        return MsSqlTableBuilder[T](
-            self.username,
-            value,
-            self.table,
-            self.formatter,
-            self.fields,
-            self.custom_filters,
-        )
+    def with_schema(self, value: str) -> Self:
+        return replace(self, schema=value)
 
-    def with_table(self, value: str) -> MsSqlTableBuilder[T]:
-        return MsSqlTableBuilder[T](
-            self.username,
-            self.schema,
-            value,
-            self.formatter,
-            self.fields,
-            self.custom_filters,
-        )
+    def with_table(self, value: str) -> Self:
+        return replace(self, table=value)
 
-    def with_formatter(
-        self, value: Formatter[Mapping[str, Any], T]
-    ) -> MsSqlTableBuilder[T]:
-        return MsSqlTableBuilder[T](
-            self.username,
-            self.schema,
-            self.table,
-            value,
-            self.fields,
-            self.custom_filters,
-        )
+    def with_formatter(self, value: Formatter[Mapping[str, Any], T]) -> Self:
+        return replace(self, formatter=value)
 
-    def with_fields(self, value: Iterable[_SqlField]) -> MsSqlTableBuilder[T]:
+    def with_fields(self, value: Iterable[_SqlField]) -> Self:
         key_list = list(value)
         if len([key for key in key_list if key.is_id]) != 1:
             raise ValueError("Pass only one identifier key.")
+
         if len([key for key in key_list if key.is_parent]) > 1:
             raise ValueError("Pass only one parent key.")
+
         if (
             len(
                 [
@@ -113,24 +85,11 @@ class MsSqlTableBuilder[T]:
             > 0
         ):
             raise ValueError("Only filter fields can be 'not null'.")
-        return MsSqlTableBuilder[T](
-            self.username,
-            self.schema,
-            self.table,
-            self.formatter,
-            key_list,
-            self.custom_filters,
-        )
 
-    def with_custom_filters(self, filters: Iterable[str]) -> MsSqlTableBuilder[T]:
-        return MsSqlTableBuilder[T](
-            self.username,
-            self.schema,
-            self.table,
-            self.formatter,
-            self.fields,
-            list(filters),
-        )
+        return replace(self, fields=key_list)
+
+    def with_custom_filters(self, filters: Iterable[str]) -> Self:
+        return replace(self, custom_filters=list(filters))
 
     def build(self) -> SqlTable[T]:
         if not self.schema or not self.table or not self.formatter or not self.fields:

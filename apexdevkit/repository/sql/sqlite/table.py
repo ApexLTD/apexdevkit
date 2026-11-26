@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from dataclasses import dataclass, replace
+from typing import TYPE_CHECKING, Any, Self
 
 from apexdevkit.error import ExistsError
 from apexdevkit.repository.core import DatabaseCommand
@@ -52,25 +52,13 @@ class SqliteTableBuilder[T]:
     fields: list[_SqlField] | None = None
     custom_filters: list[str] | None = None
 
-    def with_name(self, value: str) -> SqliteTableBuilder[T]:
-        return SqliteTableBuilder[T](
-            value,
-            self.formatter,
-            self.fields,
-            self.custom_filters,
-        )
+    def with_name(self, value: str) -> Self:
+        return replace(self, table_name=value)
 
-    def with_formatter(
-        self, value: Formatter[Mapping[str, Any], T]
-    ) -> SqliteTableBuilder[T]:
-        return SqliteTableBuilder[T](
-            self.table_name,
-            value,
-            self.fields,
-            self.custom_filters,
-        )
+    def with_formatter(self, value: Formatter[Mapping[str, Any], T]) -> Self:
+        return replace(self, formatter=value)
 
-    def with_fields(self, value: Iterable[_SqlField]) -> SqliteTableBuilder[T]:
+    def with_fields(self, value: Iterable[_SqlField]) -> Self:
         key_list = list(value)
         if len([key for key in key_list if key.is_id]) != 1:
             raise ValueError("Pass only one identifier key.")
@@ -87,20 +75,11 @@ class SqliteTableBuilder[T]:
             > 0
         ):
             raise ValueError("Only filter fields can be 'not null'.")
-        return SqliteTableBuilder[T](
-            self.table_name,
-            self.formatter,
-            key_list,
-            self.custom_filters,
-        )
 
-    def with_custom_filters(self, filters: Iterable[str]) -> SqliteTableBuilder[T]:
-        return SqliteTableBuilder[T](
-            self.table_name,
-            self.formatter,
-            self.fields,
-            list(filters),
-        )
+        return replace(self, fields=key_list)
+
+    def with_custom_filters(self, filters: Iterable[str]) -> Self:
+        return replace(self, custom_filters=list(filters))
 
     def build(self) -> SqlTable[T]:
         if not self.table_name or not self.formatter or not self.fields:
