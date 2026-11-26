@@ -45,38 +45,6 @@ class SqlTable[T]:  # pragma: no cover
         return ExistsError(duplicate).with_duplicate(lambda _: "Unknown")
 
 
-@dataclass
-class SqlTableDecorator[T]:
-    table: DefaultSqlTable[T]
-
-    def count_all(self) -> DatabaseCommand:
-        return self.table.count_all()
-
-    def insert(self, item: T) -> DatabaseCommand:
-        return self.table.insert(item)
-
-    def select(self, item_id: str) -> DatabaseCommand:
-        return self.table.select(item_id)
-
-    def select_all(self) -> DatabaseCommand:
-        return self.table.select_all()
-
-    def delete(self, item_id: str) -> DatabaseCommand:
-        return self.table.delete(item_id)
-
-    def delete_all(self) -> DatabaseCommand:
-        return self.table.delete_all()
-
-    def update(self, item: T) -> DatabaseCommand:
-        return self.table.update(item)
-
-    def load(self, data: dict[str, Any]) -> T:
-        return self.table.load(data)
-
-    def exists(self, duplicate: T) -> ExistsError:
-        return self.table.exists(duplicate)
-
-
 @dataclass(frozen=True)
 class MsSqlTableBuilder[T]:
     username: str | None = None
