@@ -33,7 +33,6 @@ _FORMATTER = AliasFormatter(
 
 TABLE_WITHOUT_PARENT = (
     MsSqlTableBuilder[Apple]()
-    .with_username("test")
     .with_schema("test")
     .with_table("apples")
     .with_a(
@@ -60,11 +59,11 @@ TABLE_WITHOUT_PARENT = (
     .with_custom_filters(["pid > 5"])
     .build()
     .with_a(formatter=_FORMATTER)
+    .for_a(username="test")
 )
 
 TABLE_WITH_PARENT = (
     MsSqlTableBuilder[Apple]()
-    .with_username("test")
     .with_schema("test")
     .with_table("apples")
     .with_a(sql_field=SqlFieldBuilder().with_name("apid").as_id().in_ordering().build())
@@ -72,6 +71,7 @@ TABLE_WITH_PARENT = (
     .with_a(sql_field=SqlFieldBuilder().with_name("pid").as_parent("test").build())
     .build()
     .with_a(formatter=_FORMATTER)
+    .for_a(username="test")
 )
 
 TABLE_WITHOUT_USERNAME = (

@@ -88,6 +88,7 @@ class MsSqlTableBuilder[T]:
 
     formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
 
+    @deprecated("Use .build().for_a(username) instead")
     def with_username(self, value: str) -> Self:
         return replace(self, username=value)
 
