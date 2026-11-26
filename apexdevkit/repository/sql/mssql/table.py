@@ -133,7 +133,6 @@ class MsSqlTableBuilder[T]:
 
     def _asdf(self) -> AutoMsSqlTable[T]:
         return AutoMsSqlTable(
-            username="",
             schema=self.schema,
             table=self.table,
             fields=(
@@ -152,8 +151,6 @@ class AutoMsSqlTable[T](SqlTable[T]):
     table: str
     fields: SqlFieldManager
 
-    username: str | None = None
-
     formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
 
     def with_a(self, formatter: Formatter[Mapping[str, Any], T]) -> AutoMsSqlTable[T]:
@@ -161,7 +158,6 @@ class AutoMsSqlTable[T](SqlTable[T]):
 
     def count_all(self) -> DatabaseCommand:
         sql = f"""
-            {self._user_check}
             SELECT count(*) AS n_items
             FROM [{self.schema}].[{self.table}]
             {self.fields.where_statement(include_id=False)}
@@ -196,7 +192,6 @@ class AutoMsSqlTable[T](SqlTable[T]):
             where_statement = ""
 
         sql = f"""
-            {self._user_check}
             INSERT INTO [{self.schema}].[{self.table}] (
                 {columns}
             )
@@ -218,7 +213,6 @@ class AutoMsSqlTable[T](SqlTable[T]):
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
 
         sql = f"""
-            {self._user_check}
             SELECT
                 {columns}
             FROM [{self.schema}].[{self.table}]
@@ -235,7 +229,6 @@ class AutoMsSqlTable[T](SqlTable[T]):
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
 
         sql = f"""
-            {self._user_check}
             SELECT
                 {columns}
             FROM [{self.schema}].[{self.table}]
@@ -256,7 +249,6 @@ class AutoMsSqlTable[T](SqlTable[T]):
         )
 
         sql = f"""
-            {self._user_check}
             UPDATE [{self.schema}].[{self.table}]
             SET
                 {updates}
@@ -271,7 +263,6 @@ class AutoMsSqlTable[T](SqlTable[T]):
 
     def delete(self, item_id: str) -> DatabaseCommand:
         sql = f"""
-            {self._user_check}
             DELETE
             FROM [{self.schema}].[{self.table}]
             {self.fields.where_statement(include_id=True)}
@@ -285,7 +276,6 @@ class AutoMsSqlTable[T](SqlTable[T]):
 
     def delete_all(self) -> DatabaseCommand:
         sql = f"""
-            {self._user_check}
             DELETE
             FROM [{self.schema}].[{self.table}]
             {self.fields.where_statement(include_id=False)}
@@ -305,13 +295,6 @@ class AutoMsSqlTable[T](SqlTable[T]):
         return ExistsError(duplicate).with_duplicate(
             lambda _: f"{self.fields.id}<{raw[self.fields.id]}>"
         )
-
-    @property
-    def _user_check(self) -> str:
-        if not self.username:
-            return ""
-
-        return f"EXECUTE AS USER = '{self.username}'"
 
 
 @dataclass(frozen=True, kw_only=True)
