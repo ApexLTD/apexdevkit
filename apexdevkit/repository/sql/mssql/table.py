@@ -138,6 +138,17 @@ class MsSqlTableBuilder[T]:
                     .for_mssql()
                     .build()
                 ),
+                generator=SqlTemplateGenerator(
+                    schema=self.schema,
+                    table=self.table,
+                    fields=(
+                        SqlFieldManager.Builder()
+                        .with_fields(list(self.fields))
+                        .with_custom_filters(list(self.custom_filters))
+                        .for_mssql()
+                        .build()
+                    ),
+                ),
             )
             .with_a(formatter=self.formatter)
             .for_a(username=self.username)
@@ -149,6 +160,8 @@ class AutoMsSqlTable[T](SqlTable[T]):
     schema: str
     table: str
     fields: SqlFieldManager
+
+    generator: SqlTemplateGenerator
 
     formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
 
@@ -163,43 +176,43 @@ class AutoMsSqlTable[T](SqlTable[T]):
 
     def count_all(self) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.gen().count_all(),
+            value=self.generator.count_all(),
             payload=self.fields.with_fixed({}),
         )
 
     def insert(self, item: T) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.gen().insert(),
+            value=self.generator.insert(),
             payload=self.fields.with_fixed(self.formatter.dump(item)),
         )
 
     def select(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.gen().select(),
+            value=self.generator.select(),
             payload=self.fields.with_fixed({self.fields.id: item_id}),
         )
 
     def select_all(self) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.gen().select_all(),
+            value=self.generator.select_all(),
             payload=self.fields.with_fixed({}),
         )
 
     def update(self, item: T) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.gen().update(),
+            value=self.generator.update(),
             payload=self.fields.with_fixed(self.formatter.dump(item)),
         )
 
     def delete(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.gen().delete(),
+            value=self.generator.delete(),
             payload=self.fields.with_fixed({self.fields.id: item_id}),
         )
 
     def delete_all(self) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.gen().delete_all(),
+            value=self.generator.delete_all(),
             payload=self.fields.with_fixed({}),
         )
 
@@ -210,13 +223,6 @@ class AutoMsSqlTable[T](SqlTable[T]):
         raw = self.formatter.dump(duplicate)
         return ExistsError(duplicate).with_duplicate(
             lambda _: f"{self.fields.id}<{raw[self.fields.id]}>"
-        )
-
-    def gen(self) -> SqlTemplateGenerator:
-        return SqlTemplateGenerator(
-            schema=self.schema,
-            table=self.table,
-            fields=self.fields,
         )
 
 
