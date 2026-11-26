@@ -153,13 +153,18 @@ class AutoMsSqlTable[T](SqlTable[T]):
         return replace(self, formatter=formatter)
 
     def count_all(self) -> DatabaseCommand:
-        return DatabaseCommand(f"""
+        sql = f"""
             {self._user_check}
             SELECT count(*) AS n_items
             FROM [{self.schema}].[{self.table}]
             {self.fields.where_statement(include_id=False)}
             REVERT
-        """).with_data(self.fields.with_fixed({}))
+        """
+
+        return DatabaseCommand(
+            sql,
+            payload=self.fields.with_fixed({}),
+        )
 
     def insert(self, item: T) -> DatabaseCommand:
         columns = ", ".join(
@@ -183,7 +188,7 @@ class AutoMsSqlTable[T](SqlTable[T]):
             )
             where_statement = ""
 
-        return DatabaseCommand(f"""
+        sql = f"""
             {self._user_check}
             INSERT INTO [{self.schema}].[{self.table}] (
                 {columns}
@@ -195,24 +200,34 @@ class AutoMsSqlTable[T](SqlTable[T]):
                 {output}
             {where_statement}
             REVERT
-        """).with_data(self.fields.with_fixed(self.formatter.dump(item)))
+        """
+
+        return DatabaseCommand(
+            sql,
+            payload=self.fields.with_fixed(self.formatter.dump(item)),
+        )
 
     def select(self, item_id: str) -> DatabaseCommand:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
 
-        return DatabaseCommand(f"""
+        sql = f"""
             {self._user_check}
             SELECT
                 {columns}
             FROM [{self.schema}].[{self.table}]
             {self.fields.where_statement(include_id=True)}
             REVERT
-        """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
+        """
+
+        return DatabaseCommand(
+            sql,
+            payload=self.fields.with_fixed({self.fields.id: item_id}),
+        )
 
     def select_all(self) -> DatabaseCommand:
         columns = ", ".join(["[" + field.name + "]" for field in self.fields])
 
-        return DatabaseCommand(f"""
+        sql = f"""
             {self._user_check}
             SELECT
                 {columns}
@@ -220,7 +235,9 @@ class AutoMsSqlTable[T](SqlTable[T]):
             {self.fields.where_statement(include_id=False)}
             {self.fields.order}
             REVERT
-        """).with_data(self.fields.with_fixed({}))
+        """
+
+        return DatabaseCommand(sql, payload=self.fields.with_fixed({}))
 
     def update(self, item: T) -> DatabaseCommand:
         updates = ", ".join(
@@ -231,32 +248,47 @@ class AutoMsSqlTable[T](SqlTable[T]):
             ]
         )
 
-        return DatabaseCommand(f"""
+        sql = f"""
             {self._user_check}
             UPDATE [{self.schema}].[{self.table}]
             SET
                 {updates}
             {self.fields.where_statement(include_id=True)}
             REVERT
-        """).with_data(self.fields.with_fixed(self.formatter.dump(item)))
+        """
+
+        return DatabaseCommand(
+            sql,
+            payload=self.fields.with_fixed(self.formatter.dump(item)),
+        )
 
     def delete(self, item_id: str) -> DatabaseCommand:
-        return DatabaseCommand(f"""
+        sql = f"""
             {self._user_check}
             DELETE
             FROM [{self.schema}].[{self.table}]
             {self.fields.where_statement(include_id=True)}
             REVERT
-        """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
+        """
+
+        return DatabaseCommand(
+            sql,
+            payload=self.fields.with_fixed({self.fields.id: item_id}),
+        )
 
     def delete_all(self) -> DatabaseCommand:
-        return DatabaseCommand(f"""
+        sql = f"""
             {self._user_check}
             DELETE
             FROM [{self.schema}].[{self.table}]
             {self.fields.where_statement(include_id=False)}
             REVERT
-        """).with_data(self.fields.with_fixed({}))
+        """
+
+        return DatabaseCommand(
+            sql,
+            payload=self.fields.with_fixed({}),
+        )
 
     def load(self, data: Mapping[str, Any]) -> T:
         return self.formatter.load(data)
