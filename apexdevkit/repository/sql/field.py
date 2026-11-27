@@ -131,10 +131,10 @@ class SqlFieldManager:
             for key in self.fields.for_ordering()
         ]
 
-        if clauses:
-            return "ORDER BY " + ", ".join(clauses)
+        if not clauses:
+            return ""
 
-        return ""
+        return "ORDER BY " + ", ".join(clauses)
 
     def __iter__(self) -> Iterator[SqlField]:
         yield from self.fields
