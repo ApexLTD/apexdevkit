@@ -6,7 +6,7 @@ from pymssql.exceptions import DatabaseError
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Database, MsSqlRepository
-from apexdevkit.repository.sql import SqlFieldBuilder
+from apexdevkit.repository.sql.field import SqlField
 from apexdevkit.repository.sql.mssql import MsSqlTableBuilder, UnknownError
 from tests.repository.data import AppleItem
 
@@ -14,8 +14,8 @@ TABLE = (
     MsSqlTableBuilder[AppleItem]()
     .with_schema("test")
     .with_table("apples")
-    .with_a(sql_field=SqlFieldBuilder().with_name("id").as_id().build())
-    .with_a(sql_field=SqlFieldBuilder().with_name("color").build())
+    .with_a(sql_field=SqlField("id").as_id())
+    .with_a(sql_field=SqlField("color"))
     .build()
     .with_a(formatter=DataclassFormatter(AppleItem))
 )

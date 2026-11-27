@@ -11,7 +11,7 @@ from apexdevkit.repository import (
     Repository,
     SqliteRepository,
 )
-from apexdevkit.repository.sql import SqlFieldBuilder
+from apexdevkit.repository.sql.field import SqlField
 from apexdevkit.repository.sql.sqlite import (
     SqliteTableBuilder,
 )
@@ -44,12 +44,7 @@ def repository(sqlite_db: Database) -> SqliteRepository[AppleItem]:
             SqliteTableBuilder[AppleItem]()
             .with_name(TABLE)
             .with_formatter(DataclassFormatter(AppleItem))
-            .with_fields(
-                [
-                    SqlFieldBuilder().with_name("id").as_id().build(),
-                    SqlFieldBuilder().with_name("color").build(),
-                ]
-            )
+            .with_fields([SqlField("id").as_id(), SqlField("color")])
             .build()
         ),
     )
