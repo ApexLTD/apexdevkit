@@ -172,10 +172,14 @@ class SqlTemplates:
     table: str
     fields: SqlFieldManager
 
+    @property
+    def target(self) -> str:
+        return f"[{self.schema}].[{self.table}]"
+
     def count_all(self) -> str:
         return f"""
             SELECT count(*) AS n_items
-            FROM [{self.schema}].[{self.table}]
+            FROM {self.target}
             {self.fields.where_statement(include_id=False)}
             REVERT
         """
@@ -193,7 +197,7 @@ class SqlTemplates:
                 ["[" + field.name + "] AS " + field.name for field in self.fields]
             )
             where_statement = f"""
-                FROM [{self.schema}].[{self.table}]
+                FROM {self.target}
                 {self.fields.where_statement(include_id=True, read_id=True)}
             """
         except ValueError:
@@ -203,7 +207,7 @@ class SqlTemplates:
             where_statement = ""
 
         return f"""
-            INSERT INTO [{self.schema}].[{self.table}] (
+            INSERT INTO {self.target} (
                 {columns}
             )
             VALUES (
@@ -221,7 +225,7 @@ class SqlTemplates:
         return f"""
             SELECT
                 {columns}
-            FROM [{self.schema}].[{self.table}]
+            FROM {self.target}
             {self.fields.where_statement(include_id=True)}
             REVERT
         """
@@ -232,7 +236,7 @@ class SqlTemplates:
         return f"""
             SELECT
                 {columns}
-            FROM [{self.schema}].[{self.table}]
+            FROM {self.target}
             {self.fields.where_statement(include_id=False)}
             {self.fields.order}
             REVERT
@@ -248,7 +252,7 @@ class SqlTemplates:
         )
 
         return f"""
-            UPDATE [{self.schema}].[{self.table}]
+            UPDATE {self.target}
             SET
                 {updates}
             {self.fields.where_statement(include_id=True)}
@@ -258,7 +262,7 @@ class SqlTemplates:
     def delete(self) -> str:
         return f"""
             DELETE
-            FROM [{self.schema}].[{self.table}]
+            FROM {self.target}
             {self.fields.where_statement(include_id=True)}
             REVERT
         """
@@ -266,7 +270,7 @@ class SqlTemplates:
     def delete_all(self) -> str:
         return f"""
             DELETE
-            FROM [{self.schema}].[{self.table}]
+            FROM {self.target}
             {self.fields.where_statement(include_id=False)}
             REVERT
         """
