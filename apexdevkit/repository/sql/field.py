@@ -67,42 +67,6 @@ class SqlField:
         return replace(self, is_fixed=True, fixed_value=value)
 
 
-class PlaceHolder(ABC):
-    def is_null(self, value) -> str:
-        return self.replace_with(value) + " IS NULL"
-
-    def is_not_null(self, value) -> str:
-        return self.replace_with(value) + " IS NOT NULL"
-
-    @abstractmethod
-    def replace_with(self, value: str) -> str:
-        pass
-
-
-@dataclass(frozen=True)
-class MsSqlKeyPlaceholder(PlaceHolder):
-    def replace_with(self, value: str) -> str:
-        return f"[{value}]"
-
-
-@dataclass(frozen=True)
-class MsSqlValuePlaceholder(PlaceHolder):
-    def replace_with(self, value: str) -> str:
-        return f"%({value})s"
-
-
-@dataclass(frozen=True)
-class SqliteKeyPlaceholder(PlaceHolder):
-    def replace_with(self, value: str) -> str:
-        return f"{value}"
-
-
-@dataclass(frozen=True)
-class SqliteValuePlaceholder(PlaceHolder):
-    def replace_with(self, value: str) -> str:
-        return f":{value}"
-
-
 @dataclass
 class SqlFieldManager:
     fields: list[SqlField]
@@ -283,3 +247,39 @@ class SqlFieldManager:
                 placeholder_value=self.placeholder_value,
                 placeholder_key=self.placeholder_key,
             )
+
+
+class PlaceHolder(ABC):
+    def is_null(self, value) -> str:
+        return self.replace_with(value) + " IS NULL"
+
+    def is_not_null(self, value) -> str:
+        return self.replace_with(value) + " IS NOT NULL"
+
+    @abstractmethod
+    def replace_with(self, value: str) -> str:
+        pass
+
+
+@dataclass(frozen=True)
+class MsSqlKeyPlaceholder(PlaceHolder):
+    def replace_with(self, value: str) -> str:
+        return f"[{value}]"
+
+
+@dataclass(frozen=True)
+class MsSqlValuePlaceholder(PlaceHolder):
+    def replace_with(self, value: str) -> str:
+        return f"%({value})s"
+
+
+@dataclass(frozen=True)
+class SqliteKeyPlaceholder(PlaceHolder):
+    def replace_with(self, value: str) -> str:
+        return f"{value}"
+
+
+@dataclass(frozen=True)
+class SqliteValuePlaceholder(PlaceHolder):
+    def replace_with(self, value: str) -> str:
+        return f":{value}"
