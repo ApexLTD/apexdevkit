@@ -216,23 +216,23 @@ class SqlFieldManager:
         key_formatter: str = field(init=False)
         value_formatter: str = field(init=False)
 
-        def with_fields(self, fields: list[SqlField]) -> SqlFieldManager.Builder:
+        def with_fields(self, fields: list[SqlField]) -> Self:
             self.fields = fields
 
             return self
 
-        def with_custom_filters(self, fields: list[str]) -> SqlFieldManager.Builder:
+        def with_custom_filters(self, fields: list[str]) -> Self:
             self.custom_filters = fields
 
             return self
 
-        def for_sqlite(self) -> SqlFieldManager.Builder:
+        def for_sqlite(self) -> Self:
             self.key_formatter = "x"
             self.value_formatter = ":x"
 
             return self
 
-        def for_mssql(self) -> SqlFieldManager.Builder:
+        def for_mssql(self) -> Self:
             self.key_formatter = "[x]"
             self.value_formatter = "%(x)s"
 
