@@ -1,4 +1,3 @@
-EXECUTE AS USER = 'test'
 UPDATE [test].[apples]
 SET
     clr = red

@@ -1,4 +1,3 @@
-EXECUTE AS USER = 'test'
 INSERT INTO [test].[apples] (
     [apid], [clr], [pid], [kingdom], [manager]
 )

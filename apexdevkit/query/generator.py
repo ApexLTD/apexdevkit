@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, ClassVar, Protocol
+from typing import TYPE_CHECKING, Any, ClassVar, Protocol, Self
 
 from apexdevkit.annotation import deprecated
 from apexdevkit.error import ForbiddenError
@@ -39,22 +39,22 @@ class DefaultMsSqlFilter[T]:
     _options: QueryOptions = field(init=False)
     _formatter: _Loader[T] = field(init=False)
 
-    def with_database(self, value: Database) -> DefaultMsSqlFilter[T]:
+    def with_database(self, value: Database) -> Self:
         self._database = value
 
         return self
 
-    def with_query_builder(self, value: MsSqlQueryBuilder) -> DefaultMsSqlFilter[T]:
+    def with_query_builder(self, value: MsSqlQueryBuilder) -> Self:
         self._query_builder = value
 
         return self
 
-    def with_options(self, value: QueryOptions) -> DefaultMsSqlFilter[T]:
+    def with_options(self, value: QueryOptions) -> Self:
         self._options = value
 
         return self
 
-    def with_formatter(self, value: _Loader[T]) -> DefaultMsSqlFilter[T]:
+    def with_formatter(self, value: _Loader[T]) -> Self:
         self._formatter = value
 
         return self
@@ -76,17 +76,17 @@ class DefaultMsSqlAggregate:
     _query_builder: MsSqlQueryBuilder = field(init=False)
     _options: FooterOptions = field(init=False)
 
-    def with_database(self, value: Database) -> DefaultMsSqlAggregate:
+    def with_database(self, value: Database) -> Self:
         self._database = value
 
         return self
 
-    def with_query_builder(self, value: MsSqlQueryBuilder) -> DefaultMsSqlAggregate:
+    def with_query_builder(self, value: MsSqlQueryBuilder) -> Self:
         self._query_builder = value
 
         return self
 
-    def with_options(self, value: FooterOptions) -> DefaultMsSqlAggregate:
+    def with_options(self, value: FooterOptions) -> Self:
         self._options = value
 
         return self

@@ -57,6 +57,10 @@ class MsSqlTableBuilder[T]:
     fields: SqlFieldSet = field(default_factory=SqlFieldSet)
     custom_filters: list[str] = field(default_factory=list)
 
+    @property
+    def target(self) -> str:
+        return f"[{self.schema}].[{self.table}]"
+
     def with_schema(self, value: str) -> Self:
         return replace(self, schema=value)
 
@@ -81,19 +85,16 @@ class MsSqlTableBuilder[T]:
         if not self.schema or not self.table:
             raise ValueError("Cannot build sql table.")
 
-        fields = (
-            SqlFieldManager.Builder.for_mssql()
-            .with_fields(self.fields)
-            .with_custom_filters(list(self.custom_filters))
-            .build()
-        )
-
         return AutoMsSqlTable[T](
             fields=self.fields,
             templates=SqlTemplates(
-                schema=self.schema,
-                table=self.table,
-                fields=fields,
+                target=self.target,
+                fields=(
+                    SqlFieldManager.Builder.for_mssql()
+                    .with_fields(self.fields)
+                    .with_custom_filters(list(self.custom_filters))
+                    .build()
+                ),
             ),
         )
 
@@ -113,12 +114,6 @@ class AutoMsSqlTable[T](SqlTable[T]):
 
     def with_a(self, formatter: Formatter[Mapping[str, Any], T]) -> AutoMsSqlTable[T]:
         return replace(self, formatter=formatter)
-
-    def for_a(self, username: str) -> AutoMsSqlTable[T] | AsUser[T]:
-        if not username:
-            return self
-
-        return AsUser(user=username, inner=self)
 
     def count_all(self) -> DatabaseCommand:
         return DatabaseCommand(
@@ -174,14 +169,17 @@ class AutoMsSqlTable[T](SqlTable[T]):
 
 @dataclass(frozen=True, kw_only=True)
 class SqlTemplates:
-    schema: str
-    table: str
+    target: str
     fields: SqlFieldManager
+
+    @property
+    def columns(self) -> str:
+        return ", ".join(["[" + sql_field.name + "]" for sql_field in self.fields])
 
     def count_all(self) -> str:
         return f"""
             SELECT count(*) AS n_items
-            FROM [{self.schema}].[{self.table}]
+            FROM {self.target}
             {self.fields.where_statement(include_id=False)}
             REVERT
         """
@@ -199,7 +197,7 @@ class SqlTemplates:
                 ["[" + field.name + "] AS " + field.name for field in self.fields]
             )
             where_statement = f"""
-                FROM [{self.schema}].[{self.table}]
+                FROM {self.target}
                 {self.fields.where_statement(include_id=True, read_id=True)}
             """
         except ValueError:
@@ -209,7 +207,7 @@ class SqlTemplates:
             where_statement = ""
 
         return f"""
-            INSERT INTO [{self.schema}].[{self.table}] (
+            INSERT INTO {self.target} (
                 {columns}
             )
             VALUES (
@@ -222,23 +220,19 @@ class SqlTemplates:
         """
 
     def select(self) -> str:
-        columns = ", ".join(["[" + field.name + "]" for field in self.fields])
-
         return f"""
             SELECT
-                {columns}
-            FROM [{self.schema}].[{self.table}]
+                {self.columns}
+            FROM {self.target}
             {self.fields.where_statement(include_id=True)}
             REVERT
         """
 
     def select_all(self) -> str:
-        columns = ", ".join(["[" + field.name + "]" for field in self.fields])
-
         return f"""
             SELECT
-                {columns}
-            FROM [{self.schema}].[{self.table}]
+                {self.columns}
+            FROM {self.target}
             {self.fields.where_statement(include_id=False)}
             {self.fields.order}
             REVERT
@@ -254,7 +248,7 @@ class SqlTemplates:
         )
 
         return f"""
-            UPDATE [{self.schema}].[{self.table}]
+            UPDATE {self.target}
             SET
                 {updates}
             {self.fields.where_statement(include_id=True)}
@@ -264,7 +258,7 @@ class SqlTemplates:
     def delete(self) -> str:
         return f"""
             DELETE
-            FROM [{self.schema}].[{self.table}]
+            FROM {self.target}
             {self.fields.where_statement(include_id=True)}
             REVERT
         """
@@ -272,27 +266,26 @@ class SqlTemplates:
     def delete_all(self) -> str:
         return f"""
             DELETE
-            FROM [{self.schema}].[{self.table}]
+            FROM {self.target}
             {self.fields.where_statement(include_id=False)}
             REVERT
         """
 
 
 @dataclass(frozen=True, kw_only=True)
-class AsUser[T](SqlTable[T]):
-    user: str
-
-    inner: AutoMsSqlTable[T]
+class TableWithUser[T](SqlTable[T]):
+    name: str
+    inner: SqlTable[T]
 
     def __post_init__(self) -> None:
-        if not self.user:
+        if not self.name:
             raise ValueError("username must be provided")
 
     def _wrap(self, command: DatabaseCommand) -> DatabaseCommand:
         return DatabaseCommand(
             "\n".join(
                 [
-                    f"EXECUTE AS USER = '{self.user}'",
+                    f"EXECUTE AS USER = '{self.name}'",
                     dedent(command.value),
                 ]
             ),
