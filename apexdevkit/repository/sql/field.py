@@ -75,10 +75,10 @@ class SqlFieldSet:
         return iter(self.items)
 
     @property
-    def id_name(self) -> str:
+    def id_field(self) -> SqlField:
         for item in self.items:
             if item.is_id:
-                return item.name
+                return item
 
         raise RuntimeError("FieldSet does not contain Id field.")
 
@@ -116,7 +116,7 @@ class SqlFieldManager:
 
     @property
     def id_name(self) -> str:
-        return self.fields.id_name
+        return self.fields.id_field.name
 
     @property
     def composite(self) -> list[str]:
