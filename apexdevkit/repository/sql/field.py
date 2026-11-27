@@ -106,7 +106,7 @@ class SqlFieldSet:
         return (item for item in self.items if item.is_ordered)
 
     def for_filtering(self) -> Iterable[SqlField]:
-        return (item for item in self.items if item.is_filter)
+        return (item for item in self.items if item.is_filter and item.filter_values)
 
 
 @dataclass
@@ -229,7 +229,7 @@ class SqlFieldManager:
             for item in self.fields.for_filtering()
         ]
 
-        return " AND ".join(statement for statement in statements if statement != "()")
+        return " AND ".join(statements)
 
     def filter_for_a(self, sql_field: SqlField) -> str:
         return " OR ".join(
