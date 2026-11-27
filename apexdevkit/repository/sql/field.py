@@ -69,7 +69,7 @@ class SqlField:
 
 @dataclass(frozen=True)
 class SqlFieldSet:
-    items: list[SqlField] = field(init=False, default_factory=list)
+    items: list[SqlField] = field(default_factory=list)
 
     def __iter__(self) -> Iterator[SqlField]:
         return iter(self.items)
@@ -241,7 +241,7 @@ class SqlFieldManager:
         placeholder_value: PlaceHolder
         placeholder_key: PlaceHolder
 
-        fields: list[SqlField] = field(init=False)
+        fields: SqlFieldSet = field(default_factory=SqlFieldSet)
         custom_filters: list[str] = field(default_factory=list)
 
         @classmethod
@@ -259,7 +259,7 @@ class SqlFieldManager:
             )
 
         def with_fields(self, fields: list[SqlField]) -> Self:
-            self.fields = fields
+            self.fields = SqlFieldSet(items=fields)
 
             return self
 
@@ -270,8 +270,8 @@ class SqlFieldManager:
 
         def build(self) -> SqlFieldManager:
             return SqlFieldManager(
-                self.fields,
-                self.custom_filters,
+                fields=list(self.fields),
+                custom_filters=list(self.custom_filters),
                 placeholder_value=self.placeholder_value,
                 placeholder_key=self.placeholder_key,
             )
