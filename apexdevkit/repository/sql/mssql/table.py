@@ -108,6 +108,9 @@ class AutoMsSqlTable[T](SqlTable[T]):
     def dump(self, item: T) -> FluentDict[Any]:
         return FluentDict(self.formatter.dump(item))
 
+    def dump_id(self, item_id: str) -> FluentDict[str]:
+        return FluentDict({self.fields.id_field.name: item_id})
+
     def with_a(self, formatter: Formatter[Mapping[str, Any], T]) -> AutoMsSqlTable[T]:
         return replace(self, formatter=formatter)
 
@@ -132,9 +135,7 @@ class AutoMsSqlTable[T](SqlTable[T]):
     def select(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand(
             value=self.templates.select(),
-            payload=FluentDict({self.fields.id_field.name: item_id}).merge(
-                self.fields.as_payload()
-            ),
+            payload=self.dump_id(item_id).merge(self.fields.as_payload()),
         )
 
     def select_all(self) -> DatabaseCommand:
@@ -152,9 +153,7 @@ class AutoMsSqlTable[T](SqlTable[T]):
     def delete(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand(
             value=self.templates.delete(),
-            payload=FluentDict({self.fields.id_field.name: item_id}).merge(
-                self.fields.as_payload()
-            ),
+            payload=self.dump_id(item_id).merge(self.fields.as_payload()),
         )
 
     def delete_all(self) -> DatabaseCommand:
