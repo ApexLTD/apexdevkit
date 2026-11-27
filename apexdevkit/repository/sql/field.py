@@ -192,8 +192,6 @@ class SqlFieldManager:
         if not include_id:
             return ""
 
-        clauses = []
-
         id_field = self.fields.id_field
 
         value_expr = (
@@ -201,9 +199,10 @@ class SqlFieldManager:
             if not read_id or id_field.include_in_insert
             else "SCOPE_IDENTITY()"
         )
-        clauses.append(
-            f"{self.placeholder_key.replace_with(id_field.name)} = {value_expr}"
-        )
+
+        clauses = [
+            f"{self.placeholder_key.replace_with(id_field.name)} = {value_expr}",
+        ]
 
         if not read_id:
             selectable_fields = [
