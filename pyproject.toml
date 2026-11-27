@@ -1,6 +1,6 @@
 [project]
 name = "apexdevkit"
-version = "2.4.5"
+version = "2.5.0"
 description = "Apex Development Tools for python."
 readme = "README.md"
 authors = [
@@ -103,9 +103,6 @@ source = [
 branch = true
 
 [tool.coverage.report]
-omit = [
-    "apexdevkit/query/*",
-]
 exclude_also = [
     "@(abc\\.)?abstractmethod",
     "class .*\\bProtocol\\)",
