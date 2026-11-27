@@ -5,7 +5,12 @@ from typing import TYPE_CHECKING, Any, Self
 
 from apexdevkit.error import ExistsError
 from apexdevkit.repository.core import DatabaseCommand
-from apexdevkit.repository.sql.field import NotNone, SqlField, SqlFieldManager
+from apexdevkit.repository.sql.field import (
+    NotNone,
+    SqlField,
+    SqlFieldManager,
+    SqlFieldSet,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
@@ -85,7 +90,9 @@ class SqliteTableBuilder[T]:
         if not self.table_name or not self.formatter or not self.fields:
             raise ValueError("Parameter missing.")
 
-        field_manager = SqlFieldManager.Builder.for_sqlite().with_fields(self.fields)
+        field_manager = SqlFieldManager.Builder.for_sqlite().with_fields(
+            SqlFieldSet(self.fields)
+        )
         if self.custom_filters and len(self.custom_filters) > 0:
             field_manager = field_manager.with_custom_filters(self.custom_filters)
 

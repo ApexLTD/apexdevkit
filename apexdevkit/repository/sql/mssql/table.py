@@ -81,7 +81,7 @@ class MsSqlTableBuilder[T]:
 
         fields = (
             SqlFieldManager.Builder.for_mssql()
-            .with_fields(list(self.fields))
+            .with_fields(self.fields)
             .with_custom_filters(list(self.custom_filters))
             .build()
         )

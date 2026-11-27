@@ -258,8 +258,8 @@ class SqlFieldManager:
                 placeholder_value=MsSqlValuePlaceholder(),
             )
 
-        def with_fields(self, fields: list[SqlField]) -> Self:
-            self.fields = SqlFieldSet(items=fields)
+        def with_fields(self, fields: SqlFieldSet) -> Self:
+            self.fields = fields
 
             return self
 
