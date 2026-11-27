@@ -172,6 +172,10 @@ class SqlTemplates:
     target: str
     fields: SqlFieldManager
 
+    @property
+    def columns(self) -> str:
+        return ", ".join(["[" + sql_field.name + "]" for sql_field in self.fields])
+
     def count_all(self) -> str:
         return f"""
             SELECT count(*) AS n_items
@@ -216,22 +220,18 @@ class SqlTemplates:
         """
 
     def select(self) -> str:
-        columns = ", ".join(["[" + field.name + "]" for field in self.fields])
-
         return f"""
             SELECT
-                {columns}
+                {self.columns}
             FROM {self.target}
             {self.fields.where_statement(include_id=True)}
             REVERT
         """
 
     def select_all(self) -> str:
-        columns = ", ".join(["[" + field.name + "]" for field in self.fields])
-
         return f"""
             SELECT
-                {columns}
+                {self.columns}
             FROM {self.target}
             {self.fields.where_statement(include_id=False)}
             {self.fields.order}
