@@ -230,24 +230,26 @@ class SqlFieldManager:
 
             inner: list[str] = []
             for index, value in enumerate(item.filter_values):
-                if value is None:
-                    statement = self.placeholder_key.is_null(name)
-                elif isinstance(value, NotNone):
-                    statement = self.placeholder_key.is_not_null(name)
-                else:
-                    statement = (
-                        self.placeholder_key.replace_with(name)
-                        + " = "
-                        + self.placeholder_value.replace_with(
-                            name + "_filter_" + str(index)
-                        )
-                    )
+                statement = self.filter_with_a(name, value, index)
                 inner.append(statement)
 
             if len(inner) > 0:
                 statements.append("(" + " OR ".join(inner) + ")")
 
         return " AND ".join(statements)
+
+    def filter_with_a(self, name: str, value: Any | NotNone | None, index: int) -> str:
+        if value is None:
+            return self.placeholder_key.is_null(name)
+
+        if isinstance(value, NotNone):
+            return self.placeholder_key.is_not_null(name)
+
+        return (
+            self.placeholder_key.replace_with(name)
+            + " = "
+            + self.placeholder_value.replace_with(name + "_filter_" + str(index))
+        )
 
     @dataclass
     class Builder:
