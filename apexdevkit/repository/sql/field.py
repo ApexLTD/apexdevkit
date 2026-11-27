@@ -228,10 +228,10 @@ class SqlFieldManager:
         for item in self.fields.for_filtering():
             name = item.name
 
-            inner: list[str] = []
-            for index, value in enumerate(item.filter_values):
-                statement = self.filter_with_a(name, value, index)
-                inner.append(statement)
+            inner = [
+                self.filter_with_a(name, value, index)
+                for index, value in enumerate(item.filter_values)
+            ]
 
             if len(inner) > 0:
                 statements.append("(" + " OR ".join(inner) + ")")
