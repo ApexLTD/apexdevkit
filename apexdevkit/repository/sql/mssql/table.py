@@ -282,7 +282,7 @@ class SqlTemplates:
 class AsUser[T](SqlTable[T]):
     user: str
 
-    inner: AutoMsSqlTable[T]
+    inner: SqlTable[T]
 
     def __post_init__(self) -> None:
         if not self.user:
