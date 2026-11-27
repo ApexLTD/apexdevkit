@@ -67,6 +67,34 @@ class SqlField:
         return replace(self, is_fixed=True, fixed_value=value)
 
 
+@dataclass(frozen=True)
+class SqlFieldSet:
+    items: list[SqlField] = field(init=False, default_factory=list)
+
+    def __iter__(self) -> Iterator[SqlField]:
+        return iter(self.items)
+
+    def contains_id(self) -> bool:
+        return any(i.is_id for i in self.items)
+
+    def add(self, item: SqlField) -> Self:
+        self.items.append(self.validate(item))
+
+        return self
+
+    def validate(self, item: SqlField) -> SqlField:
+        if item.is_id and self.contains_id():
+            raise ValueError("Pass only one identifier key.")
+
+        if item.is_parent and any(i.is_parent for i in self.items):
+            raise ValueError("Pass only one parent key.")
+
+        if not item.is_filter and isinstance(item.fixed_value, NotNone):
+            raise ValueError("Only filter fields can be 'not null'.")
+
+        return item
+
+
 @dataclass
 class SqlFieldManager:
     fields: list[SqlField]
@@ -250,10 +278,10 @@ class SqlFieldManager:
 
 
 class PlaceHolder(ABC):
-    def is_null(self, value) -> str:
+    def is_null(self, value: str) -> str:
         return self.replace_with(value) + " IS NULL"
 
-    def is_not_null(self, value) -> str:
+    def is_not_null(self, value: str) -> str:
         return self.replace_with(value) + " IS NOT NULL"
 
     @abstractmethod

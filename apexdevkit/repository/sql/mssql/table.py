@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING, Any, Self
 from apexdevkit.error import ExistsError
 from apexdevkit.formatter import NoFormatter
 from apexdevkit.repository.core import DatabaseCommand
-from apexdevkit.repository.sql.field import NotNone, SqlField, SqlFieldManager
+from apexdevkit.repository.sql.field import SqlField, SqlFieldManager, SqlFieldSet
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator, Mapping
+    from collections.abc import Iterable, Mapping
 
     from apexdevkit.formatter import Formatter
 
@@ -45,34 +45,6 @@ class SqlTable[T]:  # pragma: no cover
 
     def exists(self, duplicate: T) -> ExistsError:
         return ExistsError(duplicate).with_duplicate(lambda _: "Unknown")
-
-
-@dataclass(frozen=True)
-class SqlFieldSet:
-    items: list[SqlField] = field(init=False, default_factory=list)
-
-    def __iter__(self) -> Iterator[SqlField]:
-        return iter(self.items)
-
-    def contains_id(self) -> bool:
-        return any(i.is_id for i in self.items)
-
-    def add(self, item: SqlField) -> Self:
-        self.items.append(self.validate(item))
-
-        return self
-
-    def validate(self, item: SqlField) -> SqlField:
-        if item.is_id and self.contains_id():
-            raise ValueError("Pass only one identifier key.")
-
-        if item.is_parent and any(i.is_parent for i in self.items):
-            raise ValueError("Pass only one parent key.")
-
-        if not item.is_filter and isinstance(item.fixed_value, NotNone):
-            raise ValueError("Only filter fields can be 'not null'.")
-
-        return item
 
 
 @dataclass(frozen=True)
