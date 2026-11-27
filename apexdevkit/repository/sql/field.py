@@ -229,17 +229,19 @@ class SqlFieldManager:
             inner: list[str] = []
             for index, value in enumerate(item.filter_values):
                 if value is None:
-                    inner.append(self.placeholder_key.is_null(item.name))
+                    statement = self.placeholder_key.is_null(item.name)
                 elif isinstance(value, NotNone):
-                    inner.append(self.placeholder_key.is_not_null(item.name))
+                    statement = self.placeholder_key.is_not_null(item.name)
                 else:
-                    inner.append(
+                    statement = (
                         self.placeholder_key.replace_with(item.name)
                         + " = "
                         + self.placeholder_value.replace_with(
                             item.name + "_filter_" + str(index)
                         )
                     )
+                inner.append(statement)
+
             if len(inner) > 0:
                 statements.append("(" + " OR ".join(inner) + ")")
 
