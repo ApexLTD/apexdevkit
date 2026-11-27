@@ -35,3 +35,7 @@ __all__ = [
     "StringValue",
     "Summary",
 ]
+
+from apexdevkit.annotation import notify
+
+notify("apexdevkit.query is deprecated, will be removed in future versions")

@@ -24,18 +24,19 @@ def deprecated(warning: str) -> Callable[[F], F]:
     def decorator(obj: F) -> F:
         if inspect.isfunction(obj) or inspect.ismethod(obj):
             return _wrap_function(obj, warning)
+
         if inspect.isclass(obj):
             return cast("F", _deprecate_class(obj, warning))
-        raise TypeError(
-            f"Unsupported type for deprecation: {type(obj)}"
-        )  # pragma: no cover
+
+        raise TypeError(f"Unsupported type for deprecation: {type(obj)}")
 
     return decorator
 
 
 def _wrap_function[F: Callable[..., Any]](func: F, warning: str) -> F:
     def wrapper(*args: Any, **kwargs: dict[str, Any]) -> Any:
-        warn(warning, category=DeprecationWarning, stacklevel=2)
+        notify(warning)
+
         return func(*args, **kwargs)
 
     return cast("F", wrapper)
@@ -44,7 +45,12 @@ def _wrap_function[F: Callable[..., Any]](func: F, warning: str) -> F:
 def _deprecate_class(cls: type, warning: str) -> type:
     class DeprecatedClass(cls):  # type: ignore
         def __init__(self, *args: Any, **kwargs: dict[str, Any]) -> None:
-            warn(warning, category=DeprecationWarning, stacklevel=2)
+            notify(warning)
+
             super().__init__(*args, **kwargs)
 
     return cast("type", DeprecatedClass)
+
+
+def notify(message: str) -> None:
+    warn(message, category=DeprecationWarning, stacklevel=2)
