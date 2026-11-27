@@ -6,7 +6,7 @@ from pymssql.exceptions import DatabaseError
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Database, MsSqlRepository
-from apexdevkit.repository.sql.field import SqlField
+from apexdevkit.repository.sql import SqlField
 from apexdevkit.repository.sql.mssql import MsSqlTableBuilder, UnknownError
 from tests.repository.data import AppleItem
 

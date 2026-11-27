@@ -6,11 +6,8 @@ import pytest
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Database, DatabaseCommand
-from apexdevkit.repository.sql.field import SqlField
-from apexdevkit.repository.sql.sqlite import (
-    SqliteRepository,
-    SqliteTableBuilder,
-)
+from apexdevkit.repository.sql import SqlField, SqliteRepository
+from apexdevkit.repository.sql.sqlite import SqliteTableBuilder
 from tests.repository.data import SqliteTableItem
 
 TABLE = f"{Path(__file__).stem}_ITEM"

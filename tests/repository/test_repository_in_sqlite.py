@@ -11,10 +11,8 @@ from apexdevkit.repository import (
     Repository,
     SqliteRepository,
 )
-from apexdevkit.repository.sql.field import SqlField
-from apexdevkit.repository.sql.sqlite import (
-    SqliteTableBuilder,
-)
+from apexdevkit.repository.sql import SqlField
+from apexdevkit.repository.sql.sqlite import SqliteTableBuilder
 from tests.repository.data import AppleItem
 
 TABLE = f"{Path(__file__).stem}_ITEM"
