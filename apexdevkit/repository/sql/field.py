@@ -136,16 +136,18 @@ class SqlFieldManager:
 
     def _parent_filter(self) -> str:
         result = next((key for key in self.fields if key.is_parent), None)
-        if result is not None:
-            if result.parent_value is None:
-                return self.key_format.replace_with(result.name) + " IS NULL"
-            return (
-                self.key_format.replace_with(result.name)
-                + " = "
-                + self.value_format.replace_with(result.name)
-            )
 
-        return ""
+        if result is None:
+            return ""
+
+        if result.parent_value is None:
+            return self.key_format.replace_with(result.name) + " IS NULL"
+
+        return (
+            self.key_format.replace_with(result.name)
+            + " = "
+            + self.value_format.replace_with(result.name)
+        )
 
     def _id_filter(self, *, include_id: bool, read_id: bool) -> str:
         if not include_id:
