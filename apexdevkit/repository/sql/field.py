@@ -228,15 +228,14 @@ class SqlFieldManager:
         for item in self.fields.for_filtering():
             name = item.name
 
-            inner = [
+            group = " OR ".join(
                 self.filter_with_a(name, value, index)
                 for index, value in enumerate(item.filter_values)
-            ]
+            )
 
-            if len(inner) > 0:
-                statements.append("(" + " OR ".join(inner) + ")")
+            statements.append("(" + group + ")")
 
-        return " AND ".join(statements)
+        return " AND ".join(statement for statement in statements if statement != "()")
 
     def filter_with_a(self, name: str, value: Any | NotNone | None, index: int) -> str:
         if value is None:
