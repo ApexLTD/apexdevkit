@@ -114,12 +114,6 @@ class AutoMsSqlTable[T](SqlTable[T]):
     def with_a(self, formatter: Formatter[Mapping[str, Any], T]) -> AutoMsSqlTable[T]:
         return replace(self, formatter=formatter)
 
-    def for_a(self, username: str) -> AutoMsSqlTable[T] | AsUser[T]:
-        if not username:
-            return self
-
-        return AsUser(user=username, inner=self)
-
     def count_all(self) -> DatabaseCommand:
         return DatabaseCommand(
             value=self.templates.count_all(),
