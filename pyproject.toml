@@ -103,6 +103,9 @@ source = [
 branch = true
 
 [tool.coverage.report]
+omit = [
+    "apexdevkit/query/*",
+]
 exclude_also = [
     "@(abc\\.)?abstractmethod",
     "class .*\\bProtocol\\)",
