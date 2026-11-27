@@ -105,6 +105,9 @@ class SqlFieldSet:
     def for_ordering(self) -> Iterable[SqlField]:
         return (item for item in self.items if item.is_ordered)
 
+    def for_filtering(self) -> Iterable[SqlField]:
+        return (item for item in self.items if item.is_filter)
+
 
 @dataclass
 class SqlFieldManager:
@@ -222,24 +225,23 @@ class SqlFieldManager:
 
     def _general_filters(self) -> str:
         statements: list[str] = [*self.custom_filters]
-        for key in self.fields:
-            if key.is_filter:
-                inner: list[str] = []
-                for index, value in enumerate(key.filter_values):
-                    if value is None:
-                        inner.append(self.placeholder_key.is_null(key.name))
-                    elif isinstance(value, NotNone):
-                        inner.append(self.placeholder_key.is_not_null(key.name))
-                    else:
-                        inner.append(
-                            self.placeholder_key.replace_with(key.name)
-                            + " = "
-                            + self.placeholder_value.replace_with(
-                                key.name + "_filter_" + str(index)
-                            )
+        for item in self.fields.for_filtering():
+            inner: list[str] = []
+            for index, value in enumerate(item.filter_values):
+                if value is None:
+                    inner.append(self.placeholder_key.is_null(item.name))
+                elif isinstance(value, NotNone):
+                    inner.append(self.placeholder_key.is_not_null(item.name))
+                else:
+                    inner.append(
+                        self.placeholder_key.replace_with(item.name)
+                        + " = "
+                        + self.placeholder_value.replace_with(
+                            item.name + "_filter_" + str(index)
                         )
-                if len(inner) > 0:
-                    statements.append("(" + " OR ".join(inner) + ")")
+                    )
+            if len(inner) > 0:
+                statements.append("(" + " OR ".join(inner) + ")")
 
         return " AND ".join(statements)
 
