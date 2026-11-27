@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Self
 from apexdevkit.error import ExistsError
 from apexdevkit.formatter import NoFormatter
 from apexdevkit.repository.core import DatabaseCommand
-from apexdevkit.repository.sql.field import NotNone, SqlFieldManager, _SqlField
+from apexdevkit.repository.sql.field import NotNone, SqlField, SqlFieldManager
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator, Mapping
@@ -49,20 +49,20 @@ class SqlTable[T]:  # pragma: no cover
 
 @dataclass(frozen=True)
 class SqlFieldSet:
-    items: list[_SqlField] = field(init=False, default_factory=list)
+    items: list[SqlField] = field(init=False, default_factory=list)
 
-    def __iter__(self) -> Iterator[_SqlField]:
+    def __iter__(self) -> Iterator[SqlField]:
         return iter(self.items)
 
     def contains_id(self) -> bool:
         return any(i.is_id for i in self.items)
 
-    def add(self, item: _SqlField) -> Self:
+    def add(self, item: SqlField) -> Self:
         self.items.append(self.validate(item))
 
         return self
 
-    def validate(self, item: _SqlField) -> _SqlField:
+    def validate(self, item: SqlField) -> SqlField:
         if item.is_id and self.contains_id():
             raise ValueError("Pass only one identifier key.")
 
@@ -89,10 +89,10 @@ class MsSqlTableBuilder[T]:
     def with_table(self, value: str) -> Self:
         return replace(self, table=value)
 
-    def and_a(self, sql_field: _SqlField) -> Self:
+    def and_a(self, sql_field: SqlField) -> Self:
         return self.with_a(sql_field=sql_field)
 
-    def with_a(self, sql_field: _SqlField) -> Self:
+    def with_a(self, sql_field: SqlField) -> Self:
         self.fields.add(sql_field)
 
         return self

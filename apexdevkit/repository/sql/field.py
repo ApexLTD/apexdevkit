@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any, Self
 
 if TYPE_CHECKING:
@@ -13,8 +13,9 @@ class NotNone:
 
 
 @dataclass(frozen=True)
-class _SqlField:
+class SqlField:
     name: str
+
     is_id: bool = False
     is_selectable: bool = False
     is_composite: bool = False
@@ -32,6 +33,37 @@ class _SqlField:
 
     is_fixed: bool = False
     fixed_value: Any | None = None
+
+    @classmethod
+    def named(cls, name: str) -> Self:
+        return cls(name=name)
+
+    def as_id(self) -> Self:
+        return replace(self, is_id=True)
+
+    def selectable(self) -> Self:
+        return replace(self, is_selectable=True)
+
+    def composite(self) -> Self:
+        return replace(self, is_composite=True)
+
+    def order_by(self, *, descending: bool = False) -> Self:
+        return replace(self, is_ordered=True, is_descending=descending)
+
+    def derive_on_insert(self) -> Self:
+        return replace(self, include_in_insert=False)
+
+    def not_editable(self) -> Self:
+        return replace(self, include_in_update=False)
+
+    def parent(self, value: Any | None) -> Self:
+        return replace(self, is_parent=True, parent_value=value)
+
+    def filter(self, values: list[Any | NotNone | None]) -> Self:
+        return replace(self, is_filter=True, filter_values=values)
+
+    def fixed(self, value: Any | None) -> Self:
+        return replace(self, is_fixed=True, fixed_value=value)
 
 
 @dataclass
@@ -109,8 +141,8 @@ class SqlFieldBuilder:
 
         return self
 
-    def build(self) -> _SqlField:
-        return _SqlField(
+    def build(self) -> SqlField:
+        return SqlField(
             name=self._name,
             is_id=self._is_id,
             is_selectable=self._is_selectable,
@@ -130,7 +162,7 @@ class SqlFieldBuilder:
 
 @dataclass
 class SqlFieldManager:
-    fields: list[_SqlField]
+    fields: list[SqlField]
     custom_filters: list[str]
     key_formatter: str
     value_formatter: str
@@ -158,7 +190,7 @@ class SqlFieldManager:
 
         return ""
 
-    def __iter__(self) -> Iterator[_SqlField]:
+    def __iter__(self) -> Iterator[SqlField]:
         yield from self.fields
 
     def where_statement(
@@ -274,11 +306,11 @@ class SqlFieldManager:
     class Builder:
         custom_filters: list[str] = field(default_factory=list)
 
-        fields: list[_SqlField] = field(init=False)
+        fields: list[SqlField] = field(init=False)
         key_formatter: str = field(init=False)
         value_formatter: str = field(init=False)
 
-        def with_fields(self, fields: list[_SqlField]) -> SqlFieldManager.Builder:
+        def with_fields(self, fields: list[SqlField]) -> SqlFieldManager.Builder:
             self.fields = fields
 
             return self

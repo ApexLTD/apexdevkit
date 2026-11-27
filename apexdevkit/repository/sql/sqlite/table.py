@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Self
 
 from apexdevkit.error import ExistsError
 from apexdevkit.repository.core import DatabaseCommand
-from apexdevkit.repository.sql.field import NotNone, SqlFieldManager, _SqlField
+from apexdevkit.repository.sql.field import NotNone, SqlField, SqlFieldManager
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
@@ -49,7 +49,7 @@ class SqlTable[T]:  # pragma: no cover
 class SqliteTableBuilder[T]:
     table_name: str | None = None
     formatter: Formatter[Mapping[str, Any], T] | None = None
-    fields: list[_SqlField] | None = None
+    fields: list[SqlField] | None = None
     custom_filters: list[str] | None = None
 
     def with_name(self, value: str) -> Self:
@@ -58,7 +58,7 @@ class SqliteTableBuilder[T]:
     def with_formatter(self, value: Formatter[Mapping[str, Any], T]) -> Self:
         return replace(self, formatter=value)
 
-    def with_fields(self, value: Iterable[_SqlField]) -> Self:
+    def with_fields(self, value: Iterable[SqlField]) -> Self:
         key_list = list(value)
         if len([key for key in key_list if key.is_id]) != 1:
             raise ValueError("Pass only one identifier key.")
