@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, replace
-from itertools import chain
 from typing import TYPE_CHECKING, Any, Self
 
 if TYPE_CHECKING:
@@ -225,8 +224,12 @@ class SqlFieldManager:
         return "(" + " OR ".join(clauses) + ")"
 
     def _general_filters(self) -> str:
-
-        return " AND ".join(chain(self.custom_filters, self.standard_filters))
+        return " AND ".join(
+            [
+                *self.custom_filters,
+                *self.standard_filters,
+            ]
+        )
 
     @property
     def standard_filters(self) -> Iterable[str]:
