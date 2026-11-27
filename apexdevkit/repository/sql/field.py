@@ -226,9 +226,7 @@ class SqlFieldManager:
     def _general_filters(self) -> str:
         statements: list[str] = [*self.custom_filters]
         for item in self.fields.for_filtering():
-            group = self.filter_for_a(sql_field=item)
-
-            statements.append("(" + group + ")")
+            statements.append(f"({self.filter_for_a(sql_field=item)})")
 
         return " AND ".join(statement for statement in statements if statement != "()")
 
