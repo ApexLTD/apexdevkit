@@ -259,6 +259,20 @@ class SqlFieldManager:
         placeholder_value: PlaceHolder = field(default_factory=NoPlaceHolder)
         placeholder_key: PlaceHolder = field(default_factory=NoPlaceHolder)
 
+        @classmethod
+        def for_sqlite(cls) -> Self:
+            return cls(
+                placeholder_key=SqliteKeyPlaceholder(),
+                placeholder_value=SqliteValuePlaceholder(),
+            )
+
+        @classmethod
+        def for_mssql(cls) -> Self:
+            return cls(
+                placeholder_key=MsSqlKeyPlaceholder(),
+                placeholder_value=MsSqlValuePlaceholder(),
+            )
+
         def with_fields(self, fields: list[SqlField]) -> Self:
             self.fields = fields
 
@@ -266,18 +280,6 @@ class SqlFieldManager:
 
         def with_custom_filters(self, fields: list[str]) -> Self:
             self.custom_filters = fields
-
-            return self
-
-        def for_sqlite(self) -> Self:
-            self.placeholder_key = SqliteKeyPlaceholder()
-            self.placeholder_value = SqliteValuePlaceholder()
-
-            return self
-
-        def for_mssql(self) -> Self:
-            self.placeholder_key = MsSqlKeyPlaceholder()
-            self.placeholder_value = MsSqlValuePlaceholder()
 
             return self
 

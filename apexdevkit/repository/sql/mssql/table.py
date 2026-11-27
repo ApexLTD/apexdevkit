@@ -108,10 +108,9 @@ class MsSqlTableBuilder[T]:
             raise ValueError("Cannot build sql table.")
 
         fields = (
-            SqlFieldManager.Builder()
+            SqlFieldManager.Builder.for_mssql()
             .with_fields(list(self.fields))
             .with_custom_filters(list(self.custom_filters))
-            .for_mssql()
             .build()
         )
 

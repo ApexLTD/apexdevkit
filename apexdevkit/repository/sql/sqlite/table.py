@@ -85,14 +85,14 @@ class SqliteTableBuilder[T]:
         if not self.table_name or not self.formatter or not self.fields:
             raise ValueError("Parameter missing.")
 
-        field_manager = SqlFieldManager.Builder().with_fields(self.fields)
+        field_manager = SqlFieldManager.Builder.for_sqlite().with_fields(self.fields)
         if self.custom_filters and len(self.custom_filters) > 0:
             field_manager = field_manager.with_custom_filters(self.custom_filters)
 
         return _DefaultSqlTable(
             self.table_name,
             self.formatter,
-            field_manager.for_sqlite().build(),
+            field_manager.build(),
         )
 
 
