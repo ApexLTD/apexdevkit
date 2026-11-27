@@ -91,8 +91,7 @@ class MsSqlTableBuilder[T]:
         return AutoMsSqlTable[T](
             fields=self.fields,
             templates=SqlTemplates(
-                schema=self.schema,
-                table=self.table,
+                target=f"[{self.schema}].[{self.table}]",
                 fields=fields,
             ),
         )
@@ -168,13 +167,8 @@ class AutoMsSqlTable[T](SqlTable[T]):
 
 @dataclass(frozen=True, kw_only=True)
 class SqlTemplates:
-    schema: str
-    table: str
+    target: str
     fields: SqlFieldManager
-
-    @property
-    def target(self) -> str:
-        return f"[{self.schema}].[{self.table}]"
 
     def count_all(self) -> str:
         return f"""
