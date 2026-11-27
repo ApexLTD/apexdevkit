@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Self
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Mapping
@@ -55,55 +55,55 @@ class SqlFieldBuilder:
     _is_fixed: bool = False
     _fixed_value: Any | None = None
 
-    def with_name(self, value: str) -> SqlFieldBuilder:
+    def with_name(self, value: str) -> Self:
         self._name = value
 
         return self
 
-    def as_id(self) -> SqlFieldBuilder:
+    def as_id(self) -> Self:
         self._is_id = True
 
         return self
 
-    def as_selectable(self) -> SqlFieldBuilder:
+    def as_selectable(self) -> Self:
         self._is_selectable = True
 
         return self
 
-    def as_composite(self) -> SqlFieldBuilder:
+    def as_composite(self) -> Self:
         self._is_composite = True
 
         return self
 
-    def in_ordering(self, *, descending: bool = False) -> SqlFieldBuilder:
+    def in_ordering(self, *, descending: bool = False) -> Self:
         self._is_ordered = True
         self._is_descending = descending
 
         return self
 
-    def derive_on_insert(self) -> SqlFieldBuilder:
+    def derive_on_insert(self) -> Self:
         self._include_in_insert = False
 
         return self
 
-    def as_not_editable(self) -> SqlFieldBuilder:
+    def as_not_editable(self) -> Self:
         self._include_in_update = False
 
         return self
 
-    def as_parent(self, value: Any | None) -> SqlFieldBuilder:
+    def as_parent(self, value: Any | None) -> Self:
         self._is_parent = True
         self._parent_value = value
 
         return self
 
-    def as_filter(self, values: list[Any | NotNone | None]) -> SqlFieldBuilder:
+    def as_filter(self, values: list[Any | NotNone | None]) -> Self:
         self._is_filter = True
         self._filter_values = values
 
         return self
 
-    def as_fixed(self, value: Any | None) -> SqlFieldBuilder:
+    def as_fixed(self, value: Any | None) -> Self:
         self._is_fixed = True
         self._fixed_value = value
 
