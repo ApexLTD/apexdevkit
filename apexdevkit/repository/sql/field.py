@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Any, Protocol, Self
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Mapping
@@ -64,6 +64,49 @@ class SqlField:
 
     def fixed(self, value: Any | None) -> Self:
         return replace(self, is_fixed=True, fixed_value=value)
+
+
+class PlaceHolder(Protocol):
+    def replace_with(self, value: str) -> str:
+        pass
+
+
+@dataclass(frozen=True)
+class NoPlaceHolder:
+    def replace_with(self, value: str) -> str:
+        raise NotImplementedError
+
+
+@dataclass(frozen=True)
+class MsSqlKeyPlaceholder:
+    format: str
+
+    def replace_with(self, value: str) -> str:
+        return self.format.replace("x", value)
+
+
+@dataclass(frozen=True)
+class MsSqlValuePlaceholder:
+    format: str
+
+    def replace_with(self, value: str) -> str:
+        return self.format.replace("x", value)
+
+
+@dataclass(frozen=True)
+class SqliteKeyPlaceholder:
+    format: str
+
+    def replace_with(self, value: str) -> str:
+        return self.format.replace("x", value)
+
+
+@dataclass(frozen=True)
+class SqliteValuePlaceholder:
+    format: str
+
+    def replace_with(self, value: str) -> str:
+        return self.format.replace("x", value)
 
 
 @dataclass
@@ -216,8 +259,9 @@ class SqlFieldManager:
         custom_filters: list[str] = field(default_factory=list)
 
         fields: list[SqlField] = field(init=False)
-        key_formatter: str = field(init=False)
-        value_formatter: str = field(init=False)
+
+        placeholder_value: PlaceHolder = field(default_factory=NoPlaceHolder)
+        placeholder_key: PlaceHolder = field(default_factory=NoPlaceHolder)
 
         def with_fields(self, fields: list[SqlField]) -> Self:
             self.fields = fields
@@ -230,14 +274,14 @@ class SqlFieldManager:
             return self
 
         def for_sqlite(self) -> Self:
-            self.key_formatter = "x"
-            self.value_formatter = ":x"
+            self.placeholder_key = SqliteKeyPlaceholder("x")
+            self.placeholder_value = SqliteValuePlaceholder(":x")
 
             return self
 
         def for_mssql(self) -> Self:
-            self.key_formatter = "[x]"
-            self.value_formatter = "%(x)s"
+            self.placeholder_key = MsSqlKeyPlaceholder("[x]")
+            self.placeholder_value = MsSqlValuePlaceholder("%(x)s")
 
             return self
 
@@ -245,14 +289,6 @@ class SqlFieldManager:
             return SqlFieldManager(
                 self.fields,
                 self.custom_filters,
-                placeholder_value=PlaceHolder(self.value_formatter),
-                placeholder_key=PlaceHolder(self.key_formatter),
+                placeholder_value=self.placeholder_value,
+                placeholder_key=self.placeholder_key,
             )
-
-
-@dataclass(frozen=True)
-class PlaceHolder:
-    format: str
-
-    def replace_with(self, value: str) -> str:
-        return self.format.replace("x", value)
