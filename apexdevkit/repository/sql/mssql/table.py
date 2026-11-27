@@ -4,6 +4,8 @@ from dataclasses import dataclass, field, replace
 from textwrap import dedent
 from typing import TYPE_CHECKING, Any, Self
 
+from pypebbles import FluentDict
+
 from apexdevkit.error import ExistsError
 from apexdevkit.formatter import NoFormatter
 from apexdevkit.repository.core import DatabaseCommand
@@ -87,7 +89,7 @@ class MsSqlTableBuilder[T]:
         )
 
         return AutoMsSqlTable[T](
-            fields=fields,
+            fields=self.fields,
             templates=SqlTemplates(
                 schema=self.schema,
                 table=self.table,
@@ -98,7 +100,7 @@ class MsSqlTableBuilder[T]:
 
 @dataclass(frozen=True, kw_only=True)
 class AutoMsSqlTable[T](SqlTable[T]):
-    fields: SqlFieldManager
+    fields: SqlFieldSet
     templates: SqlTemplates
 
     formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
@@ -115,43 +117,51 @@ class AutoMsSqlTable[T](SqlTable[T]):
     def count_all(self) -> DatabaseCommand:
         return DatabaseCommand(
             value=self.templates.count_all(),
-            payload=self.fields.with_fixed({}),
+            payload=FluentDict().merge(self.fields.as_payload()),
         )
 
     def insert(self, item: T) -> DatabaseCommand:
         return DatabaseCommand(
             value=self.templates.insert(),
-            payload=self.fields.with_fixed(self.formatter.dump(item)),
+            payload=FluentDict(self.formatter.dump(item)).merge(
+                self.fields.as_payload()
+            ),
         )
 
     def select(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand(
             value=self.templates.select(),
-            payload=self.fields.with_fixed({self.fields.id_name: item_id}),
+            payload=FluentDict({self.fields.id_field.name: item_id}).merge(
+                self.fields.as_payload()
+            ),
         )
 
     def select_all(self) -> DatabaseCommand:
         return DatabaseCommand(
             value=self.templates.select_all(),
-            payload=self.fields.with_fixed({}),
+            payload=FluentDict().merge(self.fields.as_payload()),
         )
 
     def update(self, item: T) -> DatabaseCommand:
         return DatabaseCommand(
             value=self.templates.update(),
-            payload=self.fields.with_fixed(self.formatter.dump(item)),
+            payload=FluentDict(self.formatter.dump(item)).merge(
+                self.fields.as_payload()
+            ),
         )
 
     def delete(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand(
             value=self.templates.delete(),
-            payload=self.fields.with_fixed({self.fields.id_name: item_id}),
+            payload=FluentDict({self.fields.id_field.name: item_id}).merge(
+                self.fields.as_payload()
+            ),
         )
 
     def delete_all(self) -> DatabaseCommand:
         return DatabaseCommand(
             value=self.templates.delete_all(),
-            payload=self.fields.with_fixed({}),
+            payload=FluentDict().merge(self.fields.as_payload()),
         )
 
     def load(self, data: Mapping[str, Any]) -> T:
@@ -160,7 +170,7 @@ class AutoMsSqlTable[T](SqlTable[T]):
     def exists(self, duplicate: T) -> ExistsError:
         raw = self.formatter.dump(duplicate)
         return ExistsError(duplicate).with_duplicate(
-            lambda _: f"{self.fields.id_name}<{raw[self.fields.id_name]}>"
+            lambda _: f"{self.fields.id_field.name}<{raw[self.fields.id_field.name]}>"
         )
 
 
