@@ -5,7 +5,12 @@ from typing import TYPE_CHECKING, Any, Self
 
 from apexdevkit.error import ExistsError
 from apexdevkit.repository.core import DatabaseCommand
-from apexdevkit.repository.sql.field import NotNone, SqlFieldManager, _SqlField
+from apexdevkit.repository.sql.field import (
+    NotNone,
+    SqlField,
+    SqlFieldManager,
+    SqlFieldSet,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
@@ -49,7 +54,7 @@ class SqlTable[T]:  # pragma: no cover
 class SqliteTableBuilder[T]:
     table_name: str | None = None
     formatter: Formatter[Mapping[str, Any], T] | None = None
-    fields: list[_SqlField] | None = None
+    fields: list[SqlField] | None = None
     custom_filters: list[str] | None = None
 
     def with_name(self, value: str) -> Self:
@@ -58,7 +63,7 @@ class SqliteTableBuilder[T]:
     def with_formatter(self, value: Formatter[Mapping[str, Any], T]) -> Self:
         return replace(self, formatter=value)
 
-    def with_fields(self, value: Iterable[_SqlField]) -> Self:
+    def with_fields(self, value: Iterable[SqlField]) -> Self:
         key_list = list(value)
         if len([key for key in key_list if key.is_id]) != 1:
             raise ValueError("Pass only one identifier key.")
@@ -85,14 +90,16 @@ class SqliteTableBuilder[T]:
         if not self.table_name or not self.formatter or not self.fields:
             raise ValueError("Parameter missing.")
 
-        field_manager = SqlFieldManager.Builder().with_fields(self.fields)
+        field_manager = SqlFieldManager.Builder.for_sqlite().with_fields(
+            SqlFieldSet(self.fields)
+        )
         if self.custom_filters and len(self.custom_filters) > 0:
             field_manager = field_manager.with_custom_filters(self.custom_filters)
 
         return _DefaultSqlTable(
             self.table_name,
             self.formatter,
-            field_manager.for_sqlite().build(),
+            field_manager.build(),
         )
 
 
@@ -135,7 +142,7 @@ class _DefaultSqlTable[T](SqlTable[T]):
                 {columns}
             FROM {self.table_name.upper()}
             {self.fields.where_statement(include_id=True)};
-        """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
+        """).with_data(self.fields.with_fixed({self.fields.id_name: item_id}))
 
     def select_duplicate(self, item: T) -> DatabaseCommand:
         raw = self.formatter.dump(item)
@@ -184,7 +191,7 @@ class _DefaultSqlTable[T](SqlTable[T]):
             DELETE
             FROM {self.table_name.upper()}
             {self.fields.where_statement(include_id=True)};
-        """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
+        """).with_data(self.fields.with_fixed({self.fields.id_name: item_id}))
 
     def delete_all(self) -> DatabaseCommand:
         return DatabaseCommand(f"""

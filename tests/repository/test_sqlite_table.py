@@ -6,11 +6,8 @@ import pytest
 from apexdevkit.error import DoesNotExistError, ExistsError
 from apexdevkit.formatter import DataclassFormatter
 from apexdevkit.repository import Database, DatabaseCommand
-from apexdevkit.repository.sql import SqlFieldBuilder
-from apexdevkit.repository.sql.sqlite import (
-    SqliteRepository,
-    SqliteTableBuilder,
-)
+from apexdevkit.repository.sql import SqlField, SqliteRepository
+from apexdevkit.repository.sql.sqlite import SqliteTableBuilder
 from tests.repository.data import SqliteTableItem
 
 TABLE = f"{Path(__file__).stem}_ITEM"
@@ -55,11 +52,11 @@ def repository(sqlite_db: Database) -> SqliteRepository[SqliteTableItem]:
             .with_formatter(DataclassFormatter(SqliteTableItem))
             .with_fields(
                 [
-                    SqlFieldBuilder().with_name("id").as_id().as_composite().build(),
-                    SqlFieldBuilder().with_name("name").as_selectable().build(),
-                    SqlFieldBuilder().with_name("count").build(),
-                    SqlFieldBuilder().with_name("parent").as_parent(0).build(),
-                    SqlFieldBuilder().with_name("fixed").as_fixed(1).build(),
+                    SqlField("id").as_id().composite(),
+                    SqlField("name").selectable(),
+                    SqlField("count"),
+                    SqlField("parent").parent(value=0),
+                    SqlField("fixed").fixed(value=1),
                 ]
             )
             .build()

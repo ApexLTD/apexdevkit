@@ -1,11 +1,11 @@
-from .field import NotNone, SqlFieldBuilder, SqlFieldManager
+from .field import NotNone, SqlField, SqlFieldManager
 from .mssql import MsSqlRepository
 from .sqlite import SqliteRepository
 
 __all__ = [
     "MsSqlRepository",
     "NotNone",
-    "SqlFieldBuilder",
+    "SqlField",
     "SqlFieldManager",
     "SqliteRepository",
 ]

@@ -4,14 +4,15 @@ from dataclasses import dataclass, field, replace
 from textwrap import dedent
 from typing import TYPE_CHECKING, Any, Self
 
-from apexdevkit.annotation import deprecated
+from pypebbles import FluentDict
+
 from apexdevkit.error import ExistsError
 from apexdevkit.formatter import NoFormatter
 from apexdevkit.repository.core import DatabaseCommand
-from apexdevkit.repository.sql.field import NotNone, SqlFieldManager, _SqlField
+from apexdevkit.repository.sql.field import SqlField, SqlFieldManager, SqlFieldSet
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator, Mapping
+    from collections.abc import Iterable, Mapping
 
     from apexdevkit.formatter import Formatter
 
@@ -49,47 +50,12 @@ class SqlTable[T]:  # pragma: no cover
 
 
 @dataclass(frozen=True)
-class SqlFieldSet:
-    items: list[_SqlField] = field(init=False, default_factory=list)
-
-    def __iter__(self) -> Iterator[_SqlField]:
-        return iter(self.items)
-
-    def contains_id(self) -> bool:
-        return any(i.is_id for i in self.items)
-
-    def add(self, item: _SqlField) -> Self:
-        self.items.append(self.validate(item))
-
-        return self
-
-    def validate(self, item: _SqlField) -> _SqlField:
-        if item.is_id and self.contains_id():
-            raise ValueError("Pass only one identifier key.")
-
-        if item.is_parent and any(i.is_parent for i in self.items):
-            raise ValueError("Pass only one parent key.")
-
-        if not item.is_filter and isinstance(item.fixed_value, NotNone):
-            raise ValueError("Only filter fields can be 'not null'.")
-
-        return item
-
-
-@dataclass(frozen=True)
 class MsSqlTableBuilder[T]:
-    username: str = ""
     schema: str = ""
     table: str = ""
 
     fields: SqlFieldSet = field(default_factory=SqlFieldSet)
     custom_filters: list[str] = field(default_factory=list)
-
-    formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
-
-    @deprecated("Use .build().for_a(username) instead")
-    def with_username(self, value: str) -> Self:
-        return replace(self, username=value)
 
     def with_schema(self, value: str) -> Self:
         return replace(self, schema=value)
@@ -97,21 +63,10 @@ class MsSqlTableBuilder[T]:
     def with_table(self, value: str) -> Self:
         return replace(self, table=value)
 
-    @deprecated("Use .build().with_a(formatter) instead")
-    def with_formatter(self, value: Formatter[Mapping[str, Any], T]) -> Self:
-        return replace(self, formatter=value)
-
-    @deprecated("Use .with_a/and_a method(s) instead")
-    def with_fields(self, value: Iterable[_SqlField]) -> Self:
-        for sql_field in value:
-            self.with_a(sql_field=sql_field)
-
-        return self
-
-    def and_a(self, sql_field: _SqlField) -> Self:
+    def and_a(self, sql_field: SqlField) -> Self:
         return self.with_a(sql_field=sql_field)
 
-    def with_a(self, sql_field: _SqlField) -> Self:
+    def with_a(self, sql_field: SqlField) -> Self:
         self.fields.add(sql_field)
 
         return self
@@ -119,7 +74,7 @@ class MsSqlTableBuilder[T]:
     def with_custom_filters(self, filters: Iterable[str]) -> Self:
         return replace(self, custom_filters=list(filters))
 
-    def build(self) -> AutoMsSqlTable[T] | AsUser[T]:
+    def build(self) -> AutoMsSqlTable[T]:
         if not self.fields.contains_id():
             raise ValueError("Id field is not provided!")
 
@@ -127,33 +82,34 @@ class MsSqlTableBuilder[T]:
             raise ValueError("Cannot build sql table.")
 
         fields = (
-            SqlFieldManager.Builder()
-            .with_fields(list(self.fields))
+            SqlFieldManager.Builder.for_mssql()
+            .with_fields(self.fields)
             .with_custom_filters(list(self.custom_filters))
-            .for_mssql()
             .build()
         )
 
-        return (
-            AutoMsSqlTable[T](
+        return AutoMsSqlTable[T](
+            fields=self.fields,
+            templates=SqlTemplates(
+                schema=self.schema,
+                table=self.table,
                 fields=fields,
-                generator=SqlTemplateGenerator(
-                    schema=self.schema,
-                    table=self.table,
-                    fields=fields,
-                ),
-            )
-            .with_a(formatter=self.formatter)
-            .for_a(username=self.username)
+            ),
         )
 
 
 @dataclass(frozen=True, kw_only=True)
 class AutoMsSqlTable[T](SqlTable[T]):
-    fields: SqlFieldManager
-    generator: SqlTemplateGenerator
+    fields: SqlFieldSet
+    templates: SqlTemplates
 
     formatter: Formatter[Mapping[str, Any], T] = field(default_factory=NoFormatter)
+
+    def dump(self, item: T) -> FluentDict[Any]:
+        return FluentDict(self.formatter.dump(item))
+
+    def dump_id(self, item_id: str) -> FluentDict[str]:
+        return FluentDict({self.fields.id_field.name: item_id})
 
     def with_a(self, formatter: Formatter[Mapping[str, Any], T]) -> AutoMsSqlTable[T]:
         return replace(self, formatter=formatter)
@@ -166,44 +122,44 @@ class AutoMsSqlTable[T](SqlTable[T]):
 
     def count_all(self) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.generator.count_all(),
-            payload=self.fields.with_fixed({}),
+            value=self.templates.count_all(),
+            payload=self.fields.as_payload(),
         )
 
     def insert(self, item: T) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.generator.insert(),
-            payload=self.fields.with_fixed(self.formatter.dump(item)),
+            value=self.templates.insert(),
+            payload=self.dump(item).merge(self.fields.as_payload()),
         )
 
     def select(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.generator.select(),
-            payload=self.fields.with_fixed({self.fields.id: item_id}),
+            value=self.templates.select(),
+            payload=self.dump_id(item_id).merge(self.fields.as_payload()),
         )
 
     def select_all(self) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.generator.select_all(),
-            payload=self.fields.with_fixed({}),
+            value=self.templates.select_all(),
+            payload=self.fields.as_payload(),
         )
 
     def update(self, item: T) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.generator.update(),
-            payload=self.fields.with_fixed(self.formatter.dump(item)),
+            value=self.templates.update(),
+            payload=self.dump(item).merge(self.fields.as_payload()),
         )
 
     def delete(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.generator.delete(),
-            payload=self.fields.with_fixed({self.fields.id: item_id}),
+            value=self.templates.delete(),
+            payload=self.dump_id(item_id).merge(self.fields.as_payload()),
         )
 
     def delete_all(self) -> DatabaseCommand:
         return DatabaseCommand(
-            value=self.generator.delete_all(),
-            payload=self.fields.with_fixed({}),
+            value=self.templates.delete_all(),
+            payload=self.fields.as_payload(),
         )
 
     def load(self, data: Mapping[str, Any]) -> T:
@@ -212,12 +168,12 @@ class AutoMsSqlTable[T](SqlTable[T]):
     def exists(self, duplicate: T) -> ExistsError:
         raw = self.formatter.dump(duplicate)
         return ExistsError(duplicate).with_duplicate(
-            lambda _: f"{self.fields.id}<{raw[self.fields.id]}>"
+            lambda _: f"{self.fields.id_field.name}<{raw[self.fields.id_field.name]}>"
         )
 
 
 @dataclass(frozen=True, kw_only=True)
-class SqlTemplateGenerator:
+class SqlTemplates:
     schema: str
     table: str
     fields: SqlFieldManager
@@ -238,7 +194,7 @@ class SqlTemplateGenerator:
             [f"%({key.name})s" for key in self.fields if key.include_in_insert]
         )
         try:
-            _ = self.fields.id
+            _ = self.fields.id_name
             output = ", ".join(
                 ["[" + field.name + "] AS " + field.name for field in self.fields]
             )
@@ -331,12 +287,6 @@ class AsUser[T](SqlTable[T]):
     def __post_init__(self) -> None:
         if not self.user:
             raise ValueError("username must be provided")
-
-    def with_a(self, formatter: Formatter[Mapping[str, Any], T]) -> AsUser[T]:
-        return replace(self, inner=self.inner.with_a(formatter=formatter))
-
-    def for_a(self, username: str) -> AsUser[T]:
-        return replace(self, user=username)
 
     def _wrap(self, command: DatabaseCommand) -> DatabaseCommand:
         return DatabaseCommand(

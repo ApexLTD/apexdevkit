@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field, replace
+from typing import TYPE_CHECKING, Any, Self
+
+from pypebbles import FluentDict
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator, Mapping
+    from collections.abc import Iterable, Iterator, Mapping
 
 
 @dataclass(frozen=True)
@@ -13,8 +16,9 @@ class NotNone:
 
 
 @dataclass(frozen=True)
-class _SqlField:
+class SqlField:
     name: str
+
     is_id: bool = False
     is_selectable: bool = False
     is_composite: bool = False
@@ -33,132 +37,128 @@ class _SqlField:
     is_fixed: bool = False
     fixed_value: Any | None = None
 
+    @classmethod
+    def named(cls, name: str) -> Self:
+        return cls(name=name)
 
-@dataclass
-class SqlFieldBuilder:
-    _name: str = field(init=False)
-    _is_id: bool = False
-    _is_selectable: bool = False
-    _is_composite: bool = False
-    _include_in_insert: bool = True
-    _include_in_update: bool = True
+    def as_id(self) -> Self:
+        return replace(self, is_id=True)
 
-    _is_ordered: bool = False
-    _is_descending: bool = False
+    def selectable(self) -> Self:
+        return replace(self, is_selectable=True)
 
-    _is_parent: bool = False
-    _parent_value: Any | None = None
+    def composite(self) -> Self:
+        return replace(self, is_composite=True)
 
-    _is_filter: bool = False
-    _filter_values: list[Any | NotNone | None] = field(default_factory=list)
+    def order_by(self, *, descending: bool = False) -> Self:
+        return replace(self, is_ordered=True, is_descending=descending)
 
-    _is_fixed: bool = False
-    _fixed_value: Any | None = None
+    def derive_on_insert(self) -> Self:
+        return replace(self, include_in_insert=False)
 
-    def with_name(self, value: str) -> SqlFieldBuilder:
-        self._name = value
+    def not_editable(self) -> Self:
+        return replace(self, include_in_update=False)
 
-        return self
+    def parent(self, value: Any | None) -> Self:
+        return replace(self, is_parent=True, parent_value=value)
 
-    def as_id(self) -> SqlFieldBuilder:
-        self._is_id = True
+    def filter(self, values: list[Any | NotNone | None]) -> Self:
+        return replace(self, is_filter=True, filter_values=values)
 
-        return self
+    def fixed(self, value: Any | None) -> Self:
+        return replace(self, is_fixed=True, fixed_value=value)
 
-    def as_selectable(self) -> SqlFieldBuilder:
-        self._is_selectable = True
 
-        return self
+@dataclass(frozen=True)
+class SqlFieldSet:
+    items: list[SqlField] = field(default_factory=list)
 
-    def as_composite(self) -> SqlFieldBuilder:
-        self._is_composite = True
+    def __iter__(self) -> Iterator[SqlField]:
+        return iter(self.items)
 
-        return self
+    @property
+    def id_field(self) -> SqlField:
+        for item in self.items:
+            if item.is_id:
+                return item
 
-    def in_ordering(self, *, descending: bool = False) -> SqlFieldBuilder:
-        self._is_ordered = True
-        self._is_descending = descending
+        raise RuntimeError("FieldSet does not contain Id field.")
 
-        return self
+    def contains_id(self) -> bool:
+        return any(i.is_id for i in self.items)
 
-    def derive_on_insert(self) -> SqlFieldBuilder:
-        self._include_in_insert = False
-
-        return self
-
-    def as_not_editable(self) -> SqlFieldBuilder:
-        self._include_in_update = False
+    def add(self, item: SqlField) -> Self:
+        self.items.append(self.validate(item))
 
         return self
 
-    def as_parent(self, value: Any | None) -> SqlFieldBuilder:
-        self._is_parent = True
-        self._parent_value = value
+    def validate(self, item: SqlField) -> SqlField:
+        if item.is_id and self.contains_id():
+            raise ValueError("Pass only one identifier key.")
 
-        return self
+        if item.is_parent and any(i.is_parent for i in self.items):
+            raise ValueError("Pass only one parent key.")
 
-    def as_filter(self, values: list[Any | NotNone | None]) -> SqlFieldBuilder:
-        self._is_filter = True
-        self._filter_values = values
+        if not item.is_filter and isinstance(item.fixed_value, NotNone):
+            raise ValueError("Only filter fields can be 'not null'.")
 
-        return self
+        return item
 
-    def as_fixed(self, value: Any | None) -> SqlFieldBuilder:
-        self._is_fixed = True
-        self._fixed_value = value
+    def for_ordering(self) -> Iterable[SqlField]:
+        return (item for item in self.items if item.is_ordered)
 
-        return self
+    def for_filtering(self) -> Iterable[SqlField]:
+        return (item for item in self.items if item.is_filter and item.filter_values)
 
-    def build(self) -> _SqlField:
-        return _SqlField(
-            name=self._name,
-            is_id=self._is_id,
-            is_selectable=self._is_selectable,
-            is_composite=self._is_composite,
-            include_in_insert=self._include_in_insert,
-            include_in_update=self._include_in_update,
-            is_ordered=self._is_ordered,
-            is_descending=self._is_descending,
-            is_parent=self._is_parent,
-            parent_value=self._parent_value,
-            is_filter=self._is_filter,
-            filter_values=self._filter_values,
-            is_fixed=self._is_fixed,
-            fixed_value=self._fixed_value,
-        )
+    def as_payload(self) -> Mapping[str, Any]:
+        payload = {}
+
+        for item in self.items:
+            if item.is_parent:
+                payload[item.name] = item.parent_value
+
+            if item.is_fixed:
+                payload[item.name] = item.fixed_value
+
+            if item.is_filter:
+                for index, value in enumerate(item.filter_values):
+                    if value is not None and not isinstance(value, NotNone):
+                        payload[item.name + "_filter_" + str(index)] = value
+
+        return payload
 
 
 @dataclass
 class SqlFieldManager:
-    fields: list[_SqlField]
+    fields: SqlFieldSet
     custom_filters: list[str]
-    key_formatter: str
-    value_formatter: str
+
+    placeholder_value: PlaceHolder
+    placeholder_key: PlaceHolder
 
     @property
-    def id(self) -> str:
-        result = next((key for key in self.fields if key.is_id), None)
-        if result is None:
-            raise ValueError("Id field is required.")
-        return result.name
+    def id_name(self) -> str:
+        return self.fields.id_field.name
 
     @property
     def composite(self) -> list[str]:
         names = [key.name for key in self.fields if key.is_composite]
-        return [self.id] if len(names) == 0 else names
+
+        return [self.id_name] if len(names) == 0 else names
 
     @property
     def order(self) -> str:
-        ordering = [key for key in self.fields if key.is_ordered]
-        order_clauses = [
-            f"{key.name} DESC" if key.is_descending else key.name for key in ordering
+        fields = [
+            f"{item.name} DESC" if item.is_descending else item.name
+            for item in self.fields.for_ordering()
         ]
-        if len(ordering) > 0:
-            return "ORDER BY " + ", ".join(order_clauses)
 
-        return ""
+        if not fields:
+            return ""
 
-    def __iter__(self) -> Iterator[_SqlField]:
+        return "ORDER BY " + ", ".join(fields)
+
+    def __iter__(self) -> Iterator[SqlField]:
         yield from self.fields
 
     def where_statement(
@@ -182,50 +182,38 @@ class SqlFieldManager:
         return ""
 
     def with_fixed(self, raw: Mapping[str, Any]) -> dict[str, Any]:
-        data = dict(raw)
-
-        for key in self.fields:
-            if key.is_parent:
-                data[key.name] = key.parent_value
-            if key.is_fixed:
-                data[key.name] = key.fixed_value
-            if key.is_filter:
-                for index, value in enumerate(key.filter_values):
-                    if value is not None and not isinstance(value, NotNone):
-                        data[key.name + "_filter_" + str(index)] = value
-        return data
+        return FluentDict(raw).merge(self.fields.as_payload())
 
     def _parent_filter(self) -> str:
         result = next((key for key in self.fields if key.is_parent), None)
-        if result is not None:
-            if result.parent_value is None:
-                return self.key_formatter.replace("x", result.name) + " IS NULL"
-            return (
-                self.key_formatter.replace("x", result.name)
-                + " = "
-                + self.value_formatter.replace("x", result.name)
-            )
 
-        return ""
+        if result is None:
+            return ""
+
+        if result.parent_value is None:
+            return self.placeholder_key.is_null(result.name)
+
+        return (
+            self.placeholder_key.replace_with(result.name)
+            + " = "
+            + self.placeholder_value.replace_with(result.name)
+        )
 
     def _id_filter(self, *, include_id: bool, read_id: bool) -> str:
         if not include_id:
             return ""
 
-        clauses = []
-
-        id_field = next((key for key in self.fields if key.is_id), None)
-        if id_field is None:
-            raise ValueError("Id field is required.")
+        id_field = self.fields.id_field
 
         value_expr = (
-            self.value_formatter.replace("x", id_field.name)
+            self.placeholder_value.replace_with(id_field.name)
             if not read_id or id_field.include_in_insert
             else "SCOPE_IDENTITY()"
         )
-        clauses.append(
-            f"{self.key_formatter.replace('x', id_field.name)} = {value_expr}"
-        )
+
+        clauses = [
+            f"{self.placeholder_key.replace_with(id_field.name)} = {value_expr}",
+        ]
 
         if not read_id:
             selectable_fields = [
@@ -234,8 +222,8 @@ class SqlFieldManager:
                 if selectable.is_selectable and not selectable.is_id
             ]
             for selectable in selectable_fields:
-                key_expr = self.key_formatter.replace("x", selectable.name)
-                val_expr = self.value_formatter.replace("x", id_field.name)
+                key_expr = self.placeholder_key.replace_with(selectable.name)
+                val_expr = self.placeholder_value.replace_with(id_field.name)
                 clauses.append(f"{key_expr} = {val_expr}")
 
         if len(clauses) == 1:
@@ -244,66 +232,111 @@ class SqlFieldManager:
         return "(" + " OR ".join(clauses) + ")"
 
     def _general_filters(self) -> str:
-        statements: list[str] = [*self.custom_filters]
-        for key in self.fields:
-            if key.is_filter:
-                inner_statements: list[str] = []
-                for index, value in enumerate(key.filter_values):
-                    if value is None:
-                        inner_statements.append(
-                            self.key_formatter.replace("x", key.name) + " IS NULL"
-                        )
-                    elif isinstance(value, NotNone):
-                        inner_statements.append(
-                            self.key_formatter.replace("x", key.name) + " IS NOT NULL"
-                        )
-                    else:
-                        inner_statements.append(
-                            self.key_formatter.replace("x", key.name)
-                            + " = "
-                            + self.value_formatter.replace(
-                                "x", key.name + "_filter_" + str(index)
-                            )
-                        )
-                if len(inner_statements) > 0:
-                    statements.append("(" + " OR ".join(inner_statements) + ")")
+        return " AND ".join(
+            [
+                *self.custom_filters,
+                *self.standard_filters,
+            ]
+        )
 
-        return " AND ".join(statements)
+    @property
+    def standard_filters(self) -> Iterable[str]:
+        yield from (
+            f"({self.filter_for_a(sql_field=item)})"
+            for item in self.fields.for_filtering()
+        )
+
+    def filter_for_a(self, sql_field: SqlField) -> str:
+        return " OR ".join(
+            self.filter_with_a(sql_field.name, value, index)
+            for index, value in enumerate(sql_field.filter_values)
+        )
+
+    def filter_with_a(self, name: str, value: Any | NotNone | None, index: int) -> str:
+        if value is None:
+            return self.placeholder_key.is_null(name)
+
+        if isinstance(value, NotNone):
+            return self.placeholder_key.is_not_null(name)
+
+        return (
+            self.placeholder_key.replace_with(name)
+            + " = "
+            + self.placeholder_value.replace_with(name + "_filter_" + str(index))
+        )
 
     @dataclass
     class Builder:
+        placeholder_value: PlaceHolder
+        placeholder_key: PlaceHolder
+
+        fields: SqlFieldSet = field(default_factory=SqlFieldSet)
         custom_filters: list[str] = field(default_factory=list)
 
-        fields: list[_SqlField] = field(init=False)
-        key_formatter: str = field(init=False)
-        value_formatter: str = field(init=False)
+        @classmethod
+        def for_sqlite(cls) -> Self:
+            return cls(
+                placeholder_key=SqliteKeyPlaceholder(),
+                placeholder_value=SqliteValuePlaceholder(),
+            )
 
-        def with_fields(self, fields: list[_SqlField]) -> SqlFieldManager.Builder:
+        @classmethod
+        def for_mssql(cls) -> Self:
+            return cls(
+                placeholder_key=MsSqlKeyPlaceholder(),
+                placeholder_value=MsSqlValuePlaceholder(),
+            )
+
+        def with_fields(self, fields: SqlFieldSet) -> Self:
             self.fields = fields
 
             return self
 
-        def with_custom_filters(self, fields: list[str]) -> SqlFieldManager.Builder:
+        def with_custom_filters(self, fields: list[str]) -> Self:
             self.custom_filters = fields
-
-            return self
-
-        def for_sqlite(self) -> SqlFieldManager.Builder:
-            self.key_formatter = "x"
-            self.value_formatter = ":x"
-
-            return self
-
-        def for_mssql(self) -> SqlFieldManager.Builder:
-            self.key_formatter = "[x]"
-            self.value_formatter = "%(x)s"
 
             return self
 
         def build(self) -> SqlFieldManager:
             return SqlFieldManager(
-                self.fields,
-                self.custom_filters,
-                self.key_formatter,
-                self.value_formatter,
+                fields=self.fields,
+                custom_filters=self.custom_filters,
+                placeholder_value=self.placeholder_value,
+                placeholder_key=self.placeholder_key,
             )
+
+
+class PlaceHolder(ABC):
+    def is_null(self, value: str) -> str:
+        return self.replace_with(value) + " IS NULL"
+
+    def is_not_null(self, value: str) -> str:
+        return self.replace_with(value) + " IS NOT NULL"
+
+    @abstractmethod
+    def replace_with(self, value: str) -> str:
+        pass
+
+
+@dataclass(frozen=True)
+class MsSqlKeyPlaceholder(PlaceHolder):
+    def replace_with(self, value: str) -> str:
+        return f"[{value}]"
+
+
+@dataclass(frozen=True)
+class MsSqlValuePlaceholder(PlaceHolder):
+    def replace_with(self, value: str) -> str:
+        return f"%({value})s"
+
+
+@dataclass(frozen=True)
+class SqliteKeyPlaceholder(PlaceHolder):
+    def replace_with(self, value: str) -> str:
+        return f"{value}"
+
+
+@dataclass(frozen=True)
+class SqliteValuePlaceholder(PlaceHolder):
+    def replace_with(self, value: str) -> str:
+        return f":{value}"

@@ -5,7 +5,7 @@ from pytest_apex import ApprovalCase
 
 from apexdevkit.formatter import AliasFormatter, AliasMapping, DataclassFormatter
 from apexdevkit.repository import Entity
-from apexdevkit.repository.sql.field import SqlFieldBuilder
+from apexdevkit.repository.sql.field import SqlField
 from apexdevkit.repository.sql.mssql import MsSqlTableBuilder, SqlTable
 
 
@@ -35,27 +35,11 @@ TABLE_WITHOUT_PARENT = (
     MsSqlTableBuilder[Apple]()
     .with_schema("test")
     .with_table("apples")
-    .with_a(
-        sql_field=(
-            SqlFieldBuilder()
-            .with_name("apid")
-            .as_id()
-            .in_ordering(descending=True)
-            .build()
-        )
-    )
-    .and_a(sql_field=SqlFieldBuilder().with_name("clr").build())
-    .and_a(sql_field=SqlFieldBuilder().with_name("pid").build())
-    .and_a(sql_field=SqlFieldBuilder().with_name("kingdom").as_fixed("fruits").build())
-    .and_a(
-        sql_field=(
-            SqlFieldBuilder()
-            .with_name("manager")
-            .as_fixed(None)
-            .as_filter([5, 4])
-            .build()
-        )
-    )
+    .with_a(sql_field=SqlField("apid").as_id().order_by(descending=True))
+    .and_a(sql_field=SqlField("clr"))
+    .and_a(sql_field=SqlField("pid"))
+    .and_a(sql_field=SqlField("kingdom").fixed(value="fruits"))
+    .and_a(sql_field=SqlField("manager").fixed(value=None).filter(values=[5, 4]))
     .with_custom_filters(["pid > 5"])
     .build()
     .with_a(formatter=_FORMATTER)
@@ -66,9 +50,9 @@ TABLE_WITH_PARENT = (
     MsSqlTableBuilder[Apple]()
     .with_schema("test")
     .with_table("apples")
-    .with_a(sql_field=SqlFieldBuilder().with_name("apid").as_id().in_ordering().build())
-    .with_a(sql_field=SqlFieldBuilder().with_name("clr").build())
-    .with_a(sql_field=SqlFieldBuilder().with_name("pid").as_parent("test").build())
+    .with_a(sql_field=SqlField("apid").as_id().order_by())
+    .with_a(sql_field=SqlField("clr"))
+    .with_a(sql_field=SqlField("pid").parent("test"))
     .build()
     .with_a(formatter=_FORMATTER)
     .for_a(username="test")
@@ -78,8 +62,8 @@ TABLE_WITHOUT_USERNAME = (
     MsSqlTableBuilder[Apple]()
     .with_schema("test")
     .with_table("apples")
-    .with_a(sql_field=SqlFieldBuilder().with_name("apid").as_id().build())
-    .with_a(sql_field=SqlFieldBuilder().with_name("clr").build())
+    .with_a(sql_field=SqlField("apid").as_id())
+    .with_a(sql_field=SqlField("clr"))
     .build()
     .with_a(formatter=_FORMATTER)
 )
