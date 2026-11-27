@@ -6,7 +6,7 @@ from pytest_apex import ApprovalCase
 from apexdevkit.formatter import AliasFormatter, AliasMapping, DataclassFormatter
 from apexdevkit.repository import Entity
 from apexdevkit.repository.sql import MsSqlTableBuilder, SqlField
-from apexdevkit.repository.sql.mssql import AsUser, SqlTable
+from apexdevkit.repository.sql.mssql import SqlTable, TableWithUser
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -80,7 +80,7 @@ def table(request: pytest.FixtureRequest) -> SqlTable[Apple]:
         case "no_username":
             return TABLE_WITHOUT_USERNAME
         case "with_username":
-            return AsUser(user="test", inner=TABLE_WITHOUT_USERNAME)
+            return TableWithUser(name="test", inner=TABLE_WITHOUT_USERNAME)
         case "with_parent":
             return TABLE_WITH_PARENT
         case "no_parent":

@@ -273,20 +273,19 @@ class SqlTemplates:
 
 
 @dataclass(frozen=True, kw_only=True)
-class AsUser[T](SqlTable[T]):
-    user: str
-
+class TableWithUser[T](SqlTable[T]):
+    name: str
     inner: SqlTable[T]
 
     def __post_init__(self) -> None:
-        if not self.user:
+        if not self.name:
             raise ValueError("username must be provided")
 
     def _wrap(self, command: DatabaseCommand) -> DatabaseCommand:
         return DatabaseCommand(
             "\n".join(
                 [
-                    f"EXECUTE AS USER = '{self.user}'",
+                    f"EXECUTE AS USER = '{self.name}'",
                     dedent(command.value),
                 ]
             ),

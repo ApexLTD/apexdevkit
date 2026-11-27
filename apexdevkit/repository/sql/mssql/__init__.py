@@ -1,10 +1,10 @@
 from .repository import MsSqlRepository, UnknownError
-from .table import AsUser, MsSqlTableBuilder, SqlTable
+from .table import MsSqlTableBuilder, SqlTable, TableWithUser
 
 __all__ = [
-    "AsUser",
     "MsSqlRepository",
     "MsSqlTableBuilder",
     "SqlTable",
+    "TableWithUser",
     "UnknownError",
 ]
