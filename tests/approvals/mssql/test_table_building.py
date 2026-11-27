@@ -5,8 +5,8 @@ from pytest_apex import ApprovalCase
 
 from apexdevkit.formatter import AliasFormatter, AliasMapping, DataclassFormatter
 from apexdevkit.repository import Entity
-from apexdevkit.repository.sql.field import SqlField
-from apexdevkit.repository.sql.mssql import MsSqlTableBuilder, SqlTable
+from apexdevkit.repository.sql import MsSqlTableBuilder, SqlField
+from apexdevkit.repository.sql.mssql import SqlTable
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -68,21 +68,26 @@ TABLE_WITHOUT_USERNAME = (
     .with_a(formatter=_FORMATTER)
 )
 
+TABLE_WITH_USERNAME = TABLE_WITHOUT_USERNAME.for_a(username="test")
+
 
 @pytest.fixture(
     params=[
+        "with_username",
         "no_username",
-        "without_parent",
         "with_parent",
+        "no_parent",
     ]
 )
 def table(request: pytest.FixtureRequest) -> SqlTable[Apple]:
     match request.param:
         case "no_username":
             return TABLE_WITHOUT_USERNAME
+        case "with_username":
+            return TABLE_WITH_USERNAME
         case "with_parent":
             return TABLE_WITH_PARENT
-        case "without_parent":
+        case "no_parent":
             return TABLE_WITHOUT_PARENT
         case _ as kind:
             raise RuntimeError(f"Unknown table type: {kind}")
