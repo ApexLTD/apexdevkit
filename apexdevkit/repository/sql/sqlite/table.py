@@ -142,7 +142,7 @@ class _DefaultSqlTable[T](SqlTable[T]):
                 {columns}
             FROM {self.table_name.upper()}
             {self.fields.where_statement(include_id=True)};
-        """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
+        """).with_data(self.fields.with_fixed({self.fields.id_name: item_id}))
 
     def select_duplicate(self, item: T) -> DatabaseCommand:
         raw = self.formatter.dump(item)
@@ -191,7 +191,7 @@ class _DefaultSqlTable[T](SqlTable[T]):
             DELETE
             FROM {self.table_name.upper()}
             {self.fields.where_statement(include_id=True)};
-        """).with_data(self.fields.with_fixed({self.fields.id: item_id}))
+        """).with_data(self.fields.with_fixed({self.fields.id_name: item_id}))
 
     def delete_all(self) -> DatabaseCommand:
         return DatabaseCommand(f"""

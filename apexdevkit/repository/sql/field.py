@@ -112,13 +112,14 @@ class SqlFieldManager:
     placeholder_key: PlaceHolder
 
     @property
-    def id(self) -> str:
+    def id_name(self) -> str:
         return self.fields.id_name
 
     @property
     def composite(self) -> list[str]:
         names = [key.name for key in self.fields if key.is_composite]
-        return [self.id] if len(names) == 0 else names
+
+        return [self.id_name] if len(names) == 0 else names
 
     @property
     def order(self) -> str:

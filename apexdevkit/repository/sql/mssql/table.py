@@ -127,7 +127,7 @@ class AutoMsSqlTable[T](SqlTable[T]):
     def select(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand(
             value=self.templates.select(),
-            payload=self.fields.with_fixed({self.fields.id: item_id}),
+            payload=self.fields.with_fixed({self.fields.id_name: item_id}),
         )
 
     def select_all(self) -> DatabaseCommand:
@@ -145,7 +145,7 @@ class AutoMsSqlTable[T](SqlTable[T]):
     def delete(self, item_id: str) -> DatabaseCommand:
         return DatabaseCommand(
             value=self.templates.delete(),
-            payload=self.fields.with_fixed({self.fields.id: item_id}),
+            payload=self.fields.with_fixed({self.fields.id_name: item_id}),
         )
 
     def delete_all(self) -> DatabaseCommand:
@@ -160,7 +160,7 @@ class AutoMsSqlTable[T](SqlTable[T]):
     def exists(self, duplicate: T) -> ExistsError:
         raw = self.formatter.dump(duplicate)
         return ExistsError(duplicate).with_duplicate(
-            lambda _: f"{self.fields.id}<{raw[self.fields.id]}>"
+            lambda _: f"{self.fields.id_name}<{raw[self.fields.id_name]}>"
         )
 
 
@@ -186,7 +186,7 @@ class SqlTemplates:
             [f"%({key.name})s" for key in self.fields if key.include_in_insert]
         )
         try:
-            _ = self.fields.id
+            _ = self.fields.id_name
             output = ", ".join(
                 ["[" + field.name + "] AS " + field.name for field in self.fields]
             )
