@@ -71,8 +71,8 @@ class SqlFieldManager:
     fields: list[SqlField]
     custom_filters: list[str]
 
-    value_format: PlaceHolder
-    key_format: PlaceHolder
+    placeholder_value: PlaceHolder
+    placeholder_key: PlaceHolder
 
     @property
     def id(self) -> str:
@@ -141,12 +141,12 @@ class SqlFieldManager:
             return ""
 
         if result.parent_value is None:
-            return self.key_format.replace_with(result.name) + " IS NULL"
+            return self.placeholder_key.replace_with(result.name) + " IS NULL"
 
         return (
-            self.key_format.replace_with(result.name)
+            self.placeholder_key.replace_with(result.name)
             + " = "
-            + self.value_format.replace_with(result.name)
+            + self.placeholder_value.replace_with(result.name)
         )
 
     def _id_filter(self, *, include_id: bool, read_id: bool) -> str:
@@ -160,11 +160,13 @@ class SqlFieldManager:
             raise ValueError("Id field is required.")
 
         value_expr = (
-            self.value_format.replace_with(id_field.name)
+            self.placeholder_value.replace_with(id_field.name)
             if not read_id or id_field.include_in_insert
             else "SCOPE_IDENTITY()"
         )
-        clauses.append(f"{self.key_format.replace_with(id_field.name)} = {value_expr}")
+        clauses.append(
+            f"{self.placeholder_key.replace_with(id_field.name)} = {value_expr}"
+        )
 
         if not read_id:
             selectable_fields = [
@@ -173,8 +175,8 @@ class SqlFieldManager:
                 if selectable.is_selectable and not selectable.is_id
             ]
             for selectable in selectable_fields:
-                key_expr = self.key_format.replace_with(selectable.name)
-                val_expr = self.value_format.replace_with(id_field.name)
+                key_expr = self.placeholder_key.replace_with(selectable.name)
+                val_expr = self.placeholder_value.replace_with(id_field.name)
                 clauses.append(f"{key_expr} = {val_expr}")
 
         if len(clauses) == 1:
@@ -190,17 +192,17 @@ class SqlFieldManager:
                 for index, value in enumerate(key.filter_values):
                     if value is None:
                         inner_statements.append(
-                            self.key_format.replace_with(key.name) + " IS NULL"
+                            self.placeholder_key.replace_with(key.name) + " IS NULL"
                         )
                     elif isinstance(value, NotNone):
                         inner_statements.append(
-                            self.key_format.replace_with(key.name) + " IS NOT NULL"
+                            self.placeholder_key.replace_with(key.name) + " IS NOT NULL"
                         )
                     else:
                         inner_statements.append(
-                            self.key_format.replace_with(key.name)
+                            self.placeholder_key.replace_with(key.name)
                             + " = "
-                            + self.value_format.replace_with(
+                            + self.placeholder_value.replace_with(
                                 key.name + "_filter_" + str(index)
                             )
                         )
@@ -243,8 +245,8 @@ class SqlFieldManager:
             return SqlFieldManager(
                 self.fields,
                 self.custom_filters,
-                value_format=PlaceHolder(self.value_formatter),
-                key_format=PlaceHolder(self.key_formatter),
+                placeholder_value=PlaceHolder(self.value_formatter),
+                placeholder_key=PlaceHolder(self.key_formatter),
             )
 
 
