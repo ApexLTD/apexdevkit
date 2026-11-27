@@ -97,7 +97,7 @@ class SqlFieldSet:
 
 @dataclass
 class SqlFieldManager:
-    fields: list[SqlField]
+    fields: SqlFieldSet
     custom_filters: list[str]
 
     placeholder_value: PlaceHolder
@@ -270,8 +270,8 @@ class SqlFieldManager:
 
         def build(self) -> SqlFieldManager:
             return SqlFieldManager(
-                fields=list(self.fields),
-                custom_filters=list(self.custom_filters),
+                fields=self.fields,
+                custom_filters=self.custom_filters,
                 placeholder_value=self.placeholder_value,
                 placeholder_key=self.placeholder_key,
             )
