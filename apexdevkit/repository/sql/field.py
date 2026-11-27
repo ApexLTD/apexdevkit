@@ -5,7 +5,7 @@ from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any, Self
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator, Mapping
+    from collections.abc import Iterable, Iterator, Mapping
 
 
 @dataclass(frozen=True)
@@ -102,6 +102,9 @@ class SqlFieldSet:
 
         return item
 
+    def for_ordering(self) -> Iterable[SqlField]:
+        return (item for item in self.items if item.is_ordered)
+
 
 @dataclass
 class SqlFieldManager:
@@ -123,12 +126,13 @@ class SqlFieldManager:
 
     @property
     def order(self) -> str:
-        ordering = [key for key in self.fields if key.is_ordered]
-        order_clauses = [
-            f"{key.name} DESC" if key.is_descending else key.name for key in ordering
+        clauses = [
+            f"{key.name} DESC" if key.is_descending else key.name
+            for key in self.fields.for_ordering()
         ]
-        if len(ordering) > 0:
-            return "ORDER BY " + ", ".join(order_clauses)
+
+        if clauses:
+            return "ORDER BY " + ", ".join(clauses)
 
         return ""
 
