@@ -79,34 +79,26 @@ class NoPlaceHolder:
 
 @dataclass(frozen=True)
 class MsSqlKeyPlaceholder:
-    format: str = "[x]"
-
     def replace_with(self, value: str) -> str:
-        return self.format.replace("x", value)
+        return f"[{value}]"
 
 
 @dataclass(frozen=True)
 class MsSqlValuePlaceholder:
-    format: str = "%(x)s"
-
     def replace_with(self, value: str) -> str:
-        return self.format.replace("x", value)
+        return f"%({value})s"
 
 
 @dataclass(frozen=True)
 class SqliteKeyPlaceholder:
-    format: str = "x"
-
     def replace_with(self, value: str) -> str:
-        return self.format.replace("x", value)
+        return f"{value}"
 
 
 @dataclass(frozen=True)
 class SqliteValuePlaceholder:
-    format: str = ":x"
-
     def replace_with(self, value: str) -> str:
-        return self.format.replace("x", value)
+        return f":{value}"
 
 
 @dataclass
