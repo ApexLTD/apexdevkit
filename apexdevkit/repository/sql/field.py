@@ -126,15 +126,15 @@ class SqlFieldManager:
 
     @property
     def order(self) -> str:
-        clauses = [
-            f"{key.name} DESC" if key.is_descending else key.name
-            for key in self.fields.for_ordering()
+        fields = [
+            f"{item.name} DESC" if item.is_descending else item.name
+            for item in self.fields.for_ordering()
         ]
 
-        if not clauses:
+        if not fields:
             return ""
 
-        return "ORDER BY " + ", ".join(clauses)
+        return "ORDER BY " + ", ".join(fields)
 
     def __iter__(self) -> Iterator[SqlField]:
         yield from self.fields
