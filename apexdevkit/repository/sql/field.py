@@ -79,7 +79,7 @@ class NoPlaceHolder:
 
 @dataclass(frozen=True)
 class MsSqlKeyPlaceholder:
-    format: str
+    format: str = "[x]"
 
     def replace_with(self, value: str) -> str:
         return self.format.replace("x", value)
@@ -87,7 +87,7 @@ class MsSqlKeyPlaceholder:
 
 @dataclass(frozen=True)
 class MsSqlValuePlaceholder:
-    format: str
+    format: str = "%(x)s"
 
     def replace_with(self, value: str) -> str:
         return self.format.replace("x", value)
@@ -95,7 +95,7 @@ class MsSqlValuePlaceholder:
 
 @dataclass(frozen=True)
 class SqliteKeyPlaceholder:
-    format: str
+    format: str = "x"
 
     def replace_with(self, value: str) -> str:
         return self.format.replace("x", value)
@@ -103,7 +103,7 @@ class SqliteKeyPlaceholder:
 
 @dataclass(frozen=True)
 class SqliteValuePlaceholder:
-    format: str
+    format: str = ":x"
 
     def replace_with(self, value: str) -> str:
         return self.format.replace("x", value)
@@ -274,14 +274,14 @@ class SqlFieldManager:
             return self
 
         def for_sqlite(self) -> Self:
-            self.placeholder_key = SqliteKeyPlaceholder("x")
-            self.placeholder_value = SqliteValuePlaceholder(":x")
+            self.placeholder_key = SqliteKeyPlaceholder()
+            self.placeholder_value = SqliteValuePlaceholder()
 
             return self
 
         def for_mssql(self) -> Self:
-            self.placeholder_key = MsSqlKeyPlaceholder("[x]")
-            self.placeholder_value = MsSqlValuePlaceholder("%(x)s")
+            self.placeholder_key = MsSqlKeyPlaceholder()
+            self.placeholder_value = MsSqlValuePlaceholder()
 
             return self
 
