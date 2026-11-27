@@ -85,18 +85,16 @@ class MsSqlTableBuilder[T]:
         if not self.schema or not self.table:
             raise ValueError("Cannot build sql table.")
 
-        fields = (
-            SqlFieldManager.Builder.for_mssql()
-            .with_fields(self.fields)
-            .with_custom_filters(list(self.custom_filters))
-            .build()
-        )
-
         return AutoMsSqlTable[T](
             fields=self.fields,
             templates=SqlTemplates(
                 target=self.target,
-                fields=fields,
+                fields=(
+                    SqlFieldManager.Builder.for_mssql()
+                    .with_fields(self.fields)
+                    .with_custom_filters(list(self.custom_filters))
+                    .build()
+                ),
             ),
         )
 
