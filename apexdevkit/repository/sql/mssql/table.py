@@ -57,6 +57,10 @@ class MsSqlTableBuilder[T]:
     fields: SqlFieldSet = field(default_factory=SqlFieldSet)
     custom_filters: list[str] = field(default_factory=list)
 
+    @property
+    def target(self) -> str:
+        return f"[{self.schema}].[{self.table}]"
+
     def with_schema(self, value: str) -> Self:
         return replace(self, schema=value)
 
@@ -91,7 +95,7 @@ class MsSqlTableBuilder[T]:
         return AutoMsSqlTable[T](
             fields=self.fields,
             templates=SqlTemplates(
-                target=f"[{self.schema}].[{self.table}]",
+                target=self.target,
                 fields=fields,
             ),
         )
