@@ -226,16 +226,17 @@ class SqlFieldManager:
     def _general_filters(self) -> str:
         statements: list[str] = [*self.custom_filters]
         for item in self.fields.for_filtering():
-            name = item.name
-
-            group = " OR ".join(
-                self.filter_with_a(name, value, index)
-                for index, value in enumerate(item.filter_values)
-            )
+            group = self.filter_for_a(sql_field=item)
 
             statements.append("(" + group + ")")
 
         return " AND ".join(statement for statement in statements if statement != "()")
+
+    def filter_for_a(self, sql_field: SqlField) -> str:
+        return " OR ".join(
+            self.filter_with_a(sql_field.name, value, index)
+            for index, value in enumerate(sql_field.filter_values)
+        )
 
     def filter_with_a(self, name: str, value: Any | NotNone | None, index: int) -> str:
         if value is None:
