@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any, Self
 
+from pypebbles import FluentDict
+
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator, Mapping
 
@@ -108,6 +110,23 @@ class SqlFieldSet:
     def for_filtering(self) -> Iterable[SqlField]:
         return (item for item in self.items if item.is_filter and item.filter_values)
 
+    def as_payload(self) -> Mapping[str, Any]:
+        payload = {}
+
+        for item in self.items:
+            if item.is_parent:
+                payload[item.name] = item.parent_value
+
+            if item.is_fixed:
+                payload[item.name] = item.fixed_value
+
+            if item.is_filter:
+                for index, value in enumerate(item.filter_values):
+                    if value is not None and not isinstance(value, NotNone):
+                        payload[item.name + "_filter_" + str(index)] = value
+
+        return payload
+
 
 @dataclass
 class SqlFieldManager:
@@ -163,18 +182,7 @@ class SqlFieldManager:
         return ""
 
     def with_fixed(self, raw: Mapping[str, Any]) -> dict[str, Any]:
-        data = dict(raw)
-
-        for key in self.fields:
-            if key.is_parent:
-                data[key.name] = key.parent_value
-            if key.is_fixed:
-                data[key.name] = key.fixed_value
-            if key.is_filter:
-                for index, value in enumerate(key.filter_values):
-                    if value is not None and not isinstance(value, NotNone):
-                        data[key.name + "_filter_" + str(index)] = value
-        return data
+        return FluentDict(raw).merge(self.fields.as_payload())
 
     def _parent_filter(self) -> str:
         result = next((key for key in self.fields if key.is_parent), None)
