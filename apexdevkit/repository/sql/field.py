@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, replace
-from typing import TYPE_CHECKING, Any, Protocol, Self
+from typing import TYPE_CHECKING, Any, Self
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Mapping
@@ -66,37 +67,44 @@ class SqlField:
         return replace(self, is_fixed=True, fixed_value=value)
 
 
-class PlaceHolder(Protocol):
+class PlaceHolder(ABC):
+    def is_null(self, value) -> str:
+        return self.replace_with(value) + " IS NULL"
+
+    def is_not_null(self, value) -> str:
+        return self.replace_with(value) + " IS NOT NULL"
+
+    @abstractmethod
     def replace_with(self, value: str) -> str:
         pass
 
 
 @dataclass(frozen=True)
-class NoPlaceHolder:
+class NoPlaceHolder(PlaceHolder):
     def replace_with(self, value: str) -> str:
         raise NotImplementedError
 
 
 @dataclass(frozen=True)
-class MsSqlKeyPlaceholder:
+class MsSqlKeyPlaceholder(PlaceHolder):
     def replace_with(self, value: str) -> str:
         return f"[{value}]"
 
 
 @dataclass(frozen=True)
-class MsSqlValuePlaceholder:
+class MsSqlValuePlaceholder(PlaceHolder):
     def replace_with(self, value: str) -> str:
         return f"%({value})s"
 
 
 @dataclass(frozen=True)
-class SqliteKeyPlaceholder:
+class SqliteKeyPlaceholder(PlaceHolder):
     def replace_with(self, value: str) -> str:
         return f"{value}"
 
 
 @dataclass(frozen=True)
-class SqliteValuePlaceholder:
+class SqliteValuePlaceholder(PlaceHolder):
     def replace_with(self, value: str) -> str:
         return f":{value}"
 
@@ -176,7 +184,7 @@ class SqlFieldManager:
             return ""
 
         if result.parent_value is None:
-            return self.placeholder_key.replace_with(result.name) + " IS NULL"
+            return self.placeholder_key.is_null(result.name)
 
         return (
             self.placeholder_key.replace_with(result.name)
@@ -223,26 +231,22 @@ class SqlFieldManager:
         statements: list[str] = [*self.custom_filters]
         for key in self.fields:
             if key.is_filter:
-                inner_statements: list[str] = []
+                inner: list[str] = []
                 for index, value in enumerate(key.filter_values):
                     if value is None:
-                        inner_statements.append(
-                            self.placeholder_key.replace_with(key.name) + " IS NULL"
-                        )
+                        inner.append(self.placeholder_key.is_null(key.name))
                     elif isinstance(value, NotNone):
-                        inner_statements.append(
-                            self.placeholder_key.replace_with(key.name) + " IS NOT NULL"
-                        )
+                        inner.append(self.placeholder_key.is_not_null(key.name))
                     else:
-                        inner_statements.append(
+                        inner.append(
                             self.placeholder_key.replace_with(key.name)
                             + " = "
                             + self.placeholder_value.replace_with(
                                 key.name + "_filter_" + str(index)
                             )
                         )
-                if len(inner_statements) > 0:
-                    statements.append("(" + " OR ".join(inner_statements) + ")")
+                if len(inner) > 0:
+                    statements.append("(" + " OR ".join(inner) + ")")
 
         return " AND ".join(statements)
 
