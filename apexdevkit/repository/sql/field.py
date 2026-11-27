@@ -80,12 +80,6 @@ class PlaceHolder(ABC):
 
 
 @dataclass(frozen=True)
-class NoPlaceHolder(PlaceHolder):
-    def replace_with(self, value: str) -> str:
-        raise NotImplementedError
-
-
-@dataclass(frozen=True)
 class MsSqlKeyPlaceholder(PlaceHolder):
     def replace_with(self, value: str) -> str:
         return f"[{value}]"
@@ -252,12 +246,11 @@ class SqlFieldManager:
 
     @dataclass
     class Builder:
-        custom_filters: list[str] = field(default_factory=list)
+        placeholder_value: PlaceHolder
+        placeholder_key: PlaceHolder
 
         fields: list[SqlField] = field(init=False)
-
-        placeholder_value: PlaceHolder = field(default_factory=NoPlaceHolder)
-        placeholder_key: PlaceHolder = field(default_factory=NoPlaceHolder)
+        custom_filters: list[str] = field(default_factory=list)
 
         @classmethod
         def for_sqlite(cls) -> Self:
