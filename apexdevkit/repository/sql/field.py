@@ -194,9 +194,7 @@ class SqlFieldManager:
 
         clauses = []
 
-        id_field = next((key for key in self.fields if key.is_id), None)
-        if id_field is None:
-            raise ValueError("Id field is required.")
+        id_field = self.fields.id_field
 
         value_expr = (
             self.placeholder_value.replace_with(id_field.name)
