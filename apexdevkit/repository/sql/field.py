@@ -74,6 +74,14 @@ class SqlFieldSet:
     def __iter__(self) -> Iterator[SqlField]:
         return iter(self.items)
 
+    @property
+    def id_name(self) -> str:
+        for item in self.items:
+            if item.is_id:
+                return item.name
+
+        raise RuntimeError("FieldSet does not contain Id field.")
+
     def contains_id(self) -> bool:
         return any(i.is_id for i in self.items)
 
@@ -105,10 +113,7 @@ class SqlFieldManager:
 
     @property
     def id(self) -> str:
-        result = next((key for key in self.fields if key.is_id), None)
-        if result is None:
-            raise ValueError("Id field is required.")
-        return result.name
+        return self.fields.id_name
 
     @property
     def composite(self) -> list[str]:
