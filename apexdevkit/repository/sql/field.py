@@ -226,18 +226,20 @@ class SqlFieldManager:
     def _general_filters(self) -> str:
         statements: list[str] = [*self.custom_filters]
         for item in self.fields.for_filtering():
+            name = item.name
+
             inner: list[str] = []
             for index, value in enumerate(item.filter_values):
                 if value is None:
-                    statement = self.placeholder_key.is_null(item.name)
+                    statement = self.placeholder_key.is_null(name)
                 elif isinstance(value, NotNone):
-                    statement = self.placeholder_key.is_not_null(item.name)
+                    statement = self.placeholder_key.is_not_null(name)
                 else:
                     statement = (
-                        self.placeholder_key.replace_with(item.name)
+                        self.placeholder_key.replace_with(name)
                         + " = "
                         + self.placeholder_value.replace_with(
-                            item.name + "_filter_" + str(index)
+                            name + "_filter_" + str(index)
                         )
                     )
                 inner.append(statement)
