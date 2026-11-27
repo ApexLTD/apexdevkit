@@ -224,9 +224,10 @@ class SqlFieldManager:
         return "(" + " OR ".join(clauses) + ")"
 
     def _general_filters(self) -> str:
-        statements: list[str] = [*self.custom_filters]
-        for item in self.fields.for_filtering():
-            statements.append(f"({self.filter_for_a(sql_field=item)})")
+        statements: list[str] = self.custom_filters + [
+            f"({self.filter_for_a(sql_field=item)})"
+            for item in self.fields.for_filtering()
+        ]
 
         return " AND ".join(statement for statement in statements if statement != "()")
 
