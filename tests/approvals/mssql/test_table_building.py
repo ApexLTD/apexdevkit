@@ -43,7 +43,6 @@ TABLE_WITHOUT_PARENT = (
     .with_custom_filters(["pid > 5"])
     .build()
     .with_a(formatter=_FORMATTER)
-    .for_a(username="test")
 )
 
 TABLE_WITH_PARENT = (
@@ -55,7 +54,6 @@ TABLE_WITH_PARENT = (
     .with_a(sql_field=SqlField("pid").parent("test"))
     .build()
     .with_a(formatter=_FORMATTER)
-    .for_a(username="test")
 )
 
 TABLE_WITHOUT_USERNAME = (
