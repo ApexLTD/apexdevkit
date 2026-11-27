@@ -123,7 +123,7 @@ class AutoMsSqlTable[T](SqlTable[T]):
     def count_all(self) -> DatabaseCommand:
         return DatabaseCommand(
             value=self.templates.count_all(),
-            payload=FluentDict().merge(self.fields.as_payload()),
+            payload=self.fields.as_payload(),
         )
 
     def insert(self, item: T) -> DatabaseCommand:
